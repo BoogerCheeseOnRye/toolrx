@@ -161,6 +161,20 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("#previewPane.mobile-show", self.html)
         self.assertIn("body.static-demo #pvMobile", self.html)
 
+    def test_projects_are_manageable_from_the_composer(self):
+        self.assertIn('id="projBtn"', self.html)
+        self.assertIn('id="projModal"', self.html)
+        self.assertIn("openProjects", self.html)
+        self.assertIn("renderProjectList", self.html)
+        self.assertIn("newProject", self.html)
+        self.assertIn("deleteProject", self.html)
+        self.assertIn("refreshProjectChip", self.html)
+
+    def test_chat_results_render_as_conversation(self):
+        self.assertIn("toolrx · chat", self.html)
+        self.assertIn(".lbl.chat", self.html)
+        self.assertIn("r.source", self.html)
+
     def test_mobile_layout(self):
         self.assertIn("@media(max-width:900px)", self.html)
         self.assertIn('id="drawerBackdrop"', self.html)

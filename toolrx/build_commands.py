@@ -235,7 +235,7 @@ FACTORS = {
     "data": {"kb": 1e3, "mb": 1e6, "gb": 1e9, "tb": 1e12,
              "kib": 1024, "mib": 1048576, "gib": 1073741824},
     "time": {"ms": .001, "s": 1, "min": 60, "h": 3600, "day": 86400, "week": 604800},
-    "speed": {"mps": 1, "kph": 0.2777777777777778, "mph": 0.44704, "knot": 0.5144444444444445},
+    "speed": {"mps": 1, "kph": 1 / 3.6, "mph": 0.44704, "knot": 1852 / 3600},
     "area": {"mm2": 1e-6, "cm2": 1e-4, "m2": 1, "km2": 1e6, "ha": 1e4,
              "acre": 4046.8564224, "ft2": .09290304, "in2": .00064516},
     "energy": {"j": 1, "kj": 1000, "cal": 4.184, "kcal": 4184, "wh": 3600, "kwh": 3.6e6},
@@ -552,11 +552,20 @@ BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdo
                "memory game", "unit converter", "converter", "chart", "graph",
                "dashboard", "landing page", "landing", "website", "web page", "page",
                "markdown editor", "markdown", "expense tracker", "expenses", "budget",
-               "clock", "game", "app", "program", "tool"]
+               "clock", "game", "app", "program", "tool",
+               "rpg", "rpg game", "role playing game", "platformer", "snake",
+               "snake game", "breakout", "pong", "2048", "minesweeper", "tetris",
+               "maze", "maze game", "adventure game", "text adventure",
+               "typing test", "typing game", "social media website", "social network",
+               "social feed", "blog", "blog website", "forum", "forum website",
+               "chat app", "chat website", "chat page"]
 for kind in BUILD_KINDS:
     for pat in ("build a {k} app", "build {k} app", "make a {k} app", "create a {k} app",
                 "build me a {k}", "build a {k}", "make a {k}", "create a {k}",
-                "build a {k} website", "make a {k} website", "build a {k} page"):
+                "build an {k}", "make an {k}", "create an {k}", "build me an {k}",
+                "build a {k} website", "make a {k} website", "build a {k} page",
+                "build a {k} game", "create a {k} game", "build me a {k} game",
+                "make a {k} game", "build an {k} game"):
         add(f"build.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}", "build",
             "^" + pat.replace("{k}", re.escape(kind)) + "$",
             {"kind": kind}, pat, "build")
@@ -566,6 +575,123 @@ for pat in ("build a program that {desc}", "build a site that {desc}",
             "make a program that {desc}", "build {desc}"):
     add(f"build.free.{len(COMMANDS)}", "build",
         "^" + pat.replace("{desc}", REST) + "$", {"desc": "$1"}, pat, "build")
+
+# ------------------------------------------------------------- projects ---
+for pat in ("new project {name}", "new project called {name}", "create a project called {name}",
+            "create a new project {name}", "create a project named {name}",
+            "start a project called {name}", "start a new project {name}"):
+    add(f"project.new.{len(COMMANDS)}", "project.new",
+        "^" + pat.replace("{name}", REST) + "$", {"name": "$1"}, pat, "project")
+
+for pat in ("list projects", "show projects", "show my projects", "projects",
+            "list my projects", "what projects do i have"):
+    add(f"project.list.{len(COMMANDS)}", "project.list", "^" + re.escape(pat) + "$",
+        {}, pat, "project")
+
+for pat in ("open project {slug}", "open the project {slug}", "switch to project {slug}",
+            "switch to the project {slug}", "load project {slug}"):
+    add(f"project.open.{len(COMMANDS)}", "project.open",
+        "^" + pat.replace("{slug}", REST) + "$", {"slug": "$1"}, pat, "project")
+
+for pat in ("delete project {slug}", "delete the project {slug}", "remove project {slug}",
+            "erase project {slug}", "remove the project {slug}"):
+    add(f"project.delete.{len(COMMANDS)}", "project.delete",
+        "^" + pat.replace("{slug}", REST) + "$", {"slug": "$1"}, pat, "project")
+for pat in ("delete this project", "delete the active project", "erase this project",
+            "remove this project"):
+    add(f"project.delete.active.{len(COMMANDS)}", "project.delete",
+        "^" + re.escape(pat) + "$", {}, pat, "project")
+
+for pat in ("rename project {slug} to {name}", "rename the project {slug} to {name}"):
+    add(f"project.rename.{len(COMMANDS)}", "project.rename",
+        "^" + pat.replace("{slug}", REST).replace("{name}", REST) + "$",
+        {"slug": "$1", "name": "$2"}, pat, "project")
+
+for pat in ("show project files", "list project files", "project files",
+            "show the files in this project", "show the files in the project",
+            "what files are in this project"):
+    add(f"project.files.{len(COMMANDS)}", "project.files", "^" + re.escape(pat) + "$",
+        {}, pat, "project")
+add("project.files.slug", "project.files", r"^(?:show|list)\s+(?:the\s+)?files\s+in\s+project\s+(.+)$",
+    {"slug": "$1"}, "files in a project", "project")
+
+# --------------------------------------------------------- architecture ---
+for pat in ("plan a {kind}", "plan an {kind}", "plan {kind} app", "plan out a {kind}",
+            "architect a {kind}", "architecture of a {kind}", "architecture for a {kind}",
+            "show the architecture of a {kind}", "show the architecture of {kind}",
+            "how do i build a {kind}", "how would you build a {kind}",
+            "how do i build {kind}", "what is the architecture of a {kind}"):
+    add(f"plan.{len(COMMANDS)}", "plan",
+        "^" + pat.replace("{kind}", REST) + "$", {"kind": "$1"}, pat, "plan")
+
+for pat in ("blueprint a {kind}", "blueprint for a {kind}", "blueprint for {kind}",
+            "give me a blueprint for a {kind}", "blueprint of a {kind}"):
+    add(f"blueprint.{len(COMMANDS)}", "blueprint",
+        "^" + pat.replace("{kind}", REST) + "$", {"kind": "$1"}, pat, "plan")
+
+# ------------------------------------------------------------- web data ---
+for pat in ("wikipedia {q}", "search wikipedia for {q}", "look up {q} on wikipedia",
+            "what does wikipedia say about {q}", "wiki {q}"):
+    add(f"web.search.{len(COMMANDS)}", "web.search",
+        "^" + pat.replace("{q}", REST) + "$", {"q": "$1"}, pat, "web")
+for pat in ("search the web for {q}", "search for {q}", "search the internet for {q}",
+            "look up {q}", "look {q} up", "google {q}"):
+    add(f"web.search.free.{len(COMMANDS)}", "web.search",
+        "^" + pat.replace("{q}", REST) + "$", {"q": "$1"}, pat, "web")
+for pat in ("duckduckgo {q}", "instant answer for {q}", "quick answer for {q}"):
+    add(f"web.answer.{len(COMMANDS)}", "web.answer",
+        "^" + pat.replace("{q}", REST) + "$", {"q": "$1"}, pat, "web")
+for pat in ("define {word}", "definition of {word}", "what does {word} mean",
+            "what is the definition of {word}", "meaning of {word}"):
+    add(f"web.define.{len(COMMANDS)}", "web.define",
+        "^" + pat.replace("{word}", r"([a-zA-Z][a-zA-Z' -]{0,40})") + "$",
+        {"word": "$1"}, pat, "web")
+for pat in ("weather in {place}", "what's the weather in {place}", "what is the weather in {place}",
+            "weather for {place}", "forecast for {place}"):
+    add(f"web.weather.{len(COMMANDS)}", "web.weather",
+        "^" + pat.replace("{place}", REST) + "$", {"place": "$1"}, pat, "web")
+for pat in ("summarize it", "summarize that", "summarize this", "summarize the result",
+            "summarize the text", "summary of it", "summary of that"):
+    add(f"web.summary.prev.{len(COMMANDS)}", "text.summarize",
+        "^" + re.escape(pat) + "$", {}, pat, "web")
+add("web.summary.text", "text.summarize", r"^summarize\s+(?!it$|that$|this$)(.+)$",
+    {"text": "$1"}, "summarize text", "web")
+
+# ---------------------------------------------------------------- chat ----
+CHAT_PATTERNS = {
+    "g.reply": ["hi", "hello", "hey", "yo", "hiya", "hello there", "hey there",
+                "good morning", "good afternoon", "good evening"],
+    "thanks": ["thanks", "thank you", "thx", "i appreciate it", "appreciate it"],
+    "how": ["how are you", "how's it going", "how are things"],
+    "joke": ["tell me a joke", "make me laugh", "something funny", "say something funny"],
+    "motivate": ["motivate me", "i need motivation", "pep talk", "encourage me"],
+    "identity": ["who are you", "what are you", "tell me about yourself",
+                 "are you real", "are you alive", "do you have feelings",
+                 "are you sentient", "are you conscious"],
+    "idea": ["what should i build", "what should i make", "give me an idea",
+             "give me a project idea", "project idea"],
+    "name": ["what is my name", "what's my name", "who am i", "do you remember my name"],
+    "listen": ["i need help", "help me", "can you listen", "listen to me",
+               "i need to talk", "can we talk"],
+    "bye": ["bye", "goodbye", "see you", "later", "good night", "goodnight"],
+}
+for intent, pats in CHAT_PATTERNS.items():
+    for pat in pats:
+        add(f"chat.{intent}.{len(COMMANDS)}", "chat",
+            "^" + re.escape(pat) + r"[.!?]?$", {}, pat, "chat")
+
+for pat in (r"^i feel .+$", r"^i (?:am|'m) feeling .+$",
+            r"^i (?:am|'m) (?:so |really |very |kind of |kinda )?(?:sad|anxious|angry|mad|stressed|tired|exhausted|lonely|scared|afraid|confused|lost|stuck|overwhelmed|burnt out|burned out|down|empty)$",
+            r"^i (?:can'?t|cannot) focus$", r"^i can'?t cope$",
+            r"^i (?:can'?t|cannot) sleep$", r"^i (?:can'?t|cannot) do this(?: anymore)?$",
+            r"^i'?m stuck$", r"^i don'?t know (?:what to do|how to start)$"):
+    add(f"chat.feel.{len(COMMANDS)}", "chat", pat, {}, "talk about a feeling", "chat")
+
+for pat in ("remember my name is {name}", "my name is {name}", "call me {name}"):
+    add(f"chat.name.{len(COMMANDS)}", "chat",
+        "^" + pat.replace("{name}", REST) + "$", {}, pat, "chat")
+
+add("chat.more", "chat", r"^(?:why|really|and|so)[.!?]?$", {}, "continue the conversation", "chat")
 
 # ----------------------------------------------------------------- misc ---
 for pat, op in (("who are you", "who"), ("what are you", "who"),

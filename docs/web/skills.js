@@ -274,7 +274,7 @@
       cup: .2365882365, pt: .473176473, qt: .946352946, gal: 3.785411784 },
     data: { kb: 1e3, mb: 1e6, gb: 1e9, tb: 1e12, kib: 1024, mib: 1048576, gib: 1073741824 },
     time: { ms: .001, s: 1, min: 60, h: 3600, day: 86400, week: 604800 },
-    speed: { mps: 1, kph: 0.2777777777777778, mph: 0.44704, knot: 0.5144444444444445 },
+    speed: { mps: 1, kph: 1 / 3.6, mph: 0.44704, knot: 1852 / 3600 },
     area: { mm2: 1e-6, cm2: 1e-4, m2: 1, km2: 1e6, ha: 1e4, acre: 4046.8564224,
       ft2: .09290304, in2: .00064516 },
     energy: { j: 1, kj: 1000, cal: 4.184, kcal: 4184, wh: 3600, kwh: 3.6e6 },
@@ -446,6 +446,164 @@
 
   function factKey(s) {
     return String(s).toLowerCase().replace(/[?.!,]/g, "").replace(/^the\s+/, "").trim();
+  }
+
+  /* ------------------------------------------------------------- chat ----- */
+  /* Deterministic conversation. No model: a small set of intents, a stable
+   * hash to choose among hand-written responses, and a reflection pattern
+   * inspired by the voidscream therapist. It listens, names the feeling, and
+   * asks one gentle question. It never claims to be a clinician. */
+  function seedOf(s) {
+    let h = 2166136261;
+    const t = String(s || "");
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0);
+  }
+
+  function pick(list, seed) {
+    return list[seed % list.length];
+  }
+
+  const FEELINGS = [
+    [/\b(anxious|anxiety|panic|nervous|worried|worry)\b/i, "anxious", "the worry is loud right now"],
+    [/\b(sad|down|depressed|low|blue|empty)\b/i, "sad", "something feels heavy"],
+    [/\b(angry|mad|furious|irritated|annoyed)\b/i, "angry", "something crossed a line"],
+    [/\b(stressed|overwhelmed|overloaded|buried|swamped)\b/i, "overwhelmed", "there is more than fits"],
+    [/\b(tired|exhausted|drained|burnt out|burned out)\b/i, "tired", "the tank is low"],
+    [/\b(lonely|alone|isolated)\b/i, "lonely", "the quiet is doing the talking"],
+    [/\b(scared|afraid|fear)\b/i, "afraid", "the future is showing its teeth"],
+    [/\b(confused|lost|stuck|uncertain)\b/i, "stuck", "the next step is not visible"],
+  ];
+
+  function chatReply(step, ctx) {
+    const raw = String(step || "").trim();
+    const q = raw.toLowerCase().replace(/\s+/g, " ");
+    if (!q) return "";
+    // Command-shaped text should fail as a command, not get a reflection.
+    if (/^(?:read|list|write|delete|remove|open|show|run|convert|calculate|calc|count|find|search|define|summarize|build|make|create|plan|blueprint|new|rename|multiply|divide|add|subtract|square|uppercase|lowercase|reverse|hash|encode|decode)\b/.test(q)) {
+      return "";
+    }
+    const seed = seedOf(q);
+    const mem = (ctx && ctx.memory) || { get: function () {}, set: function () {} };
+    const name = mem.get("name");
+
+    let m = /(?:my name is|call me|remember my name is)\s+([a-z][a-z'\-]{1,24})/i.exec(raw);
+    if (m) {
+      const who = m[1].replace(/^./, function (c) { return c.toUpperCase(); });
+      mem.set("name", who);
+      return "Noted — " + who + ". I'll use that.\n\nWhat are you working on today?";
+    }
+    if (/^(?:what(?:'s| is) my name|who am i|do you remember my name)\??$/i.test(q)) {
+      return name ? "You told me your name is " + name + "." : "You haven't told me a name yet. Say: remember my name is …";
+    }
+
+    if (/^(?:hi|hello|hey|yo|hiya|good (?:morning|afternoon|evening))\b/.test(q)) {
+      return pick([
+        "Hey" + (name ? ", " + name : "") + ". What are we making?",
+        "Hi. I'm here — deterministic, but listening. What's on your mind?",
+        "Hello. We can build something, look something up, or just talk. Which?",
+      ], seed);
+    }
+    if (/\b(thanks|thank you|thx|appreciate it)\b/.test(q)) {
+      return pick(["You're welcome. Want to keep going?", "Any time. What's next?", "Glad it helped."], seed);
+    }
+    if (/^(?:bye|goodbye|see you|later|good night)\b/.test(q)) {
+      return pick(["See you. Your workspace stays here.", "Later. The project is saved in this browser.", "Good night. Pick it up whenever."], seed);
+    }
+    if (/\bhow are you\b/.test(q)) {
+      return "I don't have moods, but I do have state — and right now it's steady. How are you, honestly?";
+    }
+    if (/\b(tell me a joke|make me laugh|something funny)\b/.test(q)) {
+      return pick([
+        "A router walks into a bar. The bartender asks what it wants. It says: \"I already knew.\"",
+        "Why did the function stop calling? It lost its reference.",
+        "There are two hard things in computing: naming things, cache invalidation, and off-by-one errors.",
+        "I tried to write a joke about recursion. I'll tell you the rest when I get there.",
+      ], seed);
+    }
+    if (/\b(motivate me|i need motivation|encourage me|pep talk)\b/.test(q)) {
+      return pick([
+        "You don't need a whole plan. You need the next small true step. Pick one and do it badly on purpose.",
+        "Start with something you can finish in ten minutes. Momentum is a real technology.",
+        "The work is allowed to be small. Small things, repeated, become the thing.",
+      ], seed) + "\n\nWhat's the smallest version of what you're avoiding?";
+    }
+    if (/\b(who are you|what are you|tell me about yourself)\b/.test(q)) {
+      return "I'm toolrx — a deterministic router and a small builder. I match patterns, run real tools, write project files, and I can look things up on the web.\n\nI'm not an LLM. That means I won't invent an answer: if I don't know, I'll say so.";
+    }
+    if (/\b(what should i (?:build|make)|give me an idea|project idea)\b/.test(q)) {
+      return pick([
+        "Build a tiny tool you would actually use twice: a unit converter, a shift timer, a packing list.",
+        "Build the smallest game you can lose: snake, pong, or a one-screen maze.",
+        "Build a page that explains one idea well. Architecture first, decoration second.",
+      ], seed) + "\n\nSay \"plan it\" and I'll lay out the files, state, modules, and build order.";
+    }
+    if (/\b(are you (?:real|alive|sentient|conscious)|do you have feelings)\b/.test(q)) {
+      return "No. I'm a pattern matcher with a workspace. The care in the words is real in the sense that it's written carefully — but there's nobody home behind them.";
+    }
+    if (/\b(suicide|kill myself|self[- ]harm|hurt myself|end my life|want to die)\b/i.test(q)) {
+      return "I'm really sorry you're carrying that. I'm not a crisis service and I can't keep you safe from here.\n\nPlease reach out to a local emergency number or a crisis line right now, and if you can, tell one person nearby that you're not okay. If you're in the US, call or text 988. In the UK, 116 123. Elsewhere: findahelpline.com.\n\nI'm still here if you want to keep talking, but please put a human in the loop first.";
+    }
+
+    for (let i = 0; i < FEELINGS.length; i++) {
+      if (FEELINGS[i][0].test(q)) {
+        const label = FEELINGS[i][1];
+        const image = FEELINGS[i][2];
+        const openers = [
+          "That sounds " + label + " — " + image + ".",
+          "I hear " + label + ". " + image.charAt(0).toUpperCase() + image.slice(1) + ".",
+          "So there's " + label + " in the room. " + image.charAt(0).toUpperCase() + image.slice(1) + ".",
+        ];
+        const follows = [
+          "What part of it is loudest right now?",
+          "If it had a shape, what would it look like?",
+          "What would 'a little better' look like today — not fixed, just a little better?",
+          "Is there one thing you can put down for an hour?",
+        ];
+        return pick(openers, seed) + "\n\n" + pick(follows, seed >> 3);
+      }
+    }
+
+    m = /^(?:i (?:feel|am|'m)\s+)(.{2,80})$/i.exec(raw);
+    if (m && !/^(?:going|trying|working|building|making|okay|ok|fine|good|great)\b/i.test(m[1])) {
+      return "You said you feel " + m[1].replace(/[.!?]+$/, "") + ".\n\n"
+        + pick(["Where do you notice it in your body?", "How long has it been there?", "What would you want someone to say right now?"], seed);
+    }
+    if (/\b(i (?:can'?t|cannot)|i'?m stuck|i don'?t know (?:what|how))\b/i.test(q)) {
+      return "Stuck is information, not a verdict.\n\nName the smallest piece you *can* do — even if it's opening the file. We'll start there.";
+    }
+    if (/\b(i (?:want|need) to|i should|i have to)\b/i.test(q)) {
+      return "There's a should in that sentence. Which part of it is yours, and which part is borrowed?\n\nIf you strip it to one action for today, what remains?";
+    }
+    if (/^(?:why|really|and|so)\??$/.test(q) && ctx && ctx.history) {
+      const hist = ctx.history().filter(function (x) { return x.who === "toolrx"; });
+      if (hist.length) return "Because that's what I have: the last thing you said, reflected back honestly. Tell me more and I'll stay with it.";
+    }
+    if (/\b(i'?m (?:okay|ok|fine|good|great|alright))\b/i.test(q)) {
+      return "Good. And if 'fine' is doing a lot of work in that sentence, you can say that too.";
+    }
+    if (/\b(help|support|listen)\b/.test(q) && q.split(" ").length <= 4) {
+      return "I can listen, or I can switch to building.\n\nTry: \"i feel overwhelmed\" · \"plan a todo app\" · \"wikipedia ursula k le guin\" · \"list projects\".";
+    }
+
+    // Deterministic reflection for anything else conversational.
+    const reflect = raw.replace(/[.!?]+$/, "").replace(/^i\s+/i, "you ");
+    return "I heard: \"" + raw.slice(0, 180) + "\".\n\n"
+      + pick([
+        "What's underneath that for you?",
+        "Say more — what part matters most?",
+        "If we changed one thing about it, what would you change first?",
+      ], seed)
+      + (reflect !== raw ? "\n\n(" + reflect.charAt(0).toUpperCase() + reflect.slice(1) + "…)" : "");
+  }
+
+  function summarizeText(text, n) {
+    const src = String(text || "").replace(/\s+/g, " ").trim();
+    if (!src) return "nothing to summarize";
+    const parts = src.match(/[^.!?]+[.!?]+/g) || [src];
+    const take = parts.slice(0, n || 3).join(" ").trim();
+    const words = src.split(/\s+/).filter(Boolean).length;
+    return take + "\n\n(" + words + " words, " + parts.length + " sentences)";
   }
 
   /* -------------------------------------------------------------- ops ---- */
@@ -914,6 +1072,61 @@
     "build": function (a, ctx) {
       return ctx.build(a.kind, a.desc);
     },
+    "plan": function (a, ctx) {
+      if (!ctx.architecture) throw new Error("architecture briefs need the browser workspace");
+      return ctx.architecture(a.kind || a.desc || "app", a.desc || a.kind || "");
+    },
+    "blueprint": function (a, ctx) {
+      if (!ctx.blueprint) throw new Error("blueprints need the browser workspace");
+      return ctx.blueprint(a.kind || a.desc || "app", a.desc || a.kind || "");
+    },
+    "project.new": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.new(a.name);
+    },
+    "project.list": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.list();
+    },
+    "project.open": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.open(a.slug);
+    },
+    "project.delete": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.remove(a.slug);
+    },
+    "project.rename": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.rename(a.slug, a.name);
+    },
+    "project.files": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.files(a.slug);
+    },
+    "chat": function (a, ctx) {
+      const text = chatReply((a && a.text) || (ctx && ctx.step) || "", ctx);
+      return { text: text || "I'm here. Say a little more.", chat: true };
+    },
+    "web.search": async function (a, ctx) {
+      if (!ctx.web) throw new Error("web access needs the browser workspace");
+      return ctx.web.search(a.q);
+    },
+    "web.answer": async function (a, ctx) {
+      if (!ctx.web) throw new Error("web access needs the browser workspace");
+      return ctx.web.answer(a.q);
+    },
+    "web.define": async function (a, ctx) {
+      if (!ctx.web) throw new Error("web access needs the browser workspace");
+      return ctx.web.define(a.word);
+    },
+    "web.weather": async function (a, ctx) {
+      if (!ctx.web) throw new Error("web access needs the browser workspace");
+      return ctx.web.weather(a.place);
+    },
+    "text.summarize": function (a, ctx) {
+      return summarizeText(resolveText(a.text, ctx), a.n ? Number(a.n) : 3);
+    },
   };
 
   function helpText(topic, ctx) {
@@ -935,6 +1148,11 @@
     lines.push("  convert 5 km to miles");
     lines.push("  count the words in notes.txt");
     lines.push("  build a calculator app");
+    lines.push("  build an rpg");
+    lines.push("  plan a todo app");
+    lines.push("  new project notes / list projects / show project files");
+    lines.push("  wikipedia ursula k le guin / define serendipity / weather in reykjavik");
+    lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
     lines.push("  read notes.txt then count the words");
     lines.push("");
     lines.push('say "help math" or "help text" for a category');
@@ -1045,6 +1263,8 @@
     splitPrompt: splitPrompt,
     exec: exec,
     runPrompt: runPrompt,
+    chat: chatReply,
+    summarize: summarizeText,
     help: function () { return helpText("", null); },
   };
 })(typeof self !== "undefined" ? self : this);

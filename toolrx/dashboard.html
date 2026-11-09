@@ -470,6 +470,35 @@
   .cm-btn:hover{filter:brightness(1.1)}
   .cm-btn.gh{background:#24292f;color:#fff}
   .cm-ghinfo{font-size:11px;color:var(--muted);margin-top:8px}
+
+  /* projects */
+  #projBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;max-width:230px;
+    background:var(--panel2);border:1px solid var(--border);border-radius:999px;
+    color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #projBtn b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+  #projBtn:hover{border-color:var(--accent);color:var(--text)}
+  #projModal{position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
+    background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
+  #projModal.open{display:flex}
+  .pj-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .pj-head h3{margin:0;font-size:17px}
+  .pj-head .sub{flex:1;color:var(--muted);font-size:11.5px}
+  .pj-new{display:flex;gap:8px;margin:12px 0}
+  .pj-new input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--border);
+    border-radius:8px;color:var(--text);padding:8px 10px;font:inherit;font-size:12.5px}
+  .pj-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+  .pj-item{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+  .pj-item.active{border-color:var(--accent)}
+  .pj-item .top{display:flex;align-items:center;gap:8px}
+  .pj-item .top b{font-size:13.5px}
+  .pj-item .meta{color:var(--muted);font-size:11px;margin-top:2px;overflow-wrap:anywhere}
+  .pj-item .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .pj-item .acts button{background:var(--panel2);border:1px solid var(--border);border-radius:7px;
+    color:var(--text);font-size:11px;padding:4px 9px;cursor:pointer}
+  .pj-item .acts button:hover{border-color:var(--accent)}
+  .pj-item .acts .del:hover{border-color:#f87171;color:#f87171}
+  .entry .lbl.chat{background:rgba(167,139,250,.14);color:var(--accent2)}
 </style>
 </head>
 <body>
@@ -560,6 +589,7 @@
       </form>
       <div class="hintrow">
         <span class="hint">tool calls resolve instantly · build tasks run in the background & render in Preview</span>
+        <button type="button" id="projBtn" title="projects: new, open, delete">◫ <b>no project</b></button>
         <button type="button" id="pvMobile" title="show the preview pane">▣ preview</button>
         <div class="ctxbar" id="ctxbar">
           <span class="ctxlab">context</span>
@@ -624,6 +654,20 @@
   </div>
 </div>
 
+<!-- projects modal -->
+<div id="projModal">
+  <div class="pj-head">
+    <h3>Projects</h3>
+    <div class="sub">each build writes real files · click a project to activate it</div>
+    <button class="cm-close" id="pjClose" type="button">✕</button>
+  </div>
+  <div class="pj-new">
+    <input id="pjName" placeholder="new project name (e.g. notes, rpg, portfolio)" autocomplete="off">
+    <button class="cm-btn" id="pjCreate" type="button">New project</button>
+  </div>
+  <div class="pj-list" id="pjList"></div>
+</div>
+
 <!-- in-browser router: used when the page is served statically (GitHub Pages) -->
 <script src="web/blake2b.js"></script>
 <script src="web/router.js"></script>
@@ -677,13 +721,17 @@ async function loadConfig(){
     if(hint) hint.textContent='runs in this tab · '+(commandCount?commandCount.toLocaleString()+' commands · ':'')+'no LLM, no network';
     if(window.toolrxWeb.onPreview) window.toolrxWeb.onPreview(renderPreview);
     loadPreview();
+    refreshProjectChip();
     entry('toolrx ready',
       'in-browser router · 27 tools · '+(commandCount?commandCount.toLocaleString()+' deterministic commands':'pattern library')+'\n\n'
       +'try:  multiply 67 and 420\n'
-      +'      square 67\n'
       +'      convert 5 km to miles then square the result\n'
-      +'      read notes.txt then count the words\n'
-      +'      build a calculator app\n\n'
+      +'      build a calculator app\n'
+      +'      build an rpg        (real files in a project)\n'
+      +'      plan a todo app     (architecture, not a finished page)\n'
+      +'      wikipedia ursula k le guin\n'
+      +'      i feel overwhelmed\n\n'
+      +'projects: press ◫ in the composer bar to create, open, or delete one\n'
       +'the workspace is virtual + persists in localStorage (toolrxWeb.reset() to reseed)\n'
       +'preview renders locally — press ⤢ to go fullscreen','stat');
   }
@@ -949,6 +997,71 @@ function entry(label,text,kind){
   if(text){const pre=document.createElement('pre');pre.textContent=text;d.append(pre);}
   log.appendChild(d);log.scrollTop=log.scrollHeight;
 }
+
+/* ---- projects: chip + modal ------------------------------------------- */
+function refreshProjectChip(){
+  const btn=document.getElementById('projBtn');
+  if(!btn) return;
+  if(!clientMode || !window.toolrxWeb){ btn.style.display='none'; return; }
+  btn.style.display='inline-flex';
+  const p=window.toolrxWeb.project();
+  const b=btn.querySelector('b');
+  if(b) b.textContent=p?p.name:'no project';
+  btn.title=p?('active project: '+p.slug+' · '+p.files.length+' files'):'no project yet — build something';
+}
+function renderProjectList(){
+  const box=document.getElementById('pjList');
+  if(!box || !window.toolrxWeb) return;
+  const list=window.toolrxWeb.projects();
+  box.innerHTML='';
+  if(!list.length){
+    box.innerHTML='<p class="muted small">no projects yet — build something or create one above.</p>';
+    return;
+  }
+  list.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='pj-item'+(p.active?' active':'');
+    const top=document.createElement('div');top.className='top';
+    const nm=document.createElement('b');nm.textContent=p.name;top.appendChild(nm);
+    if(p.active){const tag=document.createElement('span');tag.className='pill';tag.textContent='active';top.appendChild(tag);}
+    const meta=document.createElement('div');meta.className='meta';
+    meta.textContent=p.slug+' · '+p.files.length+' files · '+p.kind+(p.desc?' · '+p.desc:'');
+    const acts=document.createElement('div');acts.className='acts';
+    const mk=(label,cls,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(cls)b.className=cls;b.addEventListener('click',fn);acts.appendChild(b);};
+    if(!p.active) mk('open',null,()=>{ try{window.toolrxWeb.openProject(p.slug);}catch(e){} refreshProjectChip();loadPreview();renderProjectList(); });
+    if(p.active) mk('preview',null,()=>{ loadPreview(); closeProjects();
+      if(window.matchMedia('(max-width:900px)').matches){document.getElementById('previewPane').classList.add('mobile-show');const t=document.getElementById('pvToggle');if(t)t.textContent='✕';}
+    });
+    mk('delete','del',()=>{
+      if(!confirm('Delete project "'+p.name+'"? This removes its files from this browser.')) return;
+      try{window.toolrxWeb.deleteProject(p.slug);}catch(e){alert(e.message||e);}
+      refreshProjectChip();renderProjectList();loadPreview();
+      entry('projects','deleted '+p.slug,'stat');
+    });
+    d.append(top,meta,acts);
+    box.appendChild(d);
+  });
+}
+function openProjects(){ renderProjectList(); document.getElementById('projModal').classList.add('open'); }
+function closeProjects(){ document.getElementById('projModal').classList.remove('open'); }
+(function(){
+  const btn=document.getElementById('projBtn');
+  if(btn) btn.addEventListener('click',openProjects);
+  const close=document.getElementById('pjClose');
+  if(close) close.addEventListener('click',closeProjects);
+  const create=document.getElementById('pjCreate');
+  const input=document.getElementById('pjName');
+  function make(){
+    if(!window.toolrxWeb) return;
+    const name=(input.value||'').trim();
+    if(!name) return;
+    try{ window.toolrxWeb.newProject(name); }catch(e){ alert(e.message||e); return; }
+    input.value=''; refreshProjectChip(); renderProjectList();
+    entry('projects','created "'+name+'" · build something into it','stat');
+  }
+  if(create) create.addEventListener('click',make);
+  if(input) input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();make();} });
+})();
 
 function fmtUptime(s){
   if(!s&&s!==0) return '';
@@ -1722,13 +1835,15 @@ async function submit(txt){
     let built=false;
     for(const r of results){
       const via=r.via||'step';
-      const label=(r.error?'⚠ ':'')+r.step+'  →  '+via;
+      const isChat=via==='chat';
+      const label=(r.error?'⚠ ':'')+(isChat?'toolrx · chat':r.step+'  →  '+via);
       let body=String(r.text==null?'':r.text);
       if(r.tool && r.confidence!==undefined){
         body+='\n\nrouter  '+r.tool+' · conf '+Number(r.confidence).toFixed(3)
           +(r.args&&Object.keys(r.args).length?' · args '+JSON.stringify(r.args):'');
       }
-      entry(label, body, r.error?'err':'res');
+      if(r.source) body+='\n\nsource  '+r.source;
+      entry(label, body, r.error?'err':(isChat?'chat':'res'));
       if(via==='build' && !r.error) built=true;
       if((via==='preview' || via==='preview.theme') && window.matchMedia('(max-width:900px)').matches){
         document.getElementById('previewPane').classList.add('mobile-show');
@@ -1736,6 +1851,8 @@ async function submit(txt){
         loadPreview();
       }
     }
+    refreshProjectChip();
+    if(document.getElementById('projModal').classList.contains('open')) renderProjectList();
     if(built){
       if(window.matchMedia('(max-width:900px)').matches) entry('preview','built — press ▣ preview to open it','stat');
       else entry('preview','rendered in the preview pane → (press ⤢ for fullscreen)','stat');

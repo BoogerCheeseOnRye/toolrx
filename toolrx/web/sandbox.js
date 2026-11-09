@@ -12,6 +12,9 @@
   "use strict";
 
   const FS_KEY = "toolrx.web.fs.v1";
+  const PROJECTS_KEY = "toolrx.projects.v1";
+  const CHAT_KEY = "toolrx.chat.v1";
+  const MEMORY_KEY = "toolrx.memory.v1";
   const MAX_FILE = 8000;
   const MAX_TOTAL = 24000;
 
@@ -59,9 +62,213 @@
     } catch (e) { /* very old browsers */ }
   }
 
+  /* ---------------------------------------------------------- projects ---- */
+  /* A project is a small folder of real files (index.html, styles.css, app.js,
+   * README.md, ARCHITECTURE.md) plus the bundled page used for the preview.
+   * Projects live in localStorage next to the workspace; the flat workspace
+   * mirrors them under projects/<slug>/ so fs tools can read them too. */
+  function readProjects() {
+    try {
+      const raw = root.localStorage.getItem(PROJECTS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.items && typeof parsed.items === "object") {
+          return { active: parsed.active || "", items: parsed.items };
+        }
+      }
+    } catch (e) { /* private mode */ }
+    return { active: "", items: {} };
+  }
+
+  function writeProjects() {
+    try {
+      root.localStorage.setItem(PROJECTS_KEY, JSON.stringify({ active: projects.active, items: projects.items }));
+    } catch (e) { /* storage full or disabled */ }
+  }
+
+  let projects = readProjects();
+
+  function slugify(s) {
+    return String(s || "project").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "").slice(0, 40) || "project";
+  }
+
+  function uniqueSlug(base) {
+    let slug = slugify(base), n = 2;
+    while (projects.items[slug]) slug = slugify(base) + "-" + n++;
+    return slug;
+  }
+
+  function projectList() {
+    return Object.keys(projects.items).map(function (k) {
+      const p = projects.items[k];
+      return {
+        slug: k, name: p.name, kind: p.kind, desc: p.desc,
+        files: Object.keys(p.files || {}), updated: p.updated, active: k === projects.active,
+      };
+    }).sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); });
+  }
+
+  function newProject(name) {
+    const slug = uniqueSlug(name || "untitled");
+    const item = {
+      slug: slug, name: String(name || "Untitled project").slice(0, 60),
+      kind: "notes", desc: "", files: {}, bundled: "", created: Date.now(), updated: Date.now(),
+    };
+    projects.items[slug] = item;
+    projects.active = slug;
+    writeProjects();
+    return item;
+  }
+
+  function activeProject() {
+    return projects.active ? projects.items[projects.active] || null : null;
+  }
+
+  function openProject(slug) {
+    const s = slugify(slug);
+    if (!projects.items[s]) throw new Error("no such project: " + slug);
+    projects.active = s;
+    writeProjects();
+    const p = projects.items[s];
+    if (p.bundled) {
+      preview = {
+        html: p.bundled, kind: p.kind, desc: p.desc,
+        title: p.name, theme: preview.theme, at: Date.now(),
+      };
+      notifyPreview();
+    }
+    return "opened " + p.name + " (" + s + ") · " + Object.keys(p.files || {}).length + " files";
+  }
+
+  function renameProject(slug, name) {
+    const s = slugify(slug);
+    const p = projects.items[s];
+    if (!p) throw new Error("no such project: " + slug);
+    p.name = String(name || p.name).slice(0, 60);
+    p.updated = Date.now();
+    writeProjects();
+    return "renamed " + s + " → " + p.name;
+  }
+
+  function deleteProject(slug) {
+    const s = slugify(slug || projects.active);
+    const p = projects.items[s];
+    if (!p) throw new Error("no such project: " + slug);
+    delete projects.items[s];
+    for (const f in files) {
+      if (f.indexOf("projects/" + s + "/") === 0) delete files[f];
+    }
+    if (projects.active === s) projects.active = Object.keys(projects.items)[0] || "";
+    writeProjects();
+    writeFS(files);
+    return "deleted " + p.name + " · " + (projects.active ? "active is now " + projects.active : "no projects left");
+  }
+
+  function filesForProject(p) {
+    const out = [];
+    for (const name in p.files) out.push(name);
+    return out.sort();
+  }
+
+  function writeProjectFiles(p) {
+    // mirror into the flat workspace so read/list/count commands see the files
+    for (const f in files) {
+      if (f.indexOf("projects/" + p.slug + "/") === 0) delete files[f];
+    }
+    for (const name in p.files) {
+      files["projects/" + p.slug + "/" + name] = p.files[name];
+    }
+    writeFS(files);
+  }
+
+  function buildProject(kind, desc) {
+    const t = root.toolrxTemplates;
+    if (!t || !t.project) throw new Error("build templates are not loaded");
+    const theme = preview.theme === "light" ? "light" : "dark";
+    const built = t.project(kind, desc, { theme: theme });
+    // Reuse a project with the same kind + description; otherwise create one.
+    let p = null;
+    for (const k in projects.items) {
+      const it = projects.items[k];
+      if (it.kind === built.kind && it.desc === String(desc || "")) { p = it; break; }
+    }
+    if (!p) {
+      p = newProject(built.title);
+      p.kind = built.kind;
+      p.desc = String(desc || "");
+      p.slug = p.slug; // set on creation
+    }
+    p.name = built.title;
+    p.kind = built.kind;
+    p.files = built.files;
+    p.bundled = t.build(kind, desc, { theme: theme });
+    p.updated = Date.now();
+    if (!p.created) p.created = p.updated;
+    projects.active = p.slug;
+    writeProjects();
+    writeProjectFiles(p);
+    preview = {
+      html: p.bundled, kind: built.kind, desc: String(desc || ""),
+      title: built.title, theme: theme, at: Date.now(),
+    };
+    notifyPreview();
+    const names = filesForProject(p);
+    return 'built "' + built.title + '" → projects/' + p.slug + " (" + names.length + " files)\n"
+      + "  " + names.join(" · ") + "\n"
+      + "preview updated · active project: " + p.slug + "\n"
+      + "try: show project files · read projects/" + p.slug + "/ARCHITECTURE.md";
+  }
+
+  /* ------------------------------------------------------------- chat ----- */
+  let chatLog = (function () {
+    try {
+      const raw = root.localStorage.getItem(CHAT_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (Array.isArray(p)) return p.slice(-80);
+      }
+    } catch (e) { /* ignore */ }
+    return [];
+  })();
+
+  function writeChat() {
+    try { root.localStorage.setItem(CHAT_KEY, JSON.stringify(chatLog.slice(-80))); }
+    catch (e) { /* ignore */ }
+  }
+
+  function chatAppend(who, text) {
+    chatLog.push({ who: String(who || "toolrx"), text: String(text == null ? "" : text), at: Date.now() });
+    if (chatLog.length > 80) chatLog = chatLog.slice(-80);
+    writeChat();
+    return text;
+  }
+
+  function chatHistory() { return chatLog.slice(); }
+
+  let memory = (function () {
+    try {
+      const raw = root.localStorage.getItem(MEMORY_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && typeof p === "object") return p;
+      }
+    } catch (e) { /* ignore */ }
+    return {};
+  })();
+
+  function remember(key, value) {
+    if (value === undefined) return memory[key];
+    memory[key] = value;
+    try { root.localStorage.setItem(MEMORY_KEY, JSON.stringify(memory)); } catch (e) { /* ignore */ }
+    return value;
+  }
+
+
   function buildPage(kind, desc) {
     const t = root.toolrxTemplates;
     if (!t) throw new Error("build templates are not loaded");
+    if (t.project) return buildProject(kind, desc);
     const theme = preview.theme === "light" ? "light" : "dark";
     const html = t.build(kind, desc, { theme: theme });
     preview = {
@@ -91,6 +298,15 @@
     preview.html = t.build(preview.kind, preview.desc, { theme: theme });
     preview.at = Date.now();
     files["site/index.html"] = preview.html;
+    const p = activeProject();
+    if (p && p.kind === preview.kind && t.project) {
+      const built = t.project(preview.kind, preview.desc, { theme: theme });
+      p.files = built.files;
+      p.bundled = built.html;
+      p.updated = Date.now();
+      writeProjects();
+      writeProjectFiles(p);
+    }
     writeFS(files);
     notifyPreview();
     return true;
@@ -108,8 +324,128 @@
     return preview.html;
   }
 
-  function promptContext() {
+  /* --------------------------------------------------------- web access ---- */
+  /* Only CORS-enabled, key-free endpoints: Wikipedia, DuckDuckGo instant
+   * answers, dictionaryapi.dev, and Open-Meteo. Failure is reported honestly
+   * instead of being papered over. */
+  function fetchJSON(url) {
+    return fetch(url, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    });
+  }
+
+  function sentences(text, n) {
+    const parts = String(text || "").replace(/\s+/g, " ").match(/[^.!?]+[.!?]+/g) || [String(text || "")];
+    return parts.slice(0, n || 3).join(" ").trim();
+  }
+
+  async function webSearch(q) {
+    const query = String(q || "").trim();
+    if (!query) throw new Error("nothing to search for");
+    const u = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch="
+      + encodeURIComponent(query) + "&srlimit=3&format=json&origin=*";
+    const d = await fetchJSON(u);
+    const hits = (d.query && d.query.search) || [];
+    if (!hits.length) throw new Error('no Wikipedia results for "' + query + '"');
+    const first = hits[0];
+    const sum = await fetchJSON("https://en.wikipedia.org/api/rest_v1/page/summary/"
+      + encodeURIComponent(first.title));
+    const extract = sum.extract || (first.snippet || "").replace(/<[^>]+>/g, "");
+    const lines = [
+      sum.title || first.title,
+      "",
+      sentences(extract, 4),
+      "",
+      "source: " + (sum.content_urls && sum.content_urls.desktop && sum.content_urls.desktop.page
+        || "https://en.wikipedia.org/wiki/" + encodeURIComponent(first.title)),
+    ];
+    if (hits.length > 1) {
+      lines.push("also: " + hits.slice(1).map(function (h) { return h.title; }).join(" · "));
+    }
+    return { text: lines.join("\n"), source: (sum.content_urls && sum.content_urls.desktop && sum.content_urls.desktop.page) || "", title: sum.title || first.title };
+  }
+
+  async function webDefine(word) {
+    const w = String(word || "").trim().replace(/[^a-zA-Z' -]/g, "");
+    if (!w) throw new Error("which word?");
+    const d = await fetchJSON("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(w));
+    const entry = Array.isArray(d) ? d[0] : d;
+    if (!entry) throw new Error('no definition for "' + w + '"');
+    const lines = [(entry.word || w) + (entry.phonetic ? "  " + entry.phonetic : "")];
+    (entry.meanings || []).slice(0, 2).forEach(function (m) {
+      lines.push("", m.partOfSpeech + ":");
+      (m.definitions || []).slice(0, 2).forEach(function (def) { lines.push("  - " + def.definition); });
+    });
+    return { text: lines.join("\n"), source: "https://dictionaryapi.dev/", title: entry.word || w };
+  }
+
+  async function webWeather(place) {
+    const p = String(place || "").trim();
+    if (!p) throw new Error("which place?");
+    const geo = await fetchJSON("https://geocoding-api.open-meteo.com/v1/search?name="
+      + encodeURIComponent(p) + "&count=1&language=en&format=json");
+    const hit = geo.results && geo.results[0];
+    if (!hit) throw new Error('could not find "' + p + '"');
+    const f = await fetchJSON("https://api.open-meteo.com/v1/forecast?latitude=" + hit.latitude
+      + "&longitude=" + hit.longitude
+      + "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto");
+    const c = f.current || {};
+    const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "fog", 48: "rime fog", 51: "light drizzle", 53: "drizzle", 55: "heavy drizzle", 61: "light rain", 63: "rain", 65: "heavy rain", 71: "light snow", 73: "snow", 75: "heavy snow", 80: "rain showers", 95: "thunderstorm" };
     return {
+      text: hit.name + (hit.country ? ", " + hit.country : "") + "\n"
+        + c.temperature_2m + "°C · " + (codes[c.weather_code] || "weather code " + c.weather_code) + "\n"
+        + "humidity " + c.relative_humidity_2m + "% · wind " + c.wind_speed_10m + " km/h\n"
+        + "source: Open-Meteo (" + (f.timezone || "local") + ")",
+      source: "https://open-meteo.com/", title: hit.name,
+    };
+  }
+
+  async function webAnswer(q) {
+    const u = "https://api.duckduckgo.com/?q=" + encodeURIComponent(q)
+      + "&format=json&no_html=1&skip_disambig=1";
+    const d = await fetchJSON(u);
+    if (d.AbstractText) {
+      return { text: d.Heading + "\n\n" + d.AbstractText + "\n\nsource: " + (d.AbstractURL || "DuckDuckGo"), source: d.AbstractURL || "", title: d.Heading };
+    }
+    // fall back to the top related topic
+    const rel = (d.RelatedTopics || []).filter(function (r) { return r.Text; })[0];
+    if (rel) return { text: rel.Text + "\n\nsource: " + (rel.FirstURL || "DuckDuckGo"), source: rel.FirstURL || "", title: q };
+    throw new Error("no instant answer for \"" + q + "\" — try: wikipedia " + q);
+  }
+
+  /* --------------------------------------------------------- project ctx --- */
+  function projectContext() {
+    return {
+      new: function (name) {
+        const p = newProject(name);
+        return "created project " + p.slug + " · " + p.name + "\ntry: build a todo app (it will land in the active project)";
+      },
+      list: function () {
+        const list = projectList();
+        if (!list.length) return "no projects yet — build something or say: new project notes";
+        return list.map(function (p) {
+          return (p.active ? "* " : "  ") + p.slug + "  ·  " + p.name + "  ·  "
+            + p.files.length + " files  ·  " + p.kind;
+        }).join("\n") + "\n\n* = active";
+      },
+      open: function (slug) { return openProject(slug); },
+      rename: function (slug, name) { return renameProject(slug, name); },
+      remove: function (slug) { return deleteProject(slug); },
+      files: function (slug) {
+        const p = slug ? projects.items[slugify(slug)] : activeProject();
+        if (!p) return "no active project — build something first";
+        const names = filesForProject(p);
+        return p.name + " (" + p.slug + ")\n" + names.map(function (n) {
+          return "  " + n + "  ·  " + String(p.files[n] || "").length + " chars";
+        }).join("\n");
+      },
+      active: function () { return activeProject(); },
+    };
+  }
+
+  function promptContext() {
+    const ctx = {
       prev: "",
       fs: {
         exists: function (p) { try { return normPath(p) in files; } catch (e) { return false; } },
@@ -120,18 +456,65 @@
       preview: function () { return defaultPreview(); },
       theme: function (name) { return setTheme(name); },
       build: function (kind, desc) { return buildPage(kind, desc); },
-      fallback: async function (step) {
-        const decision = rt.route(step, model, []);
-        const res = await execute(decision.tool, decision.args);
-        const text = res.ok ? res.text
-          : "blocked: " + (res.reason || "not available in the browser");
-        return {
-          text: text, error: !res.ok, via: "router." + decision.tool,
-          tool: decision.tool, confidence: decision.confidence,
-          margin: decision.margin, args: decision.args,
-        };
+      architecture: function (kind, desc) {
+        const t = root.toolrxTemplates;
+        if (!t || !t.architecture) throw new Error("templates are not loaded");
+        const html = t.architecture(kind, desc, { theme: preview.theme });
+        const real = t.canonical(kind, desc);
+        const slug = "plan-" + slugify(real);
+        const p = newProject(slug);
+        p.kind = real; p.desc = String(desc || "");
+        p.files = { "index.html": html };
+        p.bundled = html;
+        p.updated = Date.now();
+        projects.active = p.slug;
+        writeProjects();
+        writeProjectFiles(p);
+        preview = { html: html, kind: real, desc: String(desc || ""), title: "Architecture · " + p.name, theme: preview.theme, at: Date.now() };
+        notifyPreview();
+        return 'architecture brief for "' + p.name + '" → projects/' + p.slug + "/index.html\n"
+          + "it lists files, state, modules, data flow, build order, and extension points\n"
+          + "say \"build it\" to get the working starter";
+      },
+      blueprint: function (kind, desc) {
+        const t = root.toolrxTemplates;
+        if (!t || !t.brief) throw new Error("templates are not loaded");
+        return t.brief(kind, desc);
+      },
+      project: projectContext(),
+      chat: function (who, text) { return chatAppend(who, text); },
+      history: function () { return chatHistory(); },
+      memory: {
+        get: function (k) { return memory[k]; },
+        set: function (k, v) { return remember(k, v); },
+      },
+      web: {
+        search: webSearch,
+        define: webDefine,
+        weather: webWeather,
+        answer: webAnswer,
       },
     };
+    ctx.fallback = async function (step) {
+      const decision = rt.route(step, model, []);
+      const res = await execute(decision.tool, decision.args);
+      const text = res.ok ? res.text
+        : "blocked: " + (res.reason || "not available in the browser");
+      // Conversation wins when the router is not confident: a greeting or a
+      // reflection should sound like a reply, not a mis-filed tool call.
+      if (decision.confidence < 0.46 && root.toolrxSkills && root.toolrxSkills.chat) {
+        const reply = root.toolrxSkills.chat(step, ctx);
+        if (reply) {
+          return { text: reply, via: "chat", confidence: decision.confidence };
+        }
+      }
+      return {
+        text: text, error: !res.ok, via: "router." + decision.tool,
+        tool: decision.tool, confidence: decision.confidence,
+        margin: decision.margin, args: decision.args,
+      };
+    };
+    return ctx;
   }
 
   function now() {
@@ -441,10 +824,48 @@
           confidence: r.confidence,
         }];
       }
-      return skills.runPrompt(String(query), promptContext());
+      const results = await skills.runPrompt(String(query), promptContext());
+      // Keep a lightweight transcript for the chat side of the harness.
+      chatAppend("you", String(query));
+      const said = results.map(function (r) { return r.text; }).filter(Boolean).join("\n");
+      if (said) chatAppend("toolrx", said);
+      return results;
     },
     files: function () { return Object.assign({}, files); },
-    reset: function () { files = Object.assign({}, SEED); writeFS(files); },
+    /* project management ------------------------------------------------ */
+    projects: function () { return projectList(); },
+    project: function (slug) {
+      const p = slug ? projects.items[slugify(slug)] : activeProject();
+      if (!p) return null;
+      return {
+        slug: p.slug, name: p.name, kind: p.kind, desc: p.desc,
+        files: filesForProject(p), html: p.bundled || "",
+        updated: p.updated, active: p.slug === projects.active,
+      };
+    },
+    projectFile: function (slug, name) {
+      const p = projects.items[slugify(slug)];
+      if (!p) throw new Error("no such project: " + slug);
+      const n = String(name || "").replace(/^\/+/, "");
+      if (!(n in p.files)) throw new Error("no such file in project: " + n);
+      return p.files[n];
+    },
+    newProject: function (name) { const p = newProject(name); return p.slug; },
+    openProject: function (slug) { return openProject(slug); },
+    deleteProject: function (slug) { return deleteProject(slug); },
+    renameProject: function (slug, name) { return renameProject(slug, name); },
+    chatHistory: chatHistory,
+    memory: function (k, v) { return remember(k, v); },
+    reset: function () {
+      files = Object.assign({}, SEED);
+      writeFS(files);
+      projects = { active: "", items: {} };
+      writeProjects();
+      chatLog = [];
+      writeChat();
+      try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
+      memory = {};
+    },
     loadedAt: function () { return loadedAt; },
     preview: snapshotPreview,
     defaultPreview: defaultPreview,

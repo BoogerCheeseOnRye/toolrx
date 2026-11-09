@@ -389,7 +389,7 @@
       "label:{b:'B',kb:'KB',mb:'MB',gb:'GB',tb:'TB',kib:'KiB',mib:'MiB',gib:'GiB'}},",
       "time:{s:1,ms:.001,min:60,h:3600,day:86400,week:604800,",
       "label:{s:'s',ms:'ms',min:'min',h:'h',day:'days',week:'weeks'}},",
-      "speed:{mps:1,kph:.2777777777777778,mph:.44704,knot:.5144444444444445,",
+      "speed:{mps:1,kph:1/3.6,mph:.44704,knot:1852/3600,",
       "label:{mps:'m/s',kph:'km/h',mph:'mph',knot:'kn'}},",
       "temperature:{c:1,f:1,k:1,label:{c:'°C',f:'°F',k:'K'}}};",
       "var cat=document.getElementById('cat'),from=document.getElementById('from'),to=document.getElementById('to'),",
@@ -741,7 +741,747 @@
     return shell({ title: "Preview ready", sub: "the in-browser build surface", body: body, theme: opts.theme });
   }
 
-  /* ------------------------------------------------------------- routing -- */
+  /* ---------------------------------------------------------------- rpg -- */
+  function rpg(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;gap:6px;font-size:12px;margin-bottom:8px">',
+      '<span class="pill">HP <b id="hp" style="color:var(--text)">30/30</b></span>',
+      '<span class="pill">LV <b id="lv" style="color:var(--text)">1</b></span>',
+      '<span class="pill">XP <b id="xp" style="color:var(--text)">0</b></span>',
+      '<span class="pill">potion <b id="pot" style="color:var(--text)">1</b></span>',
+      '</div>',
+      '<canvas id="cv" width="640" height="416" style="width:100%;height:auto;border-radius:12px;background:#0a1420;border:1px solid var(--border);image-rendering:pixelated"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
+      '<button class="btn ghost" data-d="up" type="button">▲</button>',
+      '<button class="btn ghost" data-d="left" type="button">◀</button>',
+      '<button class="btn ghost" data-d="down" type="button">▼</button>',
+      '<button class="btn ghost" data-d="right" type="button">▶</button>',
+      '</div>',
+      '<div class="row" style="justify-content:center;margin-top:8px;gap:8px">',
+      '<button class="btn ghost" id="save" type="button" style="padding:6px 11px;font-size:12px">save</button>',
+      '<button class="btn ghost" id="load" type="button" style="padding:6px 11px;font-size:12px">load</button>',
+      '<button class="btn ghost" id="fresh" type="button" style="padding:6px 11px;font-size:12px">new game</button>',
+      '</div>',
+      '<div id="log" class="muted small" style="min-height:38px;margin-top:10px;line-height:1.5">find the Warden in the south-east.</div>',
+      '</div>',
+      '<div id="battle" hidden style="position:fixed;inset:0;z-index:20;background:rgba(3,6,12,.82);display:grid;place-items:center;padding:16px">',
+      '<div class="card" style="max-width:420px;width:100%;text-align:center">',
+      '<div class="badge" style="margin:0 auto">battle</div>',
+      '<h2 id="foe" style="margin:8px 0 2px;font-size:22px">slime</h2>',
+      '<div class="muted small" id="foehp">10 / 10 HP</div>',
+      '<div id="bl" class="muted small" style="min-height:44px;margin:12px 0;line-height:1.5"></div>',
+      '<div class="row" style="justify-content:center">',
+      '<button class="btn" data-b="attack" type="button">Attack</button>',
+      '<button class="btn ghost" data-b="defend" type="button">Defend</button>',
+      '<button class="btn ghost" data-b="heal" type="button">Potion</button>',
+      '<button class="btn ghost" data-b="flee" type="button">Flee</button>',
+      '</div></div></div>'
+    ].join("");
+    var css = '#battle[hidden]{display:none!important}' +
+      '@media(max-width:560px){[data-d]{padding:12px 16px!important;font-size:16px!important}}';
+    var js = [
+      "var MAP=[",
+      "'####################',",
+      "'#..................#',",
+      "'#..T....E..........#',",
+      "'#......###.........#',",
+      "'#..P...E.....C.....#',",
+      "'#......###.........#',",
+      "'#..........E.......#',",
+      "'#....N.............#',",
+      "'#..................#',",
+      "'#.........E........#',",
+      "'#..................#',",
+      "'#...........B......#',",
+      "'####################'];",
+      "var T=32,W=20,H=13,KIND={E:{name:'slime',hp:10,atk:3,xp:8},B:{name:'the Warden',hp:44,atk:7,xp:40,boss:true}};",
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d');",
+      "var S,B=null,rand=(function(seed){var h=2166136261;for(var i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619);}",
+      "return function(){h+=0x6D2B79F5;var t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};})('verdant');",
+      "function hit(lo,hi){return lo+Math.floor(rand()*(hi-lo+1));}",
+      "function el(id){return document.getElementById(id);}",
+      "function say(t){S.log.push(t);if(S.log.length>4)S.log.shift();el('log').textContent=S.log.join('  ·  ');}",
+      "function paint(){el('hp').textContent=S.hp+'/'+S.max;el('lv').textContent=S.lv;el('xp').textContent=S.xp;el('pot').textContent=S.pot;}",
+      "function fresh(){S={x:2,y:4,hp:30,max:30,lv:1,xp:0,pot:1,cleared:{},log:[],won:false};B=null;el('battle').hidden=true;say('You wake at the edge of the Verdant Wood. Find the Warden to the south-east.');draw();paint();}",
+      "function draw(){var g=cx.createLinearGradient(0,0,0,cv.height);g.addColorStop(0,'#0d1b2e');g.addColorStop(1,'#0a1420');cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);",
+      "for(var y=0;y<H;y++){for(var x=0;x<W;x++){var ch=MAP[y][x],px=x*T,py=y*T;",
+      "if(ch==='#'){cx.fillStyle='#26364f';cx.fillRect(px,py,T,T);cx.fillStyle='#1b283d';cx.fillRect(px+2,py+2,T-4,T-4);}",
+      "else{cx.fillStyle=(x+y)%2?'#12291f':'#123024';cx.fillRect(px,py,T,T);}",
+      "if(ch==='T'){cx.fillStyle='#1f513a';cx.beginPath();cx.arc(px+16,py+16,10,0,7);cx.fill();}",
+      "if(ch==='C'&&!S.cleared[x+','+y]){cx.fillStyle='#fbbf24';cx.font='20px serif';cx.textAlign='center';cx.fillText('▣',px+16,py+22);}",
+      "if(ch==='N'){cx.fillStyle='#93c5fd';cx.font='20px serif';cx.textAlign='center';cx.fillText('☺',px+16,py+22);}",
+      "if(ch==='E'&&!S.cleared[x+','+y]){cx.fillStyle='#fb7185';cx.font='20px serif';cx.textAlign='center';cx.fillText('◆',px+16,py+22);}",
+      "if(ch==='B'&&!S.cleared[x+','+y]){cx.fillStyle='#a78bfa';cx.font='22px serif';cx.textAlign='center';cx.fillText('☠',px+16,py+23);}}}",
+      "cx.fillStyle='#fffdf7';cx.beginPath();cx.arc(S.x*T+16,S.y*T+16,11,0,7);cx.fill();",
+      "cx.fillStyle='#0f172a';cx.beginPath();cx.arc(S.x*T+13,S.y*T+13,2,0,7);cx.arc(S.x*T+19,S.y*T+13,2,0,7);cx.fill();}",
+      "function move(dx,dy){if(B||S.won)return;var nx=S.x+dx,ny=S.y+dy,ch=MAP[ny][nx];",
+      "if(ch==='#'||ch==='T')return;var key=nx+','+ny;",
+      "if((ch==='E'||ch==='B')&&!S.cleared[key]){start(ch,nx,ny);return;}",
+      "S.x=nx;S.y=ny;if(ch==='C'&&!S.cleared[key]){S.cleared[key]=1;S.pot++;say('Chest: +1 potion.');}",
+      "if(ch==='N')say('Elder: the Warden fears a steady hand. Strike, then guard.');",
+      "draw();paint();}",
+      "function start(ch,x,y){var d=KIND[ch];B={ch:ch,x:x,y:y,name:d.name,hp:d.hp,max:d.hp,atk:d.atk,xp:d.xp,boss:!!d.boss,guard:false};",
+      "el('battle').hidden=false;el('foe').textContent=d.name;el('bl').textContent='A '+d.name+' blocks the path.';battle();}",
+      "function battle(){el('foehp').textContent=B.hp+' / '+B.max+' HP';}",
+      "function endBattle(msg){el('battle').hidden=true;say(msg);B=null;draw();paint();}",
+      "function win(){S.cleared[B.x+','+B.y]=1;S.xp+=B.xp;var up=false;while(S.xp>=S.lv*20){S.xp-=S.lv*20;S.lv++;S.max+=5;S.hp=S.max;up=true;}",
+      "if(B.boss){S.won=true;endBattle('The Warden falls. You win — the Verdant Wood is safe. ('+(up?'level up! ':'')+')');}",
+      "else endBattle((up?'Level up! ':'')+'Defeated '+B.name+'. +'+B.xp+' XP.');}",
+      "function foeTurn(mult){if(!B)return;var dmg=hit(1,B.atk);if(B.guard){dmg=Math.max(1,Math.ceil(dmg/2));B.guard=false;}",
+      "S.hp-=Math.round(dmg*(mult||1));if(S.hp<=0){S.hp=S.max;S.x=2;S.y=4;endBattle('You fall... and wake at the shrine. Nothing is lost but pride.');return;}",
+      "battle();el('bl').textContent='The '+B.name+' hits for '+dmg+'.';paint();}",
+      "function act(kind){if(!B)return;",
+      "if(kind==='attack'){var d=hit(4,7)+S.lv*2;B.hp-=d;battle();el('bl').textContent='You strike for '+d+'.';",
+      "if(B.hp<=0){win();return;}foeTurn(1);}",
+      "else if(kind==='defend'){B.guard=true;el('bl').textContent='You raise your guard.';foeTurn(1);}",
+      "else if(kind==='heal'){if(!S.pot){el('bl').textContent='No potions left.';return;}S.pot--;S.hp=Math.min(S.max,S.hp+12);paint();el('bl').textContent='You drink a potion (+12 HP).';foeTurn(1);}",
+      "else if(kind==='flee'){if(B.boss){el('bl').textContent='The Warden blocks your escape.';foeTurn(1);}else endBattle('You slip away from the '+B.name+'.');}}",
+      "document.querySelectorAll('[data-d]').forEach(function(b){b.addEventListener('click',function(){var d=b.dataset.d;move(d==='left'?-1:d==='right'?1:0,d==='up'?-1:d==='down'?1:0);});});",
+      "document.querySelectorAll('[data-b]').forEach(function(b){b.addEventListener('click',function(){act(b.dataset.b);});});",
+      "document.addEventListener('keydown',function(e){var k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')move(-1,0);if(k==='arrowright'||k==='d')move(1,0);if(k==='arrowup'||k==='w')move(0,-1);if(k==='arrowdown'||k==='s')move(0,1);",
+      "if(k==='1')act('attack');if(k==='2')act('defend');if(k==='3')act('heal');if(k==='4')act('flee');});",
+      "el('fresh').addEventListener('click',fresh);",
+      "el('save').addEventListener('click',function(){try{localStorage.setItem('toolrx.rpg.v1',JSON.stringify({S:S,x:S.x,y:S.y}));say('Game saved.');}catch(e){say('save unavailable');}});",
+      "el('load').addEventListener('click',function(){try{var d=JSON.parse(localStorage.getItem('toolrx.rpg.v1'));if(d&&d.S){S=d.S;draw();paint();say('Game loaded.');}}catch(e){say('no save found');}});",
+      "fresh();"
+    ].join("\n");
+    return shell({ title: "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  /* --------------------------------------------------------- platformer -- */
+  function platformer(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">coins <b id="score" style="color:var(--text)">0 / 8</b></span><span class="pill" id="msg">reach the flag →</span></div>',
+      '<canvas id="cv" width="720" height="420" style="width:100%;height:auto;border-radius:12px;background:#0b1226;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:10px">',
+      '<button class="btn ghost" data-k="left" type="button">◀</button>',
+      '<button class="btn ghost" data-k="jump" type="button">jump</button>',
+      '<button class="btn ghost" data-k="right" type="button">▶</button>',
+      '<button class="btn ghost" id="reset" type="button" style="padding:6px 11px;font-size:12px">reset</button>',
+      '</div></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),msg=document.getElementById('msg'),scoreEl=document.getElementById('score');",
+      "var W=720,H=420,keys={},P={x:40,y:300,w:26,h:32,vx:0,vy:0,on:false},coins=[],cam=0;",
+      "var PLAT=[[0,388,720,32],[120,320,120,16],[300,270,130,16],[490,220,120,16],[620,320,100,16],[250,150,90,16],[40,210,90,16]];",
+      "var GOAL={x:672,y:158,w:24,h:60};",
+      "function reset(){P={x:40,y:300,w:26,h:32,vx:0,vy:0,on:false};coins=[[140,292],[160,292],[330,242],[350,242],[520,192],[540,192],[285,122],[660,292]].map(function(p){return {x:p[0],y:p[1],got:false};});msg.textContent='reach the flag →';scoreEl.textContent='0 / 8';}",
+      "function loop(){var left=keys.left||keys.a,right=keys.right||keys.d;P.vx=(right?1:0)*3.4-(left?1:0)*3.4;P.vy+=0.5;if(P.vy>13)P.vy=13;",
+      "P.x+=P.vx;P.y+=P.vy;P.on=false;",
+      "PLAT.forEach(function(p){if(P.x+P.w>p[0]&&P.x<p[0]+p[2]&&P.y+P.h>p[1]&&P.y+P.h-P.vy<=p[1]+6&&P.vy>=0){P.y=p[1]-P.h;P.vy=0;P.on=true;}});",
+      "if(P.x<0)P.x=0;if(P.x+P.w>W)P.x=W-P.w;if(P.y>H+80)reset();",
+      "coins.forEach(function(c){if(!c.got&&Math.abs(P.x+P.w/2-c.x)<20&&Math.abs(P.y+P.h/2-c.y)<24){c.got=true;var n=coins.filter(function(z){return z.got}).length;scoreEl.textContent=n+' / 8';}});",
+      "if(P.x+P.w>GOAL.x&&P.x<GOAL.x+GOAL.w&&P.y+P.h>GOAL.y&&P.y<GOAL.y+GOAL.h){var n=coins.filter(function(z){return z.got}).length;msg.textContent='flag reached · '+n+'/8 coins';}",
+      "draw();requestAnimationFrame(loop);}",
+      "function draw(){var g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b1226');g.addColorStop(1,'#111c3a');cx.fillStyle=g;cx.fillRect(0,0,W,H);",
+      "cx.fillStyle='rgba(167,139,250,.18)';for(var i=0;i<6;i++){cx.beginPath();cx.arc(80+i*120,70+(i%3)*18,26,0,7);cx.fill();}",
+      "cx.fillStyle='#22d3ee';PLAT.forEach(function(p){cx.fillRect(p[0],p[1],p[2],p[3]);});",
+      "cx.fillStyle='#fbbf24';coins.forEach(function(c){if(c.got)return;cx.beginPath();cx.arc(c.x,c.y,7,0,7);cx.fill();});",
+      "cx.fillStyle='#34d399';cx.fillRect(GOAL.x,GOAL.y,GOAL.w,GOAL.h);cx.fillStyle='#04121a';cx.font='bold 16px system-ui';cx.fillText('GO',GOAL.x+1,GOAL.y+34);",
+      "cx.fillStyle='#f8fafc';cx.fillRect(P.x,P.y,P.w,P.h);cx.fillStyle='#0f172a';cx.fillRect(P.x+5,P.y+7,6,6);cx.fillRect(P.x+16,P.y+7,6,6);}",
+      "document.addEventListener('keydown',function(e){var k=e.key.toLowerCase();keys[k]=true;if(k===' '||k==='arrowup'||k==='w'){if(P.on){P.vy=-11;P.on=false;}e.preventDefault();}});",
+      "document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});",
+      "document.querySelectorAll('[data-k]').forEach(function(b){var k=b.dataset.k;",
+      "var on=function(e){e.preventDefault();if(k==='jump'){if(P.on){P.vy=-11;P.on=false;}}else keys[k]=true;};",
+      "var off=function(e){e.preventDefault();keys[k]=false;};",
+      "b.addEventListener('touchstart',on,{passive:false});b.addEventListener('touchend',off,{passive:false});b.addEventListener('mousedown',on);b.addEventListener('mouseup',off);b.addEventListener('mouseleave',off);});",
+      "document.getElementById('reset').addEventListener('click',reset);reset();loop();"
+    ].join("\n");
+    return shell({ title: "Platformer", sub: "run, jump, collect coins, reach the flag", body: body, js: js, theme: opts.theme });
+  }
+
+  /* -------------------------------------------------------------- snake -- */
+  function snake(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px;text-align:center">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><span class="pill" id="msg">arrows / swipe</span></div>',
+      '<canvas id="cv" width="480" height="360" style="width:100%;height:auto;border-radius:12px;background:#08101f;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn" id="go" type="button">Start</button><button class="btn ghost" id="reset" type="button">Reset</button></div>',
+      '</div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),G=24,C=20,scoreEl=document.getElementById('score'),msg=document.getElementById('msg');",
+      "var snake,dir,next,food,score,dead,iv;",
+      "function place(){var ok=false,f;while(!ok){f={x:Math.floor(Math.random()*G),y:Math.floor(Math.random()*G)};ok=!snake.some(function(s){return s.x===f.x&&s.y===f.y;});}return f;}",
+      "function reset(){snake=[{x:8,y:10},{x:7,y:10},{x:6,y:10}];dir={x:1,y:0};next=dir;food=place();score=0;dead=false;scoreEl.textContent='0';msg.textContent='arrows / swipe';draw();}",
+      "function step(){if(dead)return;dir=next;var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};",
+      "if(h.x<0)h.x=G-1;if(h.x>=G)h.x=0;if(h.y<0)h.y=C-1;if(h.y>=C)h.y=0;",
+      "if(snake.some(function(s){return s.x===h.x&&s.y===h.y;})){dead=true;msg.textContent='game over · press start';return;}",
+      "snake.unshift(h);if(h.x===food.x&&h.y===food.y){score++;scoreEl.textContent=score;food=place();}else snake.pop();draw();}",
+      "function draw(){cx.fillStyle='#08101f';cx.fillRect(0,0,cv.width,cv.height);var t=cv.width/G;",
+      "cx.fillStyle='#fb7185';cx.beginPath();cx.arc(food.x*t+t/2,food.y*t+t/2,t*0.34,0,7);cx.fill();",
+      "snake.forEach(function(s,i){cx.fillStyle=i? '#22d3ee':'#a78bfa';cx.fillRect(s.x*t+1,s.y*t+1,t-2,t-2);});}",
+      "function start(){if(iv)clearInterval(iv);if(dead)reset();msg.textContent='running';iv=setInterval(step,130);}",
+      "document.getElementById('go').addEventListener('click',start);document.getElementById('reset').addEventListener('click',function(){if(iv)clearInterval(iv);iv=null;reset();});",
+      "document.addEventListener('keydown',function(e){var k=e.key;var d=next;if(k==='ArrowLeft'&&dir.x!==1)next={x:-1,y:0};if(k==='ArrowRight'&&dir.x!==-1)next={x:1,y:0};if(k==='ArrowUp'&&dir.y!==1)next={x:0,y:-1};if(k==='ArrowDown'&&dir.y!==-1)next={x:0,y:1};});",
+      "var sx=0,sy=0;cv.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});",
+      "cv.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;",
+      "if(Math.abs(dx)>Math.abs(dy)){if(dx>0&&dir.x!==-1)next={x:1,y:0};else if(dx<0&&dir.x!==1)next={x:-1,y:0};}else{if(dy>0&&dir.y!==-1)next={x:0,y:1};else if(dy<0&&dir.y!==1)next={x:0,y:-1};}},{passive:true});",
+      "reset();"
+    ].join("\n");
+    return shell({ title: "Snake", sub: "eat, grow, don't bite yourself", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ----------------------------------------------------------- breakout -- */
+  function breakout(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><span class="pill">lives <b id="lives" style="color:var(--text)">3</b></span></div>',
+      '<canvas id="cv" width="720" height="460" style="width:100%;height:auto;border-radius:12px;background:#080d1a;border:1px solid var(--border)"></canvas>',
+      '<p class="muted small" style="margin:8px 2px 0">move the mouse or use ← → · space to launch</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),W=720,H=460,scoreEl=document.getElementById('score'),livesEl=document.getElementById('lives');",
+      "var pad={x:310,w:100,h:12},ball={x:360,y:400,r:7,vx:4.2,vy:-4.4},bricks=[],score=0,lives=3,run=false;",
+      "function reset(){bricks=[];for(var r=0;r<5;r++){for(var c=0;c<9;c++)bricks.push({x:40+c*72,y:50+r*26,w:62,h:16,on:true,hp:r<2?2:1});}score=0;scoreEl.textContent='0';lives=3;livesEl.textContent='3';ball={x:360,y:400,r:7,vx:4.2,vy:-4.4};pad.x=310;run=false;}",
+      "function launch(){if(run)return;run=true;ball.vx=4.2*(Math.random()<.5?-1:1);ball.vy=-4.6;}",
+      "function loop(){if(run){ball.x+=ball.vx;ball.y+=ball.vy;",
+      "if(ball.x<8){ball.x=8;ball.vx*=-1;}if(ball.x>W-8){ball.x=W-8;ball.vx*=-1;}if(ball.y<8){ball.y=8;ball.vy*=-1;}",
+      "if(ball.y>H-8){lives--;livesEl.textContent=Math.max(0,lives);run=false;ball={x:360,y:400,r:7,vx:0,vy:0};if(lives<=0){scoreEl.textContent='game over · '+score;}}",
+      "if(ball.y+ball.r>H-34&&ball.y<H-18&&ball.x>pad.x-6&&ball.x<pad.x+pad.w+6&&ball.vy>0){ball.vy=-Math.abs(ball.vy);ball.vx+=((ball.x-(pad.x+pad.w/2))/pad.w)*4;}",
+      "bricks.forEach(function(b){if(!b.on)return;if(ball.x>b.x-ball.r&&ball.x<b.x+b.w+ball.r&&ball.y>b.y-ball.r&&ball.y<b.y+b.h+ball.r){b.hp--;if(b.hp<=0)b.on=false;ball.vy*=-1;score+=10;scoreEl.textContent=score;}});",
+      "if(!bricks.some(function(b){return b.on;})){score+=100;scoreEl.textContent=score;reset();}}",
+      "draw();requestAnimationFrame(loop);}",
+      "function draw(){var g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b1226');g.addColorStop(1,'#080d1a');cx.fillStyle=g;cx.fillRect(0,0,W,H);",
+      "bricks.forEach(function(b){if(!b.on)return;cx.fillStyle=b.hp>1?'#a78bfa':'#22d3ee';cx.fillRect(b.x,b.y,b.w,b.h);});",
+      "cx.fillStyle='#e2e8f0';cx.fillRect(pad.x,H-28,pad.w,12);cx.fillStyle='#fbbf24';cx.beginPath();cx.arc(ball.x,ball.y,ball.r,0,7);cx.fill();}",
+      "document.addEventListener('mousemove',function(e){var r=cv.getBoundingClientRect();pad.x=Math.max(0,Math.min(W-pad.w,(e.clientX-r.left)*(W/r.width)-pad.w/2));});",
+      "document.addEventListener('keydown',function(e){if(e.key==='ArrowLeft')pad.x=Math.max(0,pad.x-26);if(e.key==='ArrowRight')pad.x=Math.min(W-pad.w,pad.x+26);if(e.key===' '){e.preventDefault();launch();}});",
+      "cv.addEventListener('touchmove',function(e){var r=cv.getBoundingClientRect();pad.x=Math.max(0,Math.min(W-pad.w,(e.touches[0].clientX-r.left)*(W/r.width)-pad.w/2));},{passive:true});",
+      "cv.addEventListener('click',launch);reset();loop();"
+    ].join("\n");
+    return shell({ title: "Breakout", sub: "clear the bricks, keep the ball alive", body: body, js: js, theme: opts.theme });
+  }
+
+  /* --------------------------------------------------------------- pong -- */
+  function pong(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:center;gap:22px;margin-bottom:8px;font-size:20px;font-weight:700"><span id="you">0</span><span class="muted" style="font-size:13px">you · cpu</span><span id="cpu">0</span></div>',
+      '<canvas id="cv" width="720" height="420" style="width:100%;height:auto;border-radius:12px;background:#080d1a;border:1px solid var(--border)"></canvas>',
+      '<p class="muted small" style="margin:8px 2px 0">mouse or ↑ ↓ · first to 7</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),W=720,H=420;",
+      "var you={y:160,h:80},cpu={y:160,h:80},ball={x:360,y:210,vx:5,vy:3},score=[0,0];",
+      "function resetBall(dir){ball={x:360,y:210,vx:5*dir,vy:(Math.random()<.5?-1:1)*3.4};}",
+      "function loop(){ball.x+=ball.vx;ball.y+=ball.vy;",
+      "if(ball.y<8||ball.y>H-8)ball.vy*=-1;",
+      "if(ball.x<18&&ball.y>you.y&&ball.y<you.y+you.h){ball.vx=Math.abs(ball.vx);ball.vy+=((ball.y-(you.y+40))/40)*2.2;}",
+      "if(ball.x>W-18&&ball.y>cpu.y&&ball.y<cpu.y+cpu.h){ball.vx=-Math.abs(ball.vx);ball.vy+=((ball.y-(cpu.y+40))/40)*2.2;}",
+      "if(ball.x<0){score[1]++;resetBall(1);}if(ball.x>W){score[0]++;resetBall(-1);}",
+      "var target=ball.y-40;cpu.y+=(target-cpu.y)*0.075;cpu.y=Math.max(0,Math.min(H-80,cpu.y));",
+      "if(score[0]>=7||score[1]>=7){document.getElementById('you').textContent=score[0]>=7?'win!':score[0];document.getElementById('cpu').textContent=score[1]>=7?'win!':score[1];}",
+      "else{document.getElementById('you').textContent=score[0];document.getElementById('cpu').textContent=score[1];}",
+      "draw();requestAnimationFrame(loop);}",
+      "function draw(){cx.fillStyle='#080d1a';cx.fillRect(0,0,W,H);cx.strokeStyle='#1e293b';cx.setLineDash([7,9]);",
+      "cx.beginPath();cx.moveTo(W/2,0);cx.lineTo(W/2,H);cx.stroke();cx.setLineDash([]);",
+      "cx.fillStyle='#22d3ee';cx.fillRect(12,you.y,12,you.h);cx.fillStyle='#a78bfa';cx.fillRect(W-24,cpu.y,12,cpu.h);",
+      "cx.fillStyle='#f8fafc';cx.beginPath();cx.arc(ball.x,ball.y,8,0,7);cx.fill();}",
+      "document.addEventListener('mousemove',function(e){var r=cv.getBoundingClientRect();you.y=Math.max(0,Math.min(H-you.h,(e.clientY-r.top)*(H/r.height)-you.h/2));});",
+      "document.addEventListener('keydown',function(e){if(e.key==='ArrowUp')you.y=Math.max(0,you.y-24);if(e.key==='ArrowDown')you.y=Math.min(H-you.h,you.y+24);});",
+      "cv.addEventListener('touchmove',function(e){var r=cv.getBoundingClientRect();you.y=Math.max(0,Math.min(H-you.h,(e.touches[0].clientY-r.top)*(H/r.height)-you.h/2));},{passive:true});",
+      "loop();"
+    ].join("\n");
+    return shell({ title: "Pong", sub: "you against a simple, beatable CPU", body: body, css: "", js: js, theme: opts.theme });
+  }
+
+  /* -------------------------------------------------------------- 2048 --- */
+  function game2048(desc, opts) {
+    var body = [
+      '<div class="card" style="max-width:460px;margin:0 auto">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><button class="btn ghost" id="new" type="button" style="padding:6px 11px;font-size:12px">new game</button></div>',
+      '<div id="board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:8px"></div>',
+      '<p id="msg" class="muted small" style="min-height:20px;margin:10px 2px 0">arrows or swipe to merge tiles · reach 2048</p></div>'
+    ].join("");
+    var css = "#board .t{aspect-ratio:1;display:grid;place-items:center;border-radius:8px;font-weight:800;font-size:clamp(18px,5vw,30px);background:#182238;color:#e2e8f0}" +
+      "#board .t[data-v='2']{background:#1e3a5f}#board .t[data-v='4']{background:#155e75}" +
+      "#board .t[data-v='8']{background:#0e7490}#board .t[data-v='16']{background:#0891b2}" +
+      "#board .t[data-v='32']{background:#22d3ee;color:#04121a}#board .t[data-v='64']{background:#34d399;color:#04121a}" +
+      "#board .t[data-v='128']{background:#a78bfa;color:#04121a}#board .t[data-v='256']{background:#8b5cf6;color:#fff}" +
+      "#board .t[data-v='512']{background:#fbbf24;color:#04121a}#board .t[data-v='1024']{background:#fb7185;color:#04121a}" +
+      "#board .t[data-v='2048']{background:#f8fafc;color:#04121a}#board .t[data-v='0']{background:#141c2e;color:transparent}";
+    var js = [
+      "var g,score=0,over=false,b=document.getElementById('board'),msg=document.getElementById('msg');",
+      "function add(){var free=[];g.forEach(function(v,i){if(!v)free.push(i);});if(!free.length)return;g[free[Math.floor(Math.random()*free.length)]]=Math.random()<.9?2:4;}",
+      "function reset(){g=Array(16).fill(0);score=0;over=false;add();add();msg.textContent='arrows or swipe to merge tiles · reach 2048';draw();}",
+      "function draw(){b.innerHTML='';document.getElementById('score').textContent=score;g.forEach(function(v){var d=document.createElement('div');d.className='t';d.dataset.v=v;d.textContent=v||'';b.appendChild(d);});}",
+      "function move(dx,dy){if(over)return;var before=g.join(','),m=[];for(var i=0;i<16;i++)m.push([]);",
+      "for(var y=0;y<4;y++)for(var x=0;x<4;x++){var sx=x,sy=y;if(dx>0)sx=3-x;if(dy>0)sy=3-y;m[sy][sx]=g[y*4+x];}",
+      "for(var y=0;y<4;y++){var line=m[y].filter(function(v){return v});var out=[];for(var i=0;i<line.length;i++){if(line[i]===line[i+1]){out.push(line[i]*2);score+=line[i]*2;i++;}else out.push(line[i]);}while(out.length<4)out.push(0);m[y]=out;}",
+      "for(var y=0;y<4;y++)for(var x=0;x<4;x++){var tx=x,ty=y;if(dx>0)tx=3-x;if(dy>0)ty=3-y;g[ty*4+tx]=m[y][x];}",
+      "if(g.join(',')!==before){add();draw();if(g.indexOf(2048)>=0){over=true;msg.textContent='2048 — you win! new game?';}else if(!canMove()){over=true;msg.textContent='no moves left · score '+score;}}}",
+      "function canMove(){if(g.indexOf(0)>=0)return true;for(var y=0;y<4;y++)for(var x=0;x<4;x++){var v=g[y*4+x];if(x<3&&v===g[y*4+x+1])return true;if(y<3&&v===g[(y+1)*4+x])return true;}return false;}",
+      "document.addEventListener('keydown',function(e){var k=e.key;if(k==='ArrowLeft'){move(-1,0);e.preventDefault();}if(k==='ArrowRight'){move(1,0);e.preventDefault();}if(k==='ArrowUp'){move(0,-1);e.preventDefault();}if(k==='ArrowDown'){move(0,1);e.preventDefault();}});",
+      "var sx=0,sy=0;b.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});",
+      "b.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1,0);else move(0,dy>0?1:-1);},{passive:true});",
+      "document.getElementById('new').addEventListener('click',reset);reset();"
+    ].join("\n");
+    return shell({ title: "2048", sub: "slide, merge, chase the 2048 tile", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  /* --------------------------------------------------------- minesweeper -- */
+  function minesweeper(desc, opts) {
+    var body = [
+      '<div class="card" style="max-width:520px;margin:0 auto">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="pill">mines <b id="left" style="color:var(--text)">15</b></span><span class="pill" id="msg">click to reveal · right-click to flag</span></div>',
+      '<div id="board" style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:5px"></div>',
+      '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn ghost" id="new" type="button" style="padding:6px 12px;font-size:12px">new board</button></div></div>'
+    ].join("");
+    var css = "#board button{aspect-ratio:1;border-radius:5px;border:1px solid var(--border);background:#1b2740;color:var(--text);font-weight:700;font-size:13px;cursor:pointer;padding:0}" +
+      "#board button.open{background:#0f172a;cursor:default}" +
+      "#board button.flag{background:#3f2d1a;color:#fbbf24}" +
+      "#board button.boom{background:#7f1d1d}";
+    var js = [
+      "var N=10,M=15,cells=[],started=false,over=false,flags=0;",
+      "function board(){return document.getElementById('board');}",
+      "function reset(){cells=[];started=false;over=false;flags=0;document.getElementById('left').textContent=M;document.getElementById('msg').textContent='click to reveal · right-click to flag';",
+      "var b=board();b.innerHTML='';for(var i=0;i<N*N;i++){cells.push({m:false,open:false,flag:false,n:0});var x=document.createElement('button');x.type='button';x.dataset.i=i;b.appendChild(x);}draw();}",
+      "function plant(safe){var pool=[];for(var i=0;i<100;i++)if(i!==safe)pool.push(i);var h=2166136261;for(var k=0;k<8;k++){h^=k+7;h=Math.imul(h,16777619);}",
+      "for(var m=0;m<M;m++){h+=0x6D2B79F5;var t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);var r=((t^(t>>>14))>>>0)/4294967296;var idx=pool.splice(Math.floor(r*pool.length),1)[0];cells[idx].m=true;}",
+      "cells.forEach(function(c,i){c.n=neighbors(i).filter(function(j){return cells[j].m}).length;});}",
+      "function neighbors(i){var x=i%N,y=Math.floor(i/N),out=[];for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;var nx=x+dx,ny=y+dy;if(nx>=0&&nx<N&&ny>=0&&ny<N)out.push(ny*N+nx);}return out;}",
+      "function open(i){if(over)return;var c=cells[i];if(c.flag||c.open)return;if(!started){started=true;plant(i);}c.open=true;",
+      "if(c.m){over=true;cells.forEach(function(z,j){if(z.m)z.open=true;});document.getElementById('msg').textContent='boom — new board?';draw();return;}",
+      "if(!c.n)neighbors(i).forEach(function(j){if(!cells[j].open)open(j);});draw();check();}",
+      "function check(){var safe=cells.filter(function(c){return !c.m;}),won=safe.every(function(c){return c.open;});if(won){over=true;document.getElementById('msg').textContent='swept — you win!';}}",
+      "function draw(){var b=board();cells.forEach(function(c,i){var x=b.children[i];x.textContent=c.open?(c.m?'✹':(c.n||'')):(c.flag?'⚑':'');x.className=c.open?'open':(c.flag?'flag':'');if(c.open&&c.m)x.className+=' boom';});}",
+      "board().addEventListener('click',function(e){var t=e.target;if(t.dataset.i!==undefined)open(+t.dataset.i);});",
+      "board().addEventListener('contextmenu',function(e){e.preventDefault();var t=e.target;if(t.dataset.i===undefined||over)return;var c=cells[+t.dataset.i];if(c.open)return;c.flag=!c.flag;flags+=c.flag?1:-1;document.getElementById('left').textContent=Math.max(0,M-flags);draw();});",
+      "document.getElementById('new').addEventListener('click',reset);reset();"
+    ].join("\n");
+    return shell({ title: "Minesweeper", sub: "10×10 · 15 mines · right-click to flag", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  /* ------------------------------------------------------------ tetris --- */
+  function tetris(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><span class="pill">lines <b id="lines" style="color:var(--text)">0</b></span><span class="pill" id="msg">← → ↓ · ↑ rotate · space drop</span></div>',
+      '<canvas id="cv" width="420" height="520" style="width:100%;max-width:420px;display:block;margin:0 auto;border-radius:12px;background:#080d1a;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn" id="go" type="button">Start</button><button class="btn ghost" id="reset" type="button">Reset</button></div></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),COLS=10,ROWS=20,S=26;",
+      "var SHAPES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];",
+      "var COLORS=['#22d3ee','#fbbf24','#a78bfa','#fb7185','#34d399','#60a5fa','#f472b6'];",
+      "var grid,piece,score,lines,iv,dead;",
+      "function reset(){grid=[];for(var y=0;y<ROWS;y++){grid.push(Array(COLS).fill(''));}score=0;lines=0;dead=false;spawn();document.getElementById('score').textContent='0';document.getElementById('lines').textContent='0';document.getElementById('msg').textContent='start when ready';draw();}",
+      "function spawn(){var s=SHAPES[Math.floor(Math.random()*SHAPES.length)];piece={s:JSON.parse(JSON.stringify(s)),x:Math.floor((COLS-s[0].length)/2),y:0,c:COLORS[Math.floor(Math.random()*COLORS.length)]};if(hit(piece.x,piece.y,piece.s)){dead=true;document.getElementById('msg').textContent='game over · score '+score;}}",
+      "function hit(px,py,s){for(var y=0;y<s.length;y++)for(var x=0;x<s[y].length;x++){if(!s[y][x])continue;var nx=px+x,ny=py+y;if(nx<0||nx>=COLS||ny>=ROWS)return true;if(ny>=0&&grid[ny][nx])return true;}return false;}",
+      "function lock(){piece.s.forEach(function(row,y){row.forEach(function(v,x){if(v&&piece.y+y>=0)grid[piece.y+y][piece.x+x]=piece.c;});});",
+      "var cleared=0;grid=grid.filter(function(row){var full=row.every(function(v){return v;});if(full)cleared++;return !full;});while(grid.length<ROWS)grid.unshift(Array(COLS).fill(''));",
+      "if(cleared){lines+=cleared;score+=cleared*100;document.getElementById('lines').textContent=lines;document.getElementById('score').textContent=score;}spawn();}",
+      "function move(dx){if(!hit(piece.x+dx,piece.y,piece.s))piece.x+=dx;draw();}",
+      "function down(){if(!hit(piece.x,piece.y+1,piece.s)){piece.y++;draw();}else{lock();draw();}}",
+      "function rotate(){var s=piece.s,n=s[0].map(function(_,i){return s.map(function(r){return r[i];}).reverse();});if(!hit(piece.x,piece.y,n))piece.s=n;draw();}",
+      "function drop(){while(!hit(piece.x,piece.y+1,piece.s))piece.y++;lock();draw();}",
+      "function draw(){cx.fillStyle='#080d1a';cx.fillRect(0,0,cv.width,cv.height);var ox=(cv.width-COLS*S)/2,oy=10;",
+      "for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){cx.strokeStyle='#111a2c';cx.strokeRect(ox+x*S,oy+y*S,S,S);if(grid[y][x]){cx.fillStyle=grid[y][x];cx.fillRect(ox+x*S+1,oy+y*S+1,S-2,S-2);}}",
+      "if(piece&&!dead)piece.s.forEach(function(row,y){row.forEach(function(v,x){if(v){cx.fillStyle=piece.c;cx.fillRect(ox+(piece.x+x)*S+1,oy+(piece.y+y)*S+1,S-2,S-2);}});});}",
+      "function start(){if(dead||iv)return;iv=setInterval(function(){if(!dead)down();},520);document.getElementById('msg').textContent='running';}",
+      "document.getElementById('go').addEventListener('click',start);document.getElementById('reset').addEventListener('click',function(){if(iv)clearInterval(iv);iv=null;reset();});",
+      "document.addEventListener('keydown',function(e){var k=e.key;if(k==='ArrowLeft'){move(-1);e.preventDefault();}if(k==='ArrowRight'){move(1);e.preventDefault();}if(k==='ArrowDown'){down();e.preventDefault();}if(k==='ArrowUp'){rotate();e.preventDefault();}if(k===' '){drop();e.preventDefault();}});",
+      "reset();"
+    ].join("\n");
+    return shell({ title: "Tetris", sub: "stack, clear, survive — 10×20", body: body, js: js, theme: opts.theme });
+  }
+
+  /* --------------------------------------------------------------- maze -- */
+  function maze(desc, opts) {
+    var body = [
+      '<div class="card" style="max-width:560px;margin:0 auto">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">steps <b id="steps" style="color:var(--text)">0</b></span><span class="pill" id="msg">reach the exit →</span></div>',
+      '<canvas id="cv" width="525" height="375" style="width:100%;height:auto;border-radius:12px;background:#080d1a;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn ghost" id="new" type="button" style="padding:6px 12px;font-size:12px">new maze</button></div></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),W=21,H=15,T=25;",
+      "var g,px,py,steps;",
+      "function reset(){g=[];for(var y=0;y<H;y++){g.push(Array(W).fill(1));}var h=2166136261;for(var k=0;k<5;k++){h^=k+3;h=Math.imul(h,16777619);}",
+      "function rnd(){h+=0x6D2B79F5;var t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;}",
+      "function carve(x,y){g[y][x]=0;var d=[[2,0],[-2,0],[0,2],[0,-2]];for(var i=d.length-1;i>0;i--){var j=Math.floor(rnd()*(i+1));var t=d[i];d[i]=d[j];d[j]=t;}",
+      "d.forEach(function(v){var nx=x+v[0],ny=y+v[1];if(nx>0&&nx<W-1&&ny>0&&ny<H-1&&g[ny][nx]){g[y+v[1]/2][x+v[0]/2]=0;carve(nx,ny);}});}",
+      "carve(1,1);g[H-2][W-2]=0;px=1;py=1;steps=0;document.getElementById('steps').textContent='0';document.getElementById('msg').textContent='reach the exit →';draw();}",
+      "function draw(){cx.fillStyle='#080d1a';cx.fillRect(0,0,cv.width,cv.height);",
+      "for(var y=0;y<H;y++)for(var x=0;x<W;x++){cx.fillStyle=g[y][x]?'#22304d':'#0d1830';cx.fillRect(x*T,y*T,T-1,T-1);}",
+      "cx.fillStyle='#34d399';cx.fillRect((W-2)*T, (H-2)*T,T-1,T-1);",
+      "cx.fillStyle='#fbbf24';cx.beginPath();cx.arc(px*T+T/2,py*T+T/2,T*0.3,0,7);cx.fill();}",
+      "function move(dx,dy){var nx=px+dx,ny=py+dy;if(nx<0||nx>=W||ny<0||ny>=H||g[ny][nx])return;px=nx;py=ny;steps++;document.getElementById('steps').textContent=steps;",
+      "if(px===W-2&&py===H-2)document.getElementById('msg').textContent='solved in '+steps+' steps!';draw();}",
+      "document.addEventListener('keydown',function(e){if(e.key==='ArrowLeft')move(-1,0);if(e.key==='ArrowRight')move(1,0);if(e.key==='ArrowUp')move(0,-1);if(e.key==='ArrowDown')move(0,1);});",
+      "var sx=0,sy=0;cv.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});",
+      "cv.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1,0);else move(0,dy>0?1:-1);},{passive:true});",
+      "document.getElementById('new').addEventListener('click',reset);reset();"
+    ].join("\n");
+    return shell({ title: "Maze", sub: "a generated maze · arrows or swipe", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ----------------------------------------------------------- adventure -- */
+  function adventure(desc, opts) {
+    var body = [
+      '<div class="card" style="max-width:640px;margin:0 auto">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="pill">courage <b id="courage" style="color:var(--text)">0</b></span><span class="pill">insight <b id="insight" style="color:var(--text)">0</b></span><span class="pill">ending <b id="ending" style="color:var(--text)">—</b></span></div>',
+      '<div id="scene" style="font-size:16px;line-height:1.65;min-height:120px"></div>',
+      '<div id="choices" style="display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>',
+      '<div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="restart" type="button" style="padding:6px 12px;font-size:12px">restart</button></div>',
+      '<p class="muted small" style="margin:10px 2px 0">a branching text RPG · your choices change the ending</p></div>'
+    ].join("");
+    var js = [
+      "var S={courage:0,insight:0,node:'start',ending:''};",
+      "var STORY={start:{t:'You wake at the mouth of the Hollow Archive. Two doors: one iron, one ivy-covered.',c:[['Open the iron door',{courage:1,node:'iron'}],['Part the ivy',{insight:1,node:'ivy'}]]},",
+      "iron:{t:'The iron door groans. A bridge of black glass spans a chasm; a voice offers you safe passage for a memory.',c:[['Pay the memory',{insight:-1,node:'bridge'}],['Walk the edge',{courage:2,node:'edge'}]]},",
+      "ivy:{t:'Behind the ivy is a reading room. A book writes itself as you watch.',c:[['Read the book',{insight:2,node:'book'}],['Burn it',{courage:1,node:'burn'}]]},",
+      "bridge:{t:'The bridge holds. On the far side, a locked cabinet hums with light.',c:[['Pick the lock',{courage:1,node:'cabinet'}],['Knock politely',{insight:1,node:'knock'}]]},",
+      "edge:{t:'You cross the black glass on foot. The voice respects you and steps aside.',c:[['Continue',{node:'cabinet'}]]},",
+      "book:{t:'The book describes this exact moment. You learn the Archive is a mirror.',c:[['Step through the mirror',{insight:1,node:'mirror'}],['Close the book',{node:'cabinet'}]]},",
+      "burn:{t:'The book burns. The Archive dims, then offers you its only key.',c:[['Take the key',{node:'cabinet'}]]},",
+      "cabinet:{t:'The cabinet opens on a small door made of dawn light.',c:[['Open it',{node:'end'}]]},",
+      "knock:{t:'A librarian made of dust answers and hands you a map of your own choices.',c:[['Follow the map',{node:'end'}]]},",
+      "mirror:{t:'You step through. The room is the same, but you are older and calmer.',c:[['Return',{node:'end'}]]},",
+      "end:{t:'You leave the Archive with something you did not carry in. The door closes softly.',c:[]}};",
+      "function render(){var n=STORY[S.node];document.getElementById('scene').textContent=n.t;",
+      "document.getElementById('courage').textContent=S.courage;document.getElementById('insight').textContent=S.insight;",
+      "var box=document.getElementById('choices');box.innerHTML='';",
+      "if(!n.c.length){var done=document.createElement('div');done.className='card';done.style.padding='12px';done.innerHTML='<b>Ending: '+(S.courage>S.insight?'the bold path':S.insight>S.courage?'the quiet path':'the balanced path')+'</b>';box.appendChild(done);",
+      "document.getElementById('ending').textContent=S.courage>S.insight?'bold':S.insight>S.courage?'quiet':'balanced';return;}",
+      "n.c.forEach(function(ch){var b=document.createElement('button');b.type='button';b.className='btn ghost';b.style.textAlign='left';b.style.padding='12px 14px';b.textContent=ch[0];",
+      "b.addEventListener('click',function(){var e=ch[1];if(e.courage)S.courage+=e.courage;if(e.insight)S.insight+=e.insight;S.node=e.node;render();});box.appendChild(b);});}",
+      "document.getElementById('restart').addEventListener('click',function(){S={courage:0,insight:0,node:'start',ending:''};document.getElementById('ending').textContent='—';render();});render();"
+    ].join("\n");
+    return shell({ title: "Hollow Archive", sub: "a branching text RPG · choices change the ending", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ------------------------------------------------------------ typing --- */
+  function typing(desc, opts) {
+    var body = [
+      '<div class="card" style="max-width:680px;margin:0 auto">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:12px"><span class="pill">wpm <b id="wpm" style="color:var(--text)">0</b></span><span class="pill">accuracy <b id="acc" style="color:var(--text)">100%</b></span><span class="pill">time <b id="time" style="color:var(--text)">0s</b></span></div>',
+      '<div id="target" style="font:16px/1.7 ui-monospace,monospace;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);min-height:90px"></div>',
+      '<textarea id="typed" rows="3" placeholder="start typing the sentence above…" style="margin-top:10px;font-family:ui-monospace,monospace;resize:vertical"></textarea>',
+      '<div class="row" style="justify-content:space-between;margin-top:10px"><span id="msg" class="muted small">the timer starts on your first keystroke.</span><button class="btn ghost" id="new" type="button" style="padding:6px 12px;font-size:12px">new sentence</button></div>',
+      '</div>'
+    ].join("");
+    var css = ".ok{color:var(--ok)}.bad{color:var(--bad);text-decoration:underline}";
+    var js = [
+      "var LINES=['the quick brown fox jumps over the lazy dog','a deterministic router makes the same choice every time','small tools composed well beat one large tool that does everything','practice is a loop: type, notice, adjust, repeat','the page runs offline and keeps your work in this browser'];",
+      "var line='',start=0,iv=null;",
+      "function paint(){var t=document.getElementById('typed').value;var html='';var ok=0;",
+      "for(var i=0;i<line.length;i++){var c=line[i],u=t[i];var cls=u===undefined?'':(u===c?'ok':'bad');if(u===c)ok++;html+='<span class=\"'+cls+'\">'+c+'</span>';}",
+      "document.getElementById('target').innerHTML=html;var acc=t.length?Math.round(ok/t.length*100):100;document.getElementById('acc').textContent=acc+'%';",
+      "if(start){var sec=Math.max(1,(Date.now()-start)/1000);var words=ok/5;document.getElementById('wpm').textContent=Math.round(words/(sec/60));document.getElementById('time').textContent=Math.round(sec)+'s';}",
+      "if(t===line){document.getElementById('msg').textContent='clean run — new sentence?';if(iv)clearInterval(iv);}}",
+      "function fresh(){line=LINES[Math.floor(Math.random()*LINES.length)];document.getElementById('typed').value='';document.getElementById('typed').disabled=false;document.getElementById('typed').focus();start=0;document.getElementById('wpm').textContent='0';document.getElementById('acc').textContent='100%';document.getElementById('time').textContent='0s';document.getElementById('msg').textContent='the timer starts on your first keystroke.';paint();}",
+      "document.getElementById('typed').addEventListener('input',function(){if(!start){start=Date.now();if(iv)clearInterval(iv);iv=setInterval(paint,250);}paint();});",
+      "document.getElementById('new').addEventListener('click',fresh);fresh();"
+    ].join("\n");
+    return shell({ title: "Typing test", sub: "measure speed and accuracy on a fixed line", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+
+  /* -------------------------------------------------------------- social -- */
+  function social(desc, opts) {
+    var body = [
+      '<div class="grid" style="grid-template-columns:minmax(0,1fr);gap:14px">',
+      '<div class="card" style="padding:14px">',
+      '<div class="row" style="align-items:flex-start;gap:10px">',
+      '<div class="pill" style="flex:0 0 auto">you</div>',
+      '<textarea id="draft" rows="2" placeholder="what is happening?" style="flex:1;resize:vertical"></textarea>',
+      '</div>',
+      '<div class="row" style="justify-content:space-between;margin-top:8px">',
+      '<span class="muted small" id="count">0 / 280</span>',
+      '<button class="btn" id="post" type="button">Post</button>',
+      '</div></div>',
+      '<div id="feed" class="grid" style="gap:12px"></div>',
+      '<p class="muted small" style="text-align:center">posts live in this browser only · no accounts, no network</p>',
+      '</div>'
+    ].join("");
+    var css = [
+      ".post{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:14px;padding:14px}",
+      ".post .who{display:flex;align-items:center;gap:8px;margin-bottom:6px}",
+      ".avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;color:#04121a;background:linear-gradient(135deg,var(--accent),var(--accent2))}",
+      ".post p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}",
+      ".acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}",
+      ".acts button{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}",
+      ".acts button.on{color:var(--bad);border-color:var(--bad)}",
+      ".cmt{margin-top:8px;display:flex;flex-direction:column;gap:5px}",
+      ".cmt div{font-size:12.5px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 9px}"
+    ].join("");
+    var js = [
+      "var KEY='toolrx.social.v1',feed=document.getElementById('feed');",
+      "var seed=[{id:1,who:'ada',text:'shipping a tiny tool beats planning a big one. today: one honest page.',likes:3,liked:false,time:'2h',cmts:['this is the way']},",
+      "{id:2,who:'mira',text:'the best interface is the one you can explain in a sentence.',likes:5,liked:false,time:'5h',cmts:[]},",
+      "{id:3,who:'jun',text:'deterministic does not mean boring. it means you can test it.',likes:2,liked:false,time:'1d',cmts:['and debug it at 2am']}];",
+      "function load(){try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(Array.isArray(p))return p;}}catch(e){}return seed.slice();}",
+      "var posts=load();",
+      "function save(){try{localStorage.setItem(KEY,JSON.stringify(posts));}catch(e){}}",
+      "function esc(s){return String(s).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c];});}",
+      "function draw(){feed.innerHTML='';",
+      "posts.forEach(function(p){var d=document.createElement('article');d.className='post';",
+      "var cm=p.cmts.map(function(c){return '<div>'+esc(c)+'</div>';}).join('');",
+      "d.innerHTML='<div class=\"who\"><span class=\"avatar\">'+esc(p.who.slice(0,2).toUpperCase())+'</span><b>@'+esc(p.who)+'</b><span class=\"muted small\">· '+esc(p.time)+'</span></div>'",
+      "+'<p>'+esc(p.text)+'</p>'",
+      "+'<div class=\"acts\"><button type=\"button\" data-like=\"'+p.id+'\" class=\"'+(p.liked?'on':'')+'\">'+(p.liked?'♥':'♡')+' '+p.likes+'</button>'",
+      "+'<button type=\"button\" data-cm=\"'+p.id+'\">comment</button>'",
+      "+'<button type=\"button\" data-del=\"'+p.id+'\">delete</button></div>'",
+      "+'<div class=\"cmt\">'+cm+'</div>';",
+      "d.querySelector('[data-cm]').addEventListener('click',function(){var t=prompt('comment on @'+p.who);if(t&&t.trim()){p.cmts.push(t.trim());save();draw();}});",
+      "d.querySelector('[data-like]').addEventListener('click',function(){p.liked=!p.liked;p.likes+=p.liked?1:-1;save();draw();});",
+      "d.querySelector('[data-del]').addEventListener('click',function(){posts=posts.filter(function(x){return x.id!==p.id;});save();draw();});",
+      "feed.appendChild(d);});}",
+      "document.getElementById('draft').addEventListener('input',function(){document.getElementById('count').textContent=this.value.length+' / 280';});",
+      "document.getElementById('post').addEventListener('click',function(){var t=document.getElementById('draft').value.trim();if(!t)return;if(t.length>280)t=t.slice(0,280);",
+      "posts.unshift({id:Date.now(),who:'you',text:t,likes:0,liked:false,time:'now',cmts:[]});document.getElementById('draft').value='';document.getElementById('count').textContent='0 / 280';save();draw();});",
+      "draw();"
+    ].join("\n");
+    return shell({ title: "Tiny social feed", sub: "compose, like, comment, delete — a real feed in one page", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  /* ---------------------------------------------------------------- blog -- */
+  function blog(desc, opts) {
+    var body = [
+      '<div class="grid" id="app" style="grid-template-columns:minmax(0,1fr);gap:14px">',
+      '<div class="card" id="listCard">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0;font-size:18px">journal</h2><button class="btn ghost" id="new" type="button" style="padding:7px 12px;font-size:12px">write a post</button></div>',
+      '<div id="list" class="grid" style="gap:10px"></div>',
+      '</div>',
+      '<div class="card" id="editCard" hidden>',
+      '<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0;font-size:18px">new post</h2><button class="btn ghost" id="cancel" type="button" style="padding:7px 12px;font-size:12px">cancel</button></div>',
+      '<input id="title" placeholder="title" style="margin-bottom:8px">',
+      '<textarea id="body" rows="8" placeholder="write something true…" style="resize:vertical"></textarea>',
+      '<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" id="save" type="button">publish</button></div>',
+      '</div>',
+      '<div class="card" id="readCard" hidden>',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><button class="btn ghost" id="back" type="button" style="padding:6px 12px;font-size:12px">← back</button><button class="btn ghost" id="del" type="button" style="padding:6px 12px;font-size:12px">delete</button></div>',
+      '<h2 id="rTitle" style="margin:0 0 4px"></h2><div class="muted small" id="rMeta"></div>',
+      '<div id="rBody" style="margin-top:12px;line-height:1.7"></div>',
+      '</div>',
+      '<p class="muted small" style="text-align:center">posts persist in this browser · one page, no server</p></div>'
+    ].join("");
+    var js = [
+      "var KEY='toolrx.blog.v1';",
+      "var seed=[{id:1,title:'why small tools',at:'2026-01-04',body:'A small tool does one thing and tells you the truth about it.\\n\\nThis journal is a single page. Adding a post appends an object to an array and redraws. That is the whole architecture.'},",
+      "{id:2,title:'the shape of a page',at:'2026-01-09',body:'Every page is three parts: state, render, events.\\n\\nState is the data. Render turns data into DOM. Events change data and call render again. Keep those three separate and the page stays easy to change.'}];",
+      "var posts=(function(){try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(Array.isArray(p))return p;}}catch(e){}return seed.slice();})();",
+      "var list=document.getElementById('list');",
+      "function esc(s){return String(s).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c];});}",
+      "function save(){try{localStorage.setItem(KEY,JSON.stringify(posts));}catch(e){}}",
+      "function home(){document.getElementById('editCard').hidden=true;document.getElementById('readCard').hidden=true;document.getElementById('listCard').hidden=false;drawList();}",
+      "function drawList(){list.innerHTML='';if(!posts.length){list.innerHTML='<p class=\"muted small\">no posts yet — write the first one.</p>';return;}",
+      "posts.slice().sort(function(a,b){return b.at.localeCompare(a.at);}).forEach(function(p){var d=document.createElement('button');d.type='button';",
+      "d.style.cssText='text-align:left;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;color:var(--text)';",
+      "d.innerHTML='<b style=\"display:block;font-size:15px\">'+esc(p.title)+'</b><span class=\"muted small\">'+esc(p.at)+' · '+String(p.body).split(/\\s+/).filter(Boolean).length+' words</span>';",
+      "d.addEventListener('click',function(){read(p.id);});list.appendChild(d);});}",
+      "function read(id){var p=posts.filter(function(x){return x.id===id;})[0];if(!p)return;",
+      "document.getElementById('listCard').hidden=true;document.getElementById('editCard').hidden=true;document.getElementById('readCard').hidden=false;",
+      "document.getElementById('rTitle').textContent=p.title;document.getElementById('rMeta').textContent=p.at;",
+      "document.getElementById('rBody').innerHTML=String(p.body).split(/\\n\\n+/).map(function(x){return '<p>'+esc(x).replace(/\\n/g,'<br>')+'</p>';}).join('');",
+      "document.getElementById('del').onclick=function(){posts=posts.filter(function(x){return x.id!==id;});save();home();};}",
+      "document.getElementById('new').addEventListener('click',function(){document.getElementById('listCard').hidden=true;document.getElementById('readCard').hidden=true;document.getElementById('editCard').hidden=false;document.getElementById('title').focus();});",
+      "document.getElementById('cancel').addEventListener('click',home);document.getElementById('back').addEventListener('click',home);",
+      "document.getElementById('save').addEventListener('click',function(){var t=document.getElementById('title').value.trim(),b=document.getElementById('body').value.trim();if(!t||!b)return;",
+      "posts.push({id:Date.now(),title:t,at:new Date().toISOString().slice(0,10),body:b});document.getElementById('title').value='';document.getElementById('body').value='';save();home();});",
+      "home();"
+    ].join("\n");
+    return shell({ title: "Journal", sub: "write, read, delete posts — state / render / events in one page", body: body, js: js, theme: opts.theme });
+  }
+
+  /* --------------------------------------------------------------- forum -- */
+  function forum(desc, opts) {
+    var body = [
+      '<div class="card">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0;font-size:18px">forum</h2><button class="btn" id="newThread" type="button">new thread</button></div>',
+      '<div id="threads" class="grid" style="gap:8px"></div>',
+      '<div id="thread" hidden style="margin-top:6px"></div>',
+      '</div>',
+      '<p class="muted small" style="text-align:center">threads + replies persist in this browser</p>'
+    ].join("");
+    var css = ".thread{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer}.thread:hover{border-color:var(--accent)}";
+    var js = [
+      "var KEY='toolrx.forum.v1';",
+      "var seed=[{id:1,title:'What makes a page easy to change?',author:'ada',posts:[{who:'ada',text:'I think it is separating state from rendering.'},{who:'mira',text:'Agreed — plus one small function per event.'}]},",
+      "{id:2,title:'Best way to store a tiny app?',author:'jun',posts:[{who:'jun',text:'localStorage is enough until it is not.'},{who:'ada',text:'And always wrap it in try/catch — private mode throws.'}]}];",
+      "var threads=(function(){try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(Array.isArray(p))return p;}}catch(e){}return seed.slice();})();",
+      "var box=document.getElementById('threads'),view=document.getElementById('thread');",
+      "function esc(s){return String(s).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c];});}",
+      "function save(){try{localStorage.setItem(KEY,JSON.stringify(threads));}catch(e){}}",
+      "function home(){view.hidden=true;box.hidden=false;box.innerHTML='';",
+      "threads.forEach(function(t){var d=document.createElement('div');d.className='thread';",
+      "d.innerHTML='<div><b>'+esc(t.title)+'</b><div class=\"muted small\">'+esc(t.author)+' · '+t.posts.length+' replies</div></div><span class=\"pill\">open</span>';",
+      "d.addEventListener('click',function(){open(t.id);});box.appendChild(d);});}",
+      "function open(id){var t=threads.filter(function(x){return x.id===id;})[0];if(!t)return;box.hidden=true;view.hidden=false;",
+      "view.innerHTML='<div class=\"row\" style=\"justify-content:space-between\"><button class=\"btn ghost\" id=\"back\" type=\"button\" style=\"padding:6px 12px;font-size:12px\">← threads</button><span class=\"pill\">'+t.posts.length+' replies</span></div>'",
+      "+'<h2 style=\"margin:10px 0 4px\">'+esc(t.title)+'</h2><div class=\"muted small\">started by @'+esc(t.author)+'</div>'",
+      "+'<div id=\"replies\" class=\"grid\" style=\"gap:8px;margin-top:12px\"></div>'",
+      "+'<div class=\"row\" style=\"margin-top:10px\"><input id=\"reply\" placeholder=\"reply…\" style=\"flex:1\"><button class=\"btn\" id=\"sendReply\" type=\"button\">Send</button></div>';",
+      "var rbox=document.getElementById('replies');",
+      "function paint(){rbox.innerHTML='';t.posts.forEach(function(p){var d=document.createElement('div');d.style.cssText='background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px';",
+      "d.innerHTML='<b class=\"small\">@'+esc(p.who)+'</b><div style=\"margin-top:3px;white-space:pre-wrap\">'+esc(p.text)+'</div>';rbox.appendChild(d);});}",
+      "document.getElementById('back').addEventListener('click',home);",
+      "document.getElementById('sendReply').addEventListener('click',function(){var v=document.getElementById('reply').value.trim();if(!v)return;t.posts.push({who:'you',text:v});save();paint();document.getElementById('reply').value='';});",
+      "paint();}",
+      "document.getElementById('newThread').addEventListener('click',function(){var title=prompt('thread title');if(!title||!title.trim())return;threads.unshift({id:Date.now(),title:title.trim(),author:'you',posts:[]});save();home();});",
+      "home();"
+    ].join("\n");
+    return shell({ title: "Forum", sub: "threads, replies, and a tiny persisted store", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  /* ---------------------------------------------------------------- chat -- */
+  function chatSite(desc, opts) {
+    var body = [
+      '<div class="card" style="max-width:620px;margin:0 auto;display:flex;flex-direction:column;height:min(70vh,520px)">',
+      '<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:10px"><b># general</b><span class="pill">you + echo bot</span></div>',
+      '<div id="msgs" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px 2px"></div>',
+      '<div class="row" style="border-top:1px solid var(--border);padding-top:10px"><input id="msg" placeholder="say something…" style="flex:1" autocomplete="off"><button class="btn" id="sendMsg" type="button">Send</button></div>',
+      '</div>',
+      '<p class="muted small" style="text-align:center">a real chat surface · messages persist locally · the bot answers deterministically</p>'
+    ].join("");
+    var css = [
+      ".bubble{max-width:82%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}",
+      ".bubble.me{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-weight:600;border-bottom-right-radius:4px}",
+      ".bubble.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--border);border-bottom-left-radius:4px}",
+      ".bubble small{display:block;opacity:.65;font-size:10px;margin-bottom:2px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}"
+    ].join("");
+    var js = [
+      "var KEY='toolrx.chat.v1',box=document.getElementById('msgs');",
+      "var msgs=(function(){try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(Array.isArray(p)&&p.length)return p;}}catch(e){}return [{who:'bot',text:'hey — this is a real chat page. send a message and I will answer from a small deterministic script.'}];})();",
+      "function esc(s){return String(s).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c];});}",
+      "function save(){try{localStorage.setItem(KEY,JSON.stringify(msgs.slice(-60)));}catch(e){}}",
+      "function paint(){box.innerHTML='';msgs.forEach(function(m){var d=document.createElement('div');d.className='bubble '+(m.who==='me'?'me':'bot');d.innerHTML='<small>'+esc(m.who==='me'?'you':'bot')+'</small>'+esc(m.text);box.appendChild(d);});box.scrollTop=box.scrollHeight;}",
+      "function reply(t){var s=t.toLowerCase();",
+      "if(/hello|hi|hey/.test(s))return 'hey. what are you building?';",
+      "if(/help|how/.test(s))return 'try: send a message, reload the page, and see that the conversation is still here.';",
+      "if(/bye|later/.test(s))return 'see you. the history stays in this browser.';",
+      "if(/\\?$/.test(t))return 'good question. in this demo I answer patterns, not ideas — but the message pipeline is real.';",
+      "return 'you said: \"'+t.slice(0,120)+'\". this bot is a few if-statements and an array — swap in any API later.';}",
+      "function send(){var input=document.getElementById('msg'),t=input.value.trim();if(!t)return;msgs.push({who:'me',text:t});input.value='';paint();",
+      "setTimeout(function(){msgs.push({who:'bot',text:reply(t)});save();paint();},320);}",
+      "document.getElementById('sendMsg').addEventListener('click',send);",
+      "document.getElementById('msg').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();send();}});",
+      "paint();"
+    ].join("\n");
+    return shell({ title: "Chat", sub: "messages, persistence, and a deterministic reply loop", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  /* --------------------------------------------------- architecture brief -- */
+  var ARCH = {
+    calculator: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "the current display string, the pending operand, and the pending operator",
+      modules: ["input handling: digit / operator / equals", "expression evaluation: one function, no eval", "render: write the display and history"],
+      flow: "button press → update state → render display → (on equals) evaluate → store result",
+      extend: "add keyboard events, a history list, or memory keys — each is a separate function",
+      steps: ["lay out the keypad with data-key attributes", "write press(key) that mutates state", "write evaluate() with explicit precedence", "render from state after every press"]
+    },
+    todo: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "an array of {id, text, done}",
+      modules: ["add(text)", "toggle(id)", "remove(id)", "render(list)"],
+      flow: "form submit → add → save → render; checkbox change → toggle → save → render",
+      extend: "filters, due dates, drag order — keep each feature as a pure function over the array",
+      steps: ["define the item shape", "render from the array only", "persist with JSON.stringify", "add one event per action"]
+    },
+    rpg: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "player {x,y,hp,max,lv,xp,pot}, battle {foe,hp,guard}, cleared map, log",
+      modules: ["MAP + tile lookup", "move(dx,dy) with collision", "startBattle / act / foeTurn", "draw() from state", "save/load"],
+      flow: "key or button → move/act → update state → draw or battle overlay → save on demand",
+      extend: "add items, quests, more maps — the map is data, the battle is a state machine",
+      steps: ["draw the tile map from a string array", "move the player with collision checks", "add a foe table and battle state", "wire attack/defend/heal as state transitions", "persist with a versioned key"]
+    },
+    platformer: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "player {x,y,vx,vy,on}, platforms[], coins[], camera",
+      modules: ["input map", "physics step (gravity, collision)", "draw()", "reset()"],
+      flow: "keydown sets input → physics step each frame → resolve collisions → draw",
+      extend: "enemies, moving platforms, levels as data",
+      steps: ["define the platform rectangles", "apply gravity and integrate position", "resolve vertical then horizontal collisions", "collect coins by rectangle overlap", "draw from state each frame"]
+    },
+    snake: { files: ["index.html", "styles.css", "app.js"], state: "snake array, direction, next direction, food, score", modules: ["step()", "place food", "draw()"], flow: "interval → step → collision/food → draw", extend: "speed ramp, walls, wrap toggle", steps: ["grid state", "one step per tick", "collision against self", "food placement that avoids the snake"] },
+    breakout: { files: ["index.html", "styles.css", "app.js"], state: "paddle, ball, bricks, lives, score", modules: ["launch", "physics", "brick collision", "draw"], flow: "frame → move ball → bounce/collide → draw", extend: "power-ups, levels, sound", steps: ["paddle follows pointer", "ball bounces off edges", "brick grid with hp", "reset on life loss"] },
+    pong: { files: ["index.html", "styles.css", "app.js"], state: "two paddles, ball, scores", modules: ["frame loop", "CPU follow with a cap", "score + reset"], flow: "frame → move ball → paddle collision → score", extend: "difficulty, two-player, spin", steps: ["draw two paddles", "reflect the ball on contact", "add a beatable CPU", "first to 7"] },
+    "2048": { files: ["index.html", "styles.css", "app.js"], state: "16 tiles, score, over flag", modules: ["move(dx,dy)", "merge lines", "add random tile", "canMove"], flow: "arrow → transform grid → merge → add tile → render", extend: "undo, animations, size variants", steps: ["represent the grid as 16 values", "compress a line then merge neighbours", "spawn a tile only after a real move", "detect no-moves"] },
+    minesweeper: { files: ["index.html", "styles.css", "app.js"], state: "cells {mine, open, flag, count}, first-click flag", modules: ["plant mines after first click", "flood reveal", "check win"], flow: "click → plant (once) → reveal/flood → win/lose", extend: "board sizes, timers, safe-start", steps: ["build 100 cells", "plant mines away from the first click", "count neighbours", "flood-open empty cells"] },
+    tetris: { files: ["index.html", "styles.css", "app.js"], state: "grid, active piece, score, lines", modules: ["spawn", "collision", "rotate", "lock + clear"], flow: "tick/keys → move or rotate → lock → clear rows → spawn", extend: "next-piece preview, hold, levels", steps: ["define shapes as matrices", "collision against grid edges", "rotate by transposing", "clear full rows and score"] },
+    maze: { files: ["index.html", "styles.css", "app.js"], state: "grid, player, steps", modules: ["seeded carve", "move with walls", "draw"], flow: "key/swipe → move if open → check exit", extend: "sizes, monsters, fog", steps: ["carve with depth-first search", "keep walls as 1s", "move only into 0s", "show step count"] },
+    adventure: { files: ["index.html", "styles.css", "app.js"], state: "current node, courage, insight", modules: ["STORY object", "render node", "apply choice"], flow: "choice → adjust stats → set node → render", extend: "inventory, dice, multiple endings", steps: ["write scenes as nodes with choices", "apply effects on choice", "render from the node", "branch the ending on stats"] },
+    typing: { files: ["index.html", "styles.css", "app.js"], state: "target line, typed text, start time, timer", modules: ["render diff", "accuracy", "wpm"], flow: "input → diff → accuracy + wpm → finish on exact match", extend: "word lists, difficulty, history", steps: ["render per-character diff", "start the clock on first key", "compute correct chars / elapsed", "reset on demand"] },
+    social: { files: ["index.html", "styles.css", "app.js"], state: "posts [{id,who,text,likes,liked,cmts}]", modules: ["load/save", "render feed", "compose", "like", "comment", "delete"], flow: "action → mutate one post → save → render", extend: "profiles, follows, images, pagination", steps: ["model a post as data", "render from the array", "one handler per action", "persist a versioned key"] },
+    blog: { files: ["index.html", "styles.css", "app.js"], state: "posts [{id,title,at,body}], view (list/edit/read)", modules: ["drawList", "read", "savePost", "delete"], flow: "view switch → render → mutate → save", extend: "tags, search, markdown, drafts", steps: ["three views, one page", "render list from data", "read view with paragraphs", "persist on publish"] },
+    forum: { files: ["index.html", "styles.css", "app.js"], state: "threads [{id,title,author,posts[]}]", modules: ["list", "open thread", "reply", "new thread"], flow: "open → render replies → append → save", extend: "categories, votes, quoting", steps: ["threads contain posts", "open one thread at a time", "append replies to the thread", "persist the whole tree"] },
+    chat: { files: ["index.html", "styles.css", "app.js"], state: "messages [{who,text}]", modules: ["append", "render", "deterministic reply"], flow: "send → append → render → reply → append", extend: "rooms, presence, real transport", steps: ["append and scroll", "persist the last N", "reply from a pattern function", "keep transport separate"] },
+    landing: { files: ["index.html", "styles.css", "app.js"], state: "none (content only)", modules: ["hero", "features", "call to action"], flow: "static layout, one small enhancement", extend: "forms, pricing, analytics", steps: ["one message per section", "one primary action", "responsive grid", "no unnecessary script"] },
+    dashboard: { files: ["index.html", "styles.css", "app.js"], state: "metrics array", modules: ["cards", "chart", "refresh"], flow: "state → card + chart render", extend: "filters, time ranges, live data", steps: ["define the metric shape", "render cards from data", "draw a simple chart", "keep refresh deterministic"] },
+    game: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "one game object: positions, velocity, score, and a running flag",
+      modules: ["input", "update(dt)", "collision", "draw()", "reset()"],
+      flow: "input → update state → resolve collisions → draw → repeat on requestAnimationFrame",
+      extend: "levels as data, sound, a title screen, persistence",
+      steps: ["choose the state shape", "draw from state only", "add the update loop", "add collision + scoring", "add reset and pause"]
+    },
+    playground: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "the inputs and the last result",
+      modules: ["a pure function per operation", "a render function", "one submit handler"],
+      flow: "input → validate → call a pure function → render the result (and the error)",
+      extend: "more pure functions, a history list, URL state",
+      steps: ["write the function signature and return shape", "handle the empty/invalid case first", "render the result", "add one example per operation"]
+    }
+  };
+
+  function archFor(kind) {
+    return ARCH[kind] || ARCH.landing;
+  }
+
+  function architecture(kind, desc, opts) {
+    var real = canonical(kind, desc);
+    var a = archFor(real);
+    var name = titleFor(real, desc);
+    var body = [
+      '<div class="card">',
+      '<p class="muted small" style="margin-top:0">this is a build brief, not the finished app. it tells you the shape to build.</p>',
+      '<h2 style="margin:10px 0 6px;font-size:18px">files</h2>',
+      '<pre style="background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px;overflow:auto">' + esc(a.files.join("\n")) + '</pre>',
+      '<h2 style="margin:16px 0 6px;font-size:18px">state</h2><p style="margin:0">' + esc(a.state) + '</p>',
+      '<h2 style="margin:16px 0 6px;font-size:18px">modules</h2><ul style="margin:0;padding-left:20px">' + a.modules.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + '</ul>',
+      '<h2 style="margin:16px 0 6px;font-size:18px">data flow</h2><p style="margin:0">' + esc(a.flow) + '</p>',
+      '<h2 style="margin:16px 0 6px;font-size:18px">build order</h2><ol style="margin:0;padding-left:20px">' + a.steps.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + '</ol>',
+      '<h2 style="margin:16px 0 6px;font-size:18px">extend it</h2><p style="margin:0">' + esc(a.extend) + '</p>',
+      '</div>',
+      '<p class="muted small" style="text-align:center">ask again with &quot;build it&quot; to get the finished starter</p>'
+    ].join("");
+    return shell({ title: "Architecture · " + name, sub: "how to build " + name.toLowerCase() + " — files, state, modules, order", body: body, theme: opts.theme });
+  }
+
+  function blueprint(kind, desc, opts) {
+    var real = canonical(kind, desc);
+    var a = archFor(real);
+    var name = titleFor(real, desc);
+    return brief(kind, desc);
+  }
+
+  function brief(kind, desc) {
+    var real = canonical(kind, desc);
+    var a = archFor(real);
+    var name = titleFor(real, desc);
+    return [
+      name + " · blueprint",
+      "",
+      "state: " + a.state,
+      "",
+      "data flow: " + a.flow,
+      "",
+      "modules:",
+    ].concat(a.modules.map(function (m) { return "  - " + m; }))
+      .concat(["", "build order:"])
+      .concat(a.steps.map(function (s, i) { return "  " + (i + 1) + ". " + s; }))
+      .concat(["", "files:", "  " + a.files.join("\n  "), "", "extend: " + a.extend])
+      .join("\n");
+  }
+
   var CANON = [
     [/calc/i, "calculator"],
     [/todo|task/i, "todo"],
@@ -757,8 +1497,24 @@
     [/markdown/i, "markdown"],
     [/expense|budget|spend/i, "expenses"],
     [/clock|time/i, "clock"],
+    [/rpg|role[\s-]*playing/i, "rpg"],
+    [/platformer|jump/i, "platformer"],
+    [/snake/i, "snake"],
+    [/breakout|brick/i, "breakout"],
+    [/pong/i, "pong"],
+    [/2048/i, "2048"],
+    [/minesweeper|mine/i, "minesweeper"],
+    [/tetris|block/i, "tetris"],
+    [/maze|labyrinth/i, "maze"],
+    [/adventure|story|text game/i, "adventure"],
+    [/typing|wpm/i, "typing"],
     [/game|guess/i, "game"],
+    [/social|feed|twitter|mastodon/i, "social"],
+    [/forum|discussion|thread/i, "forum"],
+    [/blog|journal/i, "blog"],
+    [/chat|messenger/i, "chat"],
     [/landing|website|web page|site|page/i, "landing"],
+    [/function|algorithm|module|library/i, "playground"],
     [/program|app|tool|playground/i, "playground"]
   ];
 
@@ -805,7 +1561,22 @@
     clock: clock,
     game: game,
     playground: playground,
-    welcome: welcome
+    welcome: welcome,
+    rpg: rpg,
+    platformer: platformer,
+    snake: snake,
+    breakout: breakout,
+    pong: pong,
+    "2048": game2048,
+    minesweeper: minesweeper,
+    tetris: tetris,
+    maze: maze,
+    adventure: adventure,
+    typing: typing,
+    social: social,
+    blog: blog,
+    forum: forum,
+    chat: chatSite
   };
 
   var TITLES = {
@@ -814,8 +1585,18 @@
     tictactoe: "Tic tac toe", memory: "Memory game", converter: "Unit converter",
     chart: "Bar chart", dashboard: "Metrics dashboard", landing: "Landing page",
     markdown: "Markdown editor", expenses: "Expense tracker", clock: "Clock",
-    game: "Number guessing game", playground: "Program playground", welcome: "Preview ready"
+    game: "Number guessing game", playground: "Program playground", welcome: "Preview ready",
+    rpg: "Verdant Wood RPG", platformer: "Platformer", snake: "Snake",
+    breakout: "Breakout", pong: "Pong", "2048": "2048", minesweeper: "Minesweeper",
+    tetris: "Tetris", maze: "Maze", adventure: "Hollow Archive",
+    typing: "Typing test", social: "Tiny social feed", blog: "Journal",
+    forum: "Forum", chat: "Chat"
   };
+
+  function titleFor(real, desc) {
+    if (real === "playground" && desc) return String(desc).slice(0, 60);
+    return TITLES[real] || "Built page";
+  }
 
   function build(kind, desc, opts) {
     opts = opts || {};
@@ -825,15 +1606,125 @@
   }
 
   function title(kind, desc) {
+    return titleFor(canonical(kind, desc), desc);
+  }
+
+  /* ------------------------------------------------------ multi-file build -- */
+  /* Turn the bundled single-file page into a tiny real project: markup, styles,
+   * script, and two documents that explain the architecture. The preview keeps
+   * using the bundled page, so nothing depends on file:// fetch(). */
+  function project(kind, desc, opts) {
+    opts = opts || {};
     var real = canonical(kind, desc);
-    if (real === "playground" && desc) return String(desc).slice(0, 60);
-    return TITLES[real] || "Built page";
+    var name = titleFor(real, desc);
+    var html = build(real, desc, opts);
+    var css = "", js = "";
+    html = html.replace(/<style>([\s\S]*?)<\/style>/, function (_, inner) {
+      css = inner.trim() + "\n";
+      return '<link rel="stylesheet" href="styles.css">';
+    });
+    html = html.replace(/<script>([\s\S]*?)<\/script>/, function (_, inner) {
+      js = inner.trim() + "\n";
+      return '<script src="app.js"></script>';
+    });
+    html = html.replace(/offline · single file/, "offline · separate files");
+    var a = archFor(real);
+    var slug = real === "playground" ? "app" : real;
+    var readme = [
+      "# " + name,
+      "",
+      "A small, self-contained " + (a.files ? "project" : "app") + " built by toolrx.",
+      "No build step, no dependencies, no network. Open `index.html`.",
+      "",
+      "## Files",
+      "",
+      "| file | role |",
+      "| --- | --- |",
+      "| `index.html` | markup and the page shell |",
+      "| `styles.css` | all presentation, including the responsive rules |",
+      "| `app.js` | state, render, and event handlers |",
+      "| `ARCHITECTURE.md` | the shape of the program and how to extend it |",
+      "",
+      "## Run",
+      "",
+      "```sh",
+      "python3 -m http.server 8000",
+      "# open http://localhost:8000",
+      "```",
+      "",
+      "Or just double-click `index.html`. Everything runs in the browser.",
+      "",
+      "## How it works",
+      "",
+      "- state: " + a.state,
+      "- flow: " + a.flow,
+      "- modules: " + a.modules.join("; "),
+      "",
+      "## Next steps",
+      "",
+      a.steps.map(function (s, i) { return (i + 1) + ". " + s; }).join("\n"),
+      "",
+      "Then: " + a.extend + ".",
+      "",
+      "---",
+      "",
+      "Generated deterministically by toolrx · the same request produces the same files.",
+      ""
+    ].join("\n");
+    var arch = [
+      "# Architecture · " + name,
+      "",
+      "## State",
+      "",
+      a.state,
+      "",
+      "## Modules",
+      "",
+      a.modules.map(function (m) { return "- " + m; }).join("\n"),
+      "",
+      "## Data flow",
+      "",
+      a.flow,
+      "",
+      "## Files",
+      "",
+      a.files.map(function (f) { return "- `" + f + "`"; }).join("\n"),
+      "",
+      "## Build order",
+      "",
+      a.steps.map(function (s, i) { return (i + 1) + ". " + s; }).join("\n"),
+      "",
+      "## Extension points",
+      "",
+      a.extend + ".",
+      "",
+      "Keep state in one place. Render from state only. Give every action one",
+      "handler. That is enough to grow this into something much larger.",
+      ""
+    ].join("\n");
+    return {
+      kind: real,
+      slug: slug,
+      title: name,
+      html: html,
+      files: {
+        "index.html": html,
+        "styles.css": css || "/* no extra styles */\n",
+        "app.js": js || "/* no extra script */\n",
+        "README.md": readme,
+        "ARCHITECTURE.md": arch
+      }
+    };
   }
 
   root.toolrxTemplates = {
     build: build,
     title: title,
     canonical: canonical,
+    project: project,
+    architecture: architecture,
+    blueprint: blueprint,
+    brief: brief,
     kinds: Object.keys(BUILDERS)
   };
 })(typeof self !== "undefined" ? self : this);
