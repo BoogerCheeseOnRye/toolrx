@@ -345,7 +345,7 @@
   body.client-demo #previewPane,body.static-demo #previewPane{display:none}
   .cm-client{display:none}
   body.client-demo .cm-client{display:flex}
-  body.client-demo .cm-github{display:none}
+  body.client-demo .cm-github,body.client-demo .cm-cloud{display:none}
   .cm-btn:disabled{opacity:.7;cursor:not-allowed}
   @media(max-width:900px){
     body.drawer-open #drawerBackdrop{display:block}
@@ -596,16 +596,16 @@
         <option value="">none detected</option>
       </select></div>
       <div class="cm-ghinfo" id="cmLocalInfo">probing Ollama and OpenAI-compatible servers</div>
-      <div class="cm-row"><span>cloud API</span><select id="cmCloud">
+      <div class="cm-row cm-cloud"><span>cloud API</span><select id="cmCloud">
         <option value="deepseek">DeepSeek</option>
         <option value="groq">Groq</option>
         <option value="gemini">Gemini</option>
         <option value="openai">OpenAI</option>
         <option value="openrouter">OpenRouter</option>
       </select></div>
-      <div class="cm-row"><span>api key</span><input type="password" id="cmKey" placeholder="••••••••" autocomplete="off"></div>
-      <div class="cm-row"><span>default model</span><input type="text" id="cmModel" list="cmModelList" placeholder="model id"><datalist id="cmModelList"></datalist></div>
-      <div class="cm-row"><span>connect</span><button class="cm-btn" id="cmConnect">Save provider</button></div>
+      <div class="cm-row cm-cloud"><span>api key</span><input type="password" id="cmKey" placeholder="••••••••" autocomplete="off"></div>
+      <div class="cm-row cm-cloud"><span>default model</span><input type="text" id="cmModel" list="cmModelList" placeholder="model id"><datalist id="cmModelList"></datalist></div>
+      <div class="cm-row cm-cloud"><span>connect</span><button class="cm-btn" id="cmConnect">Save provider</button></div>
     </section>
     <section>
       <h4>Network</h4>
