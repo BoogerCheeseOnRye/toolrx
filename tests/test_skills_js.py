@@ -258,6 +258,23 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     firstGone: !/offline copy for ada/.test(idx),
     second: /second note/.test(idx),
   };
+  const css0 = self.toolrxWeb.projectFile(ep.slug, 'styles.css');
+  out.edits.write = self.toolrxWeb.writeProjectFile(
+    ep.slug, 'styles.css', css0 + '\n.write-marker{color:rgb(1,2,3)}\n');
+  ep = self.toolrxWeb.project();
+  out.edits.afterWrite = {
+    preview: /\.write-marker\{color:rgb\(1,2,3\)\}/.test(ep.html),
+    file: /\.write-marker\{color:rgb\(1,2,3\)\}/.test(
+      self.toolrxWeb.projectFile(ep.slug, 'styles.css')),
+  };
+  out.edits.writeMissing = (() => {
+    try { self.toolrxWeb.writeProjectFile(ep.slug, 'nope.txt', 'x'); return 'no error'; }
+    catch (e) { return e.message; }
+  })();
+  out.edits.writeTooBig = (() => {
+    try { self.toolrxWeb.writeProjectFile(ep.slug, 'styles.css', 'x'.repeat(9000)); return 'no error'; }
+    catch (e) { return e.message; }
+  })();
   out.edits.dark = await editRun('make it dark');
   ep = self.toolrxWeb.project();
   idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
@@ -267,6 +284,7 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     previewTheme: self.toolrxWeb.preview().theme,
     title: h1(ep.html), toggle: /id="themeToggle"/.test(idx),
     note: /second note/.test(idx),
+    marker: /\.write-marker\{color:rgb\(1,2,3\)\}/.test(ep.html),
   };
   out.edits.bundle = {
     hasStyle: /<style>/.test(ep.html), hasScript: /<script>/.test(ep.html),
@@ -510,6 +528,15 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(e["noteCount"], 1)
         self.assertTrue(e["afterNoteAgain"]["firstGone"])
         self.assertTrue(e["afterNoteAgain"]["second"])
+
+    def test_project_files_can_be_edited_directly(self):
+        e = self.out["edits"]
+        self.assertIn("wrote projects/camelot-rpg/styles.css", e["write"])
+        self.assertTrue(e["afterWrite"]["preview"])
+        self.assertTrue(e["afterWrite"]["file"])
+        self.assertTrue(e["afterDark"]["marker"])
+        self.assertIn("no such file", e["writeMissing"])
+        self.assertIn("exceeds", e["writeTooBig"])
 
     def test_project_preview_is_bundled_from_edited_files(self):
         b = self.out["edits"]["bundle"]

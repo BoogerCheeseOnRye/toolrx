@@ -413,6 +413,22 @@
       + ': "' + note + '"\npreview re-bundled from the project files';
   }
 
+  function writeProjectFile(ref, name, content) {
+    const p = findProject(ref);
+    if (!p) throw new Error("no active project — build something first");
+    const n = String(name || "").replace(/^\/+/, "");
+    if (!(n in (p.files || {}))) throw new Error("no such file in project: " + n);
+    const text = String(content === undefined || content === null ? "" : content);
+    if (text.length > MAX_FILE) {
+      throw new Error("file exceeds " + MAX_FILE + " characters — keep project files small");
+    }
+    p.files[n] = text;
+    p.updated = Date.now();
+    refreshProject(p);
+    return "wrote projects/" + p.slug + "/" + n + " (" + text.length + " chars)\n"
+      + "preview re-bundled from the project files";
+  }
+
   function buildProject(kind, desc) {
     const t = root.toolrxTemplates;
     if (!t || !t.project) throw new Error("build templates are not loaded");
@@ -1095,6 +1111,9 @@
       const n = String(name || "").replace(/^\/+/, "");
       if (!(n in p.files)) throw new Error("no such file in project: " + n);
       return p.files[n];
+    },
+    writeProjectFile: function (slug, name, content) {
+      return writeProjectFile(slug, name, content);
     },
     newProject: function (name) { const p = newProject(name); return p.slug; },
     openProject: function (slug) { return openProject(slug); },

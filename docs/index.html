@@ -498,6 +498,28 @@
     color:var(--text);font-size:11px;padding:4px 9px;cursor:pointer}
   .pj-item .acts button:hover{border-color:var(--accent)}
   .pj-item .acts .del:hover{border-color:#f87171;color:#f87171}
+  /* project file editor */
+  #fileModal{position:fixed;inset:0;z-index:120;display:none;flex-direction:column;
+    background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
+  #fileModal.open{display:flex}
+  .fe-body{flex:1;display:grid;grid-template-columns:210px minmax(0,1fr);gap:12px;min-height:0;margin-top:12px}
+  .fe-list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:0}
+  .fe-list button{text-align:left;background:var(--panel2);border:1px solid var(--border);border-radius:7px;
+    color:var(--text);font-size:11.5px;padding:6px 9px;cursor:pointer;font-family:ui-monospace,monospace}
+  .fe-list button:hover{border-color:var(--accent)}
+  .fe-list button.on{border-color:var(--accent);background:rgba(34,211,238,.10);color:var(--accent)}
+  .fe-edit{display:flex;flex-direction:column;gap:8px;min-height:0}
+  .fe-edit .name{font:600 12px ui-monospace,monospace;color:var(--muted);overflow-wrap:anywhere}
+  .fe-edit textarea{flex:1;min-height:0;resize:none;background:var(--panel2);border:1px solid var(--border);
+    border-radius:10px;color:var(--text);padding:10px 12px;font:12.5px/1.55 ui-monospace,monospace}
+  .fe-edit textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(34,211,238,.15)}
+  .fe-actions{display:flex;align-items:center;gap:10px}
+  @media(max-width:900px){
+    #fileModal{border-radius:0;padding:14px}
+    .fe-body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+    .fe-list{flex-direction:row;overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
+    .fe-list button{white-space:nowrap}
+  }
   .entry .lbl.chat{background:rgba(167,139,250,.14);color:var(--accent2)}
 </style>
 </head>
@@ -666,6 +688,26 @@
     <button class="cm-btn" id="pjCreate" type="button">New project</button>
   </div>
   <div class="pj-list" id="pjList"></div>
+</div>
+
+<!-- project file editor -->
+<div id="fileModal">
+  <div class="pj-head">
+    <h3 id="fileTitle">Project files</h3>
+    <div class="sub" id="fileSub">edit a real file · save re-bundles the preview</div>
+    <button class="cm-close" id="fileClose" type="button">✕</button>
+  </div>
+  <div class="fe-body">
+    <div class="fe-list" id="fileList"></div>
+    <div class="fe-edit">
+      <div class="name" id="fileName">select a file</div>
+      <textarea id="fileText" spellcheck="false" disabled></textarea>
+      <div class="fe-actions">
+        <button class="cm-btn" id="fileSave" type="button" disabled>Save</button>
+        <span class="muted small" id="fileStatus"></span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- in-browser router: used when the page is served statically (GitHub Pages) -->
@@ -1032,6 +1074,10 @@ function renderProjectList(){
     if(p.active) mk('preview',null,()=>{ loadPreview(); closeProjects();
       if(window.matchMedia('(max-width:900px)').matches){document.getElementById('previewPane').classList.add('mobile-show');const t=document.getElementById('pvToggle');if(t)t.textContent='✕';}
     });
+    mk('files',null,()=>{
+      if(!p.active){ try{window.toolrxWeb.openProject(p.slug);}catch(e){} }
+      refreshProjectChip(); loadPreview(); renderProjectList(); openFileEditor(p.slug);
+    });
     mk('delete','del',()=>{
       if(!confirm('Delete project "'+p.name+'"? This removes its files from this browser.')) return;
       try{window.toolrxWeb.deleteProject(p.slug);}catch(e){alert(e.message||e);}
@@ -1061,6 +1107,70 @@ function closeProjects(){ document.getElementById('projModal').classList.remove(
   }
   if(create) create.addEventListener('click',make);
   if(input) input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();make();} });
+})();
+
+/* ---- project file editor ----------------------------------------------- */
+let feSlug='', feName='';
+function openFileEditor(slug){
+  if(!window.toolrxWeb) return;
+  const p=window.toolrxWeb.project(slug);
+  if(!p) return;
+  feSlug=p.slug;
+  document.getElementById('fileTitle').textContent=p.name+' · files';
+  document.getElementById('fileSub').textContent=p.slug+' · '+p.files.length+' real files · save re-bundles the preview';
+  document.getElementById('fileModal').classList.add('open');
+  renderFileList(p);
+  const first=p.files.indexOf('index.html')>=0?'index.html':p.files[0];
+  if(first) loadProjectFile(first);
+  else { document.getElementById('fileName').textContent='no files yet'; }
+}
+function closeFileEditor(){ document.getElementById('fileModal').classList.remove('open'); }
+function renderFileList(p, selected){
+  const box=document.getElementById('fileList');
+  box.innerHTML='';
+  p.files.forEach(name=>{
+    const b=document.createElement('button');
+    b.type='button'; b.textContent=name;
+    if(name===selected) b.classList.add('on');
+    b.addEventListener('click',()=>loadProjectFile(name));
+    box.appendChild(b);
+  });
+}
+function loadProjectFile(name){
+  if(!window.toolrxWeb) return;
+  try{
+    const text=window.toolrxWeb.projectFile(feSlug,name);
+    feName=name;
+    document.getElementById('fileName').textContent='projects/'+feSlug+'/'+name;
+    const ta=document.getElementById('fileText');
+    ta.value=text; ta.disabled=false; ta.focus();
+    document.getElementById('fileSave').disabled=false;
+    document.getElementById('fileStatus').textContent=text.length+' chars';
+    const p=window.toolrxWeb.project(feSlug);
+    if(p) renderFileList(p, name);
+  }catch(e){
+    document.getElementById('fileStatus').textContent=e.message||String(e);
+  }
+}
+function saveProjectFile(){
+  if(!window.toolrxWeb || !feName) return;
+  const ta=document.getElementById('fileText');
+  const status=document.getElementById('fileStatus');
+  try{
+    const msg=window.toolrxWeb.writeProjectFile(feSlug,feName,ta.value);
+    status.textContent='saved · '+msg.split('\n')[0].replace('wrote projects/'+feSlug+'/','');
+    refreshProjectChip();
+    loadPreview();
+    entry('projects',msg,'stat');
+  }catch(e){ status.textContent=e.message||String(e); }
+}
+(function(){
+  const close=document.getElementById('fileClose');
+  if(close) close.addEventListener('click',closeFileEditor);
+  const save=document.getElementById('fileSave');
+  if(save) save.addEventListener('click',saveProjectFile);
+  const ta=document.getElementById('fileText');
+  if(ta) ta.addEventListener('keydown',e=>{ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveProjectFile();} });
 })();
 
 function fmtUptime(s){

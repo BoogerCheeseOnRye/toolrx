@@ -170,6 +170,14 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("deleteProject", self.html)
         self.assertIn("refreshProjectChip", self.html)
 
+    def test_project_files_have_an_editor(self):
+        self.assertIn('id="fileModal"', self.html)
+        self.assertIn('id="fileText"', self.html)
+        self.assertIn('id="fileSave"', self.html)
+        self.assertIn("openFileEditor", self.html)
+        self.assertIn("writeProjectFile", self.html)
+        self.assertIn("projectFile", self.html)
+
     def test_chat_results_render_as_conversation(self):
         self.assertIn("toolrx · chat", self.html)
         self.assertIn(".lbl.chat", self.html)
