@@ -1909,7 +1909,11 @@ function loadPreview(){
   if(clientMode && window.toolrxWeb){
     const state=window.toolrxWeb.preview();
     const html=(state&&state.html)||window.toolrxWeb.defaultPreview();
-    if(html){ renderPreview({html:html,title:(state&&state.title)||'preview'}); return; }
+    if(html){
+      const now=window.toolrxWeb.preview();
+      renderPreview({html:html,title:(now&&now.title)||(state&&state.title)||'preview'});
+      return;
+    }
   }
   const ts=Date.now();
   pv.removeAttribute('srcdoc');

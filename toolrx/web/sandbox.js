@@ -542,6 +542,20 @@
 
   function defaultPreview() {
     if (preview.html) return preview.html;
+    // A reloaded page has no preview state, but the active project is still in
+    // localStorage. Resume it instead of showing the welcome page over it.
+    const p = activeProject();
+    if (p && p.files && p.files["index.html"]) {
+      const html = bundleProject(p) || p.bundled;
+      if (html) {
+        preview = {
+          html: html, kind: p.kind, desc: p.desc, title: p.name,
+          theme: htmlTheme(p.files["index.html"]), at: Date.now(),
+        };
+        notifyPreview();
+        return preview.html;
+      }
+    }
     const t = root.toolrxTemplates;
     if (!t) return "";
     preview.html = t.build("welcome", "", { theme: preview.theme });

@@ -296,6 +296,14 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.define = await run('define serendipity');
   out.weather = await run('weather in reykjavik');
   out.summaryChain = await run('wikipedia ada lovelace then summarize it');
+  // Simulate a page reload: evaluate a fresh sandbox against the same
+  // localStorage. The active project must resume in the preview.
+  eval(fs.readFileSync(process.argv[4], 'utf8'));
+  out.resume = {
+    active: self.toolrxWeb.project() ? self.toolrxWeb.project().slug : '',
+    html: self.toolrxWeb.defaultPreview(),
+    title: self.toolrxWeb.preview().title,
+  };
   console.log(JSON.stringify(out));
 })();
 """
@@ -517,6 +525,14 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(o["slug"], "camelot-rpg")
         self.assertEqual(o["title"], "camelot field notes")
         self.assertEqual(o["theme"], "dark")
+
+    def test_reload_resumes_the_active_project_preview(self):
+        r = self.out["resume"]
+        self.assertEqual(r["active"], "olympus-rpg")
+        self.assertEqual(r["title"], "Egypt")
+        self.assertIn("<title>Nile RPG · toolrx</title>", r["html"])
+        self.assertIn("the Pharaoh", r["html"])
+        self.assertIn("offline · project preview", r["html"])
 
     def test_site_templates_build(self):
         for name in ("social", "blog", "forum", "chat"):
