@@ -607,6 +607,148 @@
     return take + "\n\n(" + words + " words, " + parts.length + " sentences)";
   }
 
+  /* ------------------------------------------------------------ memory ---- */
+  function memoryStore(ctx) {
+    const m = ctx && ctx.memory;
+    return m && typeof m.get === "function" && typeof m.set === "function" ? m : null;
+  }
+
+  function factKey(s) {
+    return String(s || "").toLowerCase()
+      .replace(/^(?:that|the|my)\s+/, "")
+      .replace(/[?!.]+$/g, "")
+      .replace(/\s+/g, " ").trim().slice(0, 60);
+  }
+
+  function factMap(ctx) {
+    const mem = memoryStore(ctx);
+    const raw = mem ? mem.get("facts") : null;
+    return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  }
+
+  function noteList(ctx) {
+    const mem = memoryStore(ctx);
+    const raw = mem ? mem.get("notes") : null;
+    return Array.isArray(raw) ? raw : [];
+  }
+
+  function prettyValue(s) {
+    const v = String(s || "").trim().slice(0, 200);
+    return v;
+  }
+
+  function memoryRemember(args, ctx) {
+    const mem = memoryStore(ctx);
+    if (!mem) throw new Error("memory is not available here");
+    const key = factKey(args.key);
+    const value = prettyValue(args.value);
+    if (!key || !value) throw new Error("say what to remember — e.g. remember my favorite color is teal");
+    const facts = Object.assign({}, factMap(ctx));
+    facts[key] = value;
+    if (key === "name") mem.set("name", value.replace(/^./, function (c) { return c.toUpperCase(); }));
+    mem.set("facts", facts);
+    const shown = key === "name" ? mem.get("name") : value;
+    return "Noted — " + key + ": " + shown + ".\n\nAsk me later: what is my " + key + "?";
+  }
+
+  function memoryNote(args, ctx) {
+    const mem = memoryStore(ctx);
+    if (!mem) throw new Error("memory is not available here");
+    const text = prettyValue(args.text);
+    if (!text) throw new Error("say what to note down");
+    const notes = noteList(ctx).slice(-19);
+    notes.push({ text: text, at: Date.now() });
+    mem.set("notes", notes);
+    return "Noted: \"" + text + "\" · " + notes.length + " note" + (notes.length === 1 ? "" : "s") + " saved";
+  }
+
+  function memoryRecall(args, ctx) {
+    const key = factKey(args.key);
+    if (!key) throw new Error("say what to recall");
+    const facts = factMap(ctx);
+    const mem = memoryStore(ctx);
+    if (key === "name" && mem && mem.get("name")) {
+      return "Your name is " + mem.get("name") + ".";
+    }
+    if (Object.prototype.hasOwnProperty.call(facts, key)) {
+      return "Your " + key + " is " + facts[key] + ".";
+    }
+    return "I don't have anything saved for \"" + key + "\". Say: remember my " + key + " is …";
+  }
+
+  function memoryList(args, ctx) {
+    const mem = memoryStore(ctx);
+    const facts = factMap(ctx);
+    const notes = noteList(ctx);
+    const name = mem ? mem.get("name") : "";
+    const last = mem ? mem.get("last_build") : null;
+    const lines = [];
+    if (name) lines.push("name: " + name);
+    Object.keys(facts).sort().forEach(function (k) {
+      if (k === "name" && name) return;
+      lines.push(k + ": " + facts[k]);
+    });
+    notes.forEach(function (n, i) { lines.push("note " + (i + 1) + ": " + n.text); });
+    if (last && last.title) {
+      lines.push("last build: " + last.title + (last.slug ? " → projects/" + last.slug : "")
+        + (last.kind ? " (" + last.kind + ")" : ""));
+    }
+    if (!lines.length) {
+      return "I don't have anything saved yet.\n\nTry: remember my favorite color is teal · "
+        + "remember my dog is called Max · what do you remember";
+    }
+    return "Here is what I have saved:\n\n" + lines.join("\n");
+  }
+
+  function memoryForget(args, ctx) {
+    const mem = memoryStore(ctx);
+    if (!mem) throw new Error("memory is not available here");
+    const key = factKey(args.key);
+    if (!key || key === "everything" || key === "all") {
+      mem.set("facts", {});
+      mem.set("notes", []);
+      mem.set("name", "");
+      mem.set("last_build", "");
+      if (typeof mem.clear === "function") mem.clear();
+      return "memory cleared · projects and files are untouched";
+    }
+    const facts = Object.assign({}, factMap(ctx));
+    let removed = false;
+    if (Object.prototype.hasOwnProperty.call(facts, key)) {
+      delete facts[key];
+      removed = true;
+    }
+    if (key === "name" && mem.get("name")) {
+      mem.set("name", "");
+      removed = true;
+    }
+    mem.set("facts", facts);
+    return removed ? "forgot \"" + key + "\"" : "I didn't have anything saved for \"" + key + "\"";
+  }
+
+  function memoryContext(args, ctx) {
+    const mem = memoryStore(ctx);
+    const lines = [];
+    const last = mem ? mem.get("last_build") : null;
+    if (last && last.title) {
+      lines.push("last build: " + last.title + (last.slug ? " → projects/" + last.slug : "")
+        + (last.kind ? " (" + last.kind + ")" : "")
+        + (last.desc ? " · " + last.desc : ""));
+    }
+    const project = ctx && ctx.project && typeof ctx.project.active === "function"
+      ? ctx.project.active() : null;
+    if (project) {
+      const count = project.files ? Object.keys(project.files).length : 0;
+      lines.push("active project: " + project.name + " (" + project.slug + ")" + (count ? " · " + count + " files" : ""));
+    }
+    const name = mem ? mem.get("name") : "";
+    if (name) lines.push("name: " + name);
+    if (!lines.length) {
+      return "No active project or saved context yet.\n\nTry: build a todo list · new project notes · remember my name is Ada";
+    }
+    return "Here is where you left off:\n\n" + lines.join("\n");
+  }
+
   /* -------------------------------------------------------------- ops ---- */
   const OPS = {
     "math.binary": function (a) {
@@ -1121,6 +1263,12 @@
       if (!ctx.project) throw new Error("projects need the browser workspace");
       return ctx.project.note(a.slug, a.text);
     },
+    "memory.remember": function (a, ctx) { return memoryRemember(a, ctx); },
+    "memory.note": function (a, ctx) { return memoryNote(a, ctx); },
+    "memory.recall": function (a, ctx) { return memoryRecall(a, ctx); },
+    "memory.list": function (a, ctx) { return memoryList(a, ctx); },
+    "memory.forget": function (a, ctx) { return memoryForget(a, ctx); },
+    "memory.context": function (a, ctx) { return memoryContext(a, ctx); },
     "chat": function (a, ctx) {
       const text = chatReply((a && a.text) || (ctx && ctx.step) || "", ctx);
       return { text: text || "I'm here. Say a little more.", chat: true };
@@ -1172,6 +1320,8 @@
     lines.push("  add a footer note saying …");
     lines.push("  wikipedia ursula k le guin / define serendipity / weather in reykjavik");
     lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
+    lines.push("  remember my favorite color is teal · what do you remember · forget my favorite color");
+    lines.push("  what was i working on · what did i build last");
     lines.push("  read notes.txt then count the words");
     lines.push("");
     lines.push('say "help math" or "help text" for a category');

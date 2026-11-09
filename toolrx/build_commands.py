@@ -679,6 +679,51 @@ for pat in ("add a footer note saying {text}", "add a footer note that says {tex
     add(f"project.note.{len(COMMANDS)}", "project.note",
         "^" + pat.replace("{text}", REST) + "$", {"text": "$1"}, pat, "project")
 
+# ------------------------------------------------------------- memory ----
+# Conversation memory is explicit and inspectable: facts, notes, and the last
+# build live in localStorage; nothing is inferred or sent anywhere.
+for pat in ("remember that {key} is {value}", "remember {key} is {value}",
+            "remember that my {key} is {value}", "remember my {key} is {value}",
+            "remember {key} = {value}", "note that {key} is {value}",
+            "keep in mind that {key} is {value}"):
+    add(f"memory.remember.{len(COMMANDS)}", "memory.remember",
+        "^" + pat.replace("{key}", r"(.+?)").replace("{value}", REST) + "$",
+        {"key": "$1", "value": "$2"}, pat, "memory")
+
+for pat in ("remember that {text}", "remember this: {text}", "make a note that {text}",
+            "make a note: {text}", "note down that {text}", "note this: {text}"):
+    add(f"memory.note.{len(COMMANDS)}", "memory.note",
+        "^" + pat.replace("{text}", REST) + "$", {"text": "$1"}, pat, "memory")
+
+add("memory.recall.what", "memory.recall",
+    r"^(?:what(?:'s| is)|whats) my (?!name\b)(.+)$",
+    {"key": "$1"}, "what is my {key}", "memory")
+for pat in ("what do you remember about my {key}", "what do you remember about {key}",
+            "what did i tell you about my {key}", "what did i tell you about {key}",
+            "do you remember my {key}", "do you remember {key}"):
+    add(f"memory.recall.{len(COMMANDS)}", "memory.recall",
+        "^" + pat.replace("{key}", r"(.+?)") + "$", {"key": "$1"}, pat, "memory")
+
+for pat in ("what do you remember", "what do you know about me", "show your memory",
+            "list memory", "show memory", "what have you saved", "what have you remembered"):
+    add(f"memory.list.{len(COMMANDS)}", "memory.list", "^" + re.escape(pat) + "$",
+        {}, pat, "memory")
+
+for pat in ("forget everything", "forget it all", "forget all of that",
+            "clear your memory", "clear memory", "wipe your memory"):
+    add(f"memory.forget.all.{len(COMMANDS)}", "memory.forget", "^" + re.escape(pat) + "$",
+        {}, pat, "memory")
+for pat in ("forget my {key}", "forget about my {key}", "forget about {key}",
+            "forget {key}", "remove my {key} from memory"):
+    add(f"memory.forget.{len(COMMANDS)}", "memory.forget",
+        "^" + pat.replace("{key}", r"(.+?)") + "$", {"key": "$1"}, pat, "memory")
+
+for pat in ("what was i working on", "what did i build last", "what is the active project",
+            "what is my current project", "what am i building", "where was i",
+            "show my current project", "what have i built"):
+    add(f"memory.context.{len(COMMANDS)}", "memory.context",
+        "^" + re.escape(pat) + "$", {}, pat, "memory")
+
 # --------------------------------------------------------- architecture ---
 for pat in ("plan a {kind}", "plan an {kind}", "plan {kind} app", "plan out a {kind}",
             "architect a {kind}", "architecture of a {kind}", "architecture for a {kind}",

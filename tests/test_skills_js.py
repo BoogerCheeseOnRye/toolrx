@@ -66,7 +66,13 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       files: () => 'index.html\nstyles.css\napp.js',
     },
     chat: (who, text) => text, history: () => [{ who: 'toolrx', text: 'earlier' }],
-    memory: { get: k => memory[k], set: (k, v) => { memory[k] = v; return v; } },
+    memory: {
+      get: k => memory[k],
+      set: (k, v) => { memory[k] = v; return v; },
+      remove: k => { delete memory[k]; },
+      clear: () => { Object.keys(memory).forEach(k => { delete memory[k]; }); },
+      keys: () => Object.keys(memory),
+    },
     web: {
       search: async q => ({ text: 'summary about ' + q + '.', source: 'https://en.wikipedia.org/wiki/' + q }),
       define: async w => ({ text: w + ': a test definition', source: 'https://dictionaryapi.dev/' }),
@@ -135,6 +141,24 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.chatUnknown = self.toolrxSkills.chat('blorp wobble', ctx);
   out.chatFeelings = ['i am stuck', 'i feel anxious', 'i am tired', 'i feel lost']
     .map(q => self.toolrxSkills.chat(q, ctx));
+  out.memory = {};
+  out.memory.rememberColor = await run('remember my favorite color is teal');
+  out.memory.recallColor = await run('what is my favorite color');
+  out.memory.rememberDog = await run('remember my dog is max');
+  out.memory.recallDog = await run('what do you remember about my dog');
+  out.memory.rememberCode = await run('remember that the launch code is 42');
+  out.memory.recallCode = await run('what is my launch code');
+  out.memory.note = await run('make a note that the meeting moved to friday');
+  out.memory.recallMissing = await run('what is my shoe size');
+  memory.last_build = { title: 'Calculator', kind: 'calculator', desc: 'a calculator app', slug: 'calculator' };
+  out.memory.list = await run('what do you remember');
+  out.memory.context = await run('what did i build last');
+  out.memory.forgetColor = await run('forget my favorite color');
+  out.memory.afterForget = await run('what is my favorite color');
+  out.memory.forgetName = await run('forget my name');
+  out.memory.nameAfterForget = await run('what is my name');
+  out.memory.clear = await run('forget everything');
+  out.memory.afterClear = await run('what do you remember');
   out.variants = {};
   for (const q of ['build a tetris game with 3d elements',
                    'build an rpg based on king arthur',
@@ -625,6 +649,43 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(len(chain), 2)
         self.assertEqual(chain[1]["via"], "text.summarize")
         self.assertIn("summary about ada lovelace", chain[1]["text"])
+
+    def test_memory_remembers_and_recalls_facts(self):
+        mem = self.out["memory"]
+        self.assertEqual(mem["rememberColor"][0]["via"], "memory.remember")
+        self.assertIn("favorite color", mem["rememberColor"][0]["text"])
+        self.assertEqual(mem["recallColor"][0]["via"], "memory.recall")
+        self.assertIn("teal", mem["recallColor"][0]["text"])
+        self.assertEqual(mem["recallDog"][0]["via"], "memory.recall")
+        self.assertIn("max", mem["recallDog"][0]["text"].lower())
+        self.assertIn("42", mem["recallCode"][0]["text"])
+        self.assertIn("launch code", mem["recallCode"][0]["text"])
+        self.assertIn("don't have anything saved", mem["recallMissing"][0]["text"])
+
+    def test_memory_notes_and_listing(self):
+        mem = self.out["memory"]
+        self.assertEqual(mem["note"][0]["via"], "memory.note")
+        self.assertIn("friday", mem["note"][0]["text"])
+        listing = mem["list"][0]
+        self.assertEqual(listing["via"], "memory.list")
+        self.assertIn("favorite color", listing["text"])
+        self.assertIn("friday", listing["text"])
+        self.assertIn("last build: Calculator", listing["text"])
+        context = mem["context"][0]
+        self.assertEqual(context["via"], "memory.context")
+        self.assertIn("Calculator", context["text"])
+        self.assertIn("projects/calculator", context["text"])
+
+    def test_memory_forget_and_clear(self):
+        mem = self.out["memory"]
+        self.assertEqual(mem["forgetColor"][0]["via"], "memory.forget")
+        self.assertIn("forgot", mem["forgetColor"][0]["text"])
+        self.assertIn("don't have anything saved", mem["afterForget"][0]["text"])
+        self.assertEqual(mem["forgetName"][0]["via"], "memory.forget")
+        self.assertNotIn("Ada", mem["nameAfterForget"][0]["text"])
+        self.assertEqual(mem["clear"][0]["via"], "memory.forget")
+        self.assertIn("cleared", mem["clear"][0]["text"])
+        self.assertIn("don't have anything saved", mem["afterClear"][0]["text"])
 
 
 if __name__ == "__main__":

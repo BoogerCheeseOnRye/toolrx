@@ -91,8 +91,13 @@ state, modules, data flow, file list, and build order.
 
 The same command library also answers conversationally in a practical assistant
 voice (`hi`, `remember my name is …`, `tell me a joke`). Emotional language is
-met with care, but ordinary chat is not treated as therapy. It pulls CORS-safe
-web data into `prev`:
+met with care, but ordinary chat is not treated as therapy. Conversation memory
+is explicit and inspectable: `remember my favorite color is teal`,
+`make a note that …`, `what is my favorite color`, `what do you remember`,
+`forget my favorite color`, and `forget everything`. Facts, notes, your name,
+and the last build live under `localStorage`; nothing is inferred or sent
+anywhere, and `what did i build last` reports the most recent project. It pulls
+CORS-safe web data into `prev`:
 `wikipedia ada lovelace`, `define serendipity`, `weather in reykjavik`,
 `duckduckgo …`, then `summarize it` or `build a page about it`. Results show
 their source URL; failures are reported honestly rather than invented.

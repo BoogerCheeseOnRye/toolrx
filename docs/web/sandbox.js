@@ -460,6 +460,10 @@
       title: built.title, theme: theme, at: Date.now(),
     };
     notifyPreview();
+    remember("last_build", {
+      title: built.title, kind: built.kind, desc: String(desc || ""),
+      slug: p.slug, theme: theme, at: Date.now(),
+    });
     const names = filesForProject(p);
     return 'built "' + built.title + '" → projects/' + p.slug + " (" + names.length + " files)\n"
       + "  " + names.join(" · ") + "\n"
@@ -511,6 +515,16 @@
     return value;
   }
 
+  function forgetKey(key) {
+    delete memory[key];
+    try { root.localStorage.setItem(MEMORY_KEY, JSON.stringify(memory)); } catch (e) { /* ignore */ }
+  }
+
+  function clearMemory() {
+    memory = {};
+    try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
+  }
+
 
   function buildPage(kind, desc) {
     const t = root.toolrxTemplates;
@@ -525,6 +539,10 @@
     files["site/index.html"] = html;
     writeFS(files);
     notifyPreview();
+    remember("last_build", {
+      title: preview.title, kind: preview.kind, desc: preview.desc,
+      slug: "site", theme: theme, at: Date.now(),
+    });
     return 'built "' + preview.title + '" → site/index.html\npreview updated · the page runs offline';
   }
 
@@ -749,6 +767,9 @@
       memory: {
         get: function (k) { return memory[k]; },
         set: function (k, v) { return remember(k, v); },
+        remove: function (k) { return forgetKey(k); },
+        clear: function () { return clearMemory(); },
+        keys: function () { return Object.keys(memory); },
       },
       web: {
         search: webSearch,

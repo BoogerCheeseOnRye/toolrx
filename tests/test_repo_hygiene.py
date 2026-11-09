@@ -178,6 +178,17 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("writeProjectFile", self.html)
         self.assertIn("projectFile", self.html)
 
+    def test_conversation_memory_is_explicit_and_local(self):
+        sandbox = open(os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
+                       encoding="utf-8").read()
+        skills = open(os.path.join(ROOT, "toolrx", "web", "skills.js"),
+                      encoding="utf-8").read()
+        self.assertIn('remember("last_build"', sandbox)
+        self.assertIn("clearMemory", sandbox)
+        for op in ("memory.remember", "memory.note", "memory.recall",
+                   "memory.list", "memory.forget", "memory.context"):
+            self.assertIn(op, skills)
+
     def test_chat_results_render_as_conversation(self):
         self.assertIn("toolrx · chat", self.html)
         self.assertIn(".lbl.chat", self.html)
