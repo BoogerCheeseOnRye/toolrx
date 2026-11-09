@@ -26,11 +26,13 @@ def main():
     WEB_OUT.mkdir(parents=True, exist_ok=True)
     (DOCS / "index.html").write_text(SRC.read_text(encoding="utf-8"), encoding="utf-8")
     shutil.copyfile(MODEL, WEB_OUT / "model.json")
-    for name in ("blake2b.js", "router.js", "sandbox.js"):
+    names = ("blake2b.js", "router.js", "sandbox.js", "skills.js",
+             "templates.js", "commands.json")
+    for name in names:
         shutil.copyfile(WEB_SRC / name, WEB_OUT / name)
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     print(f"wrote {DOCS / 'index.html'} ({SRC.stat().st_size} bytes)")
-    print(f"wrote {WEB_OUT}/model.json ({MODEL.stat().st_size} bytes) + 3 scripts")
+    print(f"wrote {WEB_OUT}/model.json ({MODEL.stat().st_size} bytes) + {len(names)} web assets")
 
 
 if __name__ == "__main__":

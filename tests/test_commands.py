@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Contract tests for the generated deterministic command library.
+
+`toolrx/web/commands.json` is what the static Pages build actually matches
+against, so it is worth testing directly: every pattern must compile, the
+library must stay large, and the first matching entry must be the intended one.
+"""
+
+import json
+import os
+import re
+import unittest
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+COMMANDS = os.path.join(ROOT, "toolrx", "web", "commands.json")
+
+
+def _normalize(q):
+    q = re.sub(r"\s+", " ", q).strip()
+    q = re.sub(r"[?!]+$", "", q)
+    return re.sub(r"\.$", "", q)
+
+
+class CommandLibraryTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with open(COMMANDS, encoding="utf-8") as f:
+            cls.data = json.load(f)
+        cls.commands = cls.data["commands"]
+
+    def first(self, query):
+        q = _normalize(query)
+        for c in self.commands:
+            if re.match(c["re"], q, re.I):
+                return c
+        return None
+
+    def test_library_is_large(self):
+        self.assertGreaterEqual(self.data["count"], 2500)
+        self.assertGreaterEqual(len(self.commands), 2500)
+
+    def test_every_pattern_compiles(self):
+        for c in self.commands:
+            try:
+                re.compile(c["re"], re.I)
+            except re.error as e:  # pragma: no cover - failure detail
+                self.fail(f"{c['id']}: {e}")
+
+    def test_ids_are_unique(self):
+        ids = [c["id"] for c in self.commands]
+        self.assertEqual(len(ids), len(set(ids)))
+
+    def test_common_prompts_match_intended_handler(self):
+        cases = {
+            "multiply 67 and 420": ("math.binary", "mul"),
+            "square 67": ("math.unary", "square"),
+            "double 67": ("math.unary", "double"),
+            "factors of 84": ("math.unary", "factors"),
+            "is 91 divisible by 7": ("math.binary", "divisible"),
+            "convert 5 km to miles": ("unit.convert", "km"),
+            "5 km in mi": ("unit.convert", "km"),
+            "what is 20% of 250": ("math.binary", "pct_of"),
+            "count the words": ("text.count", "words"),
+            "reverse it": ("text.transform", "reverse"),
+            "uppercase it": ("text.transform", "upper"),
+            "capital of france": ("fact.capital", None),
+            "what is the chemical symbol for gold": ("fact.symbol", None),
+            "how many days in february": ("date.op", "daysin"),
+            "what day is it": ("date.op", "dayname"),
+            "build a calculator app": ("build", "calculator"),
+            "build me a todo list": ("build", "todo list"),
+        }
+        for query, (op, arg) in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+            if arg is not None:
+                joined = json.dumps(hit["args"])
+                self.assertIn(arg, joined, f"{query}: {hit['id']} {hit['args']}")
+
+    def test_unit_breadth(self):
+        cats = self.data["categories"]
+        self.assertGreaterEqual(cats.get("units", 0), 1800)
+        self.assertGreaterEqual(cats.get("build", 0), 300)
+
+    def test_pronoun_forms_exist(self):
+        for q in ("sort it", "remove duplicate lines", "slugify it",
+                  "reverse the lines", "double it", "square the result"):
+            self.assertIsNotNone(self.first(q), q)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

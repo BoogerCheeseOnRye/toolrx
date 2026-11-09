@@ -37,6 +37,103 @@
   let loadedAt = 0;
   let rt = null;
 
+  /* Preview state: the build templates render into here, and the dashboard
+   * mirrors it into the iframe with srcdoc (no server round trip). */
+  let preview = { html: "", kind: "", desc: "", title: "", theme: "dark", at: 0 };
+  let previewListeners = [];
+
+  function snapshotPreview() {
+    return {
+      html: preview.html, kind: preview.kind, desc: preview.desc,
+      title: preview.title, theme: preview.theme, at: preview.at,
+    };
+  }
+
+  function notifyPreview() {
+    const state = snapshotPreview();
+    previewListeners.forEach(function (fn) {
+      try { fn(state); } catch (e) { /* a bad listener must not break a build */ }
+    });
+    try {
+      root.dispatchEvent(new CustomEvent("toolrx:preview", { detail: state }));
+    } catch (e) { /* very old browsers */ }
+  }
+
+  function buildPage(kind, desc) {
+    const t = root.toolrxTemplates;
+    if (!t) throw new Error("build templates are not loaded");
+    const theme = preview.theme === "light" ? "light" : "dark";
+    const html = t.build(kind, desc, { theme: theme });
+    preview = {
+      html: html, kind: String(kind || "playground"), desc: String(desc || ""),
+      title: t.title(kind, desc), theme: theme, at: Date.now(),
+    };
+    files["site/index.html"] = html;
+    writeFS(files);
+    notifyPreview();
+    return 'built "' + preview.title + '" → site/index.html\npreview updated · the page runs offline';
+  }
+
+  function setTheme(name) {
+    const theme = name === "light" ? "light" : "dark";
+    const t = root.toolrxTemplates;
+    if (!t) return false;
+    if (!preview.kind) {
+      preview.html = t.build("welcome", "", { theme: theme });
+      preview.kind = "welcome";
+      preview.title = "Preview ready";
+      preview.theme = theme;
+      preview.at = Date.now();
+      notifyPreview();
+      return true;
+    }
+    preview.theme = theme;
+    preview.html = t.build(preview.kind, preview.desc, { theme: theme });
+    preview.at = Date.now();
+    files["site/index.html"] = preview.html;
+    writeFS(files);
+    notifyPreview();
+    return true;
+  }
+
+  function defaultPreview() {
+    if (preview.html) return preview.html;
+    const t = root.toolrxTemplates;
+    if (!t) return "";
+    preview.html = t.build("welcome", "", { theme: preview.theme });
+    preview.kind = "welcome";
+    preview.title = "Preview ready";
+    preview.at = Date.now();
+    notifyPreview();
+    return preview.html;
+  }
+
+  function promptContext() {
+    return {
+      prev: "",
+      fs: {
+        exists: function (p) { try { return normPath(p) in files; } catch (e) { return false; } },
+        read: function (p) { return readFile(p); },
+        write: function (p, content) { return edit(p, content); },
+        list: function (p) { return listDir(p); },
+      },
+      preview: function () { return defaultPreview(); },
+      theme: function (name) { return setTheme(name); },
+      build: function (kind, desc) { return buildPage(kind, desc); },
+      fallback: async function (step) {
+        const decision = rt.route(step, model, []);
+        const res = await execute(decision.tool, decision.args);
+        const text = res.ok ? res.text
+          : "blocked: " + (res.reason || "not available in the browser");
+        return {
+          text: text, error: !res.ok, via: "router." + decision.tool,
+          tool: decision.tool, confidence: decision.confidence,
+          margin: decision.margin, args: decision.args,
+        };
+      },
+    };
+  }
+
   function now() {
     return (root.performance && performance.now) ? performance.now() : Date.now();
   }
@@ -285,13 +382,9 @@
     }
     const fn = EXEC[tool];
     if (!fn) return Promise.resolve({ ok: false, blocked: true, reason: "no browser executor for " + tool });
-    try {
-      return Promise.resolve(fn(args || {})).then(function (text) {
-        return { ok: true, text: String(text) };
-      });
-    } catch (e) {
-      return Promise.resolve({ ok: false, blocked: true, reason: String(e.message || e) });
-    }
+    return Promise.resolve().then(function () { return fn(args || {}); })
+      .then(function (text) { return { ok: true, text: String(text) }; })
+      .catch(function (e) { return { ok: false, blocked: true, reason: String(e.message || e) }; });
   }
 
   const api = {
@@ -330,9 +423,38 @@
         ms: decision.ms,
       };
     },
+    /* Multi-step prompt: the deterministic command library runs first, and any
+     * step it does not know falls back to the core hashed router. */
+    prompt: async function (query) {
+      if (!api.ready) {
+        return [{ step: String(query), text: "router model not loaded", error: true }];
+      }
+      const skills = root.toolrxSkills;
+      if (!skills || !skills.count()) {
+        const r = await api.run(query);
+        return [{
+          step: String(query),
+          text: r.blocked ? r.reason : r.output,
+          error: !!r.blocked,
+          via: "router." + r.tool,
+          tool: r.tool,
+          confidence: r.confidence,
+        }];
+      }
+      return skills.runPrompt(String(query), promptContext());
+    },
     files: function () { return Object.assign({}, files); },
     reset: function () { files = Object.assign({}, SEED); writeFS(files); },
     loadedAt: function () { return loadedAt; },
+    preview: snapshotPreview,
+    defaultPreview: defaultPreview,
+    theme: setTheme,
+    onPreview: function (fn) {
+      if (typeof fn === "function") previewListeners.push(fn);
+      return function () {
+        previewListeners = previewListeners.filter(function (x) { return x !== fn; });
+      };
+    },
   };
 
   root.toolrxWeb = api;

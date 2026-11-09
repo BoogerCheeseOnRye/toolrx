@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>toolrx · micro tool router</title>
 <style>
   :root{
@@ -11,8 +11,9 @@
     --green:#34d399; --amber:#fbbf24; --red:#f87171; --cyan:#22d3ee; --radius:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{height:100%}
   body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;
-    height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
   a{color:var(--accent)}
 
   /* quality-curve drawer */
@@ -237,7 +238,7 @@
   #botmark .arm{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
 
   /* right: chat + preview */
-  .workspace{flex:1;min-width:0;display:flex;flex-direction:column}
+  .workspace{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
   .panes{flex:1;min-height:0;display:flex}
   .pane{flex:1;min-width:0;display:none;flex-direction:column;min-height:0}
   .pane.on{display:flex}
@@ -250,7 +251,8 @@
   .entry pre{white-space:pre-wrap;word-break:break-word;margin-top:4px;font-family:ui-monospace,monospace;font-size:12px;color:#cbd5e1}
 
   /* preview */
-  #previewPane{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+  #previewPane{display:flex;flex-direction:column;min-height:0;background:var(--panel);
+    border-left:1px solid var(--border)}
   #previewPane iframe{flex:1;min-height:0;border:0;background:#fff;width:100%}
   #pvToggle{position:absolute;top:8px;right:8px;z-index:10;width:26px;height:26px;border:1px solid var(--border);
     border-radius:7px;background:#0d1220;color:var(--muted);cursor:pointer;display:grid;place-items:center;
@@ -341,8 +343,7 @@
   #drawerBackdrop{display:none;position:fixed;inset:0;z-index:65;background:rgba(3,6,12,.62);
     backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
   #devClose{display:none}
-  /* the in-browser router has no build preview pane */
-  body.client-demo #previewPane,body.static-demo #previewPane{display:none}
+  /* the in-browser router renders builds into the preview via srcdoc */
   .cm-client{display:none}
   body.client-demo .cm-client{display:flex}
   body.client-demo .cm-github,body.client-demo .cm-cloud{display:none}
@@ -369,13 +370,14 @@
       color:var(--muted);font-size:15px;cursor:pointer}
     .cm-close{width:36px;height:36px;font-size:16px}
     .panes{flex-direction:column}
-    .pane{flex:1 1 50%}
-    #previewPane{display:none}
+    .pane{flex:1 1 auto}
+    #previewPane{display:none;border-left:none}
     #previewPane.mobile-show{display:flex;position:fixed;inset:0;z-index:85;background:var(--panel)}
+    #previewPane.mobile-show #pvToggle{top:10px;right:12px;width:36px;height:36px;font-size:15px;z-index:90}
     #pvMobile{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);
       border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 10px;
       font-size:11px;font-family:inherit;cursor:pointer}
-    body.client-demo #pvMobile,body.static-demo #pvMobile{display:none}
+    body.static-demo #pvMobile{display:none}
     #chatPane{border-right:none;border-bottom:1px solid var(--border)}
     #log{padding:52px 12px 12px;font-size:13px}
     .composer{padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
@@ -625,6 +627,8 @@
 <!-- in-browser router: used when the page is served statically (GitHub Pages) -->
 <script src="web/blake2b.js"></script>
 <script src="web/router.js"></script>
+<script src="web/templates.js"></script>
+<script src="web/skills.js"></script>
 <script src="web/sandbox.js"></script>
 <script>
 const log=document.getElementById('log'), q=document.getElementById('q'), send=document.getElementById('send');
@@ -653,27 +657,35 @@ async function loadConfig(){
   if(window.toolrxWeb && window.toolrxRouter){
     try{ clientMode=await window.toolrxWeb.init('web/model.json'); }catch(e){ clientMode=false; }
   }
+  let commandCount=0;
+  if(clientMode && window.toolrxSkills){
+    try{ if(await window.toolrxSkills.init('web/commands.json')) commandCount=window.toolrxSkills.count(); }
+    catch(e){ commandCount=0; }
+  }
   staticMode=!clientMode;
   document.body.classList.add(clientMode?'client-demo':'static-demo');
   const note=document.getElementById('staticNote');
   if(note){
     note.innerHTML = clientMode
-      ? '<b>in-browser router</b> — 27 tools · hashed n-gram model · nothing leaves this tab'
+      ? '<b>in-browser router</b> — '+(commandCount?commandCount.toLocaleString():'2,700+')+' commands · 27 tools · nothing leaves this tab'
       : '<b>static preview</b> — open <code>toolrx/server.py</code> for the full dashboard API';
   }
   wgPoll();
   if(clientMode){
     if(q && window.matchMedia('(max-width:900px)').matches) q.placeholder='ask toolrx…';
     const hint=document.querySelector('.hint');
-    if(hint) hint.textContent='runs in this tab · 27 allow-listed tools · no LLM, no network';
+    if(hint) hint.textContent='runs in this tab · '+(commandCount?commandCount.toLocaleString()+' commands · ':'')+'no LLM, no network';
+    if(window.toolrxWeb.onPreview) window.toolrxWeb.onPreview(renderPreview);
+    loadPreview();
     entry('toolrx ready',
-      'in-browser router · 27 tools · confidence = cosine of the winning centroid\n\n'
-      +'try:  add 12 and 30\n'
-      +'      read notes.txt\n'
-      +'      list the files in data\n'
-      +'      write hello to notes.txt\n'
-      +'      diff notes.txt and README.md\n\n'
-      +'the workspace is virtual + persists in localStorage (toolrxWeb.reset() to reseed)','stat');
+      'in-browser router · 27 tools · '+(commandCount?commandCount.toLocaleString()+' deterministic commands':'pattern library')+'\n\n'
+      +'try:  multiply 67 and 420\n'
+      +'      square 67\n'
+      +'      convert 5 km to miles then square the result\n'
+      +'      read notes.txt then count the words\n'
+      +'      build a calculator app\n\n'
+      +'the workspace is virtual + persists in localStorage (toolrxWeb.reset() to reseed)\n'
+      +'preview renders locally — press ⤢ to go fullscreen','stat');
   }
 }
 
@@ -1595,24 +1607,39 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
   const modal=document.getElementById('cmdModal');
   if(modal && modal.classList.contains('open')){ modal.classList.remove('open'); return; }
+  const pvPane=document.getElementById('previewPane');
+  if(pvPane && pvPane.classList.contains('mobile-show')){
+    pvPane.classList.remove('mobile-show');
+    document.getElementById('pvToggle').textContent='⤢';
+    return;
+  }
+  if(pvPane && pvPane.classList.contains('full')){
+    pvPane.classList.remove('full');
+    document.getElementById('chatPane').style.display='';
+    document.getElementById('pvToggle').textContent='⤢';
+    return;
+  }
   if(selected!==null||clusterSel){ selected=null; clusterSel=false; renderDetail(null); renderDevices(lastDevs); return; }
   closeDrawer();
 });
 
 document.getElementById('pvToggle').addEventListener('click',()=>{
-  const pv=document.getElementById('previewPane'), chat=document.getElementById('chatPane');
+  const pane=document.getElementById('previewPane'), chat=document.getElementById('chatPane');
+  const toggle=document.getElementById('pvToggle');
   if(window.matchMedia('(max-width:900px)').matches){
-    pv.classList.remove('mobile-show');   // phone layout: preview is a sheet
+    pane.classList.remove('mobile-show');   // phone layout: preview is a sheet
+    toggle.textContent='⤢';
     return;
   }
-  const full=pv.classList.toggle('full');
+  const full=pane.classList.toggle('full');
   chat.style.display=full?'none':'';
-  pvToggle.textContent=full?'⤡':'⤢';
-  if(full)loadPreview();
+  toggle.textContent=full?'⤡':'⤢';
+  loadPreview();
 });
 const pvMobile=document.getElementById('pvMobile');
 if(pvMobile) pvMobile.addEventListener('click',()=>{
   document.getElementById('previewPane').classList.add('mobile-show');
+  const t=document.getElementById('pvToggle'); if(t) t.textContent='✕';
   loadPreview();
 });
 
@@ -1687,13 +1714,32 @@ async function submit(txt){
   if(clientMode && window.toolrxWeb && window.toolrxWeb.ready){
     q.value='';
     entry('> '+txt,'','q');
-    const r=await window.toolrxWeb.run(txt);
-    const top=r.ranked.slice(0,3).map(x=>x[0]+' '+x[1].toFixed(3)).join(' · ');
-    const head = r.blocked
-      ? r.tool+' · blocked'
-      : r.tool+' · conf '+r.confidence.toFixed(3)+' · margin '+r.margin.toFixed(3);
-    const body = 'args  '+JSON.stringify(r.args)+'\n\n'+(r.blocked?('blocked: '+r.reason):r.output);
-    entry(head, body+'\n\nrouting  '+top+' · '+r.ms.toFixed(1)+' ms', r.blocked?'err':'res');
+    const results=await window.toolrxWeb.prompt(txt);
+    if(!results || !results.length){ entry('toolrx','nothing to do there','stat'); return; }
+    if(results.length>1){
+      entry('plan · '+results.length+' steps', results.map((r,i)=>(i+1)+'. '+r.step).join('\n'),'stat');
+    }
+    let built=false;
+    for(const r of results){
+      const via=r.via||'step';
+      const label=(r.error?'⚠ ':'')+r.step+'  →  '+via;
+      let body=String(r.text==null?'':r.text);
+      if(r.tool && r.confidence!==undefined){
+        body+='\n\nrouter  '+r.tool+' · conf '+Number(r.confidence).toFixed(3)
+          +(r.args&&Object.keys(r.args).length?' · args '+JSON.stringify(r.args):'');
+      }
+      entry(label, body, r.error?'err':'res');
+      if(via==='build' && !r.error) built=true;
+      if((via==='preview' || via==='preview.theme') && window.matchMedia('(max-width:900px)').matches){
+        document.getElementById('previewPane').classList.add('mobile-show');
+        const t=document.getElementById('pvToggle'); if(t) t.textContent='✕';
+        loadPreview();
+      }
+    }
+    if(built){
+      if(window.matchMedia('(max-width:900px)').matches) entry('preview','built — press ▣ preview to open it','stat');
+      else entry('preview','rendered in the preview pane → (press ⤢ for fullscreen)','stat');
+    }
     return;
   }
   if(staticMode){
@@ -1735,7 +1781,23 @@ async function submit(txt){
 }
 function next(){if(pending.length)submit(pending.shift());}
 
-function loadPreview(){const ts=Date.now();pv.src='/preview/index.html?t='+ts;}
+function renderPreview(state){
+  if(!state || !state.html) return;
+  pv.removeAttribute('src');
+  pv.srcdoc=state.html;
+  const pane=document.getElementById('previewPane');
+  pane.dataset.title=state.title||'preview';
+}
+function loadPreview(){
+  if(clientMode && window.toolrxWeb){
+    const state=window.toolrxWeb.preview();
+    const html=(state&&state.html)||window.toolrxWeb.defaultPreview();
+    if(html){ renderPreview({html:html,title:(state&&state.title)||'preview'}); return; }
+  }
+  const ts=Date.now();
+  pv.removeAttribute('srcdoc');
+  pv.src='/preview/index.html?t='+ts;
+}
 
 document.getElementById('f').addEventListener('submit',e=>{e.preventDefault();
   if(busy){ stopBuild(); return; }

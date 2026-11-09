@@ -1,0 +1,611 @@
+#!/usr/bin/env python3
+"""Generate the deterministic command library used by the in-browser skills.
+
+The library is plain data: each entry is a regex, an op name, and argument
+placeholders. `toolrx/web/skills.js` compiles and runs them. Unit conversions
+are expanded here because that is where most of the breadth comes from.
+
+    python3 toolrx/build_commands.py
+"""
+import json
+import pathlib
+import re
+
+ROOT = pathlib.Path(__file__).resolve().parent
+OUT = ROOT / "web" / "commands.json"
+
+N = r"(-?(?:\d[\d,]*(?:\.\d+)?|\d*\.\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty))"
+TXT = r"(.+?)"
+REST = r"(.+)"
+
+COMMANDS = []
+
+
+def add(cid, op, pattern, args=None, desc="", cat="misc"):
+    COMMANDS.append({"id": cid, "op": op, "re": pattern,
+                     "args": args or {}, "d": desc, "c": cat})
+
+
+# ---------------------------------------------------------------- math ----
+BINARY = {
+    "add": ["add {a} and {b}", "add {a} to {b}", "{a} plus {b}",
+            "what is {a} plus {b}", "sum of {a} and {b}", "{a} + {b}"],
+    "sub": ["subtract {b} from {a}", "{a} minus {b}", "what is {a} minus {b}",
+            "difference between {a} and {b}", "{a} - {b}"],
+    "mul": ["multiply {a} and {b}", "multiply {a} by {b}", "{a} times {b}",
+            "{a} multiplied by {b}", "what is {a} times {b}",
+            "product of {a} and {b}", "{a} * {b}", "{a} x {b}"],
+    "div": ["divide {a} by {b}", "{a} divided by {b}",
+            "what is {a} divided by {b}", "{a} over {b}", "{a} / {b}"],
+    "mod": ["{a} mod {b}", "{a} modulo {b}", "remainder of {a} divided by {b}"],
+    "pow": ["{a} to the power of {b}", "{a} raised to the power {b}",
+            "{a} raised to {b}", "{a} ^ {b}", "{a} to the {b} power"],
+    "gcd": ["gcd of {a} and {b}", "greatest common divisor of {a} and {b}"],
+    "lcm": ["lcm of {a} and {b}", "least common multiple of {a} and {b}"],
+    "min": ["min of {a} and {b}", "minimum of {a} and {b}", "smaller of {a} and {b}"],
+    "max": ["max of {a} and {b}", "maximum of {a} and {b}", "larger of {a} and {b}"],
+    "pct_of": ["{a}% of {b}", "{a} percent of {b}", "what is {a} percent of {b}",
+               "what is {a}% of {b}"],
+    "pct_change": ["percent change from {a} to {b}",
+                   "percentage change from {a} to {b}",
+                   "percentage increase from {a} to {b}"],
+    "log": ["log base {b} of {a}", "logarithm base {b} of {a}"],
+    "divisible": ["{a} is divisible by {b}", "is {a} divisible by {b}", "{a} divisible by {b}"],
+}
+n = 0
+for op, patterns in BINARY.items():
+    for pat in patterns:
+        n += 1
+        expr = pat.replace("{a}", N).replace("{b}", N)
+        add(f"math.{op}.{n}", "math.binary", "^" + expr + "$",
+            {"op": op, "a": "$1", "b": "$2"}, pat, "math")
+
+UNARY = {
+    "square": ["square {a}", "{a} squared", "what is {a} squared"],
+    "cube": ["cube {a}", "{a} cubed", "what is {a} cubed"],
+    "sqrt": ["square root of {a}", "sqrt of {a}", "sqrt {a}",
+             "what is the square root of {a}"],
+    "cbrt": ["cube root of {a}", "cbrt {a}"],
+    "abs": ["absolute value of {a}", "abs {a}", "abs of {a}"],
+    "neg": ["negate {a}", "negative of {a}", "opposite of {a}"],
+    "round": ["round {a}", "round off {a}", "round {a} to the nearest integer"],
+    "floor": ["floor of {a}", "floor {a}"],
+    "ceil": ["ceiling of {a}", "ceil of {a}", "ceil {a}"],
+    "fact": ["{a} factorial", "factorial of {a}", "{a}!"],
+    "recip": ["reciprocal of {a}", "inverse of {a}"],
+    "isprime": ["is {a} prime", "is {a} a prime number", "check if {a} is prime"],
+    "iseven": ["is {a} even", "is {a} an even number"],
+    "isodd": ["is {a} odd", "is {a} an odd number"],
+    "sign": ["sign of {a}", "signum of {a}"],
+    "double": ["double {a}", "twice {a}", "what is double {a}"],
+    "half": ["half of {a}", "{a} halved"],
+    "triple": ["triple {a}", "thrice {a}"],
+    "factors": ["factors of {a}", "divisors of {a}", "list the factors of {a}"],
+    "primefactors": ["prime factors of {a}", "prime factorization of {a}"],
+    "divcount": ["number of divisors of {a}", "how many divisors does {a} have"],
+    "deg2rad": ["{a} degrees in radians", "degrees to radians {a}"],
+    "rad2deg": ["{a} radians in degrees", "radians to degrees {a}"],
+}
+for op, patterns in UNARY.items():
+    for pat in patterns:
+        n += 1
+        expr = pat.replace("{a}", N)
+        add(f"math.{op}.u{n}", "math.unary", "^" + expr + "$",
+            {"op": op, "a": "$1"}, pat, "math")
+
+# "square it" / "square the result" — these read the previous step's output
+for op, patterns in {
+    "square": ["square it", "square that", "square the result", "square the output"],
+    "cube": ["cube it", "cube that", "cube the result"],
+    "sqrt": ["square root of it", "sqrt it", "sqrt that", "square root of the result"],
+    "abs": ["absolute value of it", "abs it"],
+    "neg": ["negate it", "negate that"],
+    "round": ["round it", "round that", "round the result"],
+    "floor": ["floor it", "floor that"],
+    "ceil": ["ceil it", "ceiling of it"],
+    "recip": ["reciprocal of it", "invert it"],
+    "double": ["double it", "double that", "double the result"],
+    "half": ["half it", "halve it", "half the result"],
+    "triple": ["triple it", "triple that"],
+    "fact": ["factorial of it"],
+}.items():
+    for pat in patterns:
+        add(f"math.pronoun.{op}.{len(COMMANDS)}", "math.unary",
+            "^" + re.escape(pat) + "$", {"op": op}, pat, "math")
+
+LISTS = {
+    "sum": ["sum {list}", "sum of {list}", "total of {list}", "add {list}", "total {list}"],
+    "mean": ["mean of {list}", "average of {list}", "avg of {list}"],
+    "median": ["median of {list}"],
+    "mode": ["mode of {list}"],
+    "range": ["range of {list}"],
+    "stdev": ["standard deviation of {list}", "std dev of {list}"],
+    "minlist": ["smallest of {list}", "minimum of {list}"],
+    "maxlist": ["largest of {list}", "maximum of {list}"],
+    "product": ["product of {list}", "multiply {list}"],
+}
+LIST_RE = r"(-?\d[\d,]*(?:\.\d+)?(?:\s*(?:,|and|;|\s)\s*-?\d[\d,]*(?:\.\d+)?)+)"
+for op, patterns in LISTS.items():
+    for pat in patterns:
+        n += 1
+        expr = pat.replace("{list}", LIST_RE)
+        add(f"math.{op}.l{n}", "math.list", "^" + expr + "$",
+            {"op": op, "list": "$1"}, pat, "math")
+
+FORMAT = {
+    "words": ["number to words {a}", "{a} in words", "spell out {a}"],
+    "roman": ["{a} in roman numerals", "roman numeral for {a}", "to roman {a}"],
+    "ordinal": ["ordinal of {a}", "{a} as an ordinal"],
+    "base2": ["{a} in binary", "binary of {a}", "convert {a} to binary"],
+    "base8": ["{a} in octal", "octal of {a}", "convert {a} to octal"],
+    "base16": ["{a} in hex", "{a} in hexadecimal", "hex of {a}", "convert {a} to hex"],
+    "sci": ["{a} in scientific notation", "scientific notation of {a}"],
+}
+for op, patterns in FORMAT.items():
+    for pat in patterns:
+        n += 1
+        expr = pat.replace("{a}", N)
+        add(f"math.fmt.{op}.{n}", "math.format", "^" + expr + "$",
+            {"op": op, "a": "$1"}, pat, "math")
+
+for expr_pat in (
+    r"^(?:calculate|compute|evaluate|work out|solve)\s+(.+)$",
+    r"^(?:calc|math)\s+(.+)$",
+    r"^what\s+is\s+([-+(]?[\d.][-+*/^%().\d\s]*)$",
+    r"^([-+]?[\d.]+(?:\s*[-+*/^%]\s*[-+]?[\d.()]+)+)$",
+):
+    n += 1
+    add(f"math.expr.{n}", "math.expr", expr_pat, {"expr": "$1"},
+        "evaluate an arithmetic expression", "math")
+
+# ---------------------------------------------------------------- units ---
+UNITS = {
+    "length": {
+        "mm": ("millimeter", "millimeters", "mm"), "cm": ("centimeter", "centimeters", "cm"),
+        "m": ("meter", "meters", "metre", "metres", "m"),
+        "km": ("kilometer", "kilometers", "kilometre", "kilometres", "km"),
+        "in": ("inch", "inches", "in"), "ft": ("foot", "feet", "ft"),
+        "yd": ("yard", "yards", "yd"), "mi": ("mile", "miles", "mi"),
+        "nmi": ("nautical mile", "nautical miles", "nmi"),
+    },
+    "mass": {
+        "mg": ("milligram", "milligrams", "mg"), "g": ("gram", "grams", "g"),
+        "kg": ("kilogram", "kilograms", "kg", "kilo", "kilos"),
+        "t": ("tonne", "tonnes", "metric ton", "metric tons", "t"),
+        "oz": ("ounce", "ounces", "oz"), "lb": ("pound", "pounds", "lb", "lbs"),
+        "st": ("stone", "stones", "st"),
+    },
+    "volume": {
+        "ml": ("milliliter", "milliliters", "ml"),
+        "l": ("liter", "liters", "litre", "litres", "l"),
+        "tsp": ("teaspoon", "teaspoons", "tsp"),
+        "tbsp": ("tablespoon", "tablespoons", "tbsp"),
+        "floz": ("fluid ounce", "fluid ounces", "fl oz", "floz"),
+        "cup": ("cup", "cups"), "pt": ("pint", "pints", "pt"),
+        "qt": ("quart", "quarts", "qt"), "gal": ("gallon", "gallons", "gal"),
+    },
+    "data": {
+        "kb": ("kilobyte", "kilobytes", "kb"), "mb": ("megabyte", "megabytes", "mb"),
+        "gb": ("gigabyte", "gigabytes", "gb"), "tb": ("terabyte", "terabytes", "tb"),
+        "kib": ("kibibyte", "kibibytes", "kib"), "mib": ("mebibyte", "mebibytes", "mib"),
+        "gib": ("gibibyte", "gibibytes", "gib"),
+    },
+    "time": {
+        "ms": ("millisecond", "milliseconds", "ms"), "s": ("second", "seconds", "s"),
+        "min": ("minute", "minutes", "min", "mins"), "h": ("hour", "hours", "h", "hr", "hrs"),
+        "day": ("day", "days"), "week": ("week", "weeks"),
+    },
+    "speed": {
+        "mps": ("meter per second", "meters per second", "mps"),
+        "kph": ("kilometer per hour", "kilometers per hour", "kph", "kmh"),
+        "mph": ("mile per hour", "miles per hour", "mph"),
+        "knot": ("knot", "knots", "kt"),
+    },
+    "area": {
+        "mm2": ("square millimeter", "square millimeters", "mm2"),
+        "cm2": ("square centimeter", "square centimeters", "cm2"),
+        "m2": ("square meter", "square meters", "m2"),
+        "km2": ("square kilometer", "square kilometers", "km2"),
+        "ha": ("hectare", "hectares", "ha"), "acre": ("acre", "acres"),
+        "ft2": ("square foot", "square feet", "ft2"),
+        "in2": ("square inch", "square inches", "in2"),
+    },
+    "energy": {
+        "j": ("joule", "joules", "j"), "kj": ("kilojoule", "kilojoules", "kj"),
+        "cal": ("calorie", "calories", "cal"), "kcal": ("kilocalorie", "kilocalories", "kcal"),
+        "wh": ("watt hour", "watt hours", "wh"), "kwh": ("kilowatt hour", "kilowatt hours", "kwh"),
+    },
+    "pressure": {
+        "pa": ("pascal", "pascals", "pa"), "kpa": ("kilopascal", "kilopascals", "kpa"),
+        "bar": ("bar", "bars"), "atm": ("atmosphere", "atmospheres", "atm"),
+        "psi": ("psi",), "mmhg": ("mmhg", "millimeter of mercury"),
+    },
+    "angle": {"deg": ("degree", "degrees", "deg"), "rad": ("radian", "radians", "rad"),
+              "grad": ("gradian", "gradians", "grad")},
+}
+
+FACTORS = {
+    "length": {"mm": .001, "cm": .01, "m": 1, "km": 1000, "in": .0254, "ft": .3048,
+               "yd": .9144, "mi": 1609.344, "nmi": 1852},
+    "mass": {"mg": .001, "g": 1, "kg": 1000, "t": 1e6, "oz": 28.349523125,
+             "lb": 453.59237, "st": 6350.29318},
+    "volume": {"ml": .001, "l": 1, "tsp": .00492892159375, "tbsp": .01478676478125,
+               "floz": .0295735295625, "cup": .2365882365, "pt": .473176473,
+               "qt": .946352946, "gal": 3.785411784},
+    "data": {"kb": 1e3, "mb": 1e6, "gb": 1e9, "tb": 1e12,
+             "kib": 1024, "mib": 1048576, "gib": 1073741824},
+    "time": {"ms": .001, "s": 1, "min": 60, "h": 3600, "day": 86400, "week": 604800},
+    "speed": {"mps": 1, "kph": 0.2777777777777778, "mph": 0.44704, "knot": 0.5144444444444445},
+    "area": {"mm2": 1e-6, "cm2": 1e-4, "m2": 1, "km2": 1e6, "ha": 1e4,
+             "acre": 4046.8564224, "ft2": .09290304, "in2": .00064516},
+    "energy": {"j": 1, "kj": 1000, "cal": 4.184, "kcal": 4184, "wh": 3600, "kwh": 3.6e6},
+    "pressure": {"pa": 1, "kpa": 1000, "bar": 1e5, "atm": 101325, "psi": 6894.757293,
+                 "mmhg": 133.322387},
+    "angle": {"deg": 1, "rad": 57.29577951308232, "grad": .9},
+}
+
+PHRASINGS = [
+    r"^convert\s+{n}\s+{from}\s+(?:to|into)\s+{to}$",
+    r"^{n}\s+{from}\s+(?:to|into|in)\s+{to}$",
+    r"^how many\s+{to}\s+(?:are\s+|is\s+)?in\s+{n}\s+{from}$",
+    r"^(?:what is|what's|whats)\s+{n}\s+{from}\s+in\s+{to}$",
+    r"^{n}\s+{from}\s+(?:equals|is)\s+(?:how many\s+)?{to}$",
+]
+for cat, units in UNITS.items():
+    names = list(units)
+    for src in names:
+        for dst in names:
+            if src == dst:
+                continue
+            fa = "(?:" + "|".join(re.escape(x) for x in units[src]) + ")"
+            fb = "(?:" + "|".join(re.escape(x) for x in units[dst]) + ")"
+            for k, ph in enumerate(PHRASINGS):
+                pattern = (ph.replace("{n}", N).replace("{from}", fa)
+                             .replace("{to}", fb))
+                add(f"unit.{cat}.{src}.{dst}.{k}", "unit.convert", pattern,
+                    {"from": src, "to": dst, "n": "$1", "cat": cat},
+                    f"{src} -> {dst}", "units")
+
+for src, dst in (("c", "f"), ("c", "k"), ("f", "c"), ("f", "k"), ("k", "c"), ("k", "f")):
+    fa = {"c": "(?:celsius|c)", "f": "(?:fahrenheit|f)", "k": "(?:kelvin|k)"}[src]
+    fb = {"c": "(?:celsius|c)", "f": "(?:fahrenheit|f)", "k": "(?:kelvin|k)"}[dst]
+    for k, ph in enumerate(PHRASINGS):
+        pattern = ph.replace("{n}", N).replace("{from}", fa).replace("{to}", fb)
+        add(f"unit.temp.{src}.{dst}.{k}", "unit.convert", pattern,
+            {"from": src, "to": dst, "n": "$1", "cat": "temperature"},
+            f"{src} -> {dst}", "units")
+
+# ---------------------------------------------------------------- text ----
+TEXT_OPS = {
+    "reverse": ["reverse {text}", "reverse the text {text}", "backwards {text}"],
+    "upper": ["uppercase {text}", "upper case {text}", "make {text} uppercase"],
+    "lower": ["lowercase {text}", "lower case {text}", "make {text} lowercase"],
+    "title": ["title case {text}", "title case of {text}", "make {text} title case"],
+    "sentence": ["sentence case {text}", "sentence case of {text}"],
+    "capitalize": ["capitalize {text}", "capitalize the first letter of {text}"],
+    "trim": ["trim {text}", "strip whitespace from {text}"],
+    "collapse": ["remove extra whitespace from {text}", "collapse whitespace in {text}"],
+    "slug": ["slugify {text}", "make a slug from {text}"],
+    "snake": ["snake case {text}", "snake case of {text}"],
+    "kebab": ["kebab case {text}", "kebab case of {text}"],
+    "camel": ["camel case {text}", "camel case of {text}"],
+    "pascal": ["pascal case {text}", "pascal case of {text}"],
+    "sortlines": ["sort the lines in {text}", "sort lines of {text}"],
+    "sortwords": ["sort the words in {text}", "sort words of {text}"],
+    "uniqlines": ["remove duplicate lines from {text}", "unique lines of {text}"],
+    "reverselines": ["reverse the lines in {text}", "reverse lines of {text}"],
+    "reversewords": ["reverse the words in {text}", "reverse word order of {text}"],
+    "striptags": ["strip html from {text}", "remove html tags from {text}"],
+    "leet": ["leet speak {text}", "leetspeak {text}"],
+    "initials": ["initials of {text}", "initial letters of {text}"],
+    "acronym": ["acronym for {text}", "acronym of {text}"],
+    "longest": ["longest word in {text}", "longest word of {text}"],
+    "freq": ["word frequency in {text}", "frequency of words in {text}"],
+    "charfreq": ["character frequency in {text}", "letter frequency of {text}"],
+    "indent": ["indent {text}", "indent the lines of {text}"],
+    "dedupe": ["remove duplicate words from {text}", "dedupe words in {text}"],
+}
+for op, patterns in TEXT_OPS.items():
+    for pat in patterns:
+        add(f"text.{op}.{len(COMMANDS)}", "text.transform",
+            "^" + pat.replace("{text}", TXT) + "$",
+            {"op": op, "text": "$1"}, pat, "text")
+
+COUNTS = {
+    "words": ["count the words in {text}", "word count of {text}", "how many words in {text}"],
+    "chars": ["count the characters in {text}", "character count of {text}",
+              "how many characters in {text}"],
+    "lines": ["count the lines in {text}", "line count of {text}", "how many lines in {text}"],
+    "sentences": ["count the sentences in {text}", "sentence count of {text}"],
+    "vowels": ["count the vowels in {text}", "vowel count of {text}"],
+    "consonants": ["count the consonants in {text}", "consonant count of {text}"],
+}
+for op, patterns in COUNTS.items():
+    for pat in patterns:
+        add(f"text.count.{op}.{len(COMMANDS)}", "text.count",
+            "^" + pat.replace("{text}", TXT) + "$",
+            {"what": op, "text": "$1"}, pat, "text")
+
+# bare counts work on the previous step's output
+for op, patterns in {
+    "words": ["count the words", "count words", "word count", "how many words"],
+    "chars": ["count the characters", "count characters", "character count",
+              "how many characters", "count the letters"],
+    "lines": ["count the lines", "count lines", "line count", "how many lines"],
+    "sentences": ["count the sentences", "sentence count", "how many sentences"],
+    "vowels": ["count the vowels", "vowel count", "how many vowels"],
+    "consonants": ["count the consonants", "consonant count", "how many consonants"],
+}.items():
+    for pat in patterns:
+        add(f"text.count.bare.{op}.{len(COMMANDS)}", "text.count",
+            "^" + re.escape(pat) + "$", {"what": op}, pat, "text")
+
+# "it" / "that" forms so a multi-step chain can feed the previous result
+for op, patterns in {
+    "reverse": ["reverse it", "reverse that", "flip it", "reverse the result"],
+    "upper": ["uppercase it", "upper case it", "make it uppercase", "shout it"],
+    "lower": ["lowercase it", "lower case it", "make it lowercase"],
+    "title": ["title case it", "title case that"],
+    "sentence": ["sentence case it"],
+    "capitalize": ["capitalize it"],
+    "trim": ["trim it", "strip the whitespace"],
+    "collapse": ["collapse the whitespace", "remove extra whitespace"],
+    "slug": ["slugify it", "slug it", "make it a slug"],
+    "snake": ["snake case it"],
+    "kebab": ["kebab case it"],
+    "camel": ["camel case it"],
+    "pascal": ["pascal case it"],
+    "sortlines": ["sort it", "sort the lines", "sort those lines"],
+    "reverselines": ["reverse the lines", "reverse the line order"],
+    "sortwords": ["sort the words", "sort words"],
+    "reversewords": ["reverse the words", "reverse word order"],
+    "uniqlines": ["remove duplicate lines", "unique the lines"],
+    "striptags": ["strip the html", "remove the html tags"],
+    "leet": ["leet speak it", "leetspeak it"],
+    "initials": ["get the initials", "initials"],
+    "longest": ["longest word", "find the longest word"],
+    "dedupe": ["remove duplicate words", "dedupe it", "dedupe the words"],
+    "indent": ["indent it", "indent the lines"],
+}.items():
+    for pat in patterns:
+        add(f"text.pronoun.{op}.{len(COMMANDS)}", "text.transform",
+            "^" + re.escape(pat) + "$", {"op": op}, pat, "text")
+
+for pat, op in (
+    ("is {text} a palindrome", "palindrome"),
+    ("check if {text} is a palindrome", "palindrome"),
+    ("is {text} an anagram of {text2}", "anagram"),
+):
+    args = {"op": op, "text": "$1"}
+    if "{text2}" in pat:
+        args["text2"] = "$2"
+    add(f"text.check.{op}.{len(COMMANDS)}", "text.check",
+        "^" + pat.replace("{text2}", TXT).replace("{text}", TXT) + "$",
+        args, pat, "text")
+
+for pat, what in (
+    ("extract emails from {text}", "emails"),
+    ("extract email addresses from {text}", "emails"),
+    ("extract urls from {text}", "urls"),
+    ("extract links from {text}", "urls"),
+    ("extract numbers from {text}", "numbers"),
+):
+    add(f"text.extract.{what}.{len(COMMANDS)}", "text.extract",
+        "^" + pat.replace("{text}", TXT) + "$", {"what": what, "text": "$1"}, pat, "text")
+
+for pat in ("replace {find} with {repl} in {text}", "replace {find} by {repl} in {text}"):
+    add(f"text.replace.{len(COMMANDS)}", "text.replace",
+        "^" + pat.replace("{find}", TXT).replace("{repl}", TXT).replace("{text}", TXT) + "$",
+        {"find": "$1", "repl": "$2", "text": "$3"}, pat, "text")
+
+# -------------------------------------------------------------- encoding --
+ENCODE = {
+    "b64e": ["base64 encode {text}", "encode {text} as base64"],
+    "b64d": ["base64 decode {text}", "decode base64 {text}"],
+    "urle": ["url encode {text}", "percent encode {text}"],
+    "urld": ["url decode {text}", "percent decode {text}"],
+    "hexe": ["hex encode {text}", "encode {text} as hex"],
+    "hexd": ["hex decode {text}", "decode hex {text}"],
+    "bine": ["binary encode {text}", "encode {text} as binary"],
+    "bind": ["binary decode {text}", "decode binary {text}"],
+    "rot13": ["rot13 {text}", "rot 13 {text}"],
+    "morse": ["morse code for {text}", "encode {text} as morse"],
+    "unmorse": ["decode morse {text}", "morse decode {text}"],
+}
+for op, patterns in ENCODE.items():
+    for pat in patterns:
+        add(f"enc.{op}.{len(COMMANDS)}", "encode",
+            "^" + pat.replace("{text}", TXT) + "$", {"op": op, "text": "$1"}, pat, "encoding")
+
+for alg in ("blake2b", "sha256", "md5"):
+    for pat in (f"{alg} hash of {{text}}", f"{alg} of {{text}}", f"hash {{text}} with {alg}"):
+        add(f"hash.{alg}.{len(COMMANDS)}", "hash",
+            "^" + pat.replace("{text}", TXT) + "$", {"algo": alg, "text": "$1"}, pat, "encoding")
+
+# ------------------------------------------------------------ json / csv --
+JSON_OPS = {
+    "pretty": ["pretty print json {text}", "format json {text}", "pretty json {text}"],
+    "minify": ["minify json {text}", "compact json {text}"],
+    "validate": ["validate json {text}", "is {text} valid json"],
+    "keys": ["json keys of {text}", "list json keys in {text}"],
+    "values": ["json values of {text}", "list json values in {text}"],
+    "tocsv": ["json to csv {text}", "convert json to csv {text}"],
+}
+for op, patterns in JSON_OPS.items():
+    for pat in patterns:
+        add(f"json.{op}.{len(COMMANDS)}", "json.op",
+            "^" + pat.replace("{text}", REST) + "$", {"op": op, "text": "$1"}, pat, "data")
+
+for op, pat in (("tocsv", "csv to json {text}"), ("tocsv", "convert csv to json {text}")):
+    add(f"csv.{op}.{len(COMMANDS)}", "csv.op", "^" + pat.replace("{text}", REST) + "$",
+        {"op": op, "text": "$1"}, pat, "data")
+
+# ---------------------------------------------------------------- dates ---
+for pat, op in (
+    ("what time is it", "now"), ("current time", "time"), ("what is the time", "time"),
+    ("what date is it", "today"), ("today's date", "today"), ("current date", "today"),
+    ("current timestamp", "unix"), ("unix timestamp", "unix"),
+    ("what is the unix timestamp", "unix"),
+):
+    add(f"date.{op}.{len(COMMANDS)}", "date.op", "^" + re.escape(pat) + "$",
+        {"op": op}, pat, "date")
+
+for pat, op in (
+    ("{n} days from now", "add"), ("{n} days ago", "sub"),
+    ("add {n} days", "add"), ("subtract {n} days", "sub"),
+    ("date in {n} days", "add"), ("date {n} days ago", "sub"),
+):
+    add(f"date.{op}.{len(COMMANDS)}", "date.op", "^" + pat.replace("{n}", N) + "$",
+        {"op": op, "n": "$1"}, pat, "date")
+
+for pat, op in (
+    ("days between {a} and {b}", "diff"), ("days from {a} to {b}", "diff"),
+    ("how many days between {a} and {b}", "diff"),
+):
+    add(f"date.diff.{len(COMMANDS)}", "date.op",
+        "^" + pat.replace("{a}", TXT).replace("{b}", TXT) + "$",
+        {"op": op, "a": "$1", "b": "$2"}, pat, "date")
+
+for pat in ("what weekday is {text}", "day of the week for {text}"):
+    add(f"date.weekday.{len(COMMANDS)}", "date.op", "^" + pat.replace("{text}", TXT) + "$",
+        {"op": "weekday", "text": "$1"}, pat, "date")
+for pat in ("is {n} a leap year", "is leap year {n}"):
+    add(f"date.leap.{len(COMMANDS)}", "date.op", "^" + pat.replace("{n}", N) + "$",
+        {"op": "leap", "n": "$1"}, pat, "date")
+for pat in ("convert {text} to a date", "parse date {text}", "format date {text}"):
+    add(f"date.parse.{len(COMMANDS)}", "date.op", "^" + pat.replace("{text}", TXT) + "$",
+        {"op": "parse", "text": "$1"}, pat, "date")
+
+for pat, op in (("what day is it", "dayname"), ("what day is today", "dayname"),
+                ("what weekday is it", "dayname"), ("what year is it", "year")):
+    add(f"date.{op}.{len(COMMANDS)}", "date.op", "^" + re.escape(pat) + "$",
+        {"op": op}, pat, "date")
+
+for pat in ("how many days in {text}", "days in {text}", "how many days are in {text}"):
+    add(f"date.daysin.{len(COMMANDS)}", "date.op", "^" + pat.replace("{text}", TXT) + "$",
+        {"op": "daysin", "text": "$1"}, pat, "date")
+
+# ------------------------------------------------------------ common facts -
+add("fact.capital", "fact.capital",
+    r"^(?:what is the |whats the |what's the )?capital(?: city)? of (.+)$",
+    {"subject": "$1"}, "capital of a country", "facts")
+add("fact.symbol", "fact.symbol",
+    r"^(?:what is the |whats the |what's the )?(?:chemical )?symbol (?:for|of) (.+)$",
+    {"subject": "$1"}, "chemical symbol of an element", "facts")
+
+# --------------------------------------------------------------- colors ---
+for pat, op in (
+    ("{text} to rgb", "toRgb"), ("rgb of {text}", "toRgb"),
+    ("what is {text} in rgb", "toRgb"),
+    ("rgb({a}, {b}, {c}) to hex", "toHex"),
+    ("convert rgb {a} {b} {c} to hex", "toHex"),
+):
+    add(f"color.{op}.{len(COMMANDS)}", "color.op", "^" + pat.replace("{text}", TXT)
+        .replace("{a}", N).replace("{b}", N).replace("{c}", N) + "$",
+        {"op": op, "text": "$1", "a": "$1", "b": "$2", "c": "$3"}, pat, "color")
+
+for pat, op in (
+    ("lighten {text} by {n}%", "lighten"), ("darken {text} by {n}%", "darken"),
+    ("mix {a} and {b}", "mix"), ("contrast ratio of {a} and {b}", "contrast"),
+    ("luminance of {text}", "luminance"),
+):
+    add(f"color.{op}.{len(COMMANDS)}", "color.op",
+        "^" + pat.replace("{text}", TXT).replace("{n}", N)
+        .replace("{a}", TXT).replace("{b}", TXT) + "$",
+        {"op": op, "text": "$1", "n": "$1", "a": "$1", "b": "$2"}, pat, "color")
+
+# ------------------------------------------------------------- generators -
+for pat, op in (
+    ("flip a coin", "coin"), ("toss a coin", "coin"), ("heads or tails", "coin"),
+    ("roll a die", "die"), ("roll a dice", "die"),
+    ("generate a uuid", "uuid"), ("create a uuid", "uuid"), ("uuid", "uuid"),
+    ("generate a password", "pw"), ("create a password", "pw"),
+):
+    add(f"gen.{op}.{len(COMMANDS)}", "gen.op", "^" + re.escape(pat) + "$",
+        {"op": op}, pat, "generate")
+
+for pat, op in (
+    ("roll {a} dice", "dice"), ("roll {a}d{b}", "dice2"),
+    ("random number between {a} and {b}", "rand"),
+    ("pick one of {text}", "pick"), ("pick {text}", "pick"),
+    ("shuffle {text}", "shuffle"), ("generate {a} lorem words", "lorem"),
+    ("generate a password of length {a}", "pwlen"),
+    ("choose between {text}", "pick"),
+):
+    add(f"gen.{op}.{len(COMMANDS)}", "gen.op",
+        "^" + pat.replace("{a}", N).replace("{b}", N).replace("{text}", TXT) + "$",
+        {"op": op, "a": "$1", "b": "$2", "text": "$1"}, pat, "generate")
+
+# ---------------------------------------------------------------- regex ---
+for pat, op in (
+    ("test {text} against {pat}", "test"), ("match {pat} in {text}", "match"),
+    ("find {pat} in {text}", "match"),
+    ("replace {pat} with {repl} in {text}", "replace"),
+):
+    add(f"regex.{op}.{len(COMMANDS)}", "regex.op",
+        "^" + pat.replace("{pat}", TXT).replace("{repl}", TXT).replace("{text}", TXT) + "$",
+        {"op": op, "pat": "$1", "repl": "$2", "text": "$3"}, pat, "regex")
+
+# ---------------------------------------------------------------- build ---
+BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdown",
+               "pomodoro", "stopwatch", "notes", "note pad", "notepad", "tic tac toe",
+               "memory game", "unit converter", "converter", "chart", "graph",
+               "dashboard", "landing page", "landing", "website", "web page", "page",
+               "markdown editor", "markdown", "expense tracker", "expenses", "budget",
+               "clock", "game", "app", "program", "tool"]
+for kind in BUILD_KINDS:
+    for pat in ("build a {k} app", "build {k} app", "make a {k} app", "create a {k} app",
+                "build me a {k}", "build a {k}", "make a {k}", "create a {k}",
+                "build a {k} website", "make a {k} website", "build a {k} page"):
+        add(f"build.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}", "build",
+            "^" + pat.replace("{k}", re.escape(kind)) + "$",
+            {"kind": kind}, pat, "build")
+
+for pat in ("build a program that {desc}", "build a site that {desc}",
+            "make an app that {desc}", "build me a program that {desc}",
+            "make a program that {desc}", "build {desc}"):
+    add(f"build.free.{len(COMMANDS)}", "build",
+        "^" + pat.replace("{desc}", REST) + "$", {"desc": "$1"}, pat, "build")
+
+# ----------------------------------------------------------------- misc ---
+for pat, op in (("who are you", "who"), ("what are you", "who"),
+                ("what is your name", "who"), ("help", "help"),
+                ("what can you do", "help"), ("commands", "help"),
+                ("list commands", "help"), ("show commands", "help"),
+                ("command library", "help"), ("library", "help")):
+    add(f"misc.{op}.{len(COMMANDS)}", "system", "^" + re.escape(pat) + "$",
+        {"op": op}, pat, "misc")
+
+add("misc.help.topic", "system", r"^help\s+(.+)$", {"op": "help", "topic": "$1"},
+    "help on a topic", "misc")
+add("misc.preview", "preview", r"^(?:show|open|display)\s+(?:the\s+)?preview$", {},
+    "show the preview pane", "misc")
+add("misc.theme.dark", "preview.theme", r"^(?:make it dark|use a dark theme|dark mode)$",
+    {"theme": "dark"}, "dark theme", "misc")
+add("misc.theme.light", "preview.theme", r"^(?:make it light|use a light theme|light mode)$",
+    {"theme": "light"}, "light theme", "misc")
+for pat in ("echo {text}", "say {text}"):
+    add(f"misc.echo.{len(COMMANDS)}", "echo", "^" + pat.replace("{text}", REST) + "$",
+        {"text": "$1"}, pat, "misc")
+
+
+def main():
+    cats = {}
+    for c in COMMANDS:
+        cats[c["c"]] = cats.get(c["c"], 0) + 1
+    payload = {
+        "version": 1,
+        "count": len(COMMANDS),
+        "categories": cats,
+        "commands": COMMANDS,
+    }
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+    print(f"wrote {OUT} ({OUT.stat().st_size // 1024} KB)")
+    print(f"{len(COMMANDS)} commands")
+    for k, v in sorted(cats.items(), key=lambda kv: -kv[1]):
+        print(f"  {k:10} {v}")
+
+
+if __name__ == "__main__":
+    main()

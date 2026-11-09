@@ -136,9 +136,30 @@ class DashboardTest(unittest.TestCase):
         # Pages must run the router, not show a dead demo
         self.assertIn('src="web/router.js"', self.html)
         self.assertIn('src="web/sandbox.js"', self.html)
+        self.assertIn('src="web/skills.js"', self.html)
+        self.assertIn('src="web/templates.js"', self.html)
         self.assertIn("toolrxWeb", self.html)
         self.assertIn("clientMode", self.html)
         self.assertNotIn("static demo</b>", self.html)
+
+    def test_command_library_and_preview_are_wired(self):
+        self.assertIn("toolrxSkills.init('web/commands.json')", self.html)
+        self.assertIn("toolrxWeb.prompt", self.html)
+        self.assertIn("srcdoc", self.html)
+        self.assertIn("toolrxWeb.onPreview", self.html)
+        # the preview pane must not be hidden just because the page is static
+        self.assertNotIn("body.client-demo #previewPane", self.html)
+        self.assertNotIn("body.static-demo #previewPane", self.html)
+
+    def test_composer_tracks_the_dynamic_viewport(self):
+        self.assertIn("height:100dvh", self.html)
+        self.assertIn("interactive-widget=resizes-content", self.html)
+        self.assertIn("viewport-fit=cover", self.html)
+
+    def test_mobile_preview_is_reachable(self):
+        self.assertIn("pvMobile", self.html)
+        self.assertIn("#previewPane.mobile-show", self.html)
+        self.assertIn("body.static-demo #pvMobile", self.html)
 
     def test_mobile_layout(self):
         self.assertIn("@media(max-width:900px)", self.html)
@@ -147,12 +168,12 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("env(safe-area-inset-bottom)", self.html)
 
     def test_pages_web_assets_match(self):
-        for name in ("blake2b.js", "router.js", "sandbox.js"):
+        for name in ("blake2b.js", "router.js", "sandbox.js", "skills.js",
+                     "templates.js", "commands.json"):
             src = os.path.join(ROOT, "toolrx", "web", name)
             out = os.path.join(ROOT, "docs", "web", name)
             self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
-            self.assertEqual(open(src, encoding="utf-8").read(),
-                             open(out, encoding="utf-8").read(),
+            self.assertEqual(open(src, "rb").read(), open(out, "rb").read(),
                              f"docs/web/{name} is stale")
         model = os.path.join(ROOT, "toolrx", "micro_model.json")
         out = os.path.join(ROOT, "docs", "web", "model.json")
