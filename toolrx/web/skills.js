@@ -1105,6 +1105,22 @@
       if (!ctx.project) throw new Error("projects need the browser workspace");
       return ctx.project.files(a.slug);
     },
+    "project.title": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.title(a.slug, a.name);
+    },
+    "project.theme": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.theme(a.slug, a.theme);
+    },
+    "project.themeToggle": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.themeToggle(a.slug);
+    },
+    "project.note": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.note(a.slug, a.text);
+    },
     "chat": function (a, ctx) {
       const text = chatReply((a && a.text) || (ctx && ctx.step) || "", ctx);
       return { text: text || "I'm here. Say a little more.", chat: true };
@@ -1152,6 +1168,8 @@
     lines.push("  build an rpg");
     lines.push("  plan a todo app");
     lines.push("  new project notes / list projects / show project files");
+    lines.push("  change the page title to … / add a theme toggle / make this project light");
+    lines.push("  add a footer note saying …");
     lines.push("  wikipedia ursula k le guin / define serendipity / weather in reykjavik");
     lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
     lines.push("  read notes.txt then count the words");

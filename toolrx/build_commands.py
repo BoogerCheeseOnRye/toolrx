@@ -644,6 +644,41 @@ for pat in ("show project files", "list project files", "project files",
 add("project.files.slug", "project.files", r"^(?:show|list)\s+(?:the\s+)?files\s+in\s+project\s+(.+)$",
     {"slug": "$1"}, "files in a project", "project")
 
+# Project-aware edits: change the page itself, not the template source. These
+# must stay ahead of broad build/chat patterns so "make this project light"
+# edits the open page instead of starting a new build.
+for pat in ("change the page title to {name}", "change the page title to say {name}",
+            "set the page title to {name}", "set the page title to say {name}",
+            "retitle the page to {name}", "retitle the page {name}",
+            "make the page title {name}", "title the page {name}",
+            "change this page title to {name}"):
+    add(f"project.title.{len(COMMANDS)}", "project.title",
+        "^" + pat.replace("{name}", REST) + "$", {"name": "$1"}, pat, "project")
+
+for pat in ("add a theme toggle", "add a dark mode toggle", "add a light mode toggle",
+            "add a theme switch", "add a light/dark toggle", "add a light dark toggle",
+            "put a theme toggle on the page", "add theme switching",
+            "add a toggle for the theme", "add a toggle to switch themes"):
+    add(f"project.themeToggle.{len(COMMANDS)}", "project.themeToggle",
+        "^" + re.escape(pat) + "$", {}, pat, "project")
+
+for pat in ("make this project {t}", "make the project {t}",
+            "switch this project to {t}", "switch the project to {t}",
+            "set this project theme to {t}", "set the project theme to {t}",
+            "use a {t} theme for this project", "use a {t} theme for the project",
+            "make this page {t}", "switch this page to {t}"):
+    add(f"project.theme.{len(COMMANDS)}", "project.theme",
+        "^" + pat.replace("{t}", "(light|dark)") + "$", {"theme": "$1"}, pat, "project")
+
+for pat in ("add a footer note saying {text}", "add a footer note that says {text}",
+            "add a note in the footer saying {text}",
+            "put a note in the footer saying {text}",
+            "put a footer note saying {text}", "set the footer note to {text}",
+            "set the footer note to say {text}", "add a footer that says {text}",
+            "add a footer note {text}"):
+    add(f"project.note.{len(COMMANDS)}", "project.note",
+        "^" + pat.replace("{text}", REST) + "$", {"text": "$1"}, pat, "project")
+
 # --------------------------------------------------------- architecture ---
 for pat in ("plan a {kind}", "plan an {kind}", "plan {kind} app", "plan out a {kind}",
             "architect a {kind}", "architecture of a {kind}", "architecture for a {kind}",

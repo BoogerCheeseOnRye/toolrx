@@ -182,6 +182,78 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     .map(r => ({ via: r.via || '', text: r.text || '' }));
   p = self.toolrxWeb.project();
   out.sandbox.afterPronoun = { slug: p.slug, name: p.name, h1: h1(p.html), desc: p.desc };
+  // Project-aware edits: these must change the project's own files and the
+  // re-bundled preview, not regenerate either from the template.
+  out.edits = {};
+  const editRun = async q => (await self.toolrxWeb.prompt(q))
+    .map(r => ({ via: r.via || '', text: r.text || '', error: !!r.error }));
+  out.edits.title = await editRun('change the page title to camelot field notes');
+  let ep = self.toolrxWeb.project();
+  let idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  out.edits.afterTitle = {
+    slug: ep.slug, name: ep.name, h1: h1(ep.html),
+    pageTitle: (idx.match(/<title>([^<]*)<\/title>/) || [])[1] || '',
+    readme: (self.toolrxWeb.projectFile(ep.slug, 'README.md').match(/^# .*$/m) || [''])[0],
+    previewHas: ep.html.indexOf('camelot field notes') !== -1,
+  };
+  out.edits.theme = await editRun('make this project light');
+  ep = self.toolrxWeb.project();
+  idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  out.edits.afterTheme = {
+    htmlClass: (idx.match(/<html[^>]*class="([^"]*)"/) || [])[1] || '',
+    previewTheme: self.toolrxWeb.preview().theme,
+    title: h1(ep.html), name: ep.name,
+  };
+  out.edits.toggle = await editRun('add a theme toggle');
+  ep = self.toolrxWeb.project();
+  idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  let ejs = self.toolrxWeb.projectFile(ep.slug, 'app.js');
+  out.edits.afterToggle = {
+    button: /id="themeToggle"/.test(idx),
+    handler: /getElementById\('themeToggle'\)/.test(ejs),
+    previewButton: /id="themeToggle"/.test(ep.html),
+    previewScript: /getElementById\('themeToggle'\)/.test(ep.html),
+    jsValid: (() => { try { new Function(ejs); return true; } catch (e) { return e.message; } })(),
+  };
+  out.edits.toggleAgain = await editRun('add a theme toggle');
+  ep = self.toolrxWeb.project();
+  idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  out.edits.toggleCount = (idx.match(/id="themeToggle"/g) || []).length;
+  out.edits.note = await editRun('add a footer note saying offline copy for ada');
+  ep = self.toolrxWeb.project();
+  idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  out.edits.afterNote = {
+    file: /offline copy for ada/.test(idx),
+    preview: /offline copy for ada/.test(ep.html),
+    hasId: /id="projectNote"/.test(idx),
+  };
+  out.edits.noteAgain = await editRun('add a footer note saying second note');
+  ep = self.toolrxWeb.project();
+  idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  out.edits.noteCount = (idx.match(/id="projectNote"/g) || []).length;
+  out.edits.afterNoteAgain = {
+    firstGone: !/offline copy for ada/.test(idx),
+    second: /second note/.test(idx),
+  };
+  out.edits.dark = await editRun('make it dark');
+  ep = self.toolrxWeb.project();
+  idx = self.toolrxWeb.projectFile(ep.slug, 'index.html');
+  ejs = self.toolrxWeb.projectFile(ep.slug, 'app.js');
+  out.edits.afterDark = {
+    htmlClass: (idx.match(/<html[^>]*class="([^"]*)"/) || [])[1] || '',
+    previewTheme: self.toolrxWeb.preview().theme,
+    title: h1(ep.html), toggle: /id="themeToggle"/.test(idx),
+    note: /second note/.test(idx),
+  };
+  out.edits.bundle = {
+    hasStyle: /<style>/.test(ep.html), hasScript: /<script>/.test(ep.html),
+    noLink: !/href="styles.css"/.test(ep.html), noSrc: !/src="app.js"/.test(ep.html),
+    label: /offline · project preview/.test(ep.html),
+    titleTag: /<title>camelot field notes · toolrx<\/title>/.test(ep.html),
+  };
+  out.edits.open = await editRun('open project camelot-rpg');
+  ep = self.toolrxWeb.project();
+  out.edits.afterOpen = { slug: ep.slug, title: h1(ep.html), theme: self.toolrxWeb.preview().theme };
   out.wiki = await run('wikipedia ada lovelace');
   out.define = await run('define serendipity');
   out.weather = await run('weather in reykjavik');
@@ -310,6 +382,65 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(s["afterPronoun"]["slug"], s["first"]["slug"])
         self.assertEqual(s["afterPronoun"]["name"], "Camelot")
         self.assertEqual(s["afterPronoun"]["h1"], "Camelot RPG")
+
+    def test_project_title_edit_changes_real_files_and_preview(self):
+        e = self.out["edits"]
+        self.assertEqual(e["title"][0]["via"], "project.title")
+        self.assertFalse(e["title"][0]["error"])
+        after = e["afterTitle"]
+        self.assertEqual(after["slug"], "camelot-rpg")
+        self.assertEqual(after["h1"], "camelot field notes")
+        self.assertEqual(after["pageTitle"], "camelot field notes · toolrx")
+        self.assertEqual(after["readme"], "# camelot field notes")
+        self.assertTrue(after["previewHas"])
+
+    def test_project_theme_edit_preserves_files_and_preview(self):
+        e = self.out["edits"]
+        self.assertEqual(e["theme"][0]["via"], "project.theme")
+        self.assertEqual(e["afterTheme"]["htmlClass"], "light")
+        self.assertEqual(e["afterTheme"]["previewTheme"], "light")
+        # the title edit survived the theme switch
+        self.assertEqual(e["afterTheme"]["title"], "camelot field notes")
+        self.assertEqual(e["afterDark"]["htmlClass"], "dark")
+        self.assertEqual(e["afterDark"]["previewTheme"], "dark")
+        self.assertEqual(e["afterDark"]["title"], "camelot field notes")
+        self.assertTrue(e["afterDark"]["toggle"])
+        self.assertTrue(e["afterDark"]["note"])
+
+    def test_theme_toggle_is_real_and_idempotent(self):
+        e = self.out["edits"]
+        self.assertEqual(e["toggle"][0]["via"], "project.themeToggle")
+        self.assertTrue(e["afterToggle"]["button"])
+        self.assertTrue(e["afterToggle"]["handler"])
+        self.assertTrue(e["afterToggle"]["previewButton"])
+        self.assertTrue(e["afterToggle"]["previewScript"])
+        self.assertEqual(e["afterToggle"]["jsValid"], True)
+        self.assertEqual(e["toggleCount"], 1)
+
+    def test_footer_note_edits_and_replaces(self):
+        e = self.out["edits"]
+        self.assertEqual(e["note"][0]["via"], "project.note")
+        self.assertTrue(e["afterNote"]["file"])
+        self.assertTrue(e["afterNote"]["preview"])
+        self.assertTrue(e["afterNote"]["hasId"])
+        self.assertEqual(e["noteCount"], 1)
+        self.assertTrue(e["afterNoteAgain"]["firstGone"])
+        self.assertTrue(e["afterNoteAgain"]["second"])
+
+    def test_project_preview_is_bundled_from_edited_files(self):
+        b = self.out["edits"]["bundle"]
+        self.assertTrue(b["hasStyle"])
+        self.assertTrue(b["hasScript"])
+        self.assertTrue(b["noLink"])
+        self.assertTrue(b["noSrc"])
+        self.assertTrue(b["label"])
+        self.assertTrue(b["titleTag"])
+
+    def test_reopening_a_project_keeps_edits(self):
+        o = self.out["edits"]["afterOpen"]
+        self.assertEqual(o["slug"], "camelot-rpg")
+        self.assertEqual(o["title"], "camelot field notes")
+        self.assertEqual(o["theme"], "dark")
 
     def test_site_templates_build(self):
         for name in ("social", "blog", "forum", "chat"):

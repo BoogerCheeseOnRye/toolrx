@@ -75,6 +75,13 @@ or `build an rpg based on india` produces different themed worlds
 and `change the project name to bharata` re-theme the same project instead of
 starting a chat or creating a duplicate.
 
+The active project is editable from chat: `change the page title to …`,
+`add a theme toggle`, `make this project light`, and
+`add a footer note saying …` rewrite the real `index.html` / `app.js` files.
+The preview is re-bundled from those files, so a title, switch, or note
+survives later theme changes and reopening the project. Project edits never
+regenerate the page from its template.
+
 Builds cover calculators, notes, dashboards, landing pages, a social feed,
 blog, forum, chat, arcade games (snake, breakout, pong, 2048, minesweeper,
 tetris, maze, platformer, typing), and a complete tiny RPG. `plan a todo app`

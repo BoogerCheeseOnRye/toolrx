@@ -153,10 +153,13 @@
     if (!p) throw new Error("no such project: " + slug);
     projects.active = p.slug;
     writeProjects();
-    if (p.bundled) {
+    // Prefer the project files over the cached bundle so edits always show.
+    const html = bundleProject(p) || p.bundled;
+    if (html) {
+      p.bundled = html;
       preview = {
-        html: p.bundled, kind: p.kind, desc: p.desc,
-        title: p.name, theme: preview.theme, at: Date.now(),
+        html: html, kind: p.kind, desc: p.desc,
+        title: p.name, theme: htmlTheme(p.files["index.html"]) || preview.theme, at: Date.now(),
       };
       notifyPreview();
     }
@@ -240,6 +243,176 @@
     writeFS(files);
   }
 
+  function escHtml(s) {
+    return String(s === undefined || s === null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function htmlTheme(html) {
+    const m = /<html\b[^>]*\bclass\s*=\s*["']([^"']*)["']/i.exec(String(html || ""));
+    return m && /\blight\b/i.test(m[1]) ? "light" : "dark";
+  }
+
+  function setHtmlTheme(html, theme) {
+    const cls = theme === "light" ? "light" : "dark";
+    return String(html || "").replace(/<html\b([^>]*)>/i, function (_, attrs) {
+      if (/\bclass\s*=\s*(["']).*?\1/i.test(attrs)) {
+        return "<html" + attrs.replace(/\bclass\s*=\s*(["']).*?\1/i, 'class="' + cls + '"') + ">";
+      }
+      return "<html" + attrs + ' class="' + cls + '">';
+    });
+  }
+
+  /* Re-inline styles.css and app.js so a project edited as separate files can
+   * still render inside the sandboxed preview iframe (which has no base URL). */
+  function bundleProject(p) {
+    const f = (p && p.files) || {};
+    let html = String(f["index.html"] || "");
+    if (!html) return "";
+    const css = String(f["styles.css"] || "");
+    const js = String(f["app.js"] || "");
+    html = html.replace(/<link\b[^>]*href\s*=\s*["']styles\.css["'][^>]*>/i, function () {
+      return "<style>\n" + css + "\n</style>";
+    });
+    html = html.replace(/<script\b[^>]*src\s*=\s*["']app\.js["'][^>]*>\s*<\/script>/i, function () {
+      return "<script>\n" + js + "\n</script>";
+    });
+    html = html.replace(/offline · (?:separate files|self-contained)/g, "offline · project preview");
+    return html;
+  }
+
+  function refreshProject(p, theme) {
+    if (!p) return "";
+    const nextTheme = theme === "light" || theme === "dark"
+      ? theme : htmlTheme((p.files || {})["index.html"]);
+    const html = bundleProject(p);
+    if (html) p.bundled = html;
+    p.updated = Date.now();
+    writeProjects();
+    writeProjectFiles(p);
+    if (p.slug === projects.active && p.bundled) {
+      preview = {
+        html: p.bundled, kind: p.kind, desc: p.desc,
+        title: preview.title || p.name, theme: nextTheme, at: Date.now(),
+      };
+      notifyPreview();
+    }
+    return p.bundled || "";
+  }
+
+  function projectForEdit(ref) {
+    const p = findProject(ref);
+    if (!p) throw new Error("no active project — build something first");
+    if (!p.files || !p.files["index.html"]) {
+      throw new Error("this project has no page yet — build something first");
+    }
+    return p;
+  }
+
+  function editProjectTitle(ref, name) {
+    const p = projectForEdit(ref);
+    const title = String(name || "").replace(/\s+/g, " ").trim().slice(0, 80);
+    if (!title) throw new Error("say what the page title should be");
+    const before = ((p.files["index.html"].match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] || "")
+      .replace(/<[^>]*>/g, "").trim();
+    let html = p.files["index.html"];
+    let changed = false;
+    html = html.replace(/<title>[\s\S]*?<\/title>/i, function () {
+      changed = true;
+      return "<title>" + escHtml(title) + " · toolrx</title>";
+    });
+    html = html.replace(/<h1\b([^>]*)>[\s\S]*?<\/h1>/i, function (_, attrs) {
+      changed = true;
+      return "<h1" + attrs + ">" + escHtml(title) + "</h1>";
+    });
+    if (!changed) throw new Error("this page has no title element to change");
+    p.files["index.html"] = html;
+    if (p.files["README.md"]) {
+      p.files["README.md"] = p.files["README.md"].replace(/^# [^\n]*/m, "# " + title);
+    }
+    if (p.files["ARCHITECTURE.md"]) {
+      p.files["ARCHITECTURE.md"] = p.files["ARCHITECTURE.md"].replace(/^# Architecture · [^\n]*/m,
+        "# Architecture · " + title);
+    }
+    preview.title = title;
+    refreshProject(p);
+    return 'page title "' + before + '" → "' + title + '" · edited projects/' + p.slug
+      + "/index.html\npreview re-bundled from the project files";
+  }
+
+  function setProjectTheme(ref, name) {
+    const p = projectForEdit(ref);
+    const theme = String(name || "").toLowerCase() === "light" ? "light" : "dark";
+    p.files["index.html"] = setHtmlTheme(p.files["index.html"], theme);
+    preview.title = preview.title || p.name;
+    refreshProject(p, theme);
+    files["site/index.html"] = p.bundled;
+    writeFS(files);
+    return p.name + " is now " + theme + " · edited projects/" + p.slug
+      + "/index.html (other files untouched)";
+  }
+
+  function addThemeToggle(ref) {
+    const p = projectForEdit(ref);
+    const hasButton = /id\s*=\s*["']themeToggle["']/i.test(p.files["index.html"]);
+    const js = p.files["app.js"] || "";
+    const hasScript = /getElementById\(\s*["']themeToggle["']\s*\)/.test(js);
+    if (hasButton && hasScript) {
+      return p.name + " already has a theme toggle · nothing changed";
+    }
+    if (!hasButton) {
+      p.files["index.html"] = p.files["index.html"].replace(/<h1\b([^>]*)>[\s\S]*?<\/h1>/i,
+        function (m) {
+          return m + '\n<button type="button" id="themeToggle" class="btn ghost" '
+            + 'style="align-self:flex-start;margin-top:8px">◐ theme</button>';
+        });
+    }
+    if (!hasScript) {
+      p.files["app.js"] = js + [
+        "",
+        "(function () {",
+        "  var b = document.getElementById('themeToggle');",
+        "  if (!b) return;",
+        "  b.addEventListener('click', function () {",
+        "    var root = document.documentElement;",
+        "    root.classList.toggle('light');",
+        "    b.textContent = root.classList.contains('light') ? '☾ dark' : '◐ theme';",
+        "  });",
+        "})();",
+        ""
+      ].join("\n");
+    }
+    preview.title = preview.title || p.name;
+    refreshProject(p);
+    return "added a working theme toggle to " + p.name + " · edited index.html + app.js\n"
+      + "preview re-bundled from the project files";
+  }
+
+  function addFooterNote(ref, text) {
+    const p = projectForEdit(ref);
+    const note = String(text || "").replace(/\s+/g, " ").trim().slice(0, 160);
+    if (!note) throw new Error("say what the footer note should say");
+    const block = '<div id="projectNote" class="muted small" '
+      + 'style="max-width:980px;margin:14px auto 0;text-align:center">'
+      + escHtml(note) + "</div>\n";
+    let html = p.files["index.html"];
+    let replaced = false;
+    if (/<div\b[^>]*id\s*=\s*["']projectNote["'][^>]*>[\s\S]*?<\/div>\s*/i.test(html)) {
+      html = html.replace(/<div\b[^>]*id\s*=\s*["']projectNote["'][^>]*>[\s\S]*?<\/div>\s*/i, block);
+      replaced = true;
+    } else if (/<footer\b/i.test(html)) {
+      html = html.replace(/<footer\b/i, block + "<footer");
+    } else {
+      html = html.replace(/<\/body>/i, block + "</body>");
+    }
+    p.files["index.html"] = html;
+    preview.title = preview.title || p.name;
+    refreshProject(p);
+    return (replaced ? "updated" : "added") + ' the footer note on ' + p.name
+      + ': "' + note + '"\npreview re-bundled from the project files';
+  }
+
   function buildProject(kind, desc) {
     const t = root.toolrxTemplates;
     if (!t || !t.project) throw new Error("build templates are not loaded");
@@ -260,7 +433,7 @@
     p.name = built.title;
     p.kind = built.kind;
     p.files = built.files;
-    p.bundled = t.build(kind, desc, { theme: theme });
+    p.bundled = bundleProject(p);
     p.updated = Date.now();
     if (!p.created) p.created = p.updated;
     projects.active = p.slug;
@@ -342,6 +515,12 @@
   function setTheme(name) {
     const theme = name === "light" ? "light" : "dark";
     const t = root.toolrxTemplates;
+    // A real project owns its own files: change the theme class in place so an
+    // edited title, added toggle, or footer note survives the switch.
+    const project = activeProject();
+    if (project && project.files && project.files["index.html"]) {
+      return !!setProjectTheme(project.slug, theme);
+    }
     if (!t) return false;
     if (!preview.kind) {
       preview.html = t.build("welcome", "", { theme: theme });
@@ -356,15 +535,6 @@
     preview.html = t.build(preview.kind, preview.desc, { theme: theme });
     preview.at = Date.now();
     files["site/index.html"] = preview.html;
-    const p = activeProject();
-    if (p && p.kind === preview.kind && t.project) {
-      const built = t.project(preview.kind, preview.desc, { theme: theme });
-      p.files = built.files;
-      p.bundled = built.html;
-      p.updated = Date.now();
-      writeProjects();
-      writeProjectFiles(p);
-    }
     writeFS(files);
     notifyPreview();
     return true;
@@ -490,6 +660,10 @@
       open: function (slug) { return openProject(slug); },
       rename: function (slug, name) { return renameProject(slug, name); },
       remove: function (slug) { return deleteProject(slug); },
+      title: function (slug, name) { return editProjectTitle(slug, name); },
+      theme: function (slug, name) { return setProjectTheme(slug, name); },
+      themeToggle: function (slug) { return addThemeToggle(slug); },
+      note: function (slug, text) { return addFooterNote(slug, text); },
       files: function (slug) {
         const p = findProject(slug);
         if (!p) return "no active project — build something first";
