@@ -185,7 +185,7 @@
     let themed = false;
     const t = root.toolrxTemplates;
     // Renaming an RPG to a known setting also re-themes its files + preview.
-    if (t && p.kind === "rpg" && /arthur|camelot|india|bharat|sanskrit|space|sci-?fi|noir|detective/i.test(label)) {
+    if (t && p.kind === "rpg" && /arthur|camelot|knight|india|bharat|sanskrit|space|sci-?fi|noir|detective|greek|olympus|japan|samurai|sakura|egypt|nile|pharaoh|ocean|abyss|atlantis|west|cowboy|frontier|cyber|neon/i.test(label)) {
       try {
         const built = t.project("rpg", label, { theme: preview.theme });
         p.files = built.files;

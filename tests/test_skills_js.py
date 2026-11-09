@@ -155,10 +155,33 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
                               ['rpg', 'an rpg based on king arthur'],
                               ['rpg', 'an rpg based on india'],
                               ['rpg', 'an rpg set in space'],
-                              ['rpg', 'an rpg noir detective']]) {
+                              ['rpg', 'an rpg noir detective'],
+                              ['rpg', 'an rpg based on greek myth'],
+                              ['rpg', 'an rpg based on japan'],
+                              ['rpg', 'an rpg based on egypt'],
+                              ['rpg', 'an rpg based on the ocean'],
+                              ['rpg', 'an rpg based on the wild west'],
+                              ['rpg', 'an rpg based on cyberpunk']]) {
     const p = self.toolrxTemplates.project(kind, desc, { theme: 'dark' });
     try { new Function(p.files['app.js']); out.syntax[kind + ':' + desc] = 'ok'; }
     catch (e) { out.syntax[kind + ':' + desc] = e.message; }
+  }
+  out.themes = {};
+  for (const q of ['build an rpg based on greek myth',
+                   'build an rpg based on japan',
+                   'build an rpg based on egypt',
+                   'build an rpg based on the ocean',
+                   'build an rpg based on the wild west',
+                   'build an rpg based on cyberpunk',
+                   'build an rpg noir detective']) {
+    const r = await run(q);
+    out.themes[q] = {
+      ok: !r[0].error, kind: state.kind,
+      title: ((state.html.match(/<h1>([^<]*)<\/h1>/) || [])[1] || ''),
+      html: state.html,
+      css: state.files['styles.css'] || '',
+      js: state.files['app.js'] || '',
+    };
   }
   // Real sandbox rename flow: build one RPG, then refer to it by a stale name
   // and by "it". The same project must be re-themed, not duplicated.
@@ -254,6 +277,21 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.edits.open = await editRun('open project camelot-rpg');
   ep = self.toolrxWeb.project();
   out.edits.afterOpen = { slug: ep.slug, title: h1(ep.html), theme: self.toolrxWeb.preview().theme };
+  self.toolrxWeb.reset();
+  out.sandbox.olympusBuild = (await self.toolrxWeb.prompt('build an rpg based on greek myth'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  ep = self.toolrxWeb.project();
+  out.sandbox.afterOlympus = {
+    slug: ep.slug, name: ep.name, title: h1(ep.html),
+    js: self.toolrxWeb.projectFile(ep.slug, 'app.js'),
+  };
+  out.sandbox.olympusRename = (await self.toolrxWeb.prompt('rename it to egypt'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  ep = self.toolrxWeb.project();
+  out.sandbox.afterOlympusRename = {
+    slug: ep.slug, name: ep.name, title: h1(ep.html),
+    js: self.toolrxWeb.projectFile(ep.slug, 'app.js'),
+  };
   out.wiki = await run('wikipedia ada lovelace');
   out.define = await run('define serendipity');
   out.weather = await run('weather in reykjavik');
@@ -361,6 +399,41 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("Asura King", india["js"])
         self.assertIn("#2f5d43", arthur["css"] + arthur["js"])
         self.assertIn("#3f6b4a", india["css"] + india["js"])
+
+    def test_additional_rpg_packs_are_distinct(self):
+        expected = {
+            "build an rpg based on greek myth": ("Olympus RPG", "the Titan", "#4f6b4a"),
+            "build an rpg based on japan": ("Sakura RPG", "the Shogun", "#8a4f6b"),
+            "build an rpg based on egypt": ("Nile RPG", "the Pharaoh", "#5f6b2f"),
+            "build an rpg based on the ocean": ("Abyss RPG", "the Leviathan", "#2a6b6b"),
+            "build an rpg based on the wild west": ("Frontier RPG", "the Outlaw", "#5e4a2a"),
+            "build an rpg based on cyberpunk": ("Neon RPG", "the Architect", "#4c2f6b"),
+            "build an rpg noir detective": ("Rain City RPG", "the Fixer", "#36424a"),
+        }
+        titles = set()
+        pages = set()
+        for prompt, (title, marker, colour) in expected.items():
+            t = self.out["themes"][prompt]
+            self.assertTrue(t["ok"], prompt)
+            self.assertEqual(t["kind"], "rpg", prompt)
+            self.assertEqual(t["title"], title, prompt)
+            self.assertIn(marker, t["js"], prompt)
+            self.assertIn(colour, t["css"] + t["js"], prompt)
+            titles.add(t["title"])
+            pages.add(t["html"])
+        self.assertEqual(len(titles), len(expected))
+        self.assertEqual(len(pages), len(expected))
+
+    def test_renaming_an_rpg_to_a_new_pack_rethemes_it(self):
+        s = self.out["sandbox"]
+        self.assertEqual(s["olympusBuild"][0]["via"], "build")
+        self.assertEqual(s["afterOlympus"]["title"], "Olympus RPG")
+        self.assertIn("the Titan", s["afterOlympus"]["js"])
+        self.assertEqual(s["olympusRename"][0]["via"], "project.rename")
+        self.assertEqual(s["afterOlympusRename"]["slug"], s["afterOlympus"]["slug"])
+        self.assertEqual(s["afterOlympusRename"]["title"], "Nile RPG")
+        self.assertIn("the Pharaoh", s["afterOlympusRename"]["js"])
+        self.assertNotIn("the Titan", s["afterOlympusRename"]["js"])
 
     def test_generated_variant_scripts_are_valid_javascript(self):
         for name, status in self.out["syntax"].items():

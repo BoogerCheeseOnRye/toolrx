@@ -70,7 +70,8 @@ persist in `localStorage`.
 Build modifiers are deterministic: `build a tetris game with 3d elements`
 renders an extruded 3D block grid, and `build an rpg based on king arthur`
 or `build an rpg based on india` produces different themed worlds
-(Camelot, Bharata, Derelict, Rain City). Project references are tolerant:
+(Camelot, Bharata, Derelict, Rain City, Neon, Olympus, Sakura, Nile, Abyss,
+Frontier). Project references are tolerant:
 `change the name from verdant wood rpg to india`, `rename it to camelot`,
 and `change the project name to bharata` re-theme the same project instead of
 starting a chat or creating a duplicate.

@@ -778,7 +778,18 @@
         groundA: "#161b2b", groundB: "#1a2033", wall: "#2c3650", wall2: "#222a40", tree: "#2d4a5a"
       };
     }
-    if (/noir|rain|detective|city|neon|cyber/.test(t)) {
+    if (/cyber|cyberpunk|neon|hacker|dystopia|chrome|synth/.test(t)) {
+      return {
+        title: "Neon RPG", sub: "a run through the electric rain",
+        intro: "You wake in a service tunnel under Neon. Find the Architect before the grid locks down.",
+        hint: "find the Architect in the south-east.",
+        enemy: "chrome drone", boss: "the Architect", elder: "the fixer", shrine: "the data well",
+        win: "The Architect logs out. You win — the Neon grid is yours.",
+        chest: "Data shard: +1 potion.",
+        groundA: "#1a1426", groundB: "#20182f", wall: "#3a2450", wall2: "#2c1b3d", tree: "#4c2f6b"
+      };
+    }
+    if (/noir|rain|detective|gumshoe|city/.test(t)) {
       return {
         title: "Rain City RPG", sub: "a case with too many doors",
         intro: "You wake in a doorway on Rain Street. Find the Fixer before the case goes cold.",
@@ -787,6 +798,61 @@
         win: "The Fixer folds. You win — the case is closed.",
         chest: "Envelope: +1 favour.",
         groundA: "#1a1d24", groundB: "#1f232c", wall: "#343b4a", wall2: "#272d39", tree: "#36424a"
+      };
+    }
+    if (/greek|greece|olympus|olympian|myth|zeus|athena|hades|troy|trojan|labyrinth|minotaur/.test(t)) {
+      return {
+        title: "Olympus RPG", sub: "a hero’s climb toward the gods",
+        intro: "You wake at the foot of Olympus. Find the Titan before the storm breaks.",
+        hint: "find the Titan in the south-east.",
+        enemy: "shade", boss: "the Titan", elder: "the oracle", shrine: "the temple",
+        win: "The Titan falls. You win — the gods return to Olympus.",
+        chest: "Ambrosia: +1 potion.",
+        groundA: "#1f2233", groundB: "#262a3d", wall: "#3b3f57", wall2: "#2b2f43", tree: "#4f6b4a"
+      };
+    }
+    if (/japan|japanese|samurai|shogun|sakura|edo|kyoto|ronin|ninja|bushido/.test(t)) {
+      return {
+        title: "Sakura RPG", sub: "a ronin’s road under falling petals",
+        intro: "You wake beneath the cedars of the Sakura Road. Find the Shogun before the blossoms fall.",
+        hint: "find the Shogun in the south-east.",
+        enemy: "bandit", boss: "the Shogun", elder: "the shrine maiden", shrine: "the torii gate",
+        win: "The Shogun kneels. You win — the Sakura Road is quiet again.",
+        chest: "Lacquer box: +1 potion.",
+        groundA: "#2b1f26", groundB: "#33242c", wall: "#4a3340", wall2: "#3a2934", tree: "#8a4f6b"
+      };
+    }
+    if (/egypt|egyptian|nile|pharaoh|pyramid|sphinx|scarab|desert|sand/.test(t)) {
+      return {
+        title: "Nile RPG", sub: "a walk beside the reeds of the old river",
+        intro: "You wake on the bank of the Nile. Find the Pharaoh before the sandstorm rises.",
+        hint: "find the Pharaoh in the south-east.",
+        enemy: "scarab swarm", boss: "the Pharaoh", elder: "the scribe", shrine: "the obelisk",
+        win: "The Pharaoh rests. You win — the Nile keeps its secret.",
+        chest: "Canopic jar: +1 potion.",
+        groundA: "#2a2114", groundB: "#332818", wall: "#4f3b1e", wall2: "#3b2c17", tree: "#5f6b2f"
+      };
+    }
+    if (/ocean|sea|underwater|abyss|atlantis|coral|reef|submarine|deep/.test(t)) {
+      return {
+        title: "Abyss RPG", sub: "a dive below the last light",
+        intro: "You wake on the floor of the Abyss. Find the Leviathan before the air runs out.",
+        hint: "find the Leviathan in the south-east.",
+        enemy: "jelly", boss: "the Leviathan", elder: "the reef keeper", shrine: "the sunken gate",
+        win: "The Leviathan sleeps. You win — the Abyss is calm again.",
+        chest: "Pearl: +1 potion.",
+        groundA: "#10222a", groundB: "#132a34", wall: "#1f4650", wall2: "#173640", tree: "#2a6b6b"
+      };
+    }
+    if (/west|western|cowboy|frontier|outlaw|sheriff|saloon|rustler/.test(t)) {
+      return {
+        title: "Frontier RPG", sub: "a ride across the dry country",
+        intro: "You wake at the edge of the Frontier. Find the Outlaw before the sun goes down.",
+        hint: "find the Outlaw in the south-east.",
+        enemy: "rustler", boss: "the Outlaw", elder: "the sheriff", shrine: "the water tower",
+        win: "The Outlaw rides off. You win — the Frontier is quiet again.",
+        chest: "Canteen: +1 potion.",
+        groundA: "#2b1d13", groundB: "#332317", wall: "#4d3320", wall2: "#3b2718", tree: "#5e4a2a"
       };
     }
     return null;
