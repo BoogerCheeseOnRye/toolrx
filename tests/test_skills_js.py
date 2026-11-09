@@ -383,9 +383,12 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("perspective", v["css"])
         self.assertIn("rotateX", v["css"])
         self.assertNotIn("canvas{transform:none}", v["css"])
-        # the renderer extrudes each block with highlight and shadow faces
+        # the renderer projects cuboids and paints depth-sorted faces
         self.assertIn("D3=true", v["js"])
-        self.assertIn("rgba(255,255,255,.34)", v["js"])
+        self.assertIn("function p3", v["js"])
+        self.assertIn("function addCube", v["js"])
+        self.assertIn("faces.sort", v["js"])
+        self.assertIn("draw3d()", v["js"])
 
     def test_rpg_settings_produce_different_previews(self):
         arthur = self.out["variants"]["build an rpg based on king arthur"]

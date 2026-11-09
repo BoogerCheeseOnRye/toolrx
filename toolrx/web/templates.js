@@ -1209,16 +1209,17 @@
       '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn" id="go" type="button">Start</button><button class="btn ghost" id="reset" type="button">Reset</button></div></div>'
     ].join("");
     var js = [
-      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),COLS=10,ROWS=20,S=26,D3=" + (opts.d3 ? "true" : "false") + ";",
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),COLS=10,ROWS=20,S=26,D3=" + (opts.d3 ? "true" : "false") + ",YAW=-0.42,PITCH=0.34,FOCAL=560,CAM=26;",
       "var SHAPES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];",
       "var COLORS=['#22d3ee','#fbbf24','#a78bfa','#fb7185','#34d399','#60a5fa','#f472b6'];",
       "var grid,piece,score,lines,iv,dead;",
-      "function cell(px,py,c){if(!D3){cx.fillStyle=c;cx.fillRect(px+1,py+1,S-2,S-2);return;}",
-      "cx.fillStyle=c;cx.fillRect(px+1,py+1,S-2,S-2);",
-      "cx.fillStyle='rgba(255,255,255,.34)';cx.fillRect(px+1,py+1,S-2,5);",
-      "cx.fillStyle='rgba(0,0,0,.30)';cx.fillRect(px+S-6,py+1,5,S-2);",
-      "cx.fillStyle='rgba(0,0,0,.16)';cx.fillRect(px+1,py+S-6,S-2,5);",
-      "cx.strokeStyle='rgba(0,0,0,.40)';cx.strokeRect(px+1,py+1,S-2,S-2);}",
+      "function cell(px,py,c){cx.fillStyle=c;cx.fillRect(px+1,py+1,S-2,S-2);}",
+      "function p3(x,y,z){var cy=Math.cos(YAW),sy=Math.sin(YAW),cp=Math.cos(PITCH),sp=Math.sin(PITCH);var x1=x*cy+z*sy,z1=-x*sy+z*cy,y1=y*cp-z1*sp,z2=y*sp+z1*cp,d=CAM-z2;if(d<1)d=1;var f=FOCAL/d;return {x:cv.width/2+x1*f,y:cv.height/2-y1*f,z:z2};}",
+      "function shade(c,a){var r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16),t=a>0?255:0,p=Math.abs(a);return 'rgb('+Math.round(r+(t-r)*p)+','+Math.round(g+(t-g)*p)+','+Math.round(b+(t-b)*p)+')';}",
+      "function line3(a,b,c,d,e,f){var p=p3(a,b,c),q=p3(d,e,f);cx.strokeStyle='#17233a';cx.lineWidth=1;cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(q.x,q.y);cx.stroke();}",
+      "function grid3(){for(var x=0;x<=COLS;x++)line3(x-5,-10,-0.5,x-5,10,-0.5);for(var y=0;y<=ROWS;y++)line3(-5,10-y,-0.5,5,10-y,-0.5);}",
+      "function addCube(col,row,c,out){var x=col-4.5,y=9.5-row,h=0.46,v=[[[-h,-h,-h],[h,-h,-h],[h,h,-h],[-h,h,-h]],[[-h,-h,h],[h,-h,h],[h,h,h],[-h,h,h]],[[-h,h,-h],[h,h,-h],[h,h,h],[-h,h,h]],[[-h,-h,-h],[h,-h,-h],[h,-h,h],[-h,-h,h]],[[-h,-h,-h],[-h,-h,h],[-h,h,h],[-h,h,-h]],[[h,-h,-h],[h,-h,h],[h,h,h],[h,h,-h]]];var sh=[-.42,0,.36,-.55,-.16,-.26];for(var i=0;i<6;i++){var ps=[],z=0;for(var j=0;j<4;j++){var q=p3(x+v[i][j][0],y+v[i][j][1],v[i][j][2]);ps.push(q);z+=q.z;}out.push({p:ps,z:z/4,c:shade(c,sh[i])});}}",
+      "function draw3d(){cx.fillStyle='#080d1a';cx.fillRect(0,0,cv.width,cv.height);grid3();var faces=[];for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++)if(grid[y][x])addCube(x,y,grid[y][x],faces);if(piece&&!dead)piece.s.forEach(function(row,y){row.forEach(function(v,x){if(v)addCube(piece.x+x,piece.y+y,piece.c,faces);});});faces.sort(function(a,b){return a.z-b.z;});faces.forEach(function(face){cx.beginPath();cx.moveTo(face.p[0].x,face.p[0].y);for(var i=1;i<4;i++)cx.lineTo(face.p[i].x,face.p[i].y);cx.closePath();cx.fillStyle=face.c;cx.fill();cx.strokeStyle=face.c;cx.lineWidth=1;cx.stroke();});}",
       "function reset(){grid=[];for(var y=0;y<ROWS;y++){grid.push(Array(COLS).fill(''));}score=0;lines=0;dead=false;spawn();document.getElementById('score').textContent='0';document.getElementById('lines').textContent='0';document.getElementById('msg').textContent='start when ready';draw();}",
       "function spawn(){var s=SHAPES[Math.floor(Math.random()*SHAPES.length)];piece={s:JSON.parse(JSON.stringify(s)),x:Math.floor((COLS-s[0].length)/2),y:0,c:COLORS[Math.floor(Math.random()*COLORS.length)]};if(hit(piece.x,piece.y,piece.s)){dead=true;document.getElementById('msg').textContent='game over · score '+score;}}",
       "function hit(px,py,s){for(var y=0;y<s.length;y++)for(var x=0;x<s[y].length;x++){if(!s[y][x])continue;var nx=px+x,ny=py+y;if(nx<0||nx>=COLS||ny>=ROWS)return true;if(ny>=0&&grid[ny][nx])return true;}return false;}",
@@ -1229,7 +1230,7 @@
       "function down(){if(!hit(piece.x,piece.y+1,piece.s)){piece.y++;draw();}else{lock();draw();}}",
       "function rotate(){var s=piece.s,n=s[0].map(function(_,i){return s.map(function(r){return r[i];}).reverse();});if(!hit(piece.x,piece.y,n))piece.s=n;draw();}",
       "function drop(){while(!hit(piece.x,piece.y+1,piece.s))piece.y++;lock();draw();}",
-      "function draw(){cx.fillStyle='#080d1a';cx.fillRect(0,0,cv.width,cv.height);var ox=(cv.width-COLS*S)/2,oy=10;",
+      "function draw(){if(D3){draw3d();return;}cx.fillStyle='#080d1a';cx.fillRect(0,0,cv.width,cv.height);var ox=(cv.width-COLS*S)/2,oy=10;",
       "for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){cx.strokeStyle='#111a2c';cx.strokeRect(ox+x*S,oy+y*S,S,S);if(grid[y][x])cell(ox+x*S,oy+y*S,grid[y][x]);}",
       "if(piece&&!dead)piece.s.forEach(function(row,y){row.forEach(function(v,x){if(v)cell(ox+(piece.x+x)*S,oy+(piece.y+y)*S,piece.c);});});}",
       "function start(){if(dead||iv)return;iv=setInterval(function(){if(!dead)down();},520);document.getElementById('msg').textContent='running';}",
@@ -1239,9 +1240,9 @@
     ].join("\n");
     return shell({
       title: opts.d3 ? "Tetris 3D" : "Tetris",
-      sub: opts.d3 ? "stack, clear, survive — 10×20 with extruded 3D blocks" : "stack, clear, survive — 10×20",
+      sub: opts.d3 ? "stack, clear, survive — 10×20 with a projected 3D renderer" : "stack, clear, survive — 10×20",
       body: body,
-      css: opts.d3 ? ".card canvas{transform:perspective(1100px) rotateX(7deg) rotateY(-5deg);box-shadow:0 30px 70px rgba(0,0,0,.6);border-radius:14px}@media(max-width:560px){.card canvas{transform:perspective(900px) rotateX(5deg) rotateY(-2deg) scale(.985)}}" : "",
+      css: opts.d3 ? ".card canvas{transform:perspective(1600px) rotateX(3deg);box-shadow:0 30px 70px rgba(0,0,0,.6);border-radius:14px}@media(max-width:560px){.card canvas{transform:perspective(1100px) rotateX(2deg) scale(.99)}}" : "",
       js: js, theme: opts.theme
     });
   }
