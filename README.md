@@ -47,12 +47,21 @@ python3 toolrx/tester.py
 python3 -m unittest discover -s tests -v   # routing + repo hygiene
 ```
 
-GitHub Pages serves a static preview from `docs/` (regenerate it after editing
-the dashboard):
+GitHub Pages is not a screenshot: `docs/` ships the dashboard together with the
+same `micro_model.json` and a JavaScript port of `tokhash.py` / `router.py`
+(`toolrx/web/`). On a static host the router runs in the tab — 27 tools, real
+confidence scores, a virtual workspace that persists in `localStorage`, and no
+network calls. The Python server is only needed for machine/socket tools,
+training, and WireGuard. Rebuild the Pages copy after editing the dashboard,
+router, or model:
 
 ```bash
 python3 docs/build.py
 ```
+
+On phones (≤900px) the device drawer becomes a slide-over with a backdrop, the
+device detail and command center become full-screen sheets, panes stack, and the
+composer uses a 16px field so iOS does not zoom on focus.
 
 Mock fleet for screenshots (also demonstrates the context bar):
 
@@ -99,6 +108,7 @@ fleet. Any adb-attached device is also discovered at runtime.
 | `/models/local` | models discovered on local OpenAI-compatible/Ollama backends |
 | `/llm` · `/llm/status/<id>` | optional async build tasks |
 | `/preview/` | generated artifacts |
+| `/web/*` | dashboard scripts + model used by the in-browser router |
 | `/wg` · `/wg/toggle` | optional WireGuard status / kill-switch |
 | `/train` · `/train/*` | optional phone-training harness (off by default) |
 

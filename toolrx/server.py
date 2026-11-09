@@ -2800,6 +2800,28 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+        elif self.path.startswith("/web/"):
+            rel = self.path[len("/web/"):].split("?", 1)[0]
+            root = os.path.realpath(os.path.join(HERE, "web"))
+            try:
+                if rel == "model.json":   # shipped from the router model itself
+                    full = os.path.realpath(os.path.join(HERE, "micro_model.json"))
+                else:
+                    full = os.path.realpath(os.path.join(root, rel))
+                    if not full.startswith(root + os.sep):
+                        raise OSError
+                data = open(full, "rb").read()
+            except OSError:
+                self._respond(404, {"error": "not found"})
+                return
+            ctype = ("application/javascript; charset=utf-8" if full.endswith(".js")
+                     else "application/json; charset=utf-8" if full.endswith(".json")
+                     else "text/plain; charset=utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
         elif self.path.startswith("/preview/"):
             rel = self.path[len("/preview/"):].split("?", 1)[0]
             full = os.path.join(PREVIEW_DIR, rel)

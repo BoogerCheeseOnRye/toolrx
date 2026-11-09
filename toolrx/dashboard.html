@@ -242,7 +242,7 @@
   .pane{flex:1;min-width:0;display:none;flex-direction:column;min-height:0}
   .pane.on{display:flex}
   #chatPane{border-right:1px solid var(--border)}
-  #log{flex:1;min-height:0;overflow-y:auto;padding:16px;font-size:13px;line-height:1.6}
+  #log{flex:1;min-height:0;overflow-y:auto;padding:48px 16px 16px;font-size:13px;line-height:1.6}
   .entry{border-left:2px solid var(--border);padding:8px 14px;margin:6px 0;border-radius:0 8px 8px 0;background:var(--panel)}
   .entry .lbl{font-weight:600;font-size:12px}
   .entry .lbl.q{color:#fff}.entry .lbl.res{color:var(--green)}.entry .lbl.err{color:var(--red)}
@@ -274,6 +274,7 @@
   .composer .hint{color:var(--muted);font-size:10px;margin-top:4px}
   .hintrow{display:flex;align-items:center;gap:12px;margin-top:4px}
   .hintrow .hint{flex:1;min-width:0;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pvMobile{display:none}
   .ctxbar{display:none;align-items:center;gap:8px;font-size:11px;color:var(--muted);flex:0 0 auto}
   .ctxbar.on{display:flex}
   .ctxbar .ctxlab{text-transform:uppercase;letter-spacing:.6px;font-size:8px;color:var(--muted);flex:0 0 auto}
@@ -328,14 +329,90 @@
   #devices.micro .devcard .devname{font-size:10px}
   #devices.micro #traincard .meta,#devices.micro #clustersum .meta{font-size:9px}
 
-  @media(max-width:900px){#devices{display:none}}
-
   /* static (GitHub Pages) demo banner */
   #staticNote{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);
     z-index:60;background:var(--panel2);border:1px solid var(--border);border-radius:9px;
     padding:7px 12px;font-size:11.5px;color:var(--muted);box-shadow:0 2px 10px rgba(0,0,0,.45)}
   #staticNote b{color:var(--accent)}
   body.static-demo #staticNote{display:block}
+  body.client-demo #staticNote{border-color:rgba(34,211,238,.45);display:block}
+  body.client-demo #staticNote b{color:var(--accent)}
+  /* ---------- mobile ---------- */
+  #drawerBackdrop{display:none;position:fixed;inset:0;z-index:65;background:rgba(3,6,12,.62);
+    backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+  #devClose{display:none}
+  /* the in-browser router has no build preview pane */
+  body.client-demo #previewPane,body.static-demo #previewPane{display:none}
+  .cm-client{display:none}
+  body.client-demo .cm-client{display:flex}
+  body.client-demo .cm-github{display:none}
+  .cm-btn:disabled{opacity:.7;cursor:not-allowed}
+  @media(max-width:900px){
+    body.drawer-open #drawerBackdrop{display:block}
+    #logo{width:38px;height:38px;top:8px;left:8px;font-size:17px;z-index:80}
+    /* the drawer becomes an overlay instead of disappearing */
+    #devices{position:fixed;top:0;left:0;bottom:0;z-index:70;width:min(84vw,330px);
+      flex:0 0 auto;padding:12px;padding-top:54px;border-right:1px solid var(--border);
+      box-shadow:12px 0 40px rgba(0,0,0,.55);transform:translateX(-104%);
+      transition:transform .26s ease;display:flex;overflow-y:auto}
+    #devices.closed{width:min(84vw,330px);padding:12px;padding-top:54px;
+      border-right:1px solid var(--border);transform:translateX(-104%)}
+    #devices:not(.closed){transform:translateX(0)}
+    #botSlot{height:64px;margin-bottom:6px}
+    /* device detail fills the screen instead of squeezing the panes */
+    #devinfo{position:fixed;inset:0;z-index:75;width:100%;flex:0 0 auto;border:none;
+      transform:translateX(104%);transition:transform .26s ease;background:#0a0f1c;
+      white-space:normal;overflow-y:auto;padding:0}
+    #devinfo.open{transform:translateX(0);width:100%;flex-basis:auto;padding:56px 16px 16px}
+    #devClose{display:grid;place-items:center;position:fixed;top:10px;right:12px;z-index:76;
+      width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:#0d1220;
+      color:var(--muted);font-size:15px;cursor:pointer}
+    .cm-close{width:36px;height:36px;font-size:16px}
+    .panes{flex-direction:column}
+    .pane{flex:1 1 50%}
+    #previewPane{display:none}
+    #previewPane.mobile-show{display:flex;position:fixed;inset:0;z-index:85;background:var(--panel)}
+    #pvMobile{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);
+      border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 10px;
+      font-size:11px;font-family:inherit;cursor:pointer}
+    body.client-demo #pvMobile,body.static-demo #pvMobile{display:none}
+    #chatPane{border-right:none;border-bottom:1px solid var(--border)}
+    #log{padding:52px 12px 12px;font-size:13px}
+    .composer{padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+    .composer textarea{font-size:16px;max-height:96px;padding:10px 12px}
+    .composer button{padding:11px 16px;font-size:14px;min-width:64px}
+    .hintrow .hint{display:none}
+    .ctxprog{width:84px;flex-basis:84px}
+    /* command center: full-screen sheet */
+    #cmdModal{inset:0;border-radius:0;border:none;padding:12px;padding-top:54px;overflow-y:auto}
+    .cm-header{padding-bottom:10px;gap:10px;position:sticky;top:-42px;background:#0a0f1c;z-index:2}
+    .cm-bot{width:52px;height:52px}
+    .cm-bot .mark{width:46px;height:46px}
+    .cm-name{font-size:15px}
+    .cm-sub{font-size:10.5px}
+    .cm-body{gap:12px;margin-top:10px}
+    .cm-row{flex-wrap:wrap;gap:6px}
+    .cm-row>span{min-width:96px}
+    .cm-row input[type=color]{flex:0 0 120px;height:34px;padding:2px}
+    .cm-row input,.cm-row select{font-size:16px;flex:1 1 140px;min-width:0}
+    .cm-row .cm-btn{flex:1 1 auto}
+    /* the banner joins the layout instead of covering the first message */
+    #staticNote{position:static;top:auto;left:auto;right:auto;transform:none;
+      align-self:stretch;max-width:none;margin:8px 12px 0 54px;flex:0 0 auto;
+      font-size:10.5px;white-space:normal;line-height:1.35;padding:6px 9px}
+  }
+  @media(max-width:560px){
+    #devinfo .dlist{font-size:13px}
+    #devinfo .dl{padding:9px 0}
+    .cm-row>span{min-width:0;flex:1 1 100%;color:var(--muted);font-size:11px}
+    .cm-row input,.cm-row select,.cm-row .cm-btn{flex:1 1 100%}
+    .cm-row input[type=color]{flex:0 0 120px}
+    .cm-row input[type=range]{flex:1 1 auto}
+    .entry pre{font-size:11.5px}
+    #qc{width:100%;max-width:100vw;right:-100%;border-left:none}
+    #qcBtn{top:56px;right:10px}
+  }
+
   /* command center modal */
   #cmdModal{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;
     background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
@@ -412,7 +489,8 @@
   <canvas id="qcEcon" width="740" height="240"></canvas>
 </div>
 <button class="logo" id="logo" title="toggle drawer">◈</button>
-<div id="staticNote"><b>static demo</b> — run <code>python3 toolrx/server.py</code> for live tool calls</div>
+<div id="staticNote"><b>loading router…</b></div>
+<div id="drawerBackdrop"></div>
 <main>
   <aside id="devices" class="closed">
     <div id="drawerMenu">
@@ -480,6 +558,7 @@
       </form>
       <div class="hintrow">
         <span class="hint">tool calls resolve instantly · build tasks run in the background & render in Preview</span>
+        <button type="button" id="pvMobile" title="show the preview pane">▣ preview</button>
         <div class="ctxbar" id="ctxbar">
           <span class="ctxlab">context</span>
           <div class="ctxprog"><div id="ctxfill"></div></div>
@@ -506,6 +585,7 @@
       <div class="cm-row"><span>accent color</span><input type="color" id="cmAccent" value="#22d3ee"></div>
       <div class="cm-row"><span>panel radius</span><input type="range" id="cmRadius" min="0" max="24" value="12"></div>
       <div class="cm-row"><span>compact drawer</span><label class="cm-sw"><input type="checkbox" id="cmCompact" checked><i></i></label></div>
+      <div class="cm-row cm-client"><span>workspace</span><button class="cm-btn" id="cmReset">Reset virtual files</button></div>
     </section>
     <section>
       <h4>Models / Providers</h4>
@@ -532,7 +612,7 @@
       <div class="cm-row"><span>WireGuard</span><button class="cm-btn" id="cmWg">…</button></div>
       <div class="cm-ghinfo" id="cmWgInfo">kill-switch status</div>
     </section>
-    <section>
+    <section class="cm-github">
       <h4>GitHub</h4>
       <div class="cm-row"><span>repo</span><input type="text" id="cmRepo" placeholder="owner/repo"></div>
       <div class="cm-row"><span>branch</span><input type="text" id="cmBranch" value="main"></div>
@@ -542,6 +622,10 @@
   </div>
 </div>
 
+<!-- in-browser router: used when the page is served statically (GitHub Pages) -->
+<script src="web/blake2b.js"></script>
+<script src="web/router.js"></script>
+<script src="web/sandbox.js"></script>
 <script>
 const log=document.getElementById('log'), q=document.getElementById('q'), send=document.getElementById('send');
 const eq=document.getElementById('eq'), eqTrack=document.getElementById('eqTrack');
@@ -549,7 +633,9 @@ const devices=document.getElementById('devices');
 const pv=document.getElementById('pv');
 let busy=false, pending=[], curTask=null, stopSent=false;
 let trainingEnabled=false;   // opt-in via TOOLRX_SHOW_TRAINING=1
-let staticMode=false;        // true on a static host (e.g. GitHub Pages)
+let staticMode=false;        // no API and no in-browser router
+let configReady=null;        // resolves once the backend/router decision is made
+let clientMode=false;        // router model running in this tab (GitHub Pages)
 async function loadConfig(){
   try{
     const r=await fetch('/config');
@@ -557,22 +643,53 @@ async function loadConfig(){
     const c=await r.json();
     trainingEnabled=!!c.training;
     document.body.classList.toggle('show-training', trainingEnabled);
-  }catch(e){
-    trainingEnabled=false;
-    staticMode=true;
-    document.body.classList.add('static-demo');
+    if(q && window.matchMedia('(max-width:900px)').matches) q.placeholder='ask toolrx…';
+    loadPreview();   // show the "no preview yet" page instead of a blank pane
+    return;
+  }catch(e){}
+  trainingEnabled=false;
+  // No Python backend (static hosting): run the same hashed n-gram router
+  // in the tab, against the model file shipped next to this page.
+  if(window.toolrxWeb && window.toolrxRouter){
+    try{ clientMode=await window.toolrxWeb.init('web/model.json'); }catch(e){ clientMode=false; }
+  }
+  staticMode=!clientMode;
+  document.body.classList.add(clientMode?'client-demo':'static-demo');
+  const note=document.getElementById('staticNote');
+  if(note){
+    note.innerHTML = clientMode
+      ? '<b>in-browser router</b> — 27 tools · hashed n-gram model · nothing leaves this tab'
+      : '<b>static preview</b> — open <code>toolrx/server.py</code> for the full dashboard API';
+  }
+  wgPoll();
+  if(clientMode){
+    if(q && window.matchMedia('(max-width:900px)').matches) q.placeholder='ask toolrx…';
+    const hint=document.querySelector('.hint');
+    if(hint) hint.textContent='runs in this tab · 27 allow-listed tools · no LLM, no network';
+    entry('toolrx ready',
+      'in-browser router · 27 tools · confidence = cosine of the winning centroid\n\n'
+      +'try:  add 12 and 30\n'
+      +'      read notes.txt\n'
+      +'      list the files in data\n'
+      +'      write hello to notes.txt\n'
+      +'      diff notes.txt and README.md\n\n'
+      +'the workspace is virtual + persists in localStorage (toolrxWeb.reset() to reseed)','stat');
   }
 }
 
-// On a static host there is no Python backend; still show the machine you
-// are viewing from so the dashboard is not an empty shell.
+// Show the machine the page is actually running on. Used both when the
+// server reports its host and when the router runs in this tab.
 function browserHost(){
   const mem=navigator.deviceMemory||null;
   const cores=navigator.hardwareConcurrency||null;
-  return [{serial:'HOST',name:'browser',role:'static demo',online:true,kind:'host',
-    ram:mem?mem*1024:null,ram_total:mem?mem*1024:null,ram_pct:null,load:null,
-    uptime:null,battery:null,cores:cores,abi:navigator.platform||'web',
-    cpu:'web browser',hostname:location.hostname||'static',model:'',
+  const ua=navigator.userAgentData||{};
+  const uptime=(performance.now?performance.now()/1000:0);
+  return [{serial:'HOST',name:'this device',role:clientMode?'in-browser router':'static preview',online:true,kind:'host',
+    ram:null,ram_total:mem?mem*1024:null,ram_pct:null,load:null,
+    uptime:uptime,battery:null,cores:cores,abi:ua.architecture||'web',
+    cpu:[ua.platform||navigator.platform||'browser',cores?cores+' cores':''].filter(Boolean).join(' · '),
+    hostname:location.hostname||'localhost',model:clientMode?'micro-router (27 tools)':'',
+    platform:(ua.platform||navigator.platform||'')+' · '+(screen.width+'×'+screen.height),
     max_context:0,context_used:0,total_context:0,context_pct:0}];
 }
 const champVersion='v13'; // the live champion — never erasable
@@ -685,6 +802,14 @@ async function loadLocalModels(){
   const info=document.getElementById('cmLocalInfo');
   const list=document.getElementById('cmModelList');
   if(!sel||!pick) return;
+  if(configReady) await configReady;   // ?cmd=open can beat the config probe
+  if(clientMode){
+    sel.innerHTML='<option value="in-browser">in-browser · 27 tools</option>';
+    pick.innerHTML='<option value="micro-router">micro-router (hashed n-gram)</option>';
+    info.textContent='the router runs in this tab — no backend, key, or network needed';
+    if(list) list.innerHTML='';
+    return;
+  }
   try{
     const d=await (await fetch('/models/local')).json();
     const backends=d.backends||[], models=d.models||[];
@@ -713,9 +838,9 @@ async function loadLocalModels(){
       pick.innerHTML='<option value="">none detected</option>';
     }
   }catch(e){
-    sel.innerHTML='<option value="">no backend on this static page</option>';
+    sel.innerHTML='<option value="">no local backend found</option>';
     info.textContent=staticMode
-      ? 'static demo — the server probes Ollama / llama.cpp / llama-swap'
+      ? 'open the local server to probe Ollama / llama.cpp / llama-swap'
       : String(e);
   }
 }
@@ -762,6 +887,13 @@ async function loadLocalModels(){
   });
   document.getElementById('cmCompact').addEventListener('change',e=>{
     document.getElementById('devices').classList.toggle('compact',e.target.checked); save();
+  });
+  const cmReset=document.getElementById('cmReset');
+  if(cmReset) cmReset.addEventListener('click',()=>{
+    if(!window.toolrxWeb) return;
+    window.toolrxWeb.reset();
+    entry('workspace','virtual files reset to their seed contents','stat');
+    loadLocalModels();
   });
   document.getElementById('cmLocalModel').addEventListener('change',e=>{
     if(e.target.value) document.getElementById('cmModel').value=e.target.value;
@@ -850,6 +982,7 @@ function renderDevices(devs){
     card.addEventListener('click',()=>{
       clusterSel=false; trainSel=false; selected=(selected===d.serial)?null:d.serial;
       renderDevices(devs); renderDetail(d); renderClusterSummary(devs);
+      if(selected && window.matchMedia('(max-width:900px)').matches) closeDrawer();
     });
     devices.querySelector('#devlist').appendChild(card);
   });
@@ -1433,26 +1566,63 @@ function renderDetail(d){
   if(d.max_context && d.context_used!=null) rows.push(['Ctx used', d.context_used+' tok']);
   rows.push(['Active', d.active?'yes':'no']);
   const ramPct=d.ram_pct!=null?d.ram_pct:0;
-  el.innerHTML=`<h3>${d.name}</h3><div class="sub">${d.serial||''}</div>
-    ${d.ram_total?`<div class="prog"><div style="width:${Math.min(100,ramPct)}%"></div></div>`:''}
+  el.innerHTML=`<button id="devClose" title="close">✕</button><h3>${d.name}</h3><div class="sub">${d.serial||''}</div>
+    ${d.ram_pct!=null?`<div class="prog"><div style="width:${Math.min(100,ramPct)}%"></div></div>`:''}
     <div class="dlist">${rows.map(r=>`<div class="dl"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>`;
   const dl=el.querySelector('.dlist');
   if(dl){ dl.style.overflowY='auto'; dl.style.minHeight='0'; dl.style.flex='1 1 auto'; }
 }
 
+function syncDrawerBackdrop(){
+  document.body.classList.toggle('drawer-open', !devices.classList.contains('closed'));
+}
+function closeDrawer(){
+  devices.classList.add('closed');
+  syncDrawerBackdrop();
+}
 document.getElementById('logo').addEventListener('click',()=>{
   devices.classList.toggle('closed');
+  syncDrawerBackdrop();
+});
+document.getElementById('drawerBackdrop').addEventListener('click',closeDrawer);
+document.getElementById('devinfo').addEventListener('click',e=>{
+  if(e.target && e.target.id==='devClose'){
+    selected=null; clusterSel=false;
+    renderDetail(null); renderDevices(lastDevs);
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  const modal=document.getElementById('cmdModal');
+  if(modal && modal.classList.contains('open')){ modal.classList.remove('open'); return; }
+  if(selected!==null||clusterSel){ selected=null; clusterSel=false; renderDetail(null); renderDevices(lastDevs); return; }
+  closeDrawer();
 });
 
 document.getElementById('pvToggle').addEventListener('click',()=>{
   const pv=document.getElementById('previewPane'), chat=document.getElementById('chatPane');
+  if(window.matchMedia('(max-width:900px)').matches){
+    pv.classList.remove('mobile-show');   // phone layout: preview is a sheet
+    return;
+  }
   const full=pv.classList.toggle('full');
   chat.style.display=full?'none':'';
   pvToggle.textContent=full?'⤡':'⤢';
   if(full)loadPreview();
 });
+const pvMobile=document.getElementById('pvMobile');
+if(pvMobile) pvMobile.addEventListener('click',()=>{
+  document.getElementById('previewPane').classList.add('mobile-show');
+  loadPreview();
+});
 
 async function refreshCluster(){
+  if(clientMode||staticMode){
+    // no API on this host: keep showing the machine the page runs on
+    const host=browserHost();
+    renderDevices(host); renderClusterSummary(host); renderContextBar(host);
+    return;
+  }
   try{
     const r=await fetch('/cluster'); const d=await r.json();
     // feed the mascot: when any device goes active (real traffic), it perks up
@@ -1467,11 +1637,11 @@ async function refreshCluster(){
     if(selected){ const sel=d.devices.find(x=>x.serial===selected); renderDetail(sel); }
     else if(clusterSel){ renderDetail(clusterData); }
   }catch(e){
-    if(staticMode){
-      renderDevices(browserHost());
-      renderClusterSummary(browserHost());
-      renderContextBar(browserHost());
-      if(!selected) renderDetail(browserHost()[0]);
+    if(staticMode||clientMode){
+      const host=browserHost();
+      renderDevices(host);
+      renderClusterSummary(host);
+      renderContextBar(host);
     }
   }
   if(trainingEnabled){
@@ -1514,9 +1684,21 @@ async function stopBuild(){
 }
 
 async function submit(txt){
+  if(clientMode && window.toolrxWeb && window.toolrxWeb.ready){
+    q.value='';
+    entry('> '+txt,'','q');
+    const r=await window.toolrxWeb.run(txt);
+    const top=r.ranked.slice(0,3).map(x=>x[0]+' '+x[1].toFixed(3)).join(' · ');
+    const head = r.blocked
+      ? r.tool+' · blocked'
+      : r.tool+' · conf '+r.confidence.toFixed(3)+' · margin '+r.margin.toFixed(3);
+    const body = 'args  '+JSON.stringify(r.args)+'\n\n'+(r.blocked?('blocked: '+r.reason):r.output);
+    entry(head, body+'\n\nrouting  '+top+' · '+r.ms.toFixed(1)+' ms', r.blocked?'err':'res');
+    return;
+  }
   if(staticMode){
     entry('> '+txt,'','q');
-    entry('static demo','This page is a static preview. The deterministic router runs locally:\n\n  python3 toolrx/server.py\n\nThen open http://localhost:8080/','stat');
+    entry('static preview','This page could not load the in-browser router. The deterministic router also runs locally:\n\n  python3 toolrx/server.py\n\nThen open http://localhost:8080/','stat');
     return;
   }
   if(busy){pending.push(txt);return;}
@@ -1561,13 +1743,15 @@ document.getElementById('f').addEventListener('submit',e=>{e.preventDefault();
 q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
   const t=q.value.trim(); if(t)submit(t);}});
 
-loadConfig().then(()=>refreshCluster());
+configReady=loadConfig().then(()=>refreshCluster());
 setInterval(refreshCluster,5000);
 // deep-link: /?drawer=open shows the device drawer immediately
 try{
   const sp=new URLSearchParams(location.search);
-  if(sp.get('drawer')==='open')
+  if(sp.get('drawer')==='open'){
     document.getElementById('devices').classList.remove('closed');
+    syncDrawerBackdrop();
+  }
   // deep-link: /?cmd=open opens the command center
   if(sp.get('cmd')==='open') openCmdCenter();
 }catch(e){}
@@ -1587,6 +1771,14 @@ function wgPaint(s){
     : ('error' in s ? 'toggle failed: '+s.error : 'tunnel down · click to bring up');
 }
 async function wgPoll(){
+  if(clientMode || staticMode){
+    if(cmWg){
+      cmWg.textContent='local server only'; cmWg.disabled=true;
+      cmWg.style.background='#1e293b'; cmWg.style.color='#94a3b8';
+    }
+    if(cmWgInfo) cmWgInfo.textContent='WireGuard control needs the Python server';
+    return;
+  }
   try{const r=await fetch('/wg');wgPaint(await r.json());}catch(e){}
 }
 if(cmWg){

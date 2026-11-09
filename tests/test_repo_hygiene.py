@@ -132,6 +132,34 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("staticMode", self.html)
         self.assertIn("browserHost", self.html)
 
+    def test_in_browser_router_is_wired_up(self):
+        # Pages must run the router, not show a dead demo
+        self.assertIn('src="web/router.js"', self.html)
+        self.assertIn('src="web/sandbox.js"', self.html)
+        self.assertIn("toolrxWeb", self.html)
+        self.assertIn("clientMode", self.html)
+        self.assertNotIn("static demo</b>", self.html)
+
+    def test_mobile_layout(self):
+        self.assertIn("@media(max-width:900px)", self.html)
+        self.assertIn('id="drawerBackdrop"', self.html)
+        self.assertIn('id="devClose"', self.html)
+        self.assertIn("env(safe-area-inset-bottom)", self.html)
+
+    def test_pages_web_assets_match(self):
+        for name in ("blake2b.js", "router.js", "sandbox.js"):
+            src = os.path.join(ROOT, "toolrx", "web", name)
+            out = os.path.join(ROOT, "docs", "web", name)
+            self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
+            self.assertEqual(open(src, encoding="utf-8").read(),
+                             open(out, encoding="utf-8").read(),
+                             f"docs/web/{name} is stale")
+        model = os.path.join(ROOT, "toolrx", "micro_model.json")
+        out = os.path.join(ROOT, "docs", "web", "model.json")
+        self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
+        self.assertEqual(open(model, "rb").read(), open(out, "rb").read(),
+                         "docs/web/model.json is stale")
+
     def test_no_phone_paths_in_training_options(self):
         # training is hidden, but its options should not leak a phone path
         self.assertNotIn("/sd" + "card/", self.html)
