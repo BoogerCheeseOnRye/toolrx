@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy to harness-devices.json (gitignored) for the optional phone harness. All identifiers below are EXAMPLES.",
+  "devices": [
+    {
+      "serial": "EXAMPLE0000000001",
+      "name": "phone-a",
+      "needle_port": 8355,
+      "executor_port": 8086,
+      "training": false,
+      "forwards": [[8355, 8355], [8086, 8086], [18080, 8080]]
+    },
+    {
+      "serial": "EXAMPLE0000000002",
+      "name": "phone-b",
+      "needle_port": 8353,
+      "executor_port": 8087,
+      "training": true,
+      "forwards": [[8353, 8353], [8087, 8087]]
+    }
+  ]
+}

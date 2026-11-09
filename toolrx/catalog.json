@@ -1,0 +1,471 @@
+{
+ "dim": 4096,
+ "tools": [
+  {
+   "name": "math.sum",
+   "knowledge": [
+    "knowledge/math.sum.md"
+   ],
+   "params": [
+    {
+     "name": "terms",
+     "type": "int_list",
+     "hint": "find all integers in the query"
+    }
+   ],
+   "impl": {
+    "type": "native",
+    "lib": "native/libmath.so",
+    "fn": "sum_ints",
+    "signature": [
+     "array",
+     "c_int",
+     "c_int"
+    ]
+   }
+  },
+  {
+   "name": "fs.read_file",
+   "knowledge": [
+    "knowledge/fs.read_file.md"
+   ],
+   "params": [
+    {
+     "name": "path",
+     "type": "string",
+     "hint": "find a quoted or bare filename token"
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_read_file"
+   }
+  },
+  {
+   "name": "fs.list_dir",
+   "knowledge": [
+    "knowledge/fs.list_dir.md"
+   ],
+   "params": [
+    {
+     "name": "path",
+     "type": "string",
+     "hint": "find a quoted or bare directory token",
+     "default": "."
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_list_dir"
+   }
+  },
+  {
+   "name": "fs.cat_all",
+   "knowledge": [
+    "knowledge/fs.cat_all.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_cat_all"
+   }
+  },
+  {
+   "name": "sys.mem_status",
+   "knowledge": [
+    "knowledge/sys.mem_status.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_mem_status"
+   }
+  },
+  {
+   "name": "net.ping",
+   "knowledge": [
+    "knowledge/net.ping.md"
+   ],
+   "params": [
+    {
+     "name": "host",
+     "type": "string",
+     "hint": "host must be on the operator allowlist"
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_ping"
+   }
+  },
+  {
+   "name": "sys.ifconfig",
+   "knowledge": [
+    "knowledge/sys.ifconfig.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_ifconfig"
+   }
+  },
+  {
+   "name": "sys.netstat",
+   "knowledge": [
+    "knowledge/sys.netstat.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_netstat"
+   }
+  },
+  {
+   "name": "sys.processes",
+   "knowledge": [
+    "knowledge/sys.processes.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_ps"
+   }
+  },
+  {
+   "name": "sys.disk",
+   "knowledge": [
+    "knowledge/sys.disk.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_disk"
+   }
+  },
+  {
+   "name": "sys.uptime",
+   "knowledge": [
+    "knowledge/sys.uptime.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_uptime"
+   }
+  },
+  {
+   "name": "config.diff",
+   "knowledge": [
+    "knowledge/config.diff.md"
+   ],
+   "params": [
+    {
+     "name": "path_a",
+     "type": "string",
+     "hint": "first config file (within sandbox)"
+    },
+    {
+     "name": "path_b",
+     "type": "string",
+     "hint": "second config file (within sandbox)"
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_config_diff"
+   }
+  },
+  {
+   "name": "fs.inspect_dir",
+   "knowledge": [
+    "knowledge/fs.inspect_dir.md"
+   ],
+   "params": [
+    {
+     "name": "path",
+     "type": "string",
+     "hint": "directory to list",
+     "default": "."
+    },
+    {
+     "name": "file",
+     "type": "string",
+     "hint": "optional file within that directory to read"
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_inspect_dir"
+   }
+  },
+  {
+   "name": "module.start",
+   "knowledge": [
+    "knowledge/module.start.md"
+   ],
+   "params": [
+    {
+     "name": "name",
+     "type": "string",
+     "hint": "which monitor: memory, disk, uptime",
+     "default": "memory"
+    },
+    {
+     "name": "interval",
+     "type": "int",
+     "hint": "refresh seconds",
+     "default": 5
+    },
+    {
+     "name": "duration",
+     "type": "int",
+     "hint": "auto-stop after N seconds; e.g. for 10 minutes",
+     "default": 0
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_module_start"
+   }
+  },
+  {
+   "name": "module.run",
+   "knowledge": [
+    "knowledge/module.run.md"
+   ],
+   "params": [
+    {
+     "name": "tool",
+     "type": "string",
+     "hint": "read-only tool to run repeatedly",
+     "default": "sys.disk"
+    },
+    {
+     "name": "interval",
+     "type": "int",
+     "hint": "seconds between runs",
+     "default": 5
+    },
+    {
+     "name": "duration",
+     "type": "int",
+     "hint": "auto-stop after N seconds; e.g. for 10 minutes",
+     "default": 0
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_module_run"
+   }
+  },
+  {
+   "name": "module.stop",
+   "knowledge": [
+    "knowledge/module.stop.md"
+   ],
+   "params": [
+    {
+     "name": "id",
+     "type": "string",
+     "hint": "module id to stop, or 'all'"
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_module_stop"
+   }
+  },
+  {
+   "name": "module.clear",
+   "knowledge": [
+    "knowledge/module.clear.md"
+   ],
+   "params": [],
+   "impl": {
+    "type": "python",
+    "func": "do_module_clear"
+   }
+  },
+  {
+   "name": "file.edit",
+   "knowledge": [
+    "knowledge/file.edit.md"
+   ],
+   "params": [
+    {
+     "name": "path",
+     "type": "string",
+     "hint": "file path within the sandbox"
+    },
+    {
+     "name": "content",
+     "type": "string",
+     "hint": "new contents, after a colon"
+    },
+    {
+     "name": "mode",
+     "type": "string",
+     "hint": "create or replace",
+     "default": "replace"
+    }
+   ],
+   "impl": {
+    "type": "python",
+    "func": "do_file_edit"
+   }
+  },
+  {
+   "name": "net.cfg_gen",
+   "impl": {
+    "type": "python",
+    "func": "do_cfg_gen"
+   },
+   "params": [
+    {
+     "name": "content",
+     "type": "string",
+     "hint": "declarative network spec (safe DSL)"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.cfg_gen.md"
+   ]
+  },
+  {
+   "name": "net.cfg_check",
+   "impl": {
+    "type": "python",
+    "func": "do_cfg_check"
+   },
+   "params": [
+    {
+     "name": "content",
+     "type": "string",
+     "hint": "network config/spec to lint (safe DSL)"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.cfg_check.md"
+   ]
+  },
+  {
+   "name": "net.lab_state",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_state"
+   },
+   "params": [
+    {
+     "name": "content",
+     "type": "string",
+     "hint": "what to show: int, routes, ospf, bgp, all",
+     "default": "all"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.lab_state.md"
+   ]
+  },
+  {
+   "name": "net.lab_push",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_push"
+   },
+   "params": [
+    {
+     "name": "content",
+     "type": "string",
+     "hint": "network spec (safe DSL) to push to the lab (dry-run)"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.lab_push.md"
+   ]
+  },
+  {
+   "name": "net.lab_apply",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_apply"
+   },
+   "params": [
+    {
+     "name": "pending",
+     "type": "string",
+     "hint": "pending lab config id to apply"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.lab_apply.md"
+   ]
+  },
+  {
+   "name": "net.lab_topo",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_topo"
+   },
+   "params": [
+    {
+     "name": "content",
+     "type": "string",
+     "hint": "multi-node topology in safe DSL (nodes + links)"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.lab_topo.md"
+   ]
+  },
+  {
+   "name": "net.lab_topo_apply",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_topo_apply"
+   },
+   "params": [
+    {
+     "name": "id",
+     "type": "string",
+     "hint": "pending topology id to build"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.lab_topo_apply.md"
+   ]
+  },
+  {
+   "name": "net.lab_link",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_link"
+   },
+   "params": [
+    {
+     "name": "link",
+     "type": "string",
+     "hint": "link id e.g. r1.eth0<->r2.eth0"
+    },
+    {
+     "name": "state",
+     "type": "string",
+     "hint": "up or down"
+    }
+   ],
+   "knowledge": [
+    "knowledge/net.lab_link.md"
+   ]
+  },
+  {
+   "name": "net.lab_down",
+   "impl": {
+    "type": "python",
+    "func": "do_lab_down"
+   },
+   "params": [],
+   "knowledge": [
+    "knowledge/net.lab_down.md"
+   ]
+  }
+ ]
+}

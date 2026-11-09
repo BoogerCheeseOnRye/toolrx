@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.log
+logs/
+run/
+preview/
+*.db-shm
+*.db-wal
+toolrx/data/*.jsonl
+toolrx/data/*.db
+toolrx/data/poc_ids.npy
+toolrx/data/poc_len.npy
+.env
+*key*
+
+# Local runtime state / real device inventory — never publish these.
+toolrx/devices.json
+toolrx/devnames.json
+toolrx/tasks.json
+toolrx/requests.log
+toolrx/protected.json
+harness-devices.json
+toolrx/cmd_providers.json
+toolrx/cmd_github.json
+toolrx/labplan.json

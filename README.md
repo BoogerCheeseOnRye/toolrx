@@ -1,0 +1,143 @@
+# toolrx — tool calling without an LLM
+
+`toolrx` is a deterministic micro tool-router and local harness. Give it a
+plain-English request and it selects one of 27 allow-listed tools, extracts the
+arguments, checks them against a default-deny policy, and executes — with no
+transformer, no GPU, no API key, and no third-party Python packages.
+
+```bash
+TOOLRX_SANDBOX_ROOT="$PWD" PORT=8080 python3 toolrx/server.py
+# open http://localhost:8080/  — then ask: "list contents of all files"
+```
+
+The dashboard shows the machine it is running on automatically: hostname, CPU,
+RAM, load, uptime and disk are read from `/proc`. No device config is required.
+
+![stack](https://img.shields.io/badge/python-3.10+-blue) ![license](https://img.shields.io/badge/license-MIT-green)
+
+## How it works
+
+1. `tokhash.py` turns the request into hashed character n-grams (pure Python).
+2. `builder.py` derives one centroid vector per tool from `knowledge/*.md`.
+3. `router.py` scores the request against every centroid by cosine similarity
+   and picks the best tool plus a confidence/margin.
+4. `executor.py` extracts arguments, validates them with `security.py`, and runs
+   the tool inside a realpath sandbox with bounded output size.
+
+The model is `micro_model.json`: text statistics, not neural weights. Rebuild it
+at any time with:
+
+```bash
+python3 toolrx/server.py --rebuild
+```
+
+## Quick start
+
+```bash
+# deterministic router + dashboard (no adb, no phones, no models)
+TOOLRX_SANDBOX_ROOT=/path/to/some/dir PORT=8080 python3 toolrx/server.py
+
+# call it from the shell
+curl -s localhost:8080/call \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"list contents of all files"}'
+
+# run the routing tests
+python3 toolrx/tester.py
+python3 -m unittest discover -s tests -v   # routing + repo hygiene
+```
+
+GitHub Pages serves a static preview from `docs/` (regenerate it after editing
+the dashboard):
+
+```bash
+python3 docs/build.py
+```
+
+Mock fleet for screenshots (also demonstrates the context bar):
+
+```bash
+TOOLRX_MOCK=1 PORT=8080 python3 toolrx/server.py
+```
+
+The dashboard's device drawer opens via the ◈ button, or directly with
+`http://localhost:8080/?drawer=open`. The mascot lives at the top of that
+drawer and reacts when a device becomes active. The command center (mascot,
+or `?cmd=open`) lists the local models it finds and holds the WireGuard
+kill-switch; only the machine running the server is shown unless you add or
+attach more devices.
+
+## Configuration
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `PORT` | `8080` | HTTP port |
+| `TOOLRX_BIND` | `127.0.0.1` | bind address |
+| `TOOLRX_SANDBOX_ROOT` | `policy.json` / package dir | root for file tools |
+| `TOOLRX_RUN_DIR` | `toolrx/run` | gate/task state |
+| `PREVIEW_DIR` | `preview` | generated preview artifacts |
+| `TOOLRX_DEVICES_FILE` | `toolrx/devices.json` | optional local device inventory |
+| `TOOLRX_SHOW_TRAINING` | off | show the optional phone-training UI |
+| `TRAIN_SERIAL` | unset | adb serial for the optional training harness |
+| `TRAIN_ANDROID_ROOT` | Android shared storage | shared-storage root on the training phone |
+| `TOOLRX_LOCAL_BACKENDS` | Ollama + common local ports | comma-separated URLs probed for models |
+| `TOOLRX_NEEDLE_DIR` | `../needle-agent` | optional needle/llama.cpp checkout |
+| `TOOLRX_DISK_ROOT` | `/` | filesystem reported on the host card |
+
+`devices.json`, `devnames.json` and `tasks.json` are local state and are
+gitignored. Copy `toolrx/devices.example.json` if you want a persistent phone
+fleet. Any adb-attached device is also discovered at runtime.
+
+## Endpoints
+
+| URL | Purpose |
+|-----|---------|
+| `/` | dashboard |
+| `/config` | UI capabilities + detected host info |
+| `/call` | `POST {"query": "..."}` → routing decision + result |
+| `/cluster` | host + optional device status (2s snapshot loop) |
+| `/models/local` | models discovered on local OpenAI-compatible/Ollama backends |
+| `/llm` · `/llm/status/<id>` | optional async build tasks |
+| `/preview/` | generated artifacts |
+| `/wg` · `/wg/toggle` | optional WireGuard status / kill-switch |
+| `/train` · `/train/*` | optional phone-training harness (off by default) |
+
+## Optional phone harness
+
+The repo also contains the original distributed-phone experiment:
+`adb-reconnect.py`, `forward-watchdog.py`, `hotplug.py`, `stack-watchdog.py`,
+`job-scheduler.py`, and the gate/training scripts under `run/`. None of it is
+needed for the router. To use it, copy `harness-devices.example.json` to
+`harness-devices.json` (gitignored) and fill in your own serials; every serial
+in the repository is an example placeholder.
+
+Needle/llama.cpp backends are optional and off unless configured. The
+deterministic router is the default and the only required path.
+
+## Design notes
+
+- **Default deny.** Queries are normalized, metacharacters are rejected, and
+  file paths are canonicalized with `realpath` and confined to the sandbox.
+- **No shell.** Tools call Python functions; `shell=True` is never used.
+- **Bounded work.** Input length, file reads and output sizes are capped.
+- **Deterministic.** The same query and model always produce the same route.
+- **Honest benchmarks.** `bench/router_bench.py` reports feature throughput,
+  routing throughput and end-to-end latency separately, with the corpus hash,
+  token definition and hardware recorded alongside the number.
+
+## Repo layout
+
+```
+toolrx/                 deterministic router + dashboard
+  tokhash.py builder.py router.py executor.py security.py
+  catalog.json knowledge/ micro_model.json
+  server.py dashboard.html cli.py
+run/                    optional gate/training corpus scripts
+harness_devices.py      optional phone-cluster config loader
+stack-watchdog.py · hotplug.py · forward-watchdog.py
+adb-reconnect.py · job-scheduler.py
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

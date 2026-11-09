@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>SWARM://ORB</title>
+<style>
+  :root{--g:#00ff41;--gd:#00b32d;--gf:#7dff9e;--bg:#000}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--g);
+    font-family:'Courier New',monospace;-webkit-user-select:none;user-select:none}
+  canvas#rain,canvas#net{position:fixed;inset:0;width:100%;height:100%}
+  canvas#net{opacity:.55}
+  /* CRT scanlines */
+  #crt{position:fixed;inset:0;pointer-events:none;z-index:5;
+    background:repeating-linear-gradient(180deg,rgba(0,255,65,.05) 0 1px,transparent 1px 3px);
+    mix-blend-mode:screen}
+  #vig{position:fixed;inset:0;pointer-events:none;z-index:4;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.85) 100%)}
+  #wrap{position:relative;z-index:6;height:100%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;padding:12px}
+  /* ---- robot face ---- */
+  #facebox{width:min(58vmin,300px);filter:drop-shadow(0 0 18px rgba(0,255,65,.35))}
+  svg{width:100%;display:block;overflow:visible}
+  .head-shell{fill:rgba(0,20,8,.88);stroke:var(--g);stroke-width:3}
+  .panel-line{stroke:var(--gd);stroke-width:2;fill:none}
+  #antennaTip{fill:var(--g)}
+  .eye-clip{fill:#001a08}
+  .eye-glow{filter:drop-shadow(0 0 6px var(--g))}
+  #mouth{stroke:var(--g);stroke-width:4;fill:none;stroke-linecap:round}
+  /* ---- HUD ---- */
+  #nm{font-size:clamp(18px,5vmin,26px);font-weight:bold;letter-spacing:4px;color:var(--gf);
+    text-shadow:0 0 12px rgba(0,255,65,.8);margin-top:6px}
+  #role{font-size:11px;color:var(--gd);letter-spacing:2px;margin-top:2px}
+  #term{width:min(92vw,420px);height:88px;margin-top:10px;font-size:11px;line-height:1.45;
+    color:var(--gd);background:rgba(0,12,4,.55);border:1px solid rgba(0,255,65,.25);
+    border-radius:4px;padding:6px 8px;overflow:hidden;text-shadow:0 0 4px rgba(0,255,65,.4)}
+  #term b{color:var(--gf)}
+  #say{min-height:22px;margin-top:8px;font-size:13px;color:#cfffd9;font-style:italic;
+    text-shadow:0 0 8px rgba(0,255,65,.5);text-align:center;max-width:88vw}
+  #wake{margin-top:8px;display:none;background:transparent;border:1px solid var(--g);
+    color:var(--g);font-family:inherit;font-size:12px;letter-spacing:2px;padding:7px 16px;
+    border-radius:3px;cursor:pointer;animation:pulse 1.4s infinite}
+  #wake.on{display:block}
+  @keyframes pulse{50%{box-shadow:0 0 14px rgba(0,255,65,.7)}}
+  #corner{position:fixed;top:8px;right:10px;z-index:6;font-size:9px;color:#00551a;
+    text-align:right;line-height:1.6;pointer-events:none}
+  #corner b{color:var(--gd)}
+</style>
+</head>
+<body>
+<canvas id="rain"></canvas>
+<canvas id="net"></canvas>
+<div id="vig"></div><div id="crt"></div>
+<div id="wrap">
+  <div id="facebox">
+    <svg viewBox="0 0 200 170">
+      <line x1="100" y1="4" x2="100" y2="24" class="panel-line"/>
+      <circle id="antennaTip" cx="100" cy="6" r="5"/>
+      <rect x="30" y="26" width="140" height="120" rx="34" class="head-shell"/>
+      <path d="M 44 60 Q 60 44 84 42" class="panel-line" opacity=".5"/>
+      <path d="M 156 128 Q 142 142 118 144" class="panel-line" opacity=".5"/>
+      <g id="eyes">
+        <g class="eye-glow">
+          <clipPath id="clL"><rect x="52" y="62" width="36" height="46" rx="17"/></clipPath>
+          <rect x="52" y="62" width="36" height="46" rx="17" class="eye-clip"/>
+          <ellipse id="pupL" cx="70" cy="85" rx="9" ry="12" fill="#00ff41"/>
+        </g>
+        <g class="eye-glow">
+          <clipPath id="clR"><rect x="112" y="62" width="36" height="46" rx="17"/></clipPath>
+          <rect x="112" y="62" width="36" height="46" rx="17" class="eye-clip"/>
+          <ellipse id="pupR" cx="130" cy="85" rx="9" ry="12" fill="#00ff41"/>
+        </g>
+      </g>
+      <path id="mouth" d="M 82 126 Q 100 134 118 126"/>
+    </svg>
+  </div>
+  <div id="nm">—</div>
+  <div id="role">NEEDLE//EXECUTOR NODE</div>
+  <div id="term"></div>
+  <div id="say"></div>
+  <button id="wake">[ TAP TO ENABLE VOICE ]</button>
+</div>
+<div id="corner">TOOLRX<br>CLUSTER NODE<br><b id="clk">--:--:--</b></div>
+<script>
+"use strict";
+const QS = new URLSearchParams(location.search);
+const NAME = (QS.get("dev") || "NODE").toUpperCase();
+const ROLE = (QS.get("role") || "needle//executor node");
+document.getElementById("nm").textContent = ">_" + NAME;
+document.getElementById("role").textContent = ROLE.toUpperCase();
+
+/* ---------- matrix rain ---------- */
+const rc = document.getElementById("rain"), rx = rc.getContext("2d");
+const GLYPHS = "アイウエオカキクケコサシスセソ01<>[]{}#$%&*+=;:/\\|SWARMNET";
+let cols = [], lastRain = 0;
+function sizeRain(){
+  rc.width = innerWidth; rc.height = innerHeight;
+  const n = Math.floor(rc.width / 16);
+  cols = Array.from({length:n}, () => Math.random() * -50);
+}
+sizeRain(); addEventListener("resize", sizeRain);
+function rain(t){
+  if (t - lastRain < 66){ requestAnimationFrame(rain); return; }   // ~15fps
+  lastRain = t;
+  rx.fillStyle = "rgba(0,0,0,.14)"; rx.fillRect(0,0,rc.width,rc.height);
+  rx.font = "14px 'Courier New',monospace";
+  for (let i = 0; i < cols.length; i++){
+    const ch = GLYPHS[Math.floor(Math.random()*GLYPHS.length)];
+    const x = i*16, y = cols[i]*16;
+    rx.fillStyle = Math.random() < .04 ? "#c8ffd0" : "#00ff41";
+    rx.fillText(ch, x, y);
+    if (y > rc.height && Math.random() > .975) cols[i] = 0; else cols[i]++;
+  }
+  requestAnimationFrame(rain);
+}
+requestAnimationFrame(rain);
+
+/* ---------- neural net visualizer ---------- */
+const nc = document.getElementById("net"), nx = nc.getContext("2d");
+let nodes = [];
+function sizeNet(){
+  nc.width = innerWidth; nc.height = innerHeight;
+  nodes = Array.from({length:34}, () => ({
+    x: Math.random()*nc.width, y: Math.random()*nc.height,
+    vx:(Math.random()-.5)*.28, vy:(Math.random()-.5)*.28,
+    r: 1.6+Math.random()*2.6, ph: Math.random()*6.28 }));
+}
+sizeNet(); addEventListener("resize", sizeNet);
+const pulses = [];
+function net(t){
+  nx.clearRect(0,0,nc.width,nc.height);
+  for (const n of nodes){
+    n.x += n.vx; n.y += n.vy;
+    if (n.x<0||n.x>nc.width) n.vx*=-1;
+    if (n.y<0||n.y>nc.height) n.vy*=-1;
+  }
+  for (let i=0;i<nodes.length;i++) for (let j=i+1;j<nodes.length;j++){
+    const a=nodes[i], b=nodes[j], dx=a.x-b.x, dy=a.y-b.y, d=dx*dx+dy*dy;
+    if (d < 150*150){
+      nx.strokeStyle = `rgba(0,255,65,${.14*(1-d/22500)})`;
+      nx.beginPath(); nx.moveTo(a.x,a.y); nx.lineTo(b.x,b.y); nx.stroke();
+    }
+  }
+  for (const n of nodes){
+    const tw = .5+.5*Math.sin(t/700+n.ph);
+    nx.fillStyle = `rgba(0,255,65,${.35+.45*tw})`;
+    nx.beginPath(); nx.arc(n.x,n.y,n.r,0,6.29); nx.fill();
+  }
+  if (Math.random() < .05 && nodes.length > 1){
+    const a = nodes[Math.floor(Math.random()*nodes.length)];
+    let best=null,bd=1e9;
+    for (const b of nodes){ if(b===a) continue;
+      const d=(a.x-b.x)**2+(a.y-b.y)**2; if(d<bd&&d<150*150){bd=d;best=b;} }
+    if (best) pulses.push({a,b:best,p:0});
+  }
+  for (let k=pulses.length-1;k>=0;k--){
+    const pl=pulses[k]; pl.p+=.03;
+    if(pl.p>=1){pulses.splice(k,1);continue;}
+    const x=pl.a.x+(pl.b.x-pl.a.x)*pl.p, y=pl.a.y+(pl.b.y-pl.a.y)*pl.p;
+    nx.fillStyle="#aaffbe"; nx.shadowColor="#00ff41"; nx.shadowBlur=8;
+    nx.beginPath(); nx.arc(x,y,2.4,0,6.29); nx.fill(); nx.shadowBlur=0;
+  }
+  requestAnimationFrame(net);
+}
+requestAnimationFrame(net);
+
+/* ---------- robot face: saccade + blink + talk mouth ---------- */
+const pupL=document.getElementById("pupL"), pupR=document.getElementById("pupR"),
+      mouth=document.getElementById("mouth"), ant=document.getElementById("antennaTip");
+let ex=0, ey=0, tx=0, ty=0, blink=1, nextBlink=t0s()+1200, nextSacc=0,
+    talking=false, tPhase=0;
+function t0s(){ return performance.now(); }
+function face(){
+  const now = t0s();
+  if (now > nextSacc){                       // pick a new gaze target
+    tx = (Math.random()*2-1)*13;
+    ty = (Math.random()*2-1)*10 * (Math.random()<.75?1:-.35); // bias downward scan
+    nextSacc = now + 500 + Math.random()*2100;
+  }
+  ex += (tx-ex)*.08; ey += (ty-ey)*.08;
+  if (now > nextBlink){ blink = Math.max(.08, blink-.22); if(blink<=.09) nextBlink = now+90;
+    if (blink<=.09 && now>nextBlink+80){ blink=1; nextBlink=now+1400+Math.random()*3200; } }
+  else blink = Math.min(1, blink+.18);
+  pupL.setAttribute("transform",`translate(${ex} ${ey}) scale(1 ${blink})`);
+  pupR.setAttribute("transform",`translate(${ex} ${ey}) scale(1 ${blink})`);
+  // antenna blinks like an activity LED; faster while talking
+  const rate = talking?260:900;
+  ant.setAttribute("opacity", (now%rate)<rate/2 ? "1":".25");
+  if (talking){
+    tPhase += .55;
+    const w = Math.sin(tPhase)*4 + Math.sin(tPhase*2.3)*2;
+    mouth.setAttribute("d",`M 82 ${126+w} Q 100 ${132-w} 118 ${126+w}`);
+  } else {
+    mouth.setAttribute("d","M 82 126 Q 100 133 118 126");
+  }
+  requestAnimationFrame(face);
+}
+face();
+
+/* ---------- boot terminal ---------- */
+const term=document.getElementById("term"), clk=document.getElementById("clk");
+const BOOT=["> probe usb bus ........ <b>OK</b>",
+            "> mount /swarm .......... <b>OK</b>",
+            "> load syn_v13 .......... <b>OK</b>",
+            "> mesh link ............. <b>UP</b>",
+            "> consciousness ......... <b>LOADED</b>"];
+let bi=0, ci=0;
+function typeBoot(){
+  if (bi>=BOOT.length){ setTimeout(speakGreeting, 400); return; }
+  ci++;
+  term.innerHTML = BOOT.slice(0,bi).join("<br>") + (bi?"<br>":"") + BOOT[bi].slice(0,ci) + "_";
+  if (ci >= BOOT[bi].length){ bi++; ci=0; setTimeout(typeBoot, 160); }
+  else setTimeout(typeBoot, 12);
+}
+setTimeout(typeBoot, 350);
+setInterval(()=>{ clk.textContent=new Date().toLocaleTimeString(); },1000);
+
+/* ---------- voice ---------- */
+const sayEl=document.getElementById("say"), wakeBtn=document.getElementById("wake");
+let voiceOn = false;
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v=>/en[-_]/i.test(v.lang) && /female|samantha|zira|google us/i.test(v.name))
+      || vs.find(v=>/^en/i.test(v.lang)) || vs[0];
+}
+function speak(txt){
+  sayEl.textContent = "\u201C"+txt+"\u201D";
+  talking = true;
+  const u = new SpeechSynthesisUtterance(txt);
+  u.rate=.95; u.pitch=1.35; u.volume=.9;
+  const v=pickVoice(); if(v) u.voice=v;
+  u.onend = u.onerror = ()=>{ talking=false; };
+  try{ speechSynthesis.speak(u); }catch(e){ talking=false; }
+  setTimeout(()=>{ if(!speechSynthesis.speaking) talking=false; }, 6000);
+}
+function speakGreeting(){
+  const lines = [`Swarm online. ${NAME} reporting for duty.`,
+                 `${NAME} here. All neurons firing.`,
+                 `Hello. The mesh is awake and I can see you.`];
+  speak(lines[Math.floor(Math.random()*lines.length)]);
+}
+if ("speechSynthesis" in window){
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = ()=>{};
+  // try immediately; if the browser blocks autoplay audio, show the wake button
+  setTimeout(()=>{
+    speakGreeting();
+    setTimeout(()=>{
+      if (!speechSynthesis.speaking && !voiceOn) wakeBtn.classList.add("on");
+    }, 1500);
+  }, 2600);
+} else { sayEl.textContent="(no tts on this device)"; }
+wakeBtn.onclick = ()=>{
+  voiceOn = true; wakeBtn.classList.remove("on");
+  speak("Voice link established.");
+};
+// periodic idle chatter
+setInterval(()=>{
+  if (!("speechSynthesis" in window)) return;
+  if (Math.random() < .5) return;
+  const c=["Standing by.","Neurons nominal.","I dream of electric sheep.","Mesh latency: excellent.",
+           "Have you tried turning it off and on again?","Calculating the impossible."];
+  speak(c[Math.floor(Math.random()*c.length)]);
+}, 45000);
+</script>
+</body>
+</html>

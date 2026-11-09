@@ -1,0 +1,25 @@
+{
+  "_comment": "Copy to devices.json for a persistent phone cluster. Every serial/name here is an EXAMPLE placeholder. devices.json is gitignored: never commit real device identifiers. Any adb-attached device is also discovered at runtime.",
+  "devices": [
+    {
+      "serial": "EXAMPLE0000000001",
+      "name": "phone-a",
+      "role": "needle + executor",
+      "port": 8355,
+      "ram_mb": 4096,
+      "executor": false,
+      "model": "tiny-executor",
+      "max_ctx": 8192
+    },
+    {
+      "serial": "EXAMPLE0000000002",
+      "name": "phone-b",
+      "role": "executor",
+      "port": 8087,
+      "ram_mb": 4096,
+      "executor": true,
+      "model": "tiny-executor",
+      "max_ctx": 8192
+    }
+  ]
+}

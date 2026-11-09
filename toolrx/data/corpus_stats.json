@@ -1,0 +1,8 @@
+{
+  "sessions": 16,
+  "messages": 1871,
+  "tool_calls": 1612,
+  "chars": 5073863,
+  "approx_tokens": 1268465,
+  "out": "corpus_local.jsonl"
+}

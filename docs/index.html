@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>toolrx · micro tool router</title>
+<style>
+  :root{
+    --bg:#070a12; --panel:#0d1220; --panel2:#111827; --border:#1e293b;
+    --text:#e2e8f0; --muted:#64748b; --accent:#22d3ee; --accent2:#a78bfa;
+    --green:#34d399; --amber:#fbbf24; --red:#f87171; --cyan:#22d3ee; --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;
+    height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  a{color:var(--accent)}
+
+  /* quality-curve drawer */
+  #qc{position:fixed;top:0;right:-420px;width:400px;max-width:96vw;height:100%;z-index:60;
+    background:#0a0f1c;border-left:1px solid var(--border);transition:right .3s;
+    display:flex;flex-direction:column;padding:14px;overflow-y:auto}
+  #qc.open{right:0}
+  #qc h3{margin:0 0 2px;font-size:15px;display:flex;align-items:center}
+  #qc .sub{color:var(--muted);font-size:11px;margin-bottom:10px}
+  #qc .x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 8px;border-radius:6px}
+  #qc .x:hover{color:#f87171;background:#3a1d1d}
+  #qc canvas{width:100%;background:#0d1322;border:1px solid var(--border);border-radius:8px;margin-bottom:12px}
+  #qc .cap{font-size:11px;color:var(--muted);margin:0 0 4px;display:flex;justify-content:space-between;align-items:center}
+  #qc .png{cursor:pointer;font-size:10px;color:var(--accent);border:1px solid var(--border);
+    border-radius:5px;padding:2px 7px;user-select:none}
+  #qc .png:hover{background:var(--panel2)}
+  #qcBtn{position:fixed;top:64px;right:14px;z-index:59;width:38px;height:38px;border-radius:50%;
+    background:var(--panel2);border:1px solid var(--border);color:var(--accent);font-size:16px;
+    cursor:pointer;display:none;align-items:center;justify-content:center}
+  #qcBtn.show{display:flex}
+  #qcBtn:hover{border-color:var(--accent)}
+  /* floating drawer toggle button */
+  #logo{position:fixed;top:10px;left:10px;z-index:50;width:32px;height:32px;border:none;
+    border-radius:9px;display:grid;place-items:center;
+    background:radial-gradient(circle at 30% 30%,var(--accent2),var(--accent));font-weight:800;font-size:15px;color:#04121a;
+    cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.45);transition:transform .2s,box-shadow .2s}
+  #logo:hover{transform:scale(1.06);box-shadow:0 2px 14px rgba(34,211,238,.5)}
+
+  main{flex:1;min-height:0;display:flex;overflow:hidden}
+
+  /* left: cluster devices */
+  /* device drawer (collapsible) */
+  #devices{width:253px;flex:0 0 253px;border-right:1px solid var(--border);
+    padding:12px;overflow-y:auto;background:#090d18;transition:flex-basis .3s,width .3s,padding .3s;overflow:hidden;
+    display:flex;flex-direction:column;gap:2px}
+  #devices.closed{flex-basis:0;width:0;padding:0;border-right:none}
+  #devlist{display:flex;flex-direction:column;gap:2px;min-height:0;flex:1;overflow-y:auto}
+  /* clean static device cards (no animation) */
+  .devcard{border:1px solid var(--border);border-radius:12px;margin-bottom:10px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));overflow:hidden;white-space:nowrap;
+    cursor:pointer;transition:border-color .15s,box-shadow .15s}
+  .devcard:hover{border-color:var(--accent)}
+  .devcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 14px rgba(34,211,238,.25)}
+  .devcard .hd{display:flex;align-items:center;gap:8px;padding:10px 12px 0;font-size:13px;font-weight:600}
+  .devcard .devname{flex:1;min-width:0;background:transparent;border:1px solid transparent;border-radius:6px;
+    color:var(--text);font-size:12.5px;font-weight:600;font-family:inherit;padding:2px 4px;
+    transition:border-color .15s,background .15s}
+  .devcard .devname:hover{border-color:var(--border)}
+  .devcard .devname:focus{outline:none;border-color:var(--accent);background:var(--panel2)}
+  .devcard .dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:0 0 9px}
+  .devcard .role{color:var(--muted);font-size:11px;padding:2px 12px 0}
+  .devcard .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:8px 12px 4px}
+  .devcard .stats{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);padding:2px 12px 6px;gap:6px}
+  .devcard .stats b{color:var(--text);font-weight:600}
+  .devcard .rambar{height:4px;background:#1e293b;overflow:hidden}
+  .devcard .rambar>div{height:100%;background:var(--green)}
+  .devcard.off{opacity:.45}
+  .devcard.off .dot{background:var(--red)}
+  .devcard .status{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--green)}
+  .devcard.off .status{color:var(--red)}
+  /* data-flow animation — only while data is actually moving */
+  .devcard .flow{height:3px;position:relative;overflow:hidden;background:#0a0f1c}
+  .devcard .flow::before{content:'';position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,var(--accent),transparent);
+    opacity:0;transition:opacity .3s}
+  .devcard .flow::after{content:'';position:absolute;top:0;bottom:0;width:14px;
+    background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:0}
+  #devices:not(.closed) .devcard.active .flow::before{opacity:.9;
+    animation:flowmove 2.4s linear infinite}
+  #devices:not(.closed) .devcard.active .flow::after{opacity:.85;
+    animation:flowdot 1.8s ease-in-out infinite}
+  @keyframes flowmove{0%{background-position:0 0}100%{background-position:200% 0}}
+  @keyframes flowdot{0%{left:-16px}100%{left:100%}}
+  /* out (executor, data leaving) -> dot travels right (default) */
+  /* in (needle, data arriving) -> dot travels left (reversed) */
+  .devcard[data-flow="in"] .flow::after{animation-direction:reverse}
+  .devcard[data-flow="in"] .flow::before{background:linear-gradient(270deg,transparent,var(--accent),transparent)}
+
+  /* training + cluster summary cards pinned to the bottom */
+  #trainwrap{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+  #traincard{border:1px solid var(--border);border-radius:12px;padding:8px 12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));cursor:pointer;white-space:nowrap;
+    transition:border-color .15s,box-shadow .15s}
+  #traincard:hover{border-color:var(--accent)}
+  #traincard.sel{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber),0 0 14px rgba(251,191,36,.25)}
+  #traincard .hd{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+  #traincard .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex:0 0 9px}
+  #traincard .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px}
+  #traincard .meta b{color:var(--text)}
+  #traincard .tsec{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;
+    color:var(--muted);border-top:1px solid var(--border);padding-top:7px;margin:9px 0 5px}
+  #traincard .tctl select,#traincard .tctl input{background:#0d1322;border:1px solid var(--border);
+    color:var(--text);font-family:inherit;font-size:11px;padding:4px 6px;border-radius:6px;outline:none}
+  #traincard .tctl .tbtn{white-space:nowrap}
+  #traincard .mini{height:3px;background:#1e293b;border-radius:2px;overflow:hidden;margin-top:6px}
+  #traincard .mini>div{height:100%;background:var(--amber);transition:width .5s}
+  #traincard.running .hd .dot{animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  #modelcard{border:1px solid var(--border);border-radius:12px;padding:8px 12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));white-space:nowrap;
+    transition:border-color .15s,box-shadow .15s}
+  #modelcard:hover{border-color:var(--accent)}
+  #modelcard .hd{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+  #modelcard .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:0 0 9px}
+  #modelcard.running .hd .dot{animation:pulse 1.2s ease-in-out infinite}
+  #modelcard .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px}
+  #modelcard .meta b{color:var(--text)}
+  #modelcard .loss{margin-top:6px;font-size:11px;color:var(--muted)}
+  #modelcard .loss b{color:var(--amber)}
+  /* training/model UI is opt-in (TOOLRX_SHOW_TRAINING=1) and hidden by default */
+  #trainwrap #traincard,#trainwrap #modelcard{display:none}
+  body.show-training #trainwrap #traincard,body.show-training #trainwrap #modelcard{display:block}
+  #clusterStart{border:1px solid var(--border);border-radius:12px;padding:8px 12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));color:var(--text);
+    font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+    transition:border-color .15s,box-shadow .15s}
+  #clusterStart:hover{border-color:var(--accent)}
+  #clusterStart:disabled{opacity:.5;cursor:wait}
+  /* cluster summary card pinned to the bottom */
+  #clustersum{border:1px solid var(--border);border-radius:12px;padding:10px 12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));cursor:pointer;white-space:nowrap;
+    transition:border-color .15s,box-shadow .15s}
+  #clustersum:hover{border-color:var(--accent)}
+  #clustersum.sel{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2),0 0 14px rgba(167,139,250,.25)}
+  #clustersum .hd{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+  #clustersum .hd .dot{width:9px;height:9px;border-radius:50%;background:var(--accent2);flex:0 0 9px}
+  #clustersum .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+  #clustersum .meta b{color:var(--text)}
+
+  /* device detail drawer (right of the card list) */
+  #devinfo{width:0;flex:0 0 0;border-right:1px solid var(--border);background:#0a0f1c;
+    overflow:hidden;transition:width .3s,flex-basis .3s,padding .3s;white-space:nowrap}
+  #devinfo.open{width:300px;flex-basis:300px;padding:14px;display:flex;flex-direction:column;min-height:0}
+  #devinfo h3{font-size:14px;font-weight:700;margin-bottom:2px}
+  #devinfo .sub{color:var(--muted);font-size:11px;margin-bottom:12px}
+  #devinfo .dl{display:flex;justify-content:space-between;gap:6px;font-size:12px;
+    padding:7px 0;border-bottom:1px solid var(--border);white-space:nowrap;align-items:center}
+  #devinfo .dl:last-child{border-bottom:none}
+  #devinfo .dl .rm{color:var(--muted);cursor:pointer;font-size:10px;padding:0 3px;border-radius:4px;
+    user-select:none;opacity:.55;flex:0 0 auto;line-height:1.4}
+  #devinfo .dl .rm:hover{color:#f87171;opacity:1;background:#3a1d1d}
+  #devinfo .dl .vname{color:var(--muted)}
+  #devinfo .dl span:last-child{color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis}
+  #devinfo .dl .pass{color:var(--green)}
+  #devinfo .dl .fail{color:var(--red);font-weight:700}
+  #devinfo .dl .total{color:var(--text)}
+  #devinfo .dl .pct{color:var(--muted)}
+  #devinfo .dl.summary{background:var(--panel2);border-radius:8px;padding:8px 10px;margin:6px 0;border-bottom:none}
+  #devinfo .prog{height:5px;background:#1e293b;border-radius:3px;overflow:hidden;margin:3px 0 8px}
+  #devinfo .prog>div{height:100%;background:var(--accent);transition:width .5s}
+  /* training controls inside the detail drawer */
+  #devinfo .tform{flex:0 0 auto}
+  #devinfo .tmid{flex:1 1 auto;min-height:0;overflow-y:auto;margin-top:8px;
+    scrollbar-width:none;-ms-overflow-style:none}
+  #devinfo .tmid::-webkit-scrollbar{display:none}
+  #devinfo .tctl{display:flex;gap:6px;margin:8px 0;align-items:center}
+  #devinfo .tctl input,#devinfo .tctl select{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--border);
+    color:var(--text);border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit}
+  #devinfo .tbtn{background:linear-gradient(135deg,var(--amber),#f59e0b);color:#111;border:0;border-radius:8px;
+    padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer}
+  #devinfo .tbtn:hover{filter:brightness(1.1)}
+  #devinfo .tbtn:disabled{opacity:.5;cursor:not-allowed}
+  #devinfo .tlog{flex:0 0 auto;font-family:ui-monospace,monospace;font-size:10.5px;color:#9fb3c8;line-height:1.5;
+    background:#070b12;border:1px solid var(--border);border-radius:8px;padding:8px;margin-top:8px;
+    max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
+    scrollbar-width:none;-ms-overflow-style:none}
+  #devinfo .tlog::-webkit-scrollbar{display:none}
+  #devinfo .tstats{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px}
+  #devinfo .tstats b{color:var(--text)}
+  #devinfo .tfld{margin-top:8px}
+  #devinfo .tfld>label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);margin:0 2px 4px}
+  #devinfo .tver{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:2px;margin-left:4px;
+    flex:1;min-width:0;max-width:130px}
+  #devinfo .tver .vitem{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px}
+  #devinfo .tver .vitem b{color:var(--text)}
+  #devinfo .tver .vitem.run b{color:var(--amber)}
+  #devinfo .tver .vitem.done b{color:var(--green)}
+  #devinfo .tver .vitem.done{color:var(--muted)}
+  #devinfo .tver .vitem.err, #devinfo .tver em.err{color:var(--red);font-style:normal}
+  #devinfo .vbar{height:5px;border-radius:3px;background:#0b1120;border:1px solid var(--border);
+    margin-top:5px;overflow:hidden}
+  #devinfo .vbar i{display:block;height:100%;width:0%;transition:width .6s;
+    background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  #devinfo .vbar.err i{background:linear-gradient(90deg,var(--red),#fbbf24)}
+
+  /* drawer menu panel (2nd panel, above device cards) */
+  #drawerMenu{display:flex;flex-direction:column;gap:2px;margin-bottom:12px;
+    padding-bottom:12px;border-bottom:1px solid var(--border)}
+  #drawerMenu .ml{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:2px 6px 6px}
+  #drawerMenu a{display:block;padding:7px 10px;border-radius:8px;font-size:12.5px;color:var(--text);
+    text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #drawerMenu a:hover{background:var(--panel2)}
+  #drawerMenu a.on{background:var(--panel2);color:var(--accent);font-weight:600}
+  /* bot slot at the top of the drawer (right-aligned, leaves room for logo toggle) */
+  #botSlot{height:86px;width:120px;margin-left:auto;margin-bottom:10px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;color:var(--muted);
+    cursor:pointer;overflow:hidden;user-select:none;position:relative}
+  #botSlot .mark{flex:0 0 auto;width:68px;height:68px;position:relative;z-index:1;transform:scale(0.92);
+    border-radius:50%;
+    background:radial-gradient(circle at 34% 28%,#fef3c7 0%,#fbcfe8 26%,#c4b5fd 52%,#67e8f9 78%,#a7f3d0 100%);
+    box-shadow:0 0 22px rgba(167,139,250,.45),inset 0 0 16px rgba(255,255,255,.35);
+    animation:botBG 9s ease-in-out infinite}
+  @keyframes botBG{0%,100%{filter:hue-rotate(0deg) saturate(1)}50%{filter:hue-rotate(18deg) saturate(1.18)}}
+  #botSlot .mark::after{content:'';position:absolute;inset:6px;border-radius:50%;
+    border:1px dashed rgba(255,255,255,.45);animation:orbitSpin 14s linear infinite}
+  @keyframes orbitSpin{to{transform:rotate(360deg)}}
+  #botSlot .mark svg{width:100%;height:100%;display:block;overflow:visible;position:relative;z-index:2}
+  /* cute floating mascot */
+  #botmark .shadow{fill:rgba(15,23,42,.18)}
+  #botmark .orbit{fill:none;stroke:rgba(255,255,255,.5);stroke-width:1.2;stroke-dasharray:2 4}
+  #botmark .body{fill:#fffdf7;stroke:#334155;stroke-width:2.2;stroke-linejoin:round}
+  #botmark .ear{fill:#fde68a;stroke:#334155;stroke-width:2}
+  #botmark .antenna{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
+  #botmark .bulb{fill:#f472b6;stroke:#334155;stroke-width:1.6}
+  #botmark .eyewhite{fill:#1e293b}
+  #botmark .pupil{fill:#fff}
+  #botmark .spark{fill:#a5f3fc}
+  #botmark .lid{fill:#fffdf7;transform-origin:center;transform-box:fill-box}
+  #botmark .blush{fill:#fda4af;opacity:.55}
+  #botmark .mouth{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
+  #botmark .arm{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
+
+  /* right: chat + preview */
+  .workspace{flex:1;min-width:0;display:flex;flex-direction:column}
+  .panes{flex:1;min-height:0;display:flex}
+  .pane{flex:1;min-width:0;display:none;flex-direction:column;min-height:0}
+  .pane.on{display:flex}
+  #chatPane{border-right:1px solid var(--border)}
+  #log{flex:1;min-height:0;overflow-y:auto;padding:16px;font-size:13px;line-height:1.6}
+  .entry{border-left:2px solid var(--border);padding:8px 14px;margin:6px 0;border-radius:0 8px 8px 0;background:var(--panel)}
+  .entry .lbl{font-weight:600;font-size:12px}
+  .entry .lbl.q{color:#fff}.entry .lbl.res{color:var(--green)}.entry .lbl.err{color:var(--red)}
+  .entry .lbl.stat{color:var(--muted);font-weight:400}
+  .entry pre{white-space:pre-wrap;word-break:break-word;margin-top:4px;font-family:ui-monospace,monospace;font-size:12px;color:#cbd5e1}
+
+  /* preview */
+  #previewPane{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+  #previewPane iframe{flex:1;min-height:0;border:0;background:#fff;width:100%}
+  #pvToggle{position:absolute;top:8px;right:8px;z-index:10;width:26px;height:26px;border:1px solid var(--border);
+    border-radius:7px;background:#0d1220;color:var(--muted);cursor:pointer;display:grid;place-items:center;
+    font-size:12px;transition:color .15s,border-color .15s}
+  #pvToggle:hover{color:var(--accent);border-color:var(--accent)}
+  #previewPane{position:relative}
+  #previewPane.full{flex:1 0 100%}
+
+  /* composer — compact footer */
+  .composer{flex:0 0 auto;padding:6px 16px;border-top:1px solid var(--border);background:#0a0f1c}
+  .composer form{display:flex;gap:8px;align-items:flex-end}
+  .composer textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--border);
+    color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.3;
+    font-family:inherit;max-height:60px;scrollbar-width:none}
+  .composer textarea::-webkit-scrollbar{display:none}
+  .composer textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(34,211,238,.15)}
+  .composer button{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;
+    border:0;border-radius:8px;padding:8px 16px;font-weight:700;font-size:12px;cursor:pointer;min-width:64px}
+  .composer button:disabled{opacity:.5;cursor:not-allowed}
+  .composer button.stop{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
+  .composer .hint{color:var(--muted);font-size:10px;margin-top:4px}
+  .hintrow{display:flex;align-items:center;gap:12px;margin-top:4px}
+  .hintrow .hint{flex:1;min-width:0;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ctxbar{display:none;align-items:center;gap:8px;font-size:11px;color:var(--muted);flex:0 0 auto}
+  .ctxbar.on{display:flex}
+  .ctxbar .ctxlab{text-transform:uppercase;letter-spacing:.6px;font-size:8px;color:var(--muted);flex:0 0 auto}
+  .ctxprog{height:4px;background:#141c2c;border-radius:3px;overflow:hidden;width:130px;flex:0 0 130px}
+  .ctxprog>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s}
+  .ctxnum{font-size:10px;font-weight:600;color:var(--text);white-space:nowrap;flex:0 0 auto}
+
+  /* working bar */
+  #eq{display:none;height:46px;overflow:hidden;position:relative;border-bottom:1px solid var(--border)}
+  #eq.on{display:block}
+  .eq-track{position:absolute;inset:0;display:flex;align-items:flex-end;gap:2px;padding:4px 8px;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);animation:eqmove 2.6s linear infinite}
+  .eq-track span{flex:0 0 10px;height:12%;background:linear-gradient(180deg,#a5f3fc,var(--accent),var(--accent2));
+    border-radius:2px;animation:eqbar .85s ease-in-out infinite}
+  @keyframes eqmove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  @keyframes eqbar{0%,100%{height:8%}50%{height:100%}}
+
+  ::-webkit-scrollbar{width:0;height:0;display:none}
+  ::-webkit-scrollbar-thumb{background:transparent}
+  ::-webkit-scrollbar-track{background:transparent}
+  *{scrollbar-width:none;-ms-overflow-style:none}
+  /* smart scaling: compact when space is tight */
+  @media(max-height:720px){
+    .devcard .hd{font-size:11.5px;padding-top:7px}
+    .devcard .role{font-size:10px}
+    .devcard .meta,.devcard .stats{font-size:9.5px}
+    .devcard .devname{font-size:11px}
+    #traincard .hd,#clustersum .hd{font-size:11.5px}
+    #traincard .meta,#clustersum .meta{font-size:10px}
+    #botSlot{height:40px}
+    #devinfo.open{width:260px;flex-basis:260px}
+  }
+  @media(max-height:600px){
+    .devcard{padding:0}
+    .devcard .hd{padding-top:5px}
+    #traincard,#clustersum{padding:6px 10px}
+    .composer{padding:8px 12px}
+  }
+  /* JS-driven density modes */
+  #devices.compact .devcard{margin-bottom:5px}
+  #devices.compact .devcard .hd{padding:6px 10px 0;font-size:11.5px}
+  #devices.compact .devcard .role{font-size:9.5px;padding:0 10px}
+  #devices.compact .devcard .meta{padding:4px 10px 2px;font-size:9.5px}
+  #devices.compact .devcard .stats{padding:0 10px 4px;font-size:9px}
+  #devices.compact .devcard .devname{font-size:10.5px}
+  #devices.compact #traincard,#devices.compact #clustersum{padding:6px 10px}
+  #devices.micro .devcard .hd{font-size:10.5px;padding:4px 8px 0}
+  #devices.micro .devcard .role{display:none}
+  #devices.micro .devcard .stats{display:none}
+  #devices.micro .devcard .meta{font-size:8.5px;padding:2px 8px}
+  #devices.micro .devcard .devname{font-size:10px}
+  #devices.micro #traincard .meta,#devices.micro #clustersum .meta{font-size:9px}
+
+  @media(max-width:900px){#devices{display:none}}
+
+  /* static (GitHub Pages) demo banner */
+  #staticNote{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);
+    z-index:60;background:var(--panel2);border:1px solid var(--border);border-radius:9px;
+    padding:7px 12px;font-size:11.5px;color:var(--muted);box-shadow:0 2px 10px rgba(0,0,0,.45)}
+  #staticNote b{color:var(--accent)}
+  body.static-demo #staticNote{display:block}
+  /* command center modal */
+  #cmdModal{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;
+    background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
+  #cmdModal.open{display:flex}
+  .cm-header{display:flex;align-items:center;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+  .cm-bot{position:relative;width:90px;height:90px;flex:0 0 auto;margin-right:auto}
+  .cm-bot .mark{width:70px;height:70px;border-radius:50%;
+    background:radial-gradient(circle at 34% 28%,#fef3c7 0%,#fbcfe8 26%,#c4b5fd 52%,#67e8f9 78%,#a7f3d0 100%);
+    box-shadow:0 0 22px rgba(167,139,250,.45),inset 0 0 16px rgba(255,255,255,.35);
+    animation:botBG 9s ease-in-out infinite}
+  .cm-bot .mark svg{width:100%;height:100%;display:block;overflow:visible}
+  .cm-bot .shadow{fill:rgba(15,23,42,.18)}
+  .cm-bot .orbit{fill:none;stroke:rgba(255,255,255,.5);stroke-width:1.2;stroke-dasharray:2 4}
+  .cm-bot .body{fill:#fffdf7;stroke:#334155;stroke-width:2.2;stroke-linejoin:round}
+  .cm-bot .ear{fill:#fde68a;stroke:#334155;stroke-width:2}
+  .cm-bot .antenna{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
+  .cm-bot .bulb{fill:#f472b6;stroke:#334155;stroke-width:1.6}
+  .cm-bot .eyewhite{fill:#1e293b}
+  .cm-bot .pupil{fill:#fff}
+  .cm-bot .spark{fill:#a5f3fc}
+  .cm-bot .lid{fill:#fffdf7}
+  .cm-bot .blush{fill:#fda4af;opacity:.55}
+  .cm-bot .mouth{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
+  .cm-bot .arm{fill:none;stroke:#334155;stroke-width:2;stroke-linecap:round}
+  .cm-title{flex:1}
+  .cm-name{font-size:22px;font-weight:800;letter-spacing:.3px}
+  .cm-sub{color:var(--muted);font-size:12px;margin-top:3px}
+  .cm-close{width:34px;height:34px;border:none;border-radius:9px;background:var(--panel2);
+    color:var(--text);font-size:16px;cursor:pointer}
+  .cm-close:hover{background:#3a1d1d;color:#f87171}
+  .cm-body{flex:1;overflow-y:auto;margin-top:14px;display:flex;flex-direction:column;gap:16px}
+  .cm-body section{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .cm-body h4{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);
+    margin-bottom:10px}
+  .cm-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .cm-row:last-child{border-bottom:none}
+  .cm-row span{color:var(--muted);flex:0 0 110px}
+  .cm-row input[type=text],.cm-row input[type=password],.cm-row select{
+    flex:1;min-width:0;background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);padding:7px 10px;font-size:12.5px;font-family:inherit}
+  .cm-row input[type=color]{width:44px;height:32px;border:none;background:none;cursor:pointer}
+  .cm-row input[type=range]{flex:1}
+  .cm-sw input{display:none}
+  .cm-sw i{display:inline-block;width:40px;height:22px;border-radius:12px;background:var(--panel2);
+    position:relative;cursor:pointer;transition:background .2s}
+  .cm-sw i::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+    background:var(--muted);transition:left .2s,background .2s}
+  .cm-sw input:checked+i{background:var(--accent)}
+  .cm-sw input:checked+i::after{left:21px;background:#04121a}
+  .cm-btn{background:var(--accent);border:none;border-radius:8px;color:#04121a;font-weight:700;
+    padding:8px 16px;cursor:pointer;font-size:12.5px}
+  .cm-btn:hover{filter:brightness(1.1)}
+  .cm-btn.gh{background:#24292f;color:#fff}
+  .cm-ghinfo{font-size:11px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<button id="qcBtn" title="quality curves">📈</button>
+<div id="qc">
+  <h3>Quality Curves <span class="x" id="qcX">✕</span></h3>
+  <div class="sub" id="qcSub">training quality over time</div>
+  <div class="cap"><span>gate score per run (% of 120, strict exact-match)</span><span class="png" data-c="qcGates">PNG</span></div>
+  <canvas id="qcGates" width="740" height="300"></canvas>
+  <div class="cap"><span>live loss — current run</span><span class="png" data-c="qcLoss">PNG</span></div>
+  <canvas id="qcLoss" width="740" height="220"></canvas>
+  <div class="cap"><span>live gate tracking — cumulative pass rate</span><span class="png" data-c="qcLive">PNG</span></div>
+  <canvas id="qcLive" width="740" height="220"></canvas>
+  <div class="cap"><span>per-class accuracy across runs (heat)</span><span class="png" data-c="qcHeat">PNG</span></div>
+  <canvas id="qcHeat" width="740" height="260"></canvas>
+  <div class="cap"><span>final loss vs gate score (log-x) — memorization check</span><span class="png" data-c="qcScatter">PNG</span></div>
+  <canvas id="qcScatter" width="740" height="240"></canvas>
+  <div class="cap"><span>cycle economics — minutes: train + gate per run</span><span class="png" data-c="qcEcon">PNG</span></div>
+  <canvas id="qcEcon" width="740" height="240"></canvas>
+</div>
+<button class="logo" id="logo" title="toggle drawer">◈</button>
+<div id="staticNote"><b>static demo</b> — run <code>python3 toolrx/server.py</code> for live tool calls</div>
+<main>
+  <aside id="devices" class="closed">
+    <div id="drawerMenu">
+      <div id="botSlot" title="the mascot · click to open the command center">
+        <div class="mark">
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" id="botmark" role="img" aria-label="toolrx mascot">
+            <ellipse class="shadow" cx="60" cy="99" rx="17" ry="4.5"/>
+            <ellipse class="orbit" cx="60" cy="60" rx="43" ry="30" transform="rotate(-28 60 60)"/>
+            <g id="botPose">
+              <!-- antennae -->
+              <path class="antenna" d="M50 40 C47 32 46 28 44 24"/>
+              <circle class="bulb" cx="43.5" cy="22" r="3.6"/>
+              <path class="antenna" d="M70 40 C73 32 74 28 76 24"/>
+              <circle class="bulb" cx="76.5" cy="22" r="3.6"/>
+              <!-- ears -->
+              <ellipse class="ear" cx="38" cy="44" rx="8" ry="12" transform="rotate(-22 38 44)"/>
+              <ellipse class="ear" cx="82" cy="44" rx="8" ry="12" transform="rotate(22 82 44)"/>
+              <!-- body -->
+              <ellipse class="body" cx="60" cy="62" rx="30" ry="27"/>
+              <!-- little arms -->
+              <path class="arm" d="M31 64 C25 66 23 71 24 75"/>
+              <path class="arm" d="M89 64 C95 66 97 71 96 75"/>
+              <!-- blush -->
+              <ellipse class="blush" cx="42" cy="70" rx="5.4" ry="3.2"/>
+              <ellipse class="blush" cx="78" cy="70" rx="5.4" ry="3.2"/>
+              <!-- eyes: gaze locked up + to the right -->
+              <g id="botEyeL" class="eye">
+                <ellipse class="eyewhite" cx="49" cy="59" rx="5.6" ry="7"/>
+                <circle class="pupil" cx="51.2" cy="56.4" r="2.7"/>
+                <circle class="spark" cx="49.8" cy="54.8" r="1"/>
+                <rect class="lid" x="42.6" y="51.2" width="12.8" height="15.6" rx="6"/>
+              </g>
+              <g id="botEyeR" class="eye">
+                <ellipse class="eyewhite" cx="71" cy="59" rx="5.6" ry="7"/>
+                <circle class="pupil" cx="73.2" cy="56.4" r="2.7"/>
+                <circle class="spark" cx="71.8" cy="54.8" r="1"/>
+                <rect class="lid" x="64.6" y="51.2" width="12.8" height="15.6" rx="6"/>
+              </g>
+              <!-- smile -->
+              <path class="mouth" d="M55 71 Q60 75.5 65 71"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div id="devlist"></div>
+    <div id="trainwrap">
+      <div id="traincard" title="training cycle"></div>
+      <div id="modelcard" title="from-scratch model training"></div>
+      <button id="clusterStart" title="start the cluster (bring all connected devices online)" onclick="startCluster()" style="display:none">▶ Start cluster</button>
+      <div id="clustersum" title="cluster summary" style="display:none"></div>
+    </div>
+  </aside>
+  <div id="devinfo"></div>
+  <div class="workspace">
+    <div id="eq" aria-hidden="true"><div class="eq-track" id="eqTrack"></div></div>
+    <div class="panes">
+      <div class="pane on" id="chatPane"><div id="log"></div></div>
+      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview">⤢</button><iframe id="pv" title="preview"></iframe></div>
+    </div>
+    <div class="composer">
+      <form id="f">
+        <textarea id="q" rows="1" placeholder="ask toolrx… (enter to send, shift+enter for newline)"></textarea>
+        <button id="send" type="submit">Send</button>
+      </form>
+      <div class="hintrow">
+        <span class="hint">tool calls resolve instantly · build tasks run in the background & render in Preview</span>
+        <div class="ctxbar" id="ctxbar">
+          <span class="ctxlab">context</span>
+          <div class="ctxprog"><div id="ctxfill"></div></div>
+          <span class="ctxnum" id="ctxnum">0 / 0 K</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- command center modal -->
+<div id="cmdModal">
+  <div class="cm-header">
+    <div class="cm-bot" id="cmBot"></div>
+    <div class="cm-title">
+      <div class="cm-name">Command Center</div>
+      <div class="cm-sub">UI/UX · models · providers · network · github</div>
+    </div>
+    <button class="cm-close" id="cmClose">✕</button>
+  </div>
+  <div class="cm-body">
+    <section>
+      <h4>UI / UX</h4>
+      <div class="cm-row"><span>accent color</span><input type="color" id="cmAccent" value="#22d3ee"></div>
+      <div class="cm-row"><span>panel radius</span><input type="range" id="cmRadius" min="0" max="24" value="12"></div>
+      <div class="cm-row"><span>compact drawer</span><label class="cm-sw"><input type="checkbox" id="cmCompact" checked><i></i></label></div>
+    </section>
+    <section>
+      <h4>Models / Providers</h4>
+      <div class="cm-row"><span>local backend</span><select id="cmLocal">
+        <option value="">scanning…</option>
+      </select></div>
+      <div class="cm-row"><span>available model</span><select id="cmLocalModel">
+        <option value="">none detected</option>
+      </select></div>
+      <div class="cm-ghinfo" id="cmLocalInfo">probing Ollama and OpenAI-compatible servers</div>
+      <div class="cm-row"><span>cloud API</span><select id="cmCloud">
+        <option value="deepseek">DeepSeek</option>
+        <option value="groq">Groq</option>
+        <option value="gemini">Gemini</option>
+        <option value="openai">OpenAI</option>
+        <option value="openrouter">OpenRouter</option>
+      </select></div>
+      <div class="cm-row"><span>api key</span><input type="password" id="cmKey" placeholder="••••••••" autocomplete="off"></div>
+      <div class="cm-row"><span>default model</span><input type="text" id="cmModel" list="cmModelList" placeholder="model id"><datalist id="cmModelList"></datalist></div>
+      <div class="cm-row"><span>connect</span><button class="cm-btn" id="cmConnect">Save provider</button></div>
+    </section>
+    <section>
+      <h4>Network</h4>
+      <div class="cm-row"><span>WireGuard</span><button class="cm-btn" id="cmWg">…</button></div>
+      <div class="cm-ghinfo" id="cmWgInfo">kill-switch status</div>
+    </section>
+    <section>
+      <h4>GitHub</h4>
+      <div class="cm-row"><span>repo</span><input type="text" id="cmRepo" placeholder="owner/repo"></div>
+      <div class="cm-row"><span>branch</span><input type="text" id="cmBranch" value="main"></div>
+      <div class="cm-row"><span></span><button class="cm-btn gh" id="cmGh">Connect GitHub</button></div>
+      <div class="cm-ghinfo" id="cmGhInfo">not connected</div>
+    </section>
+  </div>
+</div>
+
+<script>
+const log=document.getElementById('log'), q=document.getElementById('q'), send=document.getElementById('send');
+const eq=document.getElementById('eq'), eqTrack=document.getElementById('eqTrack');
+const devices=document.getElementById('devices');
+const pv=document.getElementById('pv');
+let busy=false, pending=[], curTask=null, stopSent=false;
+let trainingEnabled=false;   // opt-in via TOOLRX_SHOW_TRAINING=1
+let staticMode=false;        // true on a static host (e.g. GitHub Pages)
+async function loadConfig(){
+  try{
+    const r=await fetch('/config');
+    if(!r.ok) throw new Error('config '+r.status);
+    const c=await r.json();
+    trainingEnabled=!!c.training;
+    document.body.classList.toggle('show-training', trainingEnabled);
+  }catch(e){
+    trainingEnabled=false;
+    staticMode=true;
+    document.body.classList.add('static-demo');
+  }
+}
+
+// On a static host there is no Python backend; still show the machine you
+// are viewing from so the dashboard is not an empty shell.
+function browserHost(){
+  const mem=navigator.deviceMemory||null;
+  const cores=navigator.hardwareConcurrency||null;
+  return [{serial:'HOST',name:'browser',role:'static demo',online:true,kind:'host',
+    ram:mem?mem*1024:null,ram_total:mem?mem*1024:null,ram_pct:null,load:null,
+    uptime:null,battery:null,cores:cores,abi:navigator.platform||'web',
+    cpu:'web browser',hostname:location.hostname||'static',model:'',
+    max_context:0,context_used:0,total_context:0,context_pct:0}];
+}
+const champVersion='v13'; // the live champion — never erasable
+// ---- the mascot: a cute little orbiter, locked to the upper-right ----
+// It floats on a tiny orbit around the background orb, keeps its gaze fixed
+// up-and-to-the-right, breathes, and blinks every few seconds. No external
+// assets, no model, no canvas — just SVG + requestAnimationFrame.
+(function(){
+  const slot=document.getElementById('botSlot');
+  if(!slot) return;
+  const svg=document.getElementById('botmark');
+  const pose=document.getElementById('botPose');
+  const eL=document.getElementById('botEyeL'), eR=document.getElementById('botEyeR');
+  if(!svg||!pose||!eL||!eR) return;
+  const lids=[...svg.querySelectorAll('.lid')];
+
+  // orbital anchor (user units, relative to the 120x120 viewBox centre)
+  const ANCHOR_X=5.5, ANCHOR_Y=-7.5;
+  // gaze locked up + to the right from the viewer's perspective
+  const GAZE_X=0.72, GAZE_Y=-0.72;
+
+  const bot={
+    ph:Math.random()*6.28,
+    blinkT:1.4+Math.random()*2.2,
+    blink:0,
+    attention:0.55,   // perks up on hover / activity
+    energy:0.45,
+  };
+  const damp=(cur,tgt,k,dt)=>cur+(tgt-cur)*(1-Math.exp(-k*dt));
+
+  // cluster activity hook: a small excited bounce, never breaks the gaze lock
+  window.botReact=function(){
+    bot.attention=Math.min(1,bot.attention+0.35);
+    bot.energy=Math.min(1,bot.energy+0.35);
+  };
+
+  let hover=0, last=performance.now();
+  function frame(now){
+    const dt=Math.min(0.08,(now-last)/1000); last=now;
+    bot.ph+=dt*(0.55+bot.energy*0.75);
+    bot.attention=damp(bot.attention, hover?0.95:0.55, 3.2, dt);
+    bot.energy=damp(bot.energy, hover?0.85:0.45, 2.6, dt);
+
+    // orbital drift: small circle around the anchor, so it stays locked
+    const a=bot.ph*0.55;
+    const dx=ANCHOR_X+Math.cos(a)*2.2;
+    const dy=ANCHOR_Y+Math.sin(a)*1.7+Math.sin(bot.ph)*0.8;
+    const tilt=-7+Math.sin(bot.ph*0.5)*1.3+bot.attention*1.2;
+    pose.setAttribute('transform',`translate(${dx.toFixed(2)} ${dy.toFixed(2)}) rotate(${tilt.toFixed(2)} 60 62)`);
+
+    // gaze lock (tiny saccades only)
+    const gx=GAZE_X*2.4+Math.sin(bot.ph*1.9)*0.32;
+    const gy=GAZE_Y*2.1+Math.cos(bot.ph*1.4)*0.28;
+    eL.setAttribute('transform',`translate(${gx.toFixed(2)} ${gy.toFixed(2)})`);
+    eR.setAttribute('transform',`translate(${gx.toFixed(2)} ${gy.toFixed(2)})`);
+
+    // blink
+    bot.blinkT-=dt;
+    if(bot.blinkT<=0){
+      bot.blinkT=2.3+Math.random()*3.4+(bot.attention>0.8?0.9:0);
+      bot.blink=0.16;
+    }
+    if(bot.blink>0){
+      bot.blink=Math.max(0,bot.blink-dt);
+      const close=Math.sin((1-bot.blink/0.16)*Math.PI);
+      lids.forEach(l=>l.style.transform=`scaleY(${close.toFixed(3)})`);
+    } else {
+      lids.forEach(l=>{ if(l.style.transform!=='scaleY(0)') l.style.transform='scaleY(0)'; });
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  slot.addEventListener('mouseenter',()=>{ hover=1; });
+  slot.addEventListener('mouseleave',()=>{ hover=0; });
+  slot.addEventListener('click',()=>{
+    bot.attention=1; bot.energy=1;
+    openCmdCenter();
+  });
+})();
+
+// ---- command center modal ----
+function openCmdCenter(){
+  const modal=document.getElementById('cmdModal');
+  const cmBot=document.getElementById('cmBot');
+  // clone the mascot into the modal's top-right corner once
+  if(!cmBot.querySelector('svg')){
+    const src=document.getElementById('botmark');
+    const clone=src?src.outerHTML.replace(/\sid="[^"]*"/g,'').replace(/\saria-label="[^"]*"/g,''):'';
+    cmBot.innerHTML=`<div class="mark">${clone}</div>`;
+  }
+  // position the bot at the upper-right of the modal, then animate it in
+  cmBot.style.position='absolute';
+  cmBot.style.top='10px'; cmBot.style.right='10px';
+  cmBot.style.transition='transform .5s cubic-bezier(.34,1.56,.64,1),opacity .4s';
+  cmBot.style.opacity='0';
+  cmBot.style.transform='scale(0.6)';
+  modal.classList.add('open');
+  loadLocalModels();
+  wgPoll();
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+    cmBot.style.opacity='1';
+    cmBot.style.transform='scale(1)';
+  }); });
+}
+
+async function loadLocalModels(){
+  const sel=document.getElementById('cmLocal');
+  const pick=document.getElementById('cmLocalModel');
+  const info=document.getElementById('cmLocalInfo');
+  const list=document.getElementById('cmModelList');
+  if(!sel||!pick) return;
+  try{
+    const d=await (await fetch('/models/local')).json();
+    const backends=d.backends||[], models=d.models||[];
+    sel.innerHTML='';
+    if(!backends.length){
+      sel.innerHTML='<option value="">no local backend found</option>';
+      info.textContent='start Ollama or a llama.cpp/llama-swap server, then reopen';
+    }else{
+      backends.forEach(b=>{
+        const o=document.createElement('option');
+        o.value=b.url;
+        o.textContent=b.kind+' · '+b.url.replace(/^https?:\/\//,'')+' ('+b.models.length+')';
+        sel.appendChild(o);
+      });
+      info.textContent=models.length+' model'+(models.length===1?'':'s')+' available across '+backends.length+' backend'+(backends.length===1?'':'s');
+    }
+    let saved={}; try{saved=JSON.parse(localStorage.getItem('cmdcenter')||'{}');}catch(e){}
+    if(saved.local && [...sel.options].some(o=>o.value===saved.local)) sel.value=saved.local;
+    list.innerHTML='';
+    models.forEach(m=>{const o=document.createElement('option');o.value=m;list.appendChild(o);});
+    pick.innerHTML='';
+    if(models.length){
+      models.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;pick.appendChild(o);});
+      if(saved.model && models.includes(saved.model)) pick.value=saved.model;
+    }else{
+      pick.innerHTML='<option value="">none detected</option>';
+    }
+  }catch(e){
+    sel.innerHTML='<option value="">no backend on this static page</option>';
+    info.textContent=staticMode
+      ? 'static demo — the server probes Ollama / llama.cpp / llama-swap'
+      : String(e);
+  }
+}
+
+(function(){
+  const modal=document.getElementById('cmdModal');
+  const close=document.getElementById('cmClose');
+  close.addEventListener('click',()=>{
+    modal.classList.remove('open');
+  });
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+
+  // load persisted prefs
+  try{
+    const p=JSON.parse(localStorage.getItem('cmdcenter')||'{}');
+    if(p.accent){ document.getElementById('cmAccent').value=p.accent;
+      document.documentElement.style.setProperty('--accent',p.accent); }
+    if(p.radius!=null){ document.getElementById('cmRadius').value=p.radius;
+      document.documentElement.style.setProperty('--radius',p.radius+'px'); }
+    if(p.cloud) document.getElementById('cmCloud').value=p.cloud;
+    if(p.model) document.getElementById('cmModel').value=p.model;
+    if(p.repo){ document.getElementById('cmRepo').value=p.repo;
+      document.getElementById('cmGhInfo').textContent='connected: '+p.repo+(p.gh?' · token saved':''); }
+  }catch(e){}
+
+  function save(){
+    try{
+      localStorage.setItem('cmdcenter',JSON.stringify({
+        accent:document.getElementById('cmAccent').value,
+        radius:document.getElementById('cmRadius').value,
+        local:document.getElementById('cmLocal').value,
+        cloud:document.getElementById('cmCloud').value,
+        model:document.getElementById('cmModel').value,
+        repo:document.getElementById('cmRepo').value,
+      }));
+    }catch(e){}
+  }
+
+  document.getElementById('cmAccent').addEventListener('input',e=>{
+    document.documentElement.style.setProperty('--accent',e.target.value); save();
+  });
+  document.getElementById('cmRadius').addEventListener('input',e=>{
+    document.documentElement.style.setProperty('--radius',e.target.value+'px'); save();
+  });
+  document.getElementById('cmCompact').addEventListener('change',e=>{
+    document.getElementById('devices').classList.toggle('compact',e.target.checked); save();
+  });
+  document.getElementById('cmLocalModel').addEventListener('change',e=>{
+    if(e.target.value) document.getElementById('cmModel').value=e.target.value;
+    save();
+  });
+  document.getElementById('cmLocal').addEventListener('change',()=>save());
+  document.getElementById('cmConnect').addEventListener('click',async()=>{
+    const key=document.getElementById('cmKey').value.trim();
+    if(!key){ alert('enter an api key first'); return; }
+    const body={provider:document.getElementById('cmCloud').value,key:key,
+      model:document.getElementById('cmModel').value.trim()};
+    try{
+      const r=await fetch('/cmd/provider',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(body)});
+      const d=await r.json();
+      alert(d.blocked?('provider: '+d.reason):'provider saved');
+      save();
+    }catch(e){ alert('provider failed: '+e); }
+  });
+  document.getElementById('cmGh').addEventListener('click',async()=>{
+    const repo=document.getElementById('cmRepo').value.trim();
+    if(!repo){ alert('enter owner/repo first'); return; }
+    try{
+      const r=await fetch('/cmd/github',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({repo:repo,branch:document.getElementById('cmBranch').value})});
+      const d=await r.json();
+      document.getElementById('cmGhInfo').textContent=d.blocked?('github: '+d.reason):('connected to '+repo);
+      save();
+    }catch(e){ document.getElementById('cmGhInfo').textContent='github: '+e; }
+  });
+})();
+
+(function(){const w=eq.clientWidth||600,step=12,n=Math.max(4,Math.ceil(w/step));
+  for(let i=0;i<n;i++){const s=document.createElement('span');s.style.animationDelay=(i*0.03)+'s';
+    eqTrack.appendChild(s);eqTrack.appendChild(s.cloneNode(true));}})();
+
+function entry(label,text,kind){
+  const d=document.createElement('div');d.className='entry';
+  const l=document.createElement('div');l.className='lbl '+kind;l.textContent=label;
+  d.append(l);
+  if(text){const pre=document.createElement('pre');pre.textContent=text;d.append(pre);}
+  log.appendChild(d);log.scrollTop=log.scrollHeight;
+}
+
+function fmtUptime(s){
+  if(!s&&s!==0) return '';
+  const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);
+  return (d?d+'d ':'')+(h?h+'h ':'')+m+'m';
+}
+function loadTxt(load){
+  return load?load.map(x=>x.toFixed(2)).join(' / '):'';
+}
+let selected=null, clusterSel=false, lastDevs=[];
+function renderDevices(devs){
+  if(devs) lastDevs=devs; else devs=lastDevs;
+  const list=devices.querySelectorAll('.devcard'); list.forEach(e=>e.remove());
+  let online=0;
+  devs.forEach(d=>{
+    if(d.online) online++;
+    const card=document.createElement('div');card.className='devcard'+(d.online?'':' off')+(selected===d.serial?' sel':'')+(d.active?' active':'');
+    card.dataset.serial=d.serial;
+    // data flow direction: executor = data leaving (out, right); needle = data arriving (in, left)
+    card.dataset.flow=(d.kind==='host')?'':((d.role||'').includes('executor')?'out':'in');
+    const ramPct=d.ram_pct!=null?d.ram_pct:(d.ram?Math.round(Math.min(d.ram,3000)/3000*100):0);
+    card.innerHTML=`
+      <div class="hd"><span class="dot"></span><input class="devname" data-serial="${d.serial}" value="${d.name}" title="click to rename"></div>
+      <div class="role">${d.role}</div>
+      <div class="meta"><span class="status">${d.online?'online':'offline'}</span>
+        <span>${d.ram?d.ram+'MB free':'—'}</span></div>
+      <div class="stats"><span>⚡ <b>${d.kind==='host'?(d.load?d.load[0].toFixed(1):'—'):(d.battery!=null?d.battery+'%':'—')}</b></span>
+        <span>⏱ <b>${fmtUptime(d.uptime)||'—'}</b></span>
+        <span>${d.model?'<b>'+d.model+'</b>':''}</span></div>
+      <div class="rambar"><div style="width:${Math.min(100,ramPct)}%"></div></div>
+      <div class="flow"></div>`;
+    const nm=card.querySelector('.devname');
+    nm.addEventListener('change',async()=>{
+      const val=nm.value.trim(); if(!val||val===d.name) return;
+      try{
+        await fetch('/cluster/rename',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({serial:d.serial,name:val})});
+        if(selected===d.serial){ renderDetail({...d,name:val}); }
+        refreshCluster();
+      }catch(e){}
+    });
+    nm.addEventListener('click',e=>e.stopPropagation());
+    card.addEventListener('click',()=>{
+      clusterSel=false; trainSel=false; selected=(selected===d.serial)?null:d.serial;
+      renderDevices(devs); renderDetail(d); renderClusterSummary(devs);
+    });
+    devices.querySelector('#devlist').appendChild(card);
+  });
+  return online;
+}
+
+async function startCluster(){
+  const btn=document.getElementById('clusterStart');
+  if(btn) btn.disabled=true, btn.textContent='starting…';
+  try{
+    const r=await fetch('/cluster/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    const d=await r.json();
+    if(btn){ btn.disabled=false; btn.textContent=(d.results&&d.results.length)?'▶ Start cluster ✓':'▶ Start cluster'; }
+    setTimeout(refreshCluster, 5000);   // let backends come up, then refresh
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.textContent='▶ Start cluster'; }
+  }
+}
+function renderClusterSummary(devs){
+  const el=document.getElementById('clustersum');
+  if(!el) return;
+  if(devs) lastDevs=devs; else devs=lastDevs;
+  if(!devs) return;
+  // This is a single-machine tool router by default. Only show cluster
+  // controls when a second device is actually configured or attached.
+  const extras=devs.filter(d=>d.kind!=='host').length;
+  const startBtn=document.getElementById('clusterStart');
+  if(startBtn) startBtn.style.display=extras?'':'none';
+  if(!extras){ el.style.display='none'; clusterSel=false; return; }
+  el.style.display='block';
+  const online=devs.filter(d=>d.online).length;
+  const totalRam=devs.reduce((a,d)=>a+(d.ram_total||0),0);
+  const freeRam=devs.reduce((a,d)=>a+(d.ram||0),0);
+  const totalCtx=devs.reduce((a,d)=>a+(d.max_context||0),0);
+  const usedCtx=devs.reduce((a,d)=>a+(d.context_used||0),0);
+  const exec=devs.filter(d=>(d.role||'').includes('executor')).length;
+  el.className=(clusterSel?' sel':'');
+  el.innerHTML=`
+    <div class="hd"><span class="dot"></span><span>Cluster</span></div>
+    <div class="meta"><span>⚡ <b>${online}/${devs.length}</b> up · <b>${exec}</b> exec</span>
+      <span>RAM <b>${Math.round(freeRam/1024)}</b>/<b>${Math.round(totalRam/1024)}</b>G</span></div>
+    ${totalCtx?`<div class="meta"><span>ctx <b>${Math.round(usedCtx/1024)}</b>/<b>${Math.round(totalCtx/1024)}</b>K</span>
+      <span>${Math.round(100*usedCtx/totalCtx)}%</span></div>`:''}`;
+  let clusterData=null;
+  el.addEventListener('click',()=>{
+    clusterSel=!clusterSel; selected=null; trainSel=false;
+    if(clusterSel) clusterData={name:'Cluster',serial:'CLUSTER',online:true,
+      role:'swarm summary',model:'—',ram:freeRam,ram_total:totalRam,
+      load:[online,exec,devs.length],uptime:null,battery:null,cores:devs.length,
+      abi:'—',disk_free_gb:null,backend:8900,max_context:totalCtx,context_used:usedCtx,
+      ram_pct: totalRam?Math.round(100*freeRam/totalRam):0};
+    renderDevices(devs); renderDetail(clusterData); renderClusterSummary(devs);
+  });
+  if(clusterSel && clusterData) renderDetail(clusterData);
+}
+
+let trainSel=false, trainState=null, trainBuilt=false, protectedVersions=[];
+async function fetchTrain(){
+  try{
+    const r=await fetch('/train'); trainState=await r.json();
+  }catch(e){ trainState=null; }
+  return trainState;
+}
+let modelState=null;
+async function fetchModel(){
+  try{
+    const r=await fetch('/model'); modelState=await r.json();
+  }catch(e){ modelState=null; }
+  return modelState;
+}
+function renderModelCard(st){
+  const el=document.getElementById('modelcard');
+  if(!el) return;
+  if(!st || st.status==='unknown'){ el.style.display='none'; return; }
+  el.style.display='';
+  const running=(st.status==='running'||st.status==='initialized');
+  const params=(st.params!=null)?(st.params/1e6).toFixed(2)+'M':'—';
+  el.className=running?'running':'';
+  const pct=st.progress?Math.round(st.progress*100):0;
+  el.innerHTML=`
+    <div class="hd"><span class="dot"></span><span>Model · from scratch</span></div>
+    <div class="meta"><span>${params} · L${st.cfg_layers||'—'} · ctx —</span>
+      <span><b>${running?(st.status==='initialized'?'initializing':'training'):(st.status||'—')}</b></span></div>
+    <div class="loss">loss <b>${st.loss!=null?st.loss.toFixed(3):'—'}</b>
+      ${st.val!=null?' · val <b>'+st.val.toFixed(3)+'</b>':''}
+      · e${st.epoch!=null?st.epoch:'—'} s${st.step!=null?st.step:'—'}</div>`;
+}
+function renderTrainingCard(st){
+  const el=document.getElementById('traincard');
+  if(!el) return;
+  const md=st&&st.model, modelActive=md&&(md.status==='running'||md.status==='initialized');
+  const ver=modelActive?'model · from scratch':(st.version||'—');
+  const done=st.chunks_done||0, total=st.chunks_total||0;
+  const pct=total?Math.round(100*done/total):(modelActive?10:0);
+  const running=(st.status==='running')||modelActive;
+  el.className=(trainSel?' sel':'')+(running?' running':'');
+  el.innerHTML=`
+    <div class="hd"><span class="dot"></span><span>Training</span></div>
+    <div class="meta"><span><b>${ver}</b> ${running?'RUNNING':(md?(md.status||'idle'):(st.status||'idle'))}</span>
+      <span>${modelActive?((md.params!=null?(md.params/1e6).toFixed(2)+'M':'—')+' · L'+md.cfg_layers):(total?done+'/'+total+' chunks':'—')}</span></div>
+    <div class="mini"><div style="width:${pct}%"></div></div>
+    ${modelActive?`<div class="loss" style="margin-top:5px">loss <b>${md.loss!=null?md.loss.toFixed(3):'—'}</b> · e${md.epoch!=null?md.epoch:'—'} s${md.step!=null?md.step:'—'}</div>`:''}`;
+  el.onclick=()=>{
+    trainSel=!trainSel; selected=null; clusterSel=false;
+    renderDevices(); renderTrainingCard(st);
+    renderTrainingDetail(st); renderClusterSummary();
+  };
+}
+function renderTrainingDetail(st){
+  const el=document.getElementById('devinfo');
+  if(!st||!trainSel){ el.classList.remove('open'); el.innerHTML=''; trainBuilt=false; return; }
+  el.classList.add('open');
+  // build the form only once; on subsequent polls just update live values
+  if(!trainBuilt){
+    el.innerHTML=`
+      <div class="tform">
+        <h3>Training Cycle</h3><div class="sub" id="tSub">—</div>
+        <div class="prog"><div id="tProg" style="width:0%"></div></div>
+        <div class="tstats"><span>chunks <b id="tChunks">—</b></span>
+          <span>steps <b id="tStepsN">—</b></span>
+          <span id="tStarted"></span></div>
+
+        <div class="tsec">cycle</div>
+        <div class="sub" id="tAutoState" style="margin:2px 0 6px"></div>
+        <div class="tctl" style="gap:6px;margin-bottom:8px">
+          <button class="tbtn" id="tAuto" style="flex:1">Auto</button>
+          <button class="tbtn" id="tRepeat" style="flex:1">Repeat last</button>
+          <button class="tbtn" id="tRecover" style="flex:1">Recover</button>
+        </div>
+
+        <div class="tsec">manual run</div>
+        <div class="tfld"><label>version</label>
+          <div class="tctl"><input id="tVer" placeholder="v21"><button class="tbtn" id="tStart">Run</button></div></div>
+        <div class="tfld"><label>steps × epochs / init / corpus</label>
+          <div class="tctl" style="gap:4px">
+            <input id="tSteps" type="number" min="8" step="8" value="32" style="width:60px">
+            <select id="tInit" style="flex:1;min-width:0">
+              <option value="/root/syn_v13_c15.cact">v13</option>
+              <option value="/root/syn_v19_c20.cact">v19</option>
+              <option value="">base</option>
+            </select>
+            <select id="tCorpus" style="flex:1.2;min-width:0">
+              <option value="train_full_v2.jsonl">full v2</option>
+              <option value="train_focused.jsonl">focused</option>
+            </select>
+          </div></div>
+        <div class="tctl" style="gap:6px;margin:4px 0 8px">
+          <button class="tbtn" id="tFocus" style="flex:1">Make focused corpus</button>
+        </div>
+
+        <div class="tsec">verify gate</div>
+        <div class="tctl"><button class="tbtn" id="tVerify">Run gate (120)</button></div>
+        <span class="tver" id="tVerifies"></span>
+        <div class="vbar" id="tVBar"><i></i></div>
+        <div class="sub" style="margin-top:8px">gate history <span id="tHistSum" style="margin-left:6px"></span></div>
+      </div>
+      <div class="tmid" id="tHist"></div>
+      <div class="tlog" id="tLog"></div>`;
+    trainBuilt=true;
+    const ver=document.getElementById('tVer'), steps=document.getElementById('tSteps');
+    const init=document.getElementById('tInit'), start=document.getElementById('tStart');
+    const rep=document.getElementById('tRepeat'), verify=document.getElementById('tVerify');
+    const corpus=document.getElementById('tCorpus'), focus=document.getElementById('tFocus');
+    const submit=async(body,btn)=>{
+      btn.disabled=true; btn.textContent='…';
+      try{
+        const r=await fetch('/train/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const d=await r.json();
+        if(d.blocked){ alert('train start: '+d.reason); }
+        trainState=await fetchTrain(); refreshTrainingLive();
+      }catch(e){ alert('train start failed: '+e); }
+      btn.disabled=false; btn.textContent=btn.id==='tStart'?'Run':'Repeat last';
+    };
+    const baseBody=()=>({version:ver.value.trim()||'v21',steps:parseInt(steps.value)||32,
+      init:init.value,corpus:corpus.value});
+    start.onclick=()=>submit(baseBody(),start);
+    rep.onclick=async()=>{
+      rep.disabled=true; rep.textContent='finding last…';
+      try{
+        const r=await fetch('/train/repeat',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        const d=await r.json();
+        if(d.blocked){ alert('repeat: '+d.reason); }
+        else { alert(d.task||'repeat launched'); refreshTrainingLive(); }
+      }catch(e){ alert('repeat failed: '+e); }
+      rep.disabled=false; rep.textContent='Repeat last';
+    };
+    const auto=document.getElementById('tAuto');
+    auto.onclick=async()=>{
+      const stopping=trainState&&trainState.auto&&trainState.auto.on;
+      auto.disabled=true;
+      try{
+        await fetch('/train/auto',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:stopping?'stop':'start'})});
+        trainState=await fetchTrain(); refreshTrainingLive();
+      }catch(e){ alert('auto-cycle failed: '+e); }
+      auto.disabled=false;
+    };
+    focus.onclick=async()=>{
+      focus.disabled=true; focus.textContent='building…';
+      try{
+        const r=await fetch('/train/focus',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({src:corpus.value})});
+        const d=await r.json();
+        if(d.blocked){ alert('focus: '+d.reason); }
+        else { corpus.value=d.corpus||corpus.value; alert('focused corpus built: '+d.count+' examples'); }
+      }catch(e){ alert('focus failed: '+e); }
+      focus.disabled=false; focus.textContent='Make focused';
+    };
+    verify.onclick=async()=>{
+      verify.disabled=true; verify.textContent='running…';
+      try{
+        const r=await fetch('/train/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({version:ver.value.trim()||'v21'})});
+        const d=await r.json();
+        if(d.blocked){ alert('verify: '+d.reason); }
+        else { alert('verify started — see gate history'); }
+      }catch(e){ alert('verify failed: '+e); }
+      verify.disabled=false; verify.textContent='Run gate (120)';
+    };
+  }
+  refreshTrainingLive();
+}
+function refreshTrainingLive(){
+  const st=trainState; if(!st) return;
+  protectedVersions=st.protected||[];
+  /* ---- quality-curve drawer ---- */
+  const qc=document.getElementById('qc'), qcBtn=document.getElementById('qcBtn');
+  if(qc && !qc._wired){
+    qc._wired=true;
+    qcBtn.onclick=()=>qc.classList.toggle('open');
+    document.getElementById('qcX').onclick=()=>qc.classList.remove('open');
+    document.querySelectorAll('#qc .png').forEach(b=>b.onclick=()=>{
+      const c=document.getElementById(b.dataset.c);
+      const a=document.createElement('a'); a.download=b.dataset.c+'.png';
+      a.href=c.toDataURL('image/png'); a.click();
+    });
+  }
+  function drawGates(st){
+    const c=document.getElementById('qcGates'); if(!c) return;
+    const x=c.getContext('2d'), W=c.width, H=c.height;
+    x.clearRect(0,0,W,H);
+    x.fillStyle='#0d1322'; x.fillRect(0,0,W,H);
+    const hist=st.history||{};
+    // sort by numeric part, m-tags after base
+    const keys=Object.keys(hist).sort((a,b)=>{
+      const na=parseInt(a.slice(1))||0, nb=parseInt(b.slice(1))||0;
+      return na!==nb?na-nb:(a>b?1:-1); });
+    if(!keys.length){ x.fillStyle='#64748b'; x.font='14px monospace';
+      x.fillText('no gates yet', W/2-50, H/2); return; }
+    const pad={l:44,r:12,t:16,b:34};
+    const maxV=Math.max(60,...keys.map(k=>hist[k].pct));
+    const X=i=>pad.l+(W-pad.l-pad.r)*(keys.length===1?.5:i/(keys.length-1));
+    const Y=v=>H-pad.b-(H-pad.t-pad.b)*Math.min(v,maxV)/maxV;
+    // grid + % labels
+    x.strokeStyle='#1e293b'; x.fillStyle='#64748b'; x.font='10px monospace';
+    for(let g=0;g<=maxV;g+=20){ x.beginPath(); x.moveTo(pad.l,Y(g)); x.lineTo(W-pad.r,Y(g)); x.stroke();
+      x.fillText(g+'%',6,Y(g)+3); }
+    // champion line
+    const ch=(st.champion||'').match(/\(( [\d.]+)%\)/);
+    const champPct=parseFloat((st.champion||'').split('(').pop());
+    if(!isNaN(champPct)){
+      x.strokeStyle='#fbbf24'; x.setLineDash([6,4]); x.beginPath();
+      x.moveTo(pad.l,Y(champPct)); x.lineTo(W-pad.r,Y(champPct)); x.stroke(); x.setLineDash([]);
+      x.fillStyle='#fbbf24'; x.fillText('champion '+champPct+'%', W-pad.r-92, Y(champPct)-4);
+    }
+    // curve
+    x.strokeStyle='#38bdf8'; x.lineWidth=2; x.beginPath();
+    keys.forEach((k,i)=>{ const px=X(i),py=Y(hist[k].pct); i?x.lineTo(px,py):x.moveTo(px,py); });
+    x.stroke(); x.lineWidth=1;
+    // points + labels
+    keys.forEach((k,i)=>{
+      const px=X(i),py=Y(hist[k].pct), isCh=Math.abs(hist[k].pct-champPct)<0.01;
+      x.fillStyle=isCh?'#fbbf24':(hist[k].pct>=40?'#22c55e':'#ef4444');
+      x.beginPath(); x.arc(px,py,4,0,7); x.fill();
+      x.fillStyle='#94a3b8'; x.save(); x.translate(px,H-pad.b+12); x.rotate(-Math.PI/3);
+      x.fillText(k,0,0); x.restore();
+    });
+    // running marker
+    if(st.status==='running'&&st.version){
+      const i=keys.indexOf(st.version);
+      if(i<0){ x.fillStyle='#fbbf24'; x.font='11px monospace';
+        x.fillText('● '+st.version+' training…', W-pad.r-110, pad.t+2); }
+    }
+  }
+  function drawLoss(st){
+    const c=document.getElementById('qcLoss'); if(!c) return;
+    const x=c.getContext('2d'), W=c.width, H=c.height;
+    x.clearRect(0,0,W,H); x.fillStyle='#0d1322'; x.fillRect(0,0,W,H);
+    const mpts=(st.model&&st.model.loss_curve)||[];
+    const pts=mpts.length?mpts:(st.loss_curve||[]);
+    if(pts.length<2){ x.fillStyle='#64748b'; x.font='13px monospace';
+      x.fillText(pts.length?('step '+pts[0][0]+'…'):'waiting for step logs…', W/2-70, H/2); return; }
+    const pad={l:52,r:12,t:12,b:22};
+    const s0=pts[0][0], s1=pts[pts.length-1][0];
+    let l0=Infinity,l1=-Infinity; pts.forEach(p=>{l0=Math.min(l0,p[1]);l1=Math.max(l1,p[1]);});
+    if(l1-l0<1e-6) l1=l0+1e-6;
+    const X=s=>pad.l+(W-pad.l-pad.r)*((s-s0)/Math.max(1,s1-s0));
+    const Y=v=>H-pad.b-(H-pad.t-pad.b)*((v-l0)/(l1-l0));
+    x.strokeStyle='#1e293b'; x.fillStyle='#64748b'; x.font='10px monospace';
+    for(let g=0;g<=4;g++){ const v=l0+(l1-l0)*g/4;
+      x.beginPath(); x.moveTo(pad.l,Y(v)); x.lineTo(W-pad.r,Y(v)); x.stroke();
+      x.fillText(v.toPrecision(3),4,Y(v)+3); }
+    // from-scratch model = amber, LoRA = green; draw both if present
+    const series=[];
+    if(mpts.length) series.push(['#fbbf24',mpts]);
+    if(st.loss_curve&&st.loss_curve.length) series.push(['#00ff41',st.loss_curve]);
+    series.forEach(([color,data])=>{ x.strokeStyle=color; x.lineWidth=2; x.beginPath();
+      data.forEach((p,i)=>{ const px=X(p[0]),py=Y(p[1]); i?x.lineTo(px,py):x.moveTo(px,py); });
+      x.stroke(); });
+    x.lineWidth=1; x.fillStyle='#64748b';
+    x.fillText('step '+s0, pad.l, H-8); x.fillText('step '+s1, W-pad.r-46, H-8);
+  }
+  function drawLiveGate(st){
+    const c=document.getElementById('qcLive'); if(!c) return;
+    const x=c.getContext('2d'), W=c.width, H=c.height;
+    x.clearRect(0,0,W,H); x.fillStyle='#0d1322'; x.fillRect(0,0,W,H);
+    const gl=st.gate_live||{}; const vids=Object.keys(gl);
+    if(!vids.length){ x.fillStyle='#64748b'; x.font='13px monospace';
+      x.fillText('no gate running', W/2-60, H/2); return; }
+    const pad={l:44,r:12,t:14,b:20};
+    x.strokeStyle='#1e293b'; for(let g=0;g<=100;g+=25){
+      x.beginPath(); x.moveTo(pad.l,pad.t+(H-pad.t-pad.b)*(1-g/100)); x.lineTo(W-pad.r,pad.t+(H-pad.t-pad.b)*(1-g/100)); x.stroke();
+      x.fillStyle='#64748b'; x.font='10px monospace'; x.fillText(g+'%',8,pad.t+(H-pad.t-pad.b)*(1-g/100)+3); }
+    const colors=['#00ff41','#38bdf8','#fbbf24'];
+    vids.forEach((vid,vi)=>{
+      const g=gl[vid], col=colors[vi%colors.length];
+      const X=n=>pad.l+(W-pad.l-pad.r)*(n/120);
+      const Y=p=>pad.t+(H-pad.t-pad.b)*(1-p/100);
+      x.strokeStyle=col; x.lineWidth=2; x.beginPath();
+      g.series.forEach((pt,i)=>{ i?x.lineTo(X(pt[0]),Y(pt[1])):x.moveTo(X(pt[0]),Y(pt[1])); });
+      x.stroke(); x.lineWidth=1;
+      x.fillStyle=col;
+      x.fillText(vid+' '+g.pass+'/'+g.done+(g.finished?' DONE':'…'), pad.l+6+vi*150, pad.t+10);
+    });
+  }
+  function drawHeat(st){
+    const c=document.getElementById('qcHeat'); if(!c) return;
+    const x=c.getContext('2d'), W=c.width, H=c.height;
+    x.clearRect(0,0,W,H); x.fillStyle='#0d1322'; x.fillRect(0,0,W,H);
+    const hist=st.history||{};
+    // collect class union
+    const clsSet=new Set(); Object.values(hist).forEach(h=>Object.keys(h.classes||{}).forEach(k=>clsSet.add(k)));
+    const classes=[...clsSet].sort();
+    const keys=Object.keys(hist).sort((a,b)=>{
+      const na=parseInt(a.slice(1))||0,nb=parseInt(b.slice(1))||0; return na!==nb?na-nb:(a>b?1:-1);})
+      .filter(k=>hist[k].classes&&Object.keys(hist[k].classes).length);
+    if(!classes.length||!keys.length){ x.fillStyle='#64748b'; x.font='13px monospace';
+      x.fillText('no per-class data yet (new harness only)', W/2-110, H/2); return; }
+    const pad={l:86,r:10,t:26,b:8};
+    const cw=(W-pad.l-pad.r)/keys.length, chh=(H-pad.t-pad.b)/classes.length;
+    keys.forEach((k,ci)=>{
+      x.fillStyle='#94a3b8'; x.font='9px monospace'; x.save();
+      x.translate(pad.l+ci*cw+cw/2, H-pad.b+4); x.rotate(-Math.PI/3); x.fillText(k,0,0); x.restore();
+      classes.forEach((cl,ri)=>{
+        const d=(hist[k].classes||{})[cl]; if(!d) return;
+        const pct=d[0]/Math.max(1,d[1]);
+        const r=Math.round(239*(1-pct)), g2=Math.round(68+120*pct), b=68;
+        x.fillStyle=`rgb(${r},${g2},${b})`;
+        x.fillRect(pad.l+ci*cw+1, pad.t+ri*chh+1, cw-2, chh-2);
+        if(cw>26&&chh>14){ x.fillStyle=pct>.5?'#000':'#e2e8f0'; x.font='9px monospace';
+          x.fillText(d[0]+'/'+d[1], pad.l+ci*cw+3, pad.t+ri*chh+chh/2+3); }
+      });
+    });
+    classes.forEach((cl,ri)=>{ x.fillStyle='#94a3b8'; x.font='10px monospace';
+      x.fillText(cl, 6, pad.t+ri*chh+chh/2+3); });
+  }
+  function drawScatter(st){
+    const c=document.getElementById('qcScatter'); if(!c) return;
+    const x=c.getContext('2d'), W=c.width, H=c.height;
+    x.clearRect(0,0,W,H); x.fillStyle='#0d1322'; x.fillRect(0,0,W,H);
+    const pts=(st.loss_gate||[]).filter(p=>p.loss>0);
+    if(pts.length<2){ x.fillStyle='#64748b'; x.font='13px monospace';
+      x.fillText('need >=2 gated runs with loss logs', W/2-130, H/2); return; }
+    const pad={l:44,r:14,t:16,b:34};
+    const l0=Math.min(...pts.map(p=>p.loss)), l1=Math.max(...pts.map(p=>p.loss));
+    const lx0=Math.log10(l0)-0.3, lx1=Math.log10(l1)+0.3;
+    const X=v=>pad.l+(W-pad.l-pad.r)*((Math.log10(v)-lx0)/(lx1-lx0));
+    const Y=p=>H-pad.b-(H-pad.t-pad.b)*(p.pct/60);
+    x.strokeStyle='#1e293b'; x.fillStyle='#64748b'; x.font='10px monospace';
+    [0,20,40,60].forEach(g=>{ x.beginPath(); x.moveTo(pad.l,Y({pct:g})); x.lineTo(W-pad.r,Y({pct:g})); x.stroke();
+      x.fillText(g+'%',8,Y({pct:g})+3); });
+    for(let e=Math.ceil(lx0);e<=lx1;e++){ const vx=X(Math.pow(10,e));
+      x.beginPath(); x.moveTo(vx,pad.t); x.lineTo(vx,H-pad.b); x.stroke();
+      x.fillText('1e'+e, vx-10, H-pad.b+14); }
+    pts.forEach(pt=>{
+      const champ=(st.champion||'').startsWith(pt.ver+' ');
+      x.fillStyle=champ?'#fbbf24':(pt.pct>=40?'#22c55e':'#ef4444');
+      x.beginPath(); x.arc(X(pt.loss),Y(pt),5,0,7); x.fill();
+      x.fillStyle='#94a3b8'; x.fillText(pt.ver,X(pt.loss)+7,Y(pt)+3);
+    });
+    // anti-correlation hint
+    const n=pts.length;
+    const sx=pts.reduce((a,p)=>a+Math.log10(p.loss),0), sy=pts.reduce((a,p)=>a+p.pct,0);
+    const sxy=pts.reduce((a,p)=>a+Math.log10(p.loss)*p.pct,0);
+    const sxx=pts.reduce((a,p)=>a+Math.log10(p.loss)**2,0);
+    const syy=pts.reduce((a,p)=>a+p.pct**2,0);
+    const r=(n*sxy-sx*sy)/Math.max(1e-9,Math.sqrt((n*sxx-sx*sx)*(n*syy-sy*sy)));
+    x.fillStyle=r<-.4?'#f87171':'#94a3b8'; x.font='11px monospace';
+    x.fillText('corr(r) = '+r.toFixed(2)+(r<-.4?'  ↓loss ≠ ↑skill (memorizing)':''), pad.l+8, pad.t+12);
+  }
+  function drawEcon(st){
+    const c=document.getElementById('qcEcon'); if(!c) return;
+    const x=c.getContext('2d'), W=c.width, H=c.height;
+    x.clearRect(0,0,W,H); x.fillStyle='#0d1322'; x.fillRect(0,0,W,H);
+    const eco=st.economics||{};
+    const keys=Object.keys(eco).sort((a,b)=>{
+      const na=parseInt(a.slice(1))||0,nb=parseInt(b.slice(1))||0; return na-nb;});
+    if(!keys.length){ x.fillStyle='#64748b'; x.font='13px monospace';
+      x.fillText('collecting… (gate stamps start from now)', W/2-140, H/2); return; }
+    const pad={l:56,r:16,t:18,b:26};
+    const maxMin=Math.max(5,...keys.map(k=>(eco[k].train_min||0)+(eco[k].gate_min||0)));
+    const bh=Math.min(18,(H-pad.t-pad.b)/keys.length-4);
+    keys.forEach((k,i)=>{
+      const y=pad.t+i*((H-pad.t-pad.b)/keys.length)+2;
+      const tw=(W-pad.l-pad.r)/maxMin;
+      const tr=eco[k].train_min||0, ga=eco[k].gate_min||0;
+      x.fillStyle='#38bdf8'; x.fillRect(pad.l,y,tr*tw,bh);
+      x.fillStyle='#00ff41'; if(ga) x.fillRect(pad.l+tr*tw,y,ga*tw,bh);
+      x.fillStyle='#94a3b8'; x.font='10px monospace';
+      x.fillText(k,8,y+bh-3);
+      x.fillStyle='#cbd5e1';
+      x.fillText('t'+tr+(ga?' + g'+ga:'')+'m', pad.l+ (tr+ga)*tw + 6, y+bh-3);
+    });
+    x.fillStyle='#38bdf8'; x.fillRect(pad.l,H-12,10,8);
+    x.fillStyle='#64748b'; x.fillText('train',pad.l+14,H-4);
+    x.fillStyle='#00ff41'; x.fillRect(pad.l+64,H-12,10,8);
+    x.fillStyle='#64748b'; x.fillText('gate',pad.l+78,H-4);
+  }
+  if(typeof window!=='undefined') window._drawQC=(st)=>{ drawGates(st); drawLoss(st); drawLiveGate(st); drawHeat(st); drawScatter(st); drawEcon(st); };
+  const sub=document.getElementById('tSub');
+  if(sub) sub.textContent=(st.status||'idle')+' · '+(st.version||'no run yet')
+    +(st.champion?' · 🏆 '+st.champion:'');
+  const autoBtn=document.getElementById('tAuto'), autoEl=document.getElementById('tAutoState');
+  if(autoBtn){
+    const a=st.auto||{};
+    autoBtn.textContent=a.on?'Auto: ON':'Auto';
+    autoBtn.style.borderColor=a.on?'var(--ok,#00ff41)':'';
+    if(autoEl) autoEl.textContent=a.on
+      ? `cycle ${a.cycles||0} · ${a.phase}${a.version?' '+a.version:''} · best ${a.best||'—'}${a.msg?' · '+a.msg:''}`
+      : (a.msg?a.msg:'');
+  }
+  const done=st.chunks_done||0, total=st.chunks_total||0;
+  const md=st&&st.model, modelActive=md&&(md.status==='running'||md.status==='initialized');
+  const prog=document.getElementById('tProg');
+  if(prog) prog.style.width=(total?Math.round(100*done/total):(modelActive?15:0))+'%';
+  const c=document.getElementById('tChunks');
+  if(c) c.textContent=modelActive?((md.params!=null?(md.params/1e6).toFixed(2)+'M':'—')+' · L'+md.cfg_layers):(done+'/'+total);
+  const sn=document.getElementById('tStepsN');
+  if(sn) sn.textContent=modelActive?(md.step||0):(st.steps_total||0);
+  const stt=document.getElementById('tStarted');
+  if(stt) stt.textContent=st.started?new Date(st.started*1000).toLocaleTimeString():'';
+  const tSub=document.getElementById('tSub');
+  if(tSub&&modelActive) tSub.textContent=`from scratch · loss ${md.loss!=null?md.loss.toFixed(4):'—'} · val ${md.val!=null?md.val.toFixed(4):'—'}`;
+  const l=document.getElementById('tLog');
+  if(l){ l.textContent=(st.log||[]).map(x=>x.replace(/</g,'&lt;').replace(/>/g,'&gt;')).join('\n');
+    l.scrollTop=l.scrollHeight; }
+  // gate history: pass/fail/total (pct%), fail in red + aggregate summary
+  const hist=st.history||{};
+  const histKeys=Object.keys(hist).sort();
+  const hs=document.getElementById('tHistSum');
+  if(hs){
+    const tot=histKeys.reduce((a,k)=>a+hist[k].total,0);
+    const pass=histKeys.reduce((a,k)=>a+hist[k].pass,0);
+    const fail=histKeys.reduce((a,k)=>a+hist[k].fail,0);
+    const pct=tot?Math.round(100*pass/tot):0;
+    hs.innerHTML=`<span class="pass">${pass}</span>/<span class="fail">${fail}</span>/<span class="total">${tot}</span> <span class="pct">(${pct}%)</span>`;
+  }
+  const histEl=document.getElementById('tHist');
+  if(histEl){
+    histEl.innerHTML=histKeys.slice().reverse().map(k=>{
+      const h=hist[k];
+      const prot=protectedVersions.includes(k);
+      const lockBtn=prot
+        ?`<span class="rm lock on" title="protected — click to unprotect" data-v="${k}">🔒</span>`
+        :`<span class="rm lock" title="click to protect (prevents accidental erase)" data-v="${k}">🔓</span>`;
+      return `<div class="dl">${lockBtn}${prot?'':`<span class="rm" title="erase this version" data-v="${k}">✕</span>`}<span class="vname">${k}${prot?' ✓':''}</span><span>
+        <span class="pass">${h.pass}</span>/<span class="fail">${h.fail}</span>/<span class="total">${h.total}</span> <span class="pct">(${h.pct}%)</span></span></div>`;
+    }).join('')||'<div class="dl"><span>—</span><span>no gates yet</span></div>';
+    histEl.querySelectorAll('.rm.lock').forEach(btn=>{
+      btn.onclick=async e=>{
+        e.stopPropagation();
+        const v=btn.dataset.v;
+        const on=btn.classList.contains('on');
+        try{
+          const r=await fetch('/train/protect',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({version:v,protect:!on})});
+          const d=await r.json();
+          if(d.blocked){ alert('protect: '+d.reason); return; }
+          trainState=await fetchTrain(); refreshTrainingLive();
+        }catch(err){ alert('protect failed: '+err); }
+      };
+    });
+    histEl.querySelectorAll('.rm:not(.lock)').forEach(btn=>{
+      btn.onclick=async e=>{
+        e.stopPropagation();
+        const v=btn.dataset.v;
+        if(!confirm(`Erase ${v} from gate history? This deletes its log, raw cact, and merged adapter.`)) return;
+        btn.textContent='…';
+        try{
+          const r=await fetch('/train/delete',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({version:v})});
+          const d=await r.json();
+          if(d.blocked){ alert('erase: '+d.reason); btn.textContent='✕'; return; }
+          trainState=await fetchTrain(); refreshTrainingLive();
+        }catch(err){ alert('erase failed: '+err); btn.textContent='✕'; }
+      };
+    });
+  }
+  const vf=document.getElementById('tVerifies');
+  const vbar=document.getElementById('tVBar');
+  if(vbar) vbar.classList.remove('err'), vbar.firstElementChild.style.width='0%';
+  if(vf){
+    const vs=st.verifies||{};
+    // running/in-flight verifications here; finished ones live in gate history
+    const running=Object.keys(vs).sort().reverse().filter(k=>vs[k].running || (!vs[k].finished && vs[k].done>0));
+    vf.innerHTML=running.map(k=>{
+      const v=vs[k];
+      const pct=v.total?Math.round(100*v.done/v.total):0;
+      const err=v.err?` <em class="err">${v.err}</em>`:'';
+      const stage=v.stage?` ${v.stage}…`:'';
+      return `<span class="vitem run">${k} <b>${v.done}/${v.total} (${pct}%)</b>${stage}${err}</span>`;
+    }).join('')||'<span class="vitem">no gates running</span>';
+    if(vbar && running.length){
+      const v=vs[running[0]];
+      const pct=v.total?Math.round(100*v.done/v.total):0;
+      if(v.err) vbar.classList.add('err');
+      vbar.firstElementChild.style.width=Math.max(pct, v.running&&!pct?4:pct)+'%';
+    }
+  }
+  if(window._drawQC&&typeof trainState!=='undefined'){
+    const _qcEl=document.getElementById('qc');
+    if(_qcEl&&_qcEl.classList.contains('open')) window._drawQC(trainState);
+  }
+  const qcEl=document.getElementById('qc'), wasRunning=window._qcWasRun;
+  if(qcEl){ const r=!!(trainState&&(trainState.status==='running'));
+    document.getElementById('qcBtn').classList.toggle('show', true);
+    if(r&&!wasRunning) qcEl.classList.add('open');
+    window._qcWasRun=r; }
+}
+
+function renderContextBar(devs){
+  const bar=document.getElementById('ctxbar');
+  const total=devs.reduce((a,d)=>a+(d.max_context||0),0);
+  const used=devs.reduce((a,d)=>a+(d.context_used||0),0);
+  const fill=document.getElementById('ctxfill');
+  const num=document.getElementById('ctxnum');
+  // Context is only meaningful once a model/API reports a real window.
+  if(!total){
+    if(bar) bar.classList.remove('on');
+    return;
+  }
+  if(bar) bar.classList.add('on');
+  if(fill) fill.style.width=(Math.min(100,100*used/total))+'%';
+  if(num) num.textContent=Math.round(used/1024)+' / '+Math.round(total/1024)+' K ('+Math.round(100*used/total)+'%)';
+}
+
+function renderDetail(d){
+  const el=document.getElementById('devinfo');
+  if(!d||(!selected&&!clusterSel)){ el.classList.remove('open'); el.innerHTML=''; return; }
+  el.classList.add('open');
+  const rows=[
+    ['Status', d.online?'online':'offline'],
+    ['Kind', d.kind||'—'],
+    ['Role', d.role||'—'],
+    ['Serial', d.serial||'—'],
+    ['Model', d.model||'—'],
+    ['Phone model', d.phone_model||'—'],
+    ['ABI', d.abi||'—'],
+    ['CPU', d.cpu||(d.cores?d.cores+' cores':'—')],
+    ['RAM free', d.ram?d.ram+' MB':'—'],
+    ['RAM total', d.ram_total?d.ram_total+' MB':'—'],
+    ['RAM used', (d.ram&&d.ram_total)?(d.ram_total-d.ram)+' MB':'—'],
+    ['Load (1/5/15)', loadTxt(d.load)||'—'],
+    ['Uptime', fmtUptime(d.uptime)||'—'],
+    ['Battery', d.battery!=null?d.battery+'%':'—'],
+    ['Disk free', d.disk_free_gb!=null?d.disk_free_gb+' GB':'—'],
+    ['Disk total', d.disk_total_gb!=null?d.disk_total_gb+' GB':'—'],
+    ['Backend', d.backend?':'+d.backend:'—'],
+  ];
+  if(d.max_context) rows.push(['Context', Math.round(d.max_context/1024)+'K max']);
+  if(d.max_context && d.context_used!=null) rows.push(['Ctx used', d.context_used+' tok']);
+  rows.push(['Active', d.active?'yes':'no']);
+  const ramPct=d.ram_pct!=null?d.ram_pct:0;
+  el.innerHTML=`<h3>${d.name}</h3><div class="sub">${d.serial||''}</div>
+    ${d.ram_total?`<div class="prog"><div style="width:${Math.min(100,ramPct)}%"></div></div>`:''}
+    <div class="dlist">${rows.map(r=>`<div class="dl"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>`;
+  const dl=el.querySelector('.dlist');
+  if(dl){ dl.style.overflowY='auto'; dl.style.minHeight='0'; dl.style.flex='1 1 auto'; }
+}
+
+document.getElementById('logo').addEventListener('click',()=>{
+  devices.classList.toggle('closed');
+});
+
+document.getElementById('pvToggle').addEventListener('click',()=>{
+  const pv=document.getElementById('previewPane'), chat=document.getElementById('chatPane');
+  const full=pv.classList.toggle('full');
+  chat.style.display=full?'none':'';
+  pvToggle.textContent=full?'⤡':'⤢';
+  if(full)loadPreview();
+});
+
+async function refreshCluster(){
+  try{
+    const r=await fetch('/cluster'); const d=await r.json();
+    // feed the mascot: when any device goes active (real traffic), it perks up
+    const was=(window._prevActive||{});
+    (d.devices||[]).forEach(x=>{
+      if(x.active && !was[x.serial] && window.botReact) window.botReact();
+    });
+    window._prevActive={}; (d.devices||[]).forEach(x=>window._prevActive[x.serial]=x.active);
+    renderDevices(d.devices);
+    renderClusterSummary(d.devices);
+    renderContextBar(d.devices);
+    if(selected){ const sel=d.devices.find(x=>x.serial===selected); renderDetail(sel); }
+    else if(clusterSel){ renderDetail(clusterData); }
+  }catch(e){
+    if(staticMode){
+      renderDevices(browserHost());
+      renderClusterSummary(browserHost());
+      renderContextBar(browserHost());
+      if(!selected) renderDetail(browserHost()[0]);
+    }
+  }
+  if(trainingEnabled){
+    const st=await fetchTrain();
+    renderTrainingCard(st);
+    if(trainSel){ refreshTrainingLive(); }
+    const ms=await fetchModel();
+    renderModelCard(ms);
+    if(st) st.model=ms;   // let the QC drawer see the from-scratch model curve
+  }
+}
+
+function setBusy(on){
+  busy=on;
+  if(on){
+    send.disabled=false;             // the button becomes the stop button
+    send.classList.add('stop');
+    send.textContent='■ Stop';
+    eq.classList.add('on');
+  }else{
+    send.disabled=false;
+    send.classList.remove('stop');
+    send.textContent='Send';
+    eq.classList.remove('on');
+  }
+}
+
+async function stopBuild(){
+  if(!curTask) return;
+  stopSent=true;
+  try{
+    await fetch('/llm/cancel',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tid:curTask})});
+  }catch(e){}
+  setBusy(false);
+  entry('local.llm','build interrupted','stat');
+  curTask=null;
+  stopSent=false;
+  next();
+}
+
+async function submit(txt){
+  if(staticMode){
+    entry('> '+txt,'','q');
+    entry('static demo','This page is a static preview. The deterministic router runs locally:\n\n  python3 toolrx/server.py\n\nThen open http://localhost:8080/','stat');
+    return;
+  }
+  if(busy){pending.push(txt);return;}
+  setBusy(true);
+  entry('> '+txt,'','q'); q.value='';
+  try{
+    const r=await fetch('/llm',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:txt})});
+    const resp=await r.json();
+    if(resp.async){
+      entry('local.llm','building in background…','stat');
+      curTask=resp.task;
+      const tid=resp.task;
+      const iv=setInterval(async()=>{
+        try{
+          const s=await (await fetch('/llm/status/'+tid)).json();
+          if(s.status==='done'||s.status==='cancelled'){clearInterval(iv);curTask=null;
+            setBusy(false);
+            if(s.status==='done'){ entry('local.llm',s.text||'(done)','res'); loadPreview(); }
+            else { entry('local.llm','cancelled','stat'); }
+            next();}
+          else if(s.status==='error'){clearInterval(iv);curTask=null;setBusy(false);
+            entry('BLOCKED ⚠ llm: '+(s.error||'error'),'','err'); next();}
+        }catch(e){clearInterval(iv);curTask=null;setBusy(false);
+          entry('BLOCKED ⚠ llm: '+e,'','err'); next();}
+      },2000);
+    } else {
+      setBusy(false);
+      const t=resp.result&&resp.result.result&&resp.result.result.text;
+      entry('local.llm',t||'(no response)','res'); next();
+    }
+  }catch(e){setBusy(false);
+    entry('network error: '+e,'','err'); next();}
+}
+function next(){if(pending.length)submit(pending.shift());}
+
+function loadPreview(){const ts=Date.now();pv.src='/preview/index.html?t='+ts;}
+
+document.getElementById('f').addEventListener('submit',e=>{e.preventDefault();
+  if(busy){ stopBuild(); return; }
+  const t=q.value.trim(); if(t)submit(t);});
+q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
+  const t=q.value.trim(); if(t)submit(t);}});
+
+loadConfig().then(()=>refreshCluster());
+setInterval(refreshCluster,5000);
+// deep-link: /?drawer=open shows the device drawer immediately
+try{
+  const sp=new URLSearchParams(location.search);
+  if(sp.get('drawer')==='open')
+    document.getElementById('devices').classList.remove('closed');
+  // deep-link: /?cmd=open opens the command center
+  if(sp.get('cmd')==='open') openCmdCenter();
+}catch(e){}
+
+// ---- WireGuard kill-switch (command center) ----
+const cmWg=document.getElementById('cmWg');
+const cmWgInfo=document.getElementById('cmWgInfo');
+let wgBusy=false;
+function wgPaint(s){
+  if(!cmWg) return;
+  const up=!!s.up;
+  cmWg.textContent = up ? '● up' : '○ down';
+  cmWg.style.background = up ? 'var(--green)' : '#334155';
+  cmWg.style.color = up ? '#04121a' : '#e2e8f0';
+  cmWgInfo.textContent = up
+    ? 'kill-switch armed · '+(s.peers?s.peers.length:0)+' peer(s) · click to take down'
+    : ('error' in s ? 'toggle failed: '+s.error : 'tunnel down · click to bring up');
+}
+async function wgPoll(){
+  try{const r=await fetch('/wg');wgPaint(await r.json());}catch(e){}
+}
+if(cmWg){
+  cmWg.addEventListener('click',async()=>{
+    if(wgBusy)return; wgBusy=true; cmWg.disabled=true;
+    try{const r=await fetch('/wg/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});wgPaint(await r.json());}
+    catch(e){}
+    cmWg.disabled=false; wgBusy=false;
+  });
+}
+// poll only while the command center is open
+setInterval(()=>{const m=document.getElementById('cmdModal');
+  if(m&&m.classList.contains('open')) wgPoll();},5000);
+
+// smart scale: if the device list overflows its container, tighten card density
+function fitCards(){
+  const d=document.getElementById('devices');
+  if(!d) return;
+  const list=document.getElementById('devlist');
+  if(!list) return;
+  const avail=d.clientHeight - (document.getElementById('drawerMenu').offsetHeight||0)
+             - (document.getElementById('trainwrap').offsetHeight||0) - 30;
+  const count=list.children.length;
+  const per=avail/(count||1);
+  const needCompact=per<96;   // a normal card is ~96px tall
+  const needMicro=per<64;
+  d.classList.toggle('compact', needCompact);
+  d.classList.toggle('micro', needMicro);
+  list.style.gap=needCompact?'0':'2px';
+}
+window.addEventListener('resize',fitCards);
+setInterval(fitCards,3000);
+</script>
+</body>
+</html>
