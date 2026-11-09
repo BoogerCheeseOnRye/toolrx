@@ -68,7 +68,7 @@
       "<p class=\"sub\">" + esc(o.sub) + "</p></header>\n" +
       (o.body || "") + "\n</div>\n" +
       "<footer><span>built by <b>toolrx</b> · deterministic template · no model, no network</span>" +
-      "<span id=\"stamp\">offline · single file</span></footer>\n" +
+      "<span id=\"stamp\">offline · self-contained</span></footer>\n" +
       (o.js ? "<script>\n" + o.js + "\n</script>\n" : "") +
       "</body>\n</html>\n";
   }
@@ -1750,7 +1750,7 @@
       js = inner.trim() + "\n";
       return '<script src="app.js"></script>';
     });
-    html = html.replace(/offline · single file/, "offline · separate files");
+    html = html.replace(/offline · self-contained/, "offline · separate files");
     var a = archFor(real);
     var slug = real === "playground" ? "app" : real;
     if (real === "rpg" && rpgTheme(desc)) slug = slugOf(rpgTheme(desc).title);
