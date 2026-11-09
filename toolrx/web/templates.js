@@ -747,11 +747,11 @@
     var t = String(desc || "").toLowerCase();
     if (/arthur|camelot|knight|excalibur|round table|merlin|avalon/.test(t)) {
       return {
-        title: "Camelot RPG", sub: "a knight's road through the mist",
+        title: "Camelot RPG", sub: "a knight’s road through the mist",
         intro: "You wake at the edge of the Mistwood. Find the Black Knight before the fog closes.",
         hint: "find the Black Knight in the south-east.",
         enemy: "wandering knight", boss: "the Black Knight", elder: "Merlin", shrine: "the stone circle",
-        win: "The Black Knight yields. You win — Camelot's road is open.",
+        win: "The Black Knight yields. You win — Camelot’s road is open.",
         chest: "Relic: +1 potion.",
         groundA: "#1b2a24", groundB: "#203328", wall: "#2f3a4d", wall2: "#232c3d", tree: "#2f5d43"
       };
@@ -772,7 +772,7 @@
         title: "Derelict RPG", sub: "wake the ship, survive the dark",
         intro: "You wake in a cold corridor of the Derelict. Find the Warden Core before life support fails.",
         hint: "find the Warden Core in the south-east.",
-        enemy: "husk drone", boss: "the Warden Core", elder: "the ship's log", shrine: "the airlock",
+        enemy: "husk drone", boss: "the Warden Core", elder: "the ship’s log", shrine: "the airlock",
         win: "The Warden Core goes dark. You win — the ship is yours.",
         chest: "Supply cache: +1 stim.",
         groundA: "#161b2b", groundB: "#1a2033", wall: "#2c3650", wall2: "#222a40", tree: "#2d4a5a"

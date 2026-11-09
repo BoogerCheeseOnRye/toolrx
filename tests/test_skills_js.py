@@ -150,6 +150,16 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       js: state.files['app.js'] || '',
     };
   }
+  out.syntax = {};
+  for (const [kind, desc] of [['tetris', 'a tetris game with 3d elements'],
+                              ['rpg', 'an rpg based on king arthur'],
+                              ['rpg', 'an rpg based on india'],
+                              ['rpg', 'an rpg set in space'],
+                              ['rpg', 'an rpg noir detective']]) {
+    const p = self.toolrxTemplates.project(kind, desc, { theme: 'dark' });
+    try { new Function(p.files['app.js']); out.syntax[kind + ':' + desc] = 'ok'; }
+    catch (e) { out.syntax[kind + ':' + desc] = e.message; }
+  }
   // Real sandbox rename flow: build one RPG, then refer to it by a stale name
   // and by "it". The same project must be re-themed, not duplicated.
   await self.toolrxWeb.init('model.json');
@@ -278,6 +288,10 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("Asura King", india["js"])
         self.assertIn("#2f5d43", arthur["css"] + arthur["js"])
         self.assertIn("#3f6b4a", india["css"] + india["js"])
+
+    def test_generated_variant_scripts_are_valid_javascript(self):
+        for name, status in self.out["syntax"].items():
+            self.assertEqual(status, "ok", name)
 
     def test_sandbox_rename_rethemes_the_same_project(self):
         s = self.out["sandbox"]
