@@ -23,8 +23,18 @@ global.fetch = () => Promise.resolve({
   ok: true,
   json: () => Promise.resolve(JSON.parse(fs.readFileSync(process.argv[1], 'utf8'))),
 });
+const store = {};
+global.localStorage = {
+  getItem: k => Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null,
+  setItem: (k, v) => { store[k] = String(v); },
+  removeItem: k => { delete store[k]; },
+};
+global.CustomEvent = class { constructor(type, opts) { this.type = type; this.detail = opts && opts.detail; } };
+global.dispatchEvent = () => {};
+global.toolrxRouter = { load: () => ({}), route: () => ({ tool: 'none', args: {}, confidence: 0 }) };
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 eval(fs.readFileSync(process.argv[3], 'utf8'));
+eval(fs.readFileSync(process.argv[4], 'utf8'));
 
 (async () => {
   await self.toolrxSkills.init('commands.json');
@@ -121,6 +131,47 @@ eval(fs.readFileSync(process.argv[3], 'utf8'));
   out.chatName = await run('remember my name is ada');
   out.chatWho = await run('what is my name');
   out.chatJoke = await run('tell me a joke');
+  out.chatGreetings = ['hi', 'hello', 'hey'].map(q => self.toolrxSkills.chat(q, ctx));
+  out.chatUnknown = self.toolrxSkills.chat('blorp wobble', ctx);
+  out.chatFeelings = ['i am stuck', 'i feel anxious', 'i am tired', 'i feel lost']
+    .map(q => self.toolrxSkills.chat(q, ctx));
+  out.variants = {};
+  for (const q of ['build a tetris game with 3d elements',
+                   'build an rpg based on king arthur',
+                   'build an rpg based on india']) {
+    const r = await run(q);
+    out.variants[q] = {
+      ok: !r[0].error, via: r[0].via || '',
+      kind: state.kind,
+      html: state.html,
+      title: ((state.html.match(/<h1>([^<]*)<\/h1>/) || [])[1] || ''),
+      files: Object.keys(state.files).sort(),
+      css: state.files['styles.css'] || '',
+      js: state.files['app.js'] || '',
+    };
+  }
+  // Real sandbox rename flow: build one RPG, then refer to it by a stale name
+  // and by "it". The same project must be re-themed, not duplicated.
+  await self.toolrxWeb.init('model.json');
+  self.toolrxWeb.reset();
+  out.sandbox = {};
+  const h1 = html => ((String(html).match(/<h1>([^<]*)<\/h1>/) || [])[1] || '');
+  out.sandbox.build = (await self.toolrxWeb.prompt('build an rpg based on king arthur'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  let p = self.toolrxWeb.project();
+  out.sandbox.first = { slug: p.slug, name: p.name, h1: h1(p.html), desc: p.desc };
+  out.sandbox.stale = (await self.toolrxWeb.prompt('change the name from verdant wood rpg to india'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  p = self.toolrxWeb.project();
+  out.sandbox.afterStale = {
+    slug: p.slug, name: p.name, h1: h1(p.html), desc: p.desc,
+    css: self.toolrxWeb.projectFile(p.slug, 'styles.css'),
+    js: self.toolrxWeb.projectFile(p.slug, 'app.js'),
+  };
+  out.sandbox.pronoun = (await self.toolrxWeb.prompt('rename it to camelot'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  p = self.toolrxWeb.project();
+  out.sandbox.afterPronoun = { slug: p.slug, name: p.name, h1: h1(p.html), desc: p.desc };
   out.wiki = await run('wikipedia ada lovelace');
   out.define = await run('define serendipity');
   out.weather = await run('weather in reykjavik');
@@ -138,7 +189,8 @@ class SkillsBridgeTest(unittest.TestCase):
             [NODE, "-e", JS,
              os.path.join(ROOT, "toolrx", "web", "commands.json"),
              os.path.join(ROOT, "toolrx", "web", "skills.js"),
-             os.path.join(ROOT, "toolrx", "web", "templates.js")],
+             os.path.join(ROOT, "toolrx", "web", "templates.js"),
+             os.path.join(ROOT, "toolrx", "web", "sandbox.js")],
             capture_output=True, text=True, timeout=120,
         )
         if proc.returncode != 0:
@@ -203,6 +255,47 @@ class SkillsBridgeTest(unittest.TestCase):
             self.assertIn("app.js", g["files"], name)
             self.assertGreater(g["html"], 1000, name)
 
+    def test_3d_build_variant_has_real_3d_markers(self):
+        v = self.out["variants"]["build a tetris game with 3d elements"]
+        self.assertTrue(v["ok"])
+        self.assertEqual(v["kind"], "tetris")
+        self.assertEqual(v["title"], "Tetris 3D")
+        self.assertIn("perspective", v["css"])
+        self.assertIn("rotateX", v["css"])
+        # the renderer extrudes each block with highlight and shadow faces
+        self.assertIn("D3=true", v["js"])
+        self.assertIn("rgba(255,255,255,.34)", v["js"])
+
+    def test_rpg_settings_produce_different_previews(self):
+        arthur = self.out["variants"]["build an rpg based on king arthur"]
+        india = self.out["variants"]["build an rpg based on india"]
+        self.assertEqual(arthur["kind"], "rpg")
+        self.assertEqual(india["kind"], "rpg")
+        self.assertEqual(arthur["title"], "Camelot RPG")
+        self.assertEqual(india["title"], "Bharata RPG")
+        self.assertNotEqual(arthur["html"], india["html"])
+        self.assertIn("Black Knight", arthur["js"])
+        self.assertIn("Asura King", india["js"])
+        self.assertIn("#2f5d43", arthur["css"] + arthur["js"])
+        self.assertIn("#3f6b4a", india["css"] + india["js"])
+
+    def test_sandbox_rename_rethemes_the_same_project(self):
+        s = self.out["sandbox"]
+        self.assertEqual(s["build"][0]["via"], "build")
+        self.assertEqual(s["first"]["slug"], "camelot-rpg")
+        self.assertEqual(s["first"]["h1"], "Camelot RPG")
+        self.assertEqual(s["stale"][0]["via"], "project.rename")
+        # stale old name falls back to the active project, not a new project
+        self.assertEqual(s["afterStale"]["slug"], s["first"]["slug"])
+        self.assertEqual(s["afterStale"]["name"], "India")
+        self.assertEqual(s["afterStale"]["h1"], "Bharata RPG")
+        self.assertIn("Asura King", s["afterStale"]["js"])
+        # "it" resolves to the active project and re-themes again
+        self.assertEqual(s["pronoun"][0]["via"], "project.rename")
+        self.assertEqual(s["afterPronoun"]["slug"], s["first"]["slug"])
+        self.assertEqual(s["afterPronoun"]["name"], "Camelot")
+        self.assertEqual(s["afterPronoun"]["h1"], "Camelot RPG")
+
     def test_site_templates_build(self):
         for name in ("social", "blog", "forum", "chat"):
             s = self.out["sites"][name]
@@ -235,6 +328,26 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("Ada", self.out["chatName"][0]["text"])
         self.assertIn("Ada", self.out["chatWho"][0]["text"])
         self.assertTrue(self.out["chatJoke"][0]["text"].strip())
+
+    def test_casual_greetings_are_not_therapy_flavored(self):
+        for text in self.out["chatGreetings"]:
+            low = text.lower()
+            self.assertNotIn("but listening", low)
+            self.assertNotIn("what's on your mind", low)
+            self.assertNotIn("what is on your mind", low)
+            self.assertTrue(any(w in low for w in ("build", "make", "tool")), text)
+
+    def test_unknown_chat_is_practical_not_a_reflection(self):
+        text = self.out["chatUnknown"]
+        self.assertIn("matching command", text.lower())
+        self.assertIn("build", text.lower())
+        self.assertNotIn("what's underneath", text.lower())
+        self.assertNotIn("say more", text.lower())
+
+    def test_feeling_replies_are_always_well_formed(self):
+        for text in self.out["chatFeelings"]:
+            self.assertTrue(text.strip())
+            self.assertNotIn("undefined", text.lower())
 
     def test_web_results_carry_a_source(self):
         wiki = self.out["wiki"][0]

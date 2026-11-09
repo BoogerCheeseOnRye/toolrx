@@ -450,9 +450,9 @@
 
   /* ------------------------------------------------------------- chat ----- */
   /* Deterministic conversation. No model: a small set of intents, a stable
-   * hash to choose among hand-written responses, and a reflection pattern
-   * inspired by the voidscream therapist. It listens, names the feeling, and
-   * asks one gentle question. It never claims to be a clinician. */
+   * hash to choose among hand-written responses. The default voice is a
+   * practical assistant. Emotional language is met with care, but ordinary
+   * greetings and unknown input do not turn into a therapy session. */
   function seedOf(s) {
     let h = 2166136261;
     const t = String(s || "");
@@ -461,7 +461,7 @@
   }
 
   function pick(list, seed) {
-    return list[seed % list.length];
+    return list[((seed % list.length) + list.length) % list.length];
   }
 
   const FEELINGS = [
@@ -499,9 +499,9 @@
 
     if (/^(?:hi|hello|hey|yo|hiya|good (?:morning|afternoon|evening))\b/.test(q)) {
       return pick([
-        "Hey" + (name ? ", " + name : "") + ". What are we making?",
-        "Hi. I'm here — deterministic, but listening. What's on your mind?",
-        "Hello. We can build something, look something up, or just talk. Which?",
+        "Hey" + (name ? ", " + name : "") + ". What are we building?",
+        "Hi. Want to build something, run a tool, or look something up?",
+        "Hello. What do you want to make today?",
       ], seed);
     }
     if (/\b(thanks|thank you|thx|appreciate it)\b/.test(q)) {
@@ -511,7 +511,7 @@
       return pick(["See you. Your workspace stays here.", "Later. The project is saved in this browser.", "Good night. Pick it up whenever."], seed);
     }
     if (/\bhow are you\b/.test(q)) {
-      return "I don't have moods, but I do have state — and right now it's steady. How are you, honestly?";
+      return "Running steady and ready to work. What are you making?";
     }
     if (/\b(tell me a joke|make me laugh|something funny)\b/.test(q)) {
       return pick([
@@ -523,10 +523,10 @@
     }
     if (/\b(motivate me|i need motivation|encourage me|pep talk)\b/.test(q)) {
       return pick([
-        "You don't need a whole plan. You need the next small true step. Pick one and do it badly on purpose.",
-        "Start with something you can finish in ten minutes. Momentum is a real technology.",
+        "Pick the next small action and do it badly on purpose. Momentum beats a perfect plan.",
+        "Start with something you can finish in ten minutes. Then start the next thing.",
         "The work is allowed to be small. Small things, repeated, become the thing.",
-      ], seed) + "\n\nWhat's the smallest version of what you're avoiding?";
+      ], seed);
     }
     if (/\b(who are you|what are you|tell me about yourself)\b/.test(q)) {
       return "I'm toolrx — a deterministic router and a small builder. I match patterns, run real tools, write project files, and I can look things up on the web.\n\nI'm not an LLM. That means I won't invent an answer: if I don't know, I'll say so.";
@@ -567,34 +567,35 @@
     m = /^(?:i (?:feel|am|'m)\s+)(.{2,80})$/i.exec(raw);
     if (m && !/^(?:going|trying|working|building|making|okay|ok|fine|good|great)\b/i.test(m[1])) {
       return "You said you feel " + m[1].replace(/[.!?]+$/, "") + ".\n\n"
-        + pick(["Where do you notice it in your body?", "How long has it been there?", "What would you want someone to say right now?"], seed);
+        + pick(["What's the loudest part of it right now?",
+                "Do you want to talk it through, or work on something small for a break?",
+                "What would a little relief look like today?"], seed);
     }
     if (/\b(i (?:can'?t|cannot)|i'?m stuck|i don'?t know (?:what|how))\b/i.test(q)) {
-      return "Stuck is information, not a verdict.\n\nName the smallest piece you *can* do — even if it's opening the file. We'll start there.";
+      return "Stuck usually means the next step is too big.\n\nName the smallest piece you can finish — even if it's opening the file — and we'll start there.";
     }
     if (/\b(i (?:want|need) to|i should|i have to)\b/i.test(q)) {
-      return "There's a should in that sentence. Which part of it is yours, and which part is borrowed?\n\nIf you strip it to one action for today, what remains?";
+      return "Give me the concrete action and I'll try to run it. For example: \"build a budget app\", \"convert 5 km to miles\", or \"list projects\".\n\nIf it isn't in the command library, I'll say so instead of guessing.";
     }
     if (/^(?:why|really|and|so)\??$/.test(q) && ctx && ctx.history) {
       const hist = ctx.history().filter(function (x) { return x.who === "toolrx"; });
-      if (hist.length) return "Because that's what I have: the last thing you said, reflected back honestly. Tell me more and I'll stay with it.";
+      if (hist.length) return "I don't have more context than my last reply. Tell me which part to expand, or give me a command to run.";
     }
     if (/\b(i'?m (?:okay|ok|fine|good|great|alright))\b/i.test(q)) {
-      return "Good. And if 'fine' is doing a lot of work in that sentence, you can say that too.";
+      return "Good. Want to build something or run a tool?";
     }
     if (/\b(help|support|listen)\b/.test(q) && q.split(" ").length <= 4) {
-      return "I can listen, or I can switch to building.\n\nTry: \"i feel overwhelmed\" · \"plan a todo app\" · \"wikipedia ursula k le guin\" · \"list projects\".";
+      return "I can run tools, build projects, and look things up. If you want to talk something through, say what's going on. If you want output, try: \"i feel overwhelmed\" · \"plan a todo app\" · \"wikipedia ursula k le guin\" · \"list projects\".";
     }
 
-    // Deterministic reflection for anything else conversational.
-    const reflect = raw.replace(/[.!?]+$/, "").replace(/^i\s+/i, "you ");
-    return "I heard: \"" + raw.slice(0, 180) + "\".\n\n"
+    // Unknown input gets a practical answer, not a reflection prompt.
+    const echo = raw.length > 140 ? raw.slice(0, 137) + "..." : raw;
+    return "I don't have a matching command for \"" + echo + "\".\n\n"
       + pick([
-        "What's underneath that for you?",
-        "Say more — what part matters most?",
-        "If we changed one thing about it, what would you change first?",
-      ], seed)
-      + (reflect !== raw ? "\n\n(" + reflect.charAt(0).toUpperCase() + reflect.slice(1) + "…)" : "");
+        "I can build a page or game, run a calculation, search the web, or manage projects. Try: \"build a snake game\" or \"wikipedia ursula k le guin\".",
+        "Give me a build, a tool, a lookup, or a project command and I'll run it. \"help\" lists the categories.",
+        "That one isn't in the library yet. Try \"plan a todo app\", \"convert 5 km to miles\", or \"list projects\".",
+      ], seed);
   }
 
   function summarizeText(text, n) {

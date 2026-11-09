@@ -742,6 +742,85 @@
   }
 
   /* ---------------------------------------------------------------- rpg -- */
+  /* ------------------------------------------------------------ themes ---- */
+  function rpgTheme(desc) {
+    var t = String(desc || "").toLowerCase();
+    if (/arthur|camelot|knight|excalibur|round table|merlin|avalon/.test(t)) {
+      return {
+        title: "Camelot RPG", sub: "a knight's road through the mist",
+        intro: "You wake at the edge of the Mistwood. Find the Black Knight before the fog closes.",
+        hint: "find the Black Knight in the south-east.",
+        enemy: "wandering knight", boss: "the Black Knight", elder: "Merlin", shrine: "the stone circle",
+        win: "The Black Knight yields. You win — Camelot's road is open.",
+        chest: "Relic: +1 potion.",
+        groundA: "#1b2a24", groundB: "#203328", wall: "#2f3a4d", wall2: "#232c3d", tree: "#2f5d43"
+      };
+    }
+    if (/india|indian|bharat|sanskrit|vedic|mughal|rajasthan|delhi|himalaya|lotus/.test(t)) {
+      return {
+        title: "Bharata RPG", sub: "a journey across the lotus road",
+        intro: "You wake at the edge of the Bharata plain. Find the Asura King before the monsoon breaks.",
+        hint: "find the Asura King in the south-east.",
+        enemy: "rakshasa", boss: "the Asura King", elder: "the rishi", shrine: "the stepwell",
+        win: "The Asura King falls. You win — the lotus road is safe.",
+        chest: "Copper bowl: +1 potion.",
+        groundA: "#2a2118", groundB: "#31261b", wall: "#4a3826", wall2: "#3a2c1e", tree: "#3f6b4a"
+      };
+    }
+    if (/space|sci-?fi|starship|derelict|orbit|station|alien/.test(t)) {
+      return {
+        title: "Derelict RPG", sub: "wake the ship, survive the dark",
+        intro: "You wake in a cold corridor of the Derelict. Find the Warden Core before life support fails.",
+        hint: "find the Warden Core in the south-east.",
+        enemy: "husk drone", boss: "the Warden Core", elder: "the ship's log", shrine: "the airlock",
+        win: "The Warden Core goes dark. You win — the ship is yours.",
+        chest: "Supply cache: +1 stim.",
+        groundA: "#161b2b", groundB: "#1a2033", wall: "#2c3650", wall2: "#222a40", tree: "#2d4a5a"
+      };
+    }
+    if (/noir|rain|detective|city|neon|cyber/.test(t)) {
+      return {
+        title: "Rain City RPG", sub: "a case with too many doors",
+        intro: "You wake in a doorway on Rain Street. Find the Fixer before the case goes cold.",
+        hint: "find the Fixer in the south-east.",
+        enemy: "mugger", boss: "the Fixer", elder: "the informant", shrine: "the all-night diner",
+        win: "The Fixer folds. You win — the case is closed.",
+        chest: "Envelope: +1 favour.",
+        groundA: "#1a1d24", groundB: "#1f232c", wall: "#343b4a", wall2: "#272d39", tree: "#36424a"
+      };
+    }
+    return null;
+  }
+
+  function applyRpgTheme(html, desc) {
+    var t = rpgTheme(desc);
+    if (!t) return html;
+    var bossCap = t.boss.charAt(0).toUpperCase() + t.boss.slice(1);
+    var pairs = [
+      ["Verdant Wood RPG", t.title],
+      ["explore, fight, level up — a complete tiny RPG", t.sub],
+      ["You wake at the edge of the Verdant Wood. Find the Warden to the south-east.", t.intro],
+      ["find the Warden in the south-east.", t.hint],
+      ["The Warden falls. You win — the Verdant Wood is safe.", t.win],
+      ["Chest: +1 potion.", t.chest],
+      ["the Warden", t.boss],
+      ["The Warden", bossCap],
+      ["Warden", t.boss.replace(/^the /, "")],
+      ["slime", t.enemy],
+      ["Elder", t.elder],
+      ["the shrine", t.shrine],
+      ["#12291f", t.groundA],
+      ["#123024", t.groundB],
+      ["#26364f", t.wall],
+      ["#1b283d", t.wall2],
+      ["#1f513a", t.tree]
+    ];
+    for (var i = 0; i < pairs.length; i++) {
+      html = html.split(pairs[i][0]).join(pairs[i][1]);
+    }
+    return html;
+  }
+
   function rpg(desc, opts) {
     var body = [
       '<div class="card" style="padding:12px">',
@@ -846,7 +925,7 @@
       "el('load').addEventListener('click',function(){try{var d=JSON.parse(localStorage.getItem('toolrx.rpg.v1'));if(d&&d.S){S=d.S;draw();paint();say('Game loaded.');}}catch(e){say('no save found');}});",
       "fresh();"
     ].join("\n");
-    return shell({ title: "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG", body: body, css: css, js: js, theme: opts.theme });
+    return applyRpgTheme(shell({ title: "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG", body: body, css: css, js: js, theme: opts.theme }), desc);
   }
 
   /* --------------------------------------------------------- platformer -- */
@@ -1064,10 +1143,16 @@
       '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn" id="go" type="button">Start</button><button class="btn ghost" id="reset" type="button">Reset</button></div></div>'
     ].join("");
     var js = [
-      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),COLS=10,ROWS=20,S=26;",
+      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),COLS=10,ROWS=20,S=26,D3=" + (opts.d3 ? "true" : "false") + ";",
       "var SHAPES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];",
       "var COLORS=['#22d3ee','#fbbf24','#a78bfa','#fb7185','#34d399','#60a5fa','#f472b6'];",
       "var grid,piece,score,lines,iv,dead;",
+      "function cell(px,py,c){if(!D3){cx.fillStyle=c;cx.fillRect(px+1,py+1,S-2,S-2);return;}",
+      "cx.fillStyle=c;cx.fillRect(px+1,py+1,S-2,S-2);",
+      "cx.fillStyle='rgba(255,255,255,.34)';cx.fillRect(px+1,py+1,S-2,5);",
+      "cx.fillStyle='rgba(0,0,0,.30)';cx.fillRect(px+S-6,py+1,5,S-2);",
+      "cx.fillStyle='rgba(0,0,0,.16)';cx.fillRect(px+1,py+S-6,S-2,5);",
+      "cx.strokeStyle='rgba(0,0,0,.40)';cx.strokeRect(px+1,py+1,S-2,S-2);}",
       "function reset(){grid=[];for(var y=0;y<ROWS;y++){grid.push(Array(COLS).fill(''));}score=0;lines=0;dead=false;spawn();document.getElementById('score').textContent='0';document.getElementById('lines').textContent='0';document.getElementById('msg').textContent='start when ready';draw();}",
       "function spawn(){var s=SHAPES[Math.floor(Math.random()*SHAPES.length)];piece={s:JSON.parse(JSON.stringify(s)),x:Math.floor((COLS-s[0].length)/2),y:0,c:COLORS[Math.floor(Math.random()*COLORS.length)]};if(hit(piece.x,piece.y,piece.s)){dead=true;document.getElementById('msg').textContent='game over · score '+score;}}",
       "function hit(px,py,s){for(var y=0;y<s.length;y++)for(var x=0;x<s[y].length;x++){if(!s[y][x])continue;var nx=px+x,ny=py+y;if(nx<0||nx>=COLS||ny>=ROWS)return true;if(ny>=0&&grid[ny][nx])return true;}return false;}",
@@ -1079,14 +1164,20 @@
       "function rotate(){var s=piece.s,n=s[0].map(function(_,i){return s.map(function(r){return r[i];}).reverse();});if(!hit(piece.x,piece.y,n))piece.s=n;draw();}",
       "function drop(){while(!hit(piece.x,piece.y+1,piece.s))piece.y++;lock();draw();}",
       "function draw(){cx.fillStyle='#080d1a';cx.fillRect(0,0,cv.width,cv.height);var ox=(cv.width-COLS*S)/2,oy=10;",
-      "for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){cx.strokeStyle='#111a2c';cx.strokeRect(ox+x*S,oy+y*S,S,S);if(grid[y][x]){cx.fillStyle=grid[y][x];cx.fillRect(ox+x*S+1,oy+y*S+1,S-2,S-2);}}",
-      "if(piece&&!dead)piece.s.forEach(function(row,y){row.forEach(function(v,x){if(v){cx.fillStyle=piece.c;cx.fillRect(ox+(piece.x+x)*S+1,oy+(piece.y+y)*S+1,S-2,S-2);}});});}",
+      "for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){cx.strokeStyle='#111a2c';cx.strokeRect(ox+x*S,oy+y*S,S,S);if(grid[y][x])cell(ox+x*S,oy+y*S,grid[y][x]);}",
+      "if(piece&&!dead)piece.s.forEach(function(row,y){row.forEach(function(v,x){if(v)cell(ox+(piece.x+x)*S,oy+(piece.y+y)*S,piece.c);});});}",
       "function start(){if(dead||iv)return;iv=setInterval(function(){if(!dead)down();},520);document.getElementById('msg').textContent='running';}",
       "document.getElementById('go').addEventListener('click',start);document.getElementById('reset').addEventListener('click',function(){if(iv)clearInterval(iv);iv=null;reset();});",
       "document.addEventListener('keydown',function(e){var k=e.key;if(k==='ArrowLeft'){move(-1);e.preventDefault();}if(k==='ArrowRight'){move(1);e.preventDefault();}if(k==='ArrowDown'){down();e.preventDefault();}if(k==='ArrowUp'){rotate();e.preventDefault();}if(k===' '){drop();e.preventDefault();}});",
       "reset();"
     ].join("\n");
-    return shell({ title: "Tetris", sub: "stack, clear, survive — 10×20", body: body, js: js, theme: opts.theme });
+    return shell({
+      title: opts.d3 ? "Tetris 3D" : "Tetris",
+      sub: opts.d3 ? "stack, clear, survive — 10×20 with extruded 3D blocks" : "stack, clear, survive — 10×20",
+      body: body,
+      css: opts.d3 ? ".card canvas{transform:perspective(1100px) rotateX(7deg) rotateY(-5deg);box-shadow:0 30px 70px rgba(0,0,0,.6);border-radius:14px}@media(max-width:560px){.card canvas{transform:none}}" : "",
+      js: js, theme: opts.theme
+    });
   }
 
   /* --------------------------------------------------------------- maze -- */
@@ -1593,7 +1684,30 @@
     forum: "Forum", chat: "Chat"
   };
 
+  function wants3d(desc) {
+    return /\b3d\b|three[\s-]?d|isometric|perspective|voxel/i.test(String(desc || ""));
+  }
+
+  var GAME3D = {
+    tetris: 1, snake: 1, breakout: 1, pong: 1, maze: 1, platformer: 1,
+    minesweeper: 1, "2048": 1, game: 1
+  };
+
+  var THREE_D_CSS = "body{perspective:1500px}main,.wrap{transform-style:preserve-3d}" +
+    ".card canvas{transform:rotateX(9deg) rotateY(-7deg);box-shadow:0 28px 60px rgba(0,0,0,.55);border-radius:14px}" +
+    "@media(max-width:560px){.card canvas{transform:none}}";
+
+  function slugOf(s) {
+    return String(s || "project").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "").slice(0, 40) || "project";
+  }
+
   function titleFor(real, desc) {
+    if (real === "rpg") {
+      var th = rpgTheme(desc);
+      if (th) return th.title;
+    }
+    if (wants3d(desc) && GAME3D[real]) return (TITLES[real] || "Game") + " 3D";
     if (real === "playground" && desc) return String(desc).slice(0, 60);
     return TITLES[real] || "Built page";
   }
@@ -1602,7 +1716,16 @@
     opts = opts || {};
     var real = canonical(kind, desc);
     var fn = BUILDERS[real] || BUILDERS.playground;
-    return fn(String(desc || ""), { theme: opts.theme === "light" ? "light" : "dark" });
+    var d3 = wants3d(desc);
+    var html = fn(String(desc || ""), {
+      theme: opts.theme === "light" ? "light" : "dark",
+      d3: d3,
+      variant: rpgTheme(desc) ? "themed-rpg" : (d3 ? "3d" : ""),
+    });
+    if (d3 && GAME3D[real] && real !== "tetris") {
+      html = html.replace("</style>", THREE_D_CSS + "</style>");
+    }
+    return html;
   }
 
   function title(kind, desc) {
@@ -1630,6 +1753,8 @@
     html = html.replace(/offline · single file/, "offline · separate files");
     var a = archFor(real);
     var slug = real === "playground" ? "app" : real;
+    if (real === "rpg" && rpgTheme(desc)) slug = slugOf(rpgTheme(desc).title);
+    else if (wants3d(desc) && GAME3D[real]) slug = slugOf(real + "-3d");
     var readme = [
       "# " + name,
       "",

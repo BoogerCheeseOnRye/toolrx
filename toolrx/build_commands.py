@@ -570,6 +570,21 @@ for kind in BUILD_KINDS:
             "^" + pat.replace("{k}", re.escape(kind)) + "$",
             {"kind": kind}, pat, "build")
 
+# A request can carry a modifier ("with 3d elements", "based on king arthur").
+# Keep the kind explicit and pass the modifier as the description so the
+# template picks a deterministic variant instead of falling back to chat.
+for kind in BUILD_KINDS:
+    for pat in ("build a {k} with {d}", "build an {k} with {d}",
+                "make a {k} with {d}", "create a {k} with {d}",
+                "build a {k} that has {d}", "build an {k} that has {d}",
+                "build a {k} based on {d}", "build an {k} based on {d}",
+                "build a {k} set in {d}", "build an {k} set in {d}",
+                "build a {k} game with {d}", "build an {k} game with {d}",
+                "build a {k} game based on {d}", "build an {k} game based on {d}"):
+        add(f"build.variant.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}", "build",
+            "^" + pat.replace("{k}", re.escape(kind)).replace("{d}", REST) + "$",
+            {"kind": kind, "desc": "$1"}, pat, "build")
+
 for pat in ("build a program that {desc}", "build a site that {desc}",
             "make an app that {desc}", "build me a program that {desc}",
             "make a program that {desc}", "build {desc}"):
@@ -602,10 +617,24 @@ for pat in ("delete this project", "delete the active project", "erase this proj
     add(f"project.delete.active.{len(COMMANDS)}", "project.delete",
         "^" + re.escape(pat) + "$", {}, pat, "project")
 
-for pat in ("rename project {slug} to {name}", "rename the project {slug} to {name}"):
+for pat in ("rename project {slug} to {name}", "rename the project {slug} to {name}",
+            "change the name from {slug} to {name}",
+            "change the name of {slug} to {name}",
+            "change the name of the project {slug} to {name}",
+            "rename {slug} to {name}"):
     add(f"project.rename.{len(COMMANDS)}", "project.rename",
         "^" + pat.replace("{slug}", REST).replace("{name}", REST) + "$",
         {"slug": "$1", "name": "$2"}, pat, "project")
+
+for pat in ("change the project name to {name}", "change the name to {name}",
+            "rename this project to {name}", "rename the project to {name}",
+            "rename it to {name}", "call this project {name}",
+            "call the project {name}", "call it {name}", "name it {name}",
+            "name this project {name}", "set the project name to {name}",
+            "set this project name to {name}"):
+    add(f"project.rename.active.{len(COMMANDS)}", "project.rename",
+        "^" + pat.replace("{name}", REST) + "$",
+        {"name": "$1"}, pat, "project")
 
 for pat in ("show project files", "list project files", "project files",
             "show the files in this project", "show the files in the project",

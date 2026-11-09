@@ -28,11 +28,14 @@ class CommandLibraryTest(unittest.TestCase):
         with open(COMMANDS, encoding="utf-8") as f:
             cls.data = json.load(f)
         cls.commands = cls.data["commands"]
+        # Compile once: re's LRU cache is far smaller than the library, so
+        # re.match(pattern, ...) in a loop would recompile thousands of times.
+        cls.compiled = [(c, re.compile(c["re"], re.I)) for c in cls.commands]
 
     def first(self, query):
         q = _normalize(query)
-        for c in self.commands:
-            if re.match(c["re"], q, re.I):
+        for c, rx in self.compiled:
+            if rx.match(q):
                 return c
         return None
 
@@ -73,6 +76,10 @@ class CommandLibraryTest(unittest.TestCase):
             "build an rpg": ("build", "rpg"),
             "build a snake game": ("build", "snake"),
             "build a 2048 game": ("build", "2048"),
+            "build a tetris game with 3d elements": ("build", "tetris"),
+            "build an rpg based on king arthur": ("build", "rpg"),
+            "build an rpg based on india": ("build", "rpg"),
+            "build an rpg set in space": ("build", "rpg"),
             "build a social media website": ("build", "social"),
             "build a forum website": ("build", "forum"),
             "plan an rpg": ("plan", None),
@@ -82,6 +89,11 @@ class CommandLibraryTest(unittest.TestCase):
             "show project files": ("project.files", None),
             "open project notes": ("project.open", None),
             "delete project notes": ("project.delete", None),
+            "change the name from verdant wood rpg to india": ("project.rename", None),
+            "rename project rpg to india": ("project.rename", None),
+            "rename it to camelot": ("project.rename", None),
+            "change the project name to bharata": ("project.rename", None),
+            "call this project india": ("project.rename", None),
             "hello": ("chat", None),
             "i feel overwhelmed": ("chat", None),
             "tell me a joke": ("chat", None),
@@ -98,6 +110,20 @@ class CommandLibraryTest(unittest.TestCase):
             if arg is not None:
                 joined = json.dumps(hit["args"])
                 self.assertIn(arg, joined, f"{query}: {hit['id']} {hit['args']}")
+
+    def test_build_variants_capture_the_modifier(self):
+        cases = {
+            "build a tetris game with 3d elements": ("tetris", "3d elements"),
+            "build an rpg based on king arthur": ("rpg", "king arthur"),
+            "build an rpg based on india": ("rpg", "india"),
+            "build an rpg set in space": ("rpg", "space"),
+        }
+        for query, (kind, desc) in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "build", query)
+            self.assertEqual(hit["args"].get("kind"), kind, query)
+            self.assertEqual(hit["args"].get("desc"), "$1", query)
 
     def test_unit_breadth(self):
         cats = self.data["categories"]

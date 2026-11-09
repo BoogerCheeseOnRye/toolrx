@@ -125,12 +125,34 @@
     return projects.active ? projects.items[projects.active] || null : null;
   }
 
+  function findProject(ref) {
+    let raw = String(ref === undefined || ref === null ? "" : ref).trim().replace(/\s+/g, " ");
+    let low = raw.toLowerCase();
+    if (!low || /^(?:this|the|my|current|active|it|that)(?:\s+project)?$/.test(low)) {
+      return projects.active ? projects.items[projects.active] || null : null;
+    }
+    // "the project verdant wood", "my project notes" → bare project reference
+    low = low.replace(/^(?:the|my|this|current|active)\s+project\s+/, "")
+             .replace(/^(?:the|my|this)\s+/, "");
+    const s = slugify(low);
+    if (projects.items[s]) return projects.items[s];
+    for (const k in projects.items) {
+      const p = projects.items[k];
+      if (String(p.name || "").toLowerCase() === low || slugify(p.name) === s) return p;
+    }
+    for (const k in projects.items) {
+      const p = projects.items[k];
+      const name = String(p.name || "").toLowerCase();
+      if (name.indexOf(low) !== -1 || k.indexOf(s) !== -1) return p;
+    }
+    return null;
+  }
+
   function openProject(slug) {
-    const s = slugify(slug);
-    if (!projects.items[s]) throw new Error("no such project: " + slug);
-    projects.active = s;
+    const p = findProject(slug);
+    if (!p) throw new Error("no such project: " + slug);
+    projects.active = p.slug;
     writeProjects();
-    const p = projects.items[s];
     if (p.bundled) {
       preview = {
         html: p.bundled, kind: p.kind, desc: p.desc,
@@ -138,23 +160,59 @@
       };
       notifyPreview();
     }
-    return "opened " + p.name + " (" + s + ") · " + Object.keys(p.files || {}).length + " files";
+    return "opened " + p.name + " (" + p.slug + ") · " + Object.keys(p.files || {}).length + " files";
   }
 
   function renameProject(slug, name) {
-    const s = slugify(slug);
-    const p = projects.items[s];
+    let p = findProject(slug);
+    let viaActive = false;
+    if (!p && projects.active) {
+      // "change the name from verdant wood rpg to india" can refer to the
+      // active project even if its name moved on. Prefer the project the user
+      // is looking at over refusing the rename.
+      p = activeProject();
+      viaActive = !!p;
+    }
     if (!p) throw new Error("no such project: " + slug);
-    p.name = String(name || p.name).slice(0, 60);
+    const label = String(name || p.name).trim().slice(0, 60);
+    const pretty = /^[a-z][a-z0-9-]*$/.test(label)
+      ? label.charAt(0).toUpperCase() + label.slice(1) : label;
+    const before = p.name;
+    p.name = pretty || p.name;
+    let themed = false;
+    const t = root.toolrxTemplates;
+    // Renaming an RPG to a known setting also re-themes its files + preview.
+    if (t && p.kind === "rpg" && /arthur|camelot|india|bharat|sanskrit|space|sci-?fi|noir|detective/i.test(label)) {
+      try {
+        const built = t.project("rpg", label, { theme: preview.theme });
+        p.files = built.files;
+        p.bundled = built.html;
+        p.desc = label;
+        themed = true;
+      } catch (e) { /* keep the old files if re-theming fails */ }
+    }
     p.updated = Date.now();
+    projects.active = p.slug;
     writeProjects();
-    return "renamed " + s + " → " + p.name;
+    if (p.slug === projects.active) {
+      if (p.bundled) {
+        preview = {
+          html: p.bundled, kind: p.kind, desc: p.desc,
+          title: p.name, theme: preview.theme, at: Date.now(),
+        };
+        notifyPreview();
+      }
+      writeProjectFiles(p);
+    }
+    return "renamed \"" + before + "\" → \"" + p.name + "\" · " + p.slug
+      + (viaActive ? "\n(the old name was not found; renamed the active project)" : "")
+      + (themed ? "\npreview re-themed for the new name" : "");
   }
 
   function deleteProject(slug) {
-    const s = slugify(slug || projects.active);
-    const p = projects.items[s];
+    const p = findProject(slug);
     if (!p) throw new Error("no such project: " + slug);
+    const s = p.slug;
     delete projects.items[s];
     for (const f in files) {
       if (f.indexOf("projects/" + s + "/") === 0) delete files[f];
@@ -433,7 +491,7 @@
       rename: function (slug, name) { return renameProject(slug, name); },
       remove: function (slug) { return deleteProject(slug); },
       files: function (slug) {
-        const p = slug ? projects.items[slugify(slug)] : activeProject();
+        const p = findProject(slug);
         if (!p) return "no active project — build something first";
         const names = filesForProject(p);
         return p.name + " (" + p.slug + ")\n" + names.map(function (n) {
@@ -835,7 +893,7 @@
     /* project management ------------------------------------------------ */
     projects: function () { return projectList(); },
     project: function (slug) {
-      const p = slug ? projects.items[slugify(slug)] : activeProject();
+      const p = slug ? findProject(slug) : activeProject();
       if (!p) return null;
       return {
         slug: p.slug, name: p.name, kind: p.kind, desc: p.desc,
@@ -844,7 +902,7 @@
       };
     },
     projectFile: function (slug, name) {
-      const p = projects.items[slugify(slug)];
+      const p = findProject(slug);
       if (!p) throw new Error("no such project: " + slug);
       const n = String(name || "").replace(/^\/+/, "");
       if (!(n in p.files)) throw new Error("no such file in project: " + n);
