@@ -272,6 +272,7 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(v["title"], "Tetris 3D")
         self.assertIn("perspective", v["css"])
         self.assertIn("rotateX", v["css"])
+        self.assertNotIn("canvas{transform:none}", v["css"])
         # the renderer extrudes each block with highlight and shadow faces
         self.assertIn("D3=true", v["js"])
         self.assertIn("rgba(255,255,255,.34)", v["js"])

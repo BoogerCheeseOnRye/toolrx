@@ -1175,7 +1175,7 @@
       title: opts.d3 ? "Tetris 3D" : "Tetris",
       sub: opts.d3 ? "stack, clear, survive — 10×20 with extruded 3D blocks" : "stack, clear, survive — 10×20",
       body: body,
-      css: opts.d3 ? ".card canvas{transform:perspective(1100px) rotateX(7deg) rotateY(-5deg);box-shadow:0 30px 70px rgba(0,0,0,.6);border-radius:14px}@media(max-width:560px){.card canvas{transform:none}}" : "",
+      css: opts.d3 ? ".card canvas{transform:perspective(1100px) rotateX(7deg) rotateY(-5deg);box-shadow:0 30px 70px rgba(0,0,0,.6);border-radius:14px}@media(max-width:560px){.card canvas{transform:perspective(900px) rotateX(5deg) rotateY(-2deg) scale(.985)}}" : "",
       js: js, theme: opts.theme
     });
   }
@@ -1695,7 +1695,7 @@
 
   var THREE_D_CSS = "body{perspective:1500px}main,.wrap{transform-style:preserve-3d}" +
     ".card canvas{transform:rotateX(9deg) rotateY(-7deg);box-shadow:0 28px 60px rgba(0,0,0,.55);border-radius:14px}" +
-    "@media(max-width:560px){.card canvas{transform:none}}";
+    "@media(max-width:560px){.card canvas{transform:perspective(900px) rotateX(5deg) rotateY(-2deg) scale(.985)}}";
 
   function slugOf(s) {
     return String(s || "project").toLowerCase().replace(/[^a-z0-9]+/g, "-")
