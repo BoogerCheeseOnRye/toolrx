@@ -1464,7 +1464,10 @@
     const results = [];
     let prev = "";
     let prevResult = null;
+    const clock = () => (typeof performance !== "undefined" && performance.now)
+      ? performance.now() : Date.now();
     for (const step of steps) {
+      const started = clock();
       const local = Object.assign({}, ctx, { prev, prevResult, step });
       let result;
       const skill = match(step);
@@ -1482,6 +1485,7 @@
         result = { text: "no command matched that step", error: true };
       }
       result.step = step;
+      result.ms = Math.max(0, Math.round(clock() - started));
       if (result && result.text) { prev = result.text; prevResult = result; }
       results.push(result);
     }

@@ -1,0 +1,218 @@
+# Harness roadmap 2 — build spec, engines, worlds, and an optional LLM
+
+This plan moves toolrx from "a template per command" toward the output shape of a
+general LLM coding harness, while keeping the deterministic core. The rule is
+simple: **the deterministic path stays first, complete, and offline**. An LLM may
+later fill a validated spec or propose a patch, but it never becomes required.
+
+## What exists today
+
+- Builds are chosen by fixed phrasings over a fixed list of kinds
+  (`build a {kind}`, `build a {kind} with {desc}`).
+- `templates.js` contains every game as a hand-written canvas page.
+- 3D exists for Tetris only (a small software projection).
+- 2D games draw shapes; there are no sprite assets.
+- RPG is a 20×13 fixed map with one enemy, one boss, one NPC, and a string
+  replacement for themes. With no theme it always says "Verdant Wood".
+- The chat shows per-step `tok/s` (measured output throughput, not inference).
+
+## Design rules for the next phase
+
+1. **A build is a spec.** Parse the prompt into
+   `{kind, dimension, genre, perspective, theme, art, scale, seed, mechanics}`.
+   Codegen reads the spec; it never re-parses prose.
+2. **Determinism is generation, not play.** World layout, names, asset picks, and
+   file contents derive from `hash(normalized prompt + explicit seed)`. Runtime
+   gameplay may still use `Math.random`.
+3. **Real files, shared engines.** Generated projects carry `engine2d.js` /
+   `engine3d.js` / `worldgen.js` as real files. The LLM can patch one file later.
+4. **Assets are optional and pinned.** A vendored sprite pack is selected by tag
+   and checksum; procedural sprites are the fallback. No runtime network.
+5. **The LLM is an adapter, not the engine.** It fills a strict JSON spec or
+   proposes an allow-listed patch. Invalid output is rejected.
+6. **Speed is visible.** Every step reports its own wall time; cached builds skip
+   codegen and say so. Token counts are estimates and labelled as such.
+
+## Steps
+
+### 11. Measured throughput in chat — done
+
+- Each skill result carries `ms`; the dashboard estimates output tokens as
+  `ceil(characters / 4)` and renders `tok/s · tok · ms`.
+- Content stays deterministic; only the timing is measured. The tooltip states
+  that this is not model inference.
+- Later: show cache hits and p50/p95 plan time in the same slot.
+
+### 12. Build spec parser v2
+
+Replace ad-hoc `desc` sniffing with a deterministic parser. Accept:
+
+- dimension: `2d`, `3d`, `isometric`, `top-down`, `side-scroller`,
+  `first-person`, `third-person`
+- genre: platformer, shooter, RPG, roguelike, racing, tower defense, puzzle,
+  farming sim, card battler, maze, exploration, wave shooter, kart
+- art: `pixel`, `low-poly`, `flat`, `vector`, `neon`, `monochrome`
+- scale: `small`, `medium`, `large`, `64x64`, `3 levels`, `5 quests`
+- theme: existing packs plus free text
+- seed: `seed 1234`
+
+Example prompts that must work:
+
+```
+build a 3d platformer with a neon city theme
+build an isometric rpg in a desert with 3 quests
+build a top-down shooter with pixel art, 3 levels
+build a first-person maze, low-poly
+build a 2d racing game at night, seed 42
+```
+
+The reply starts with a one-line plan (`3D · third-person · platformer ·
+low-poly · neon · seed 7`) so the choice is inspectable. Unknown combinations
+return the closest supported options instead of falling through to chat.
+
+**Done when** 40+ phrasing tests pass, identical prompts yield identical specs,
+and the chat output names the chosen spec.
+
+### 13. Shared 2D engine
+
+Extract `engine2d.js` (roughly <12 KB, no dependencies):
+
+- fixed-step loop, pause, resize, device-pixel-ratio scaling
+- keyboard, pointer, touch, and on-screen buttons
+- camera, tilemap, sprite atlas, layered draw order
+- AABB collision, simple physics, particle pool
+- WebAudio beeps with a mute switch
+
+Platformer, top-down, shooter, and racing templates move onto it. Projects ship
+the engine as a real file, so a later patch can change movement without
+regenerating the world.
+
+**Done when** at least three genres share it and each project runs offline.
+
+### 14. Sprite pack pipeline
+
+- Vendor a pinned, licence-compatible subset of the chosen public sprite repo:
+  `assets/<pack>/LICENSE`, `manifest.json`, sheet images.
+- Manifest fields: name, sheet, frame rect, size, anchor, tags, checksum.
+- Select by tag (`hero`, `enemy`, `tile.grass`, `prop.chest`) with stable
+  tie-breaks from the build seed.
+- Copy only referenced sheets into `projects/<slug>/assets/`.
+- Include the licence in the project; fall back to procedural sprites when the
+  pack is absent or a tag is missing.
+
+**Blocked on** the repository URL and its licence. Until then, the interface and
+procedural fallback can land.
+
+### 15. Shared 3D engine
+
+`engine3d.js` with a tiny WebGL1 renderer:
+
+- camera, perspective, directional light, flat-shaded boxes and quads
+- instanced-ish batching for tiles and props
+- billboard sprites for characters
+- Canvas2D isometric fallback when WebGL is unavailable or disabled
+
+Start with procedural low-poly meshes; no external models. First templates:
+third-person platformer, first-person maze, kart racer. Touch controls use the
+same input layer as the 2D engine.
+
+**Done when** each 3D template runs in the iframe preview at 60 fps on desktop,
+is playable on a phone, and degrades to a clear fallback without WebGL.
+
+### 16. RPG world engine v2
+
+Replace the fixed map with `worldgen.js`:
+
+- 64×64 to 96×96 chunked tile world: biomes, rivers, roads, towns, dungeons
+- camera follow and minimap
+- NPCs with JSON dialogue trees, shops, and quest givers
+- quests: fetch, kill, escort, discover; journal and objectives
+- enemies with small state machines, elites, and a boss
+- inventory, equipment, XP/levels, potions, gold
+- three save slots, pause menu, new game + seed display
+
+Theme packs define palette, names, enemy sets, quest verbs, and music tempo.
+World layout, NPC placement, and quest order derive from the seed.
+
+**Done when** a world is at least 64×64, has 3+ NPCs and 3+ quests, saves and
+loads, and two seeds produce visibly different worlds while one seed reproduces
+exactly.
+
+### 17. Themes and titles without a default
+
+- Expand from 10 packs to at least 20 (add e.g. frost, volcanic, fungal,
+  sky-islands, clockwork, dream, plague, archipelago).
+- Add a title grammar: `<adjective> <place> RPG` plus curated pack titles.
+- Default `build an rpg` picks by seed hash, so consecutive builds differ.
+- Keep `seed N` for an exact replay.
+- Renaming a project to a known setting still retargets palette, names, quests,
+  and title in place.
+
+**Done when** ten default builds give ten distinct titles and `seed 7` is stable.
+
+### 18. Intro-to-medium game library
+
+Two-dimensional: platformer, top-down shooter, twin-stick, roguelike, tower
+defense, top-down racing, merge/match puzzle, farming sim, card battler, rhythm.
+
+Three-dimensional: first-person maze, third-person platformer, kart racer,
+low-poly exploration, wave shooter, block builder.
+
+Each template ships the same project skeleton and an `ARCHITECTURE.md` describing
+state, entities, systems, balance knobs, and extension points. `plan a <genre>`
+prints the brief; `build a <genre>` writes the working starter.
+
+**Done when** every listed genre builds real files, runs offline, and appears in
+the command catalog.
+
+### 19. Composable edits
+
+Treat common follow-ups as deterministic patches against the active project:
+
+```
+add double jump
+add three enemy types
+add a boss
+add a quest
+add day/night
+add sound
+make it harder
+make the world 96x96
+switch to isometric
+make it 3d
+```
+
+Each patch changes the spec and a named function in a real file, re-bundles the
+preview, and reports which files changed. `undo` restores the previous files.
+This is the feature that makes the harness feel conversational without an LLM.
+
+**Done when** every example edits real files and `undo` is lossless.
+
+### 20. Optional LLM adapter and budgets
+
+- `plan(prompt)`: deterministic parser first. Only if it cannot produce a spec,
+  an optional LLM returns strict JSON, validated against the schema.
+- `patch(file, instruction)`: the LLM may propose a unified diff for allow-listed
+  project files; a deterministic validator and smoke run must pass before install.
+- Response cache keyed by normalized prompt + spec hash. Cached builds return
+  immediately and report `cache hit`.
+- Budgets: deterministic plan ≤ 20 ms, typical build ≤ 400 ms, first preview
+  ≤ 1 s, main-thread block ≤ 50 ms, asset payload capped per project.
+- Offline and `LLM disabled` are the default. No hidden network calls.
+
+**Done when** with the LLM off every command still works, and with it on the same
+prompt produces the same spec and files as the deterministic path.
+
+## Order
+
+1. 12 (spec) → 13 (2D engine) → 15 (3D engine)
+2. 16 (RPG world) → 17 (themes/titles)
+3. 18 (library) → 19 (patches)
+4. 20 (LLM adapter), with 14 (sprites) as soon as the pack URL is known
+
+## Open questions
+
+- Which GitHub sprite repository, and what licence does it carry?
+- For 3D, lead with low-poly WebGL or stay isometric-first?
+- Should the first batch stop after engines and the RPG world, or continue
+  through the full library before the LLM adapter?

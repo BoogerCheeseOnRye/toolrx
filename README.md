@@ -78,6 +78,13 @@ Sakura, Nile, Abyss, Frontier). Project references are tolerant:
 and `change the project name to bharata` re-theme the same project instead of
 starting a chat or creating a duplicate.
 
+Every result in the chat shows measured throughput as `tok/s` (estimated output
+tokens = characters ÷ 4 over wall-clock time, with the step's token count and
+milliseconds). It is a real measurement of the deterministic step, not model
+inference, and the generated files are unchanged. The roadmap for build specs,
+shared 2D/3D engines, a larger RPG world, sprite packs, and an optional LLM
+adapter lives in `toolrx/vision/HARNESS-ROADMAP.md`.
+
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
 `add a footer note saying …` rewrite the real `index.html` / `app.js` files.

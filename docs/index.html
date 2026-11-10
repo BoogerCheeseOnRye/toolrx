@@ -252,6 +252,8 @@
   .entry{border-left:2px solid var(--border);padding:8px 14px;margin:6px 0;border-radius:0 8px 8px 0;background:var(--panel)}
   .entry .lbl{font-weight:600;font-size:12px}
   .entry .lbl.q{color:#fff}.entry .lbl.res{color:var(--green)}.entry .lbl.err{color:var(--red)}
+  .entry .lbl .tps{float:right;margin-left:10px;color:var(--muted);font-weight:400;font-size:10.5px;
+    font-family:ui-monospace,monospace;white-space:nowrap}
   .entry .lbl.stat{color:var(--muted);font-weight:400}
   .entry pre{white-space:pre-wrap;word-break:break-word;margin-top:4px;font-family:ui-monospace,monospace;font-size:12px;color:#cbd5e1}
 
@@ -1094,9 +1096,24 @@ async function loadLocalModels(){
   for(let i=0;i<n;i++){const s=document.createElement('span');s.style.animationDelay=(i*0.03)+'s';
     eqTrack.appendChild(s);eqTrack.appendChild(s.cloneNode(true));}})();
 
-function entry(label,text,kind){
+function tokenMeta(r,text){
+  const chars=String(text==null?'':text).length;
+  if(!chars) return '';
+  const tok=Math.max(1,Math.round(chars/4));
+  const ms=Number(r&&r.ms);
+  if(!isFinite(ms)||ms<=0) return tok.toLocaleString()+' tok';
+  const tps=tok/(ms/1000);
+  const speed=tps>=100?Math.round(tps).toLocaleString():tps>=10?tps.toFixed(1):tps.toFixed(2);
+  return speed+' tok/s · '+tok.toLocaleString()+' tok · '+Math.round(ms)+' ms';
+}
+function entry(label,text,kind,meta){
   const d=document.createElement('div');d.className='entry';
   const l=document.createElement('div');l.className='lbl '+kind;l.textContent=label;
+  if(meta){
+    const s=document.createElement('span');s.className='tps';s.textContent=meta;
+    s.title='measured throughput: estimated output tokens (characters ÷ 4) over wall-clock time · not model inference';
+    l.appendChild(s);
+  }
   d.append(l);
   if(text){const pre=document.createElement('pre');pre.textContent=text;d.append(pre);}
   log.appendChild(d);log.scrollTop=log.scrollHeight;
@@ -2133,6 +2150,7 @@ async function stopBuild(){
 }
 
 async function submit(txt){
+  const wallStart=performance.now();
   if(clientMode && window.toolrxWeb && window.toolrxWeb.ready){
     q.value='';
     entry('> '+txt,'','q');
@@ -2152,7 +2170,7 @@ async function submit(txt){
           +(r.args&&Object.keys(r.args).length?' · args '+JSON.stringify(r.args):'');
       }
       if(r.source) body+='\n\nsource  '+r.source;
-      entry(label, body, r.error?'err':(isChat?'chat':'res'));
+      entry(label, body, r.error?'err':(isChat?'chat':'res'), tokenMeta(r, r.text));
       if(via==='build' && !r.error) built=true;
       if((via==='preview' || via==='preview.theme') && window.matchMedia('(max-width:900px)').matches){
         document.getElementById('previewPane').classList.add('mobile-show');
@@ -2189,7 +2207,8 @@ async function submit(txt){
           const s=await (await fetch('/llm/status/'+tid)).json();
           if(s.status==='done'||s.status==='cancelled'){clearInterval(iv);curTask=null;
             setBusy(false);
-            if(s.status==='done'){ entry('local.llm',s.text||'(done)','res'); loadPreview(); }
+            if(s.status==='done'){ entry('local.llm',s.text||'(done)','res',
+              tokenMeta({ms:s.ms||(performance.now()-wallStart)}, s.text)); loadPreview(); }
             else { entry('local.llm','cancelled','stat'); }
             next();}
           else if(s.status==='error'){clearInterval(iv);curTask=null;setBusy(false);
@@ -2200,7 +2219,8 @@ async function submit(txt){
     } else {
       setBusy(false);
       const t=resp.result&&resp.result.result&&resp.result.result.text;
-      entry('local.llm',t||'(no response)','res'); next();
+      entry('local.llm',t||'(no response)','res',
+        tokenMeta({ms:resp.ms||(performance.now()-wallStart)}, t)); next();
     }
   }catch(e){setBusy(false);
     entry('network error: '+e,'','err'); next();}

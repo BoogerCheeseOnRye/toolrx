@@ -205,6 +205,14 @@ class DashboardTest(unittest.TestCase):
                        "function openCmdPalette", "toolrxSkills.catalog"):
             self.assertIn(marker, self.html)
 
+    def test_chat_messages_show_measured_throughput(self):
+        for marker in ("function tokenMeta", "tok/s", "characters ÷ 4",
+                       "not model inference", "r.ms"):
+            self.assertIn(marker, self.html)
+        skills = open(os.path.join(ROOT, "toolrx", "web", "skills.js"),
+                      encoding="utf-8").read()
+        self.assertIn("result.ms = Math.max(0, Math.round(clock() - started))", skills)
+
     def test_conversation_memory_is_explicit_and_local(self):
         sandbox = open(os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
                        encoding="utf-8").read()

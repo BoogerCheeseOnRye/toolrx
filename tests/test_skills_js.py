@@ -101,6 +101,7 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     return res.map(r => ({
       step: r.step, text: r.text, error: !!r.error, via: r.via || '',
       tool: r.tool || '', args: r.args || null, source: r.source || '',
+      ms: r.ms,
     }));
   };
   const out = {};
@@ -433,6 +434,12 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(self.out["multiply"][0]["text"], "28140")
         self.assertEqual(self.out["square"][0]["text"], "4489")
         self.assertFalse(self.out["multiply"][0]["error"])
+
+    def test_every_step_reports_its_own_timing(self):
+        for key in ("multiply", "square", "chain", "build"):
+            for step in self.out[key]:
+                self.assertIsInstance(step["ms"], (int, float), key)
+                self.assertGreaterEqual(step["ms"], 0, key)
 
     def test_multi_step_threads_previous_output(self):
         steps = self.out["chain"]

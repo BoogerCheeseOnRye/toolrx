@@ -1191,6 +1191,7 @@
           via: "router." + r.tool,
           tool: r.tool,
           confidence: r.confidence,
+          ms: r.ms,
         }];
       }
       const results = await skills.runPrompt(String(query), promptContext());
