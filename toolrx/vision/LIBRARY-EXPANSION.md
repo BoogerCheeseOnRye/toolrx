@@ -403,7 +403,7 @@ stay English in phase 1; only the chat shell is localized.
 - Unknown and ambiguous inputs return `unknown` / the top two, never a silent
   single guess.
 
-### 23. Archive search and recommendations — done when
+### 23. Archive search and recommendations — done
 
 - `library/index.json` builds locally and `find`, `which book covers`,
   `list books by language`, and `recommend …` return ranked results with a
@@ -495,13 +495,11 @@ tests validate the catalog schema and reject any record with
 
 ## 11. Immediate next actions
 
-Steps 21 and 22 are complete and covered by `tests/test_library.py`,
-`tests/test_commands.py`, and the fixture matrix in `tests/test_skills_js.py`.
-Next:
+Steps 21, 22, and 23 are complete and covered by `tests/test_library.py`,
+`tests/test_commands.py`, and the fixture/scale matrix in
+`tests/test_skills_js.py`. Next:
 
-1. Step 23: finish explainable archive search (result reasons and reading paths
-   are in; add the 10 000-record timing check and gap reporting).
-2. Step 24: expand the localized intent table past the first templates and add
+1. Step 24: expand the localized intent table past the first templates and add
    the `reply in <language>` preference.
-3. Step 25: add the dashboard Library panel and cache catalog metadata in the
+2. Step 25: add the dashboard Library panel and cache catalog metadata in the
    PWA (bump `toolrx-shell-v*`).

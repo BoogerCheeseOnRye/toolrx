@@ -657,9 +657,11 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     find: (await run('find a book about shaders'))[0],
     findPcg: (await run('what do i have on procedural generation'))[0],
     language: (await run('list books by language c++'))[0],
+    level: (await run('list beginner books'))[0],
     missing: (await run('find a book about quaternions'))[0],
     next: (await run('what should i read next'))[0],
     after: (await run('what should i read after programming-2d-games'))[0],
+    gaps: (await run('library gaps'))[0],
     detect: (await run('what programming language is this: #include <iostream>'))[0],
     natural: (await run('what natural language is this: Hola, ¿puedes crear un juego de naves?'))[0],
     chain: await run('library stats then find a book about pcg'),
@@ -691,6 +693,42 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       smallBytes: small.length, largeBytes: large.length,
       smallMs: timed(dp, small), largeMs: timed(dp, large),
     };
+  })();
+  out.libraryScale = (() => {
+    const lib = self.toolrxSkills.library();
+    const original = lib.records;
+    const many = [];
+    for (let i = 0; i < 10000; i++) {
+      many.push({
+        id: 'bench-' + i, title: 'Benchmark Book ' + i, authors: [], year: 2020,
+        parts: [],
+        classification: {
+          topics: [i % 2 ? 'shaders' : 'cpp'],
+          programming_languages: ['cpp'], natural_languages: ['en'],
+        },
+        reading: { status: 'unread', priority: 1, next: [] },
+        search: {
+          aliases: ['bench ' + i], keywords: ['synthetic ' + i],
+          summary: 'Synthetic record ' + i,
+        },
+      });
+    }
+    lib.records = many;
+    const timed = (q) => {
+      let best = Infinity;
+      for (let i = 0; i < 15; i++) {
+        const t0 = performance.now();
+        self.toolrxSkills.librarySearch(q, 5);
+        best = Math.min(best, performance.now() - t0);
+      }
+      return +best.toFixed(3);
+    };
+    const allMs = timed('synthetic');
+    const missMs = timed('zzzznot');
+    const found = /Benchmark Book 9999/.test(
+      self.toolrxSkills.librarySearch('synthetic 9999', 5));
+    lib.records = original;
+    return { records: many.length, allMs: allMs, missMs: missMs, found: found };
   })();
   console.log(JSON.stringify(out));
 })();
@@ -812,14 +850,25 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("why:", lib["find"]["text"])
         self.assertIn("Procedural Content Generation", lib["findPcg"]["text"])
         self.assertIn("books tagged cpp", lib["language"]["text"])
+        self.assertIn("books at beginner level", lib["level"]["text"])
+        self.assertIn("A Complete Guide to Programming in C++", lib["level"]["text"])
         self.assertIn("not in the archive", lib["missing"]["text"])
         self.assertIn("next up", lib["next"]["text"])
         self.assertIn("Developing Simple Games with OpenGL", lib["after"]["text"])
+        self.assertIn("library gaps:", lib["gaps"]["text"])
+        self.assertIn("thin language coverage", lib["gaps"]["text"])
         self.assertIn("C++", lib["detect"]["text"])
         self.assertIn("Spanish", lib["natural"]["text"])
         self.assertEqual(len(lib["chain"]), 2)
         self.assertIn("Procedural Content Generation", lib["chain"][1]["text"])
         self.assertFalse(lib["find"]["error"])
+
+    def test_archive_search_scales_to_ten_thousand_records(self):
+        scale = self.out["libraryScale"]
+        self.assertEqual(scale["records"], 10000)
+        self.assertTrue(scale["found"])
+        self.assertLess(scale["missMs"], 5, scale)
+        self.assertLess(scale["allMs"], 10, scale)
 
     def test_build_spec_parses_dimension_view_art_scale_seed(self):
         s = self.out["spec"]

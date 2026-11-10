@@ -234,7 +234,7 @@ not in hand-written patterns.
 mixed input never gets a silent single guess, and 1 KB detection stays under
 5 ms.
 
-### 23. Archive search and recommendations
+### 23. Archive search and recommendations — done
 
 Lexical, explainable search over the catalog: alias expansion, weighted fields,
 level/language filters, result reasons, and reading paths from `reading.next`.
@@ -269,9 +269,8 @@ non-redistributable text never leaves the machine.
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
 2. 16 (RPG world) — done → 17 (themes/titles) → 18 (library) → 19 (patches)
-3. 21 (archive catalog) and 22 (language recognition) — done. 23 (archive
-   search and recommendations) is the active next step; 24 (localized intents)
-   and 25 (Library panel) follow.
+3. 21 (archive catalog), 22 (language recognition), and 23 (archive search) —
+   done. 24 (localized intents) and 25 (Library panel) follow.
 4. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
 
 ## Open questions
@@ -281,6 +280,6 @@ non-redistributable text never leaves the machine.
   checksums is deferred until after the 3D and RPG work; procedural sprites
   remain the fallback.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–16, 21, and 22 are complete. 17 (more theme packs) and 18
-  (the game library) remain open; 23 (archive search) is the next step, with 24
-  and 25 after it. 14 lands when the sprite subset is vendored.
+- Steps 11–13, 15–16, and 21–23 are complete. 17 (more theme packs) and 18
+  (the game library) remain open; 24 (localized intents) and 25 (Library panel)
+  are next. 14 lands when the sprite subset is vendored.

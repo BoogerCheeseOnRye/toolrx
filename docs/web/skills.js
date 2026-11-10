@@ -788,24 +788,17 @@
     return out;
   }
 
-  function libHit(token, text) {
-    if (!token || !text) return false;
-    if (text.indexOf(token) >= 0) return true;
-    if (token.length < 3) return false;
-    const words = text.split(/[^a-z0-9+#.]+/).filter(Boolean);
-    for (let i = 0; i < words.length; i++) {
-      const w = words[i];
-      if (w === token) return true;
-      if (token.length >= 4 && w.length >= 4
-          && (w.indexOf(token) === 0 || token.indexOf(w) === 0)) return true;
-    }
-    return false;
-  }
+  const LIB_FIELDS = new WeakMap();
+  const LIB_WORDS = new WeakMap();
 
   function libFields(rec) {
+    // Fold each field once per record. Search runs over thousands of records,
+    // so repeating normalize/split work per query token is the difference
+    // between a few milliseconds and half a second.
+    if (LIB_FIELDS.has(rec)) return LIB_FIELDS.get(rec);
     const cls = rec.classification || {};
     const search = rec.search || {};
-    return [
+    const fields = [
       { name: "title", w: 5, text: rec.title },
       { name: "alias", w: 4, text: (search.aliases || []).join(" ") },
       { name: "topic", w: 3, text: (cls.topics || []).join(" ") },
@@ -813,7 +806,116 @@
       { name: "keyword", w: 2, text: (search.keywords || []).join(" ") },
       { name: "id", w: 2, text: rec.id },
       { name: "summary", w: 1, text: search.summary || "" }
-    ];
+    ].map(function (f) {
+      return { name: f.name, w: f.w, text: libFold(f.text), words: null };
+    });
+    LIB_FIELDS.set(rec, fields);
+    return fields;
+  }
+
+  // One folded word map per record: word → {w, name}. Folded and split once;
+  // the inverted index below reuses it.
+  function libWordIndex(rec) {
+    if (LIB_WORDS.has(rec)) return LIB_WORDS.get(rec);
+    const fields = libFields(rec);
+    const map = new Map();
+    fields.forEach(function (f) {
+      f.text.split(/[^a-z0-9+#.]+/).forEach(function (w) {
+        if (!w) return;
+        const prev = map.get(w);
+        if (!prev || f.w > prev.w) map.set(w, { w: f.w, name: f.name });
+      });
+    });
+    LIB_WORDS.set(rec, map);
+    return map;
+  }
+
+  // Inverted index: word → [{i, w, name}]. Built lazily and rebuilt only when
+  // the record list changes, so a query touches matching postings instead of
+  // every record in the archive.
+  let LIB_INDEX = { recs: null, post: null, sorted: null };
+
+  function libIndex() {
+    const recs = (LIBRARY && LIBRARY.records) || [];
+    if (LIB_INDEX.recs === recs) return LIB_INDEX;
+    const post = new Map();
+    recs.forEach(function (rec, i) {
+      libWordIndex(rec).forEach(function (hit, word) {
+        let arr = post.get(word);
+        if (!arr) post.set(word, arr = []);
+        arr.push({ i: i, w: hit.w });
+      });
+    });
+    const sorted = Array.from(post.keys()).sort();
+    LIB_INDEX = { recs: recs, post: post, sorted: sorted };
+    return LIB_INDEX;
+  }
+
+  let LIB_SCORE = { len: 0, arr: null };
+
+  function libScoreBuffer(n) {
+    if (LIB_SCORE.len < n) LIB_SCORE = { len: n, arr: new Float64Array(n) };
+    return LIB_SCORE.arr;
+  }
+
+  function libTokenWords(index, token) {
+    const ext = [];
+    const pre = [];
+    let lo = 0, hi = index.sorted.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (index.sorted[mid] < token) lo = mid + 1;
+      else hi = mid;
+    }
+    for (let k = lo; k < index.sorted.length; k++) {
+      const word = index.sorted[k];
+      if (word.indexOf(token) !== 0) break;
+      if (word !== token) ext.push(word);
+    }
+    if (token.length >= 4) {
+      const stop = Math.min(token.length, 48);
+      for (let n = 3; n < stop; n++) {
+        const word = token.slice(0, n);
+        if (index.post.has(word)) pre.push(word);
+      }
+    }
+    return { ext: ext, pre: pre };
+  }
+
+  // Reason label for one surviving result: the best-weighted field holding the
+  // token. Runs only for the handful of rows that reach the output.
+  function libReasonFor(rec, token) {
+    const map = libWordIndex(rec);
+    const exact = map.get(token);
+    if (exact) return exact;
+    if (token.length < 3) return null;
+    let best = null;
+    map.forEach(function (hit, word) {
+      if (word.length < 3) return;
+      if (!(word.indexOf(token) === 0 || token.indexOf(word) === 0)) return;
+      if (!best || hit.w > best.w) best = hit;
+    });
+    return best;
+  }
+
+  function libPushTop(top, item, limit) {
+    let at = top.length;
+    while (at > 0) {
+      const prev = top[at - 1];
+      const better = item.score > prev.score
+        || (item.score === prev.score && item.rec.title < prev.rec.title);
+      if (!better) break;
+      at--;
+    }
+    if (at >= limit) return;
+    top.splice(at, 0, item);
+    if (top.length > limit) top.length = limit;
+  }
+
+  function libTopQualifies(score, title, top, limit) {
+    if (top.length < limit) return true;
+    const last = top[top.length - 1];
+    return score > last.score || (score === last.score && title < last.rec.title);
   }
 
   function libLabel(rec) {
@@ -847,30 +949,61 @@
     if (!LIBRARY) throw new Error("library catalog is not loaded");
     const tokens = libTokens(query);
     if (!tokens.length) return libStats();
-    const hits = [];
-    (LIBRARY.records || []).forEach(function (rec) {
-      let score = 0;
-      const reasons = [];
-      const fields = libFields(rec);
-      tokens.forEach(function (t) {
-        let best = 0, bestName = "";
-        fields.forEach(function (f) {
-          if (libHit(t, libFold(f.text)) && f.w > best) {
-            best = f.w;
-            bestName = f.name;
-          }
-        });
-        if (best) {
-          score += best;
-          reasons.push(bestName + ": " + t);
+    const top = [];
+    const max = limit || 5;
+    const index = libIndex();
+    const recs = LIBRARY.records || [];
+    const buf = libScoreBuffer(recs.length);
+    const touched = [];
+    for (let ti = 0; ti < tokens.length; ti++) {
+      const token = tokens[ti];
+      const parts = libTokenWords(index, token);
+      if (!parts.ext.length && !parts.pre.length) {
+        // Exact word only: the common case, and the cheapest.
+        const arr = index.post.get(token) || [];
+        for (let i = 0; i < arr.length; i++) {
+          const e = arr[i];
+          if (!buf[e.i]) touched.push(e.i);
+          buf[e.i] += e.w + 0.5;
         }
+        continue;
+      }
+      const best = new Map();
+      function add(word, exact) {
+        const arr = index.post.get(word);
+        if (!arr) return;
+        for (let i = 0; i < arr.length; i++) {
+          const e = arr[i];
+          const packed = e.w * 2 + (exact ? 1 : 0);
+          const prev = best.get(e.i);
+          if (prev === undefined || packed > prev) best.set(e.i, packed);
+        }
+      }
+      add(token, true);
+      parts.ext.forEach(function (w) { add(w, false); });
+      parts.pre.forEach(function (w) { add(w, false); });
+      best.forEach(function (packed, ri) {
+        if (!buf[ri]) touched.push(ri);
+        const w = (packed - (packed & 1)) / 2;
+        buf[ri] += w + (packed & 1 ? 0.5 : 0);
       });
-      if (score) hits.push({ rec: rec, score: score, reasons: reasons });
+    }
+    for (let i = 0; i < touched.length; i++) {
+      const ri = touched[i];
+      const score = buf[ri];
+      buf[ri] = 0;
+      const rec = recs[ri];
+      if (libTopQualifies(score, rec.title, top, max)) {
+        libPushTop(top, { rec: rec, score: score, reasons: null }, max);
+      }
+    }
+    top.forEach(function (item) {
+      item.reasons = [];
+      for (let ti = 0; ti < tokens.length; ti++) {
+        const hit = libReasonFor(item.rec, tokens[ti]);
+        if (hit) item.reasons.push(hit.name + ": " + tokens[ti]);
+      }
     });
-    hits.sort(function (a, b) {
-      return b.score - a.score || (a.rec.title < b.rec.title ? -1 : 1);
-    });
-    const top = hits.slice(0, limit || 5);
     if (!top.length) {
       const topics = Object.keys((LIBRARY.stats && LIBRARY.stats.topics) || {}).slice(0, 10);
       return "not in the archive for \"" + query + "\".\n\n"
@@ -898,6 +1031,21 @@
       + "ask: find a book about shaders · list books by language cpp · what should i read next";
   }
 
+  function libByLevel(level) {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const want = libFold(level);
+    const hits = (LIBRARY.records || []).filter(function (rec) {
+      return libFold((rec.classification || {}).level || "") === want;
+    });
+    if (!hits.length) {
+      return "no books tagged level \"" + level + "\" in the archive.\n\n"
+        + "Levels in the catalog: " + Object.keys((LIBRARY.stats || {}).levels || {})
+          .filter(function (k) { return LIBRARY.stats.levels[k]; }).join(", ");
+    }
+    return "books at " + want + " level (" + hits.length + "):\n\n"
+      + hits.map(function (rec, i) { return (i + 1) + ". " + libLabel(rec); }).join("\n");
+  }
+
   function libByLanguage(lang) {
     if (!LIBRARY) throw new Error("library catalog is not loaded");
     const wanted = libTokens(lang);
@@ -912,6 +1060,45 @@
     }
     return "books tagged " + code + " (" + hits.length + "):\n\n"
       + hits.map(function (rec, i) { return (i + 1) + ". " + libLabel(rec); }).join("\n");
+  }
+
+  function libGaps() {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const recs = LIBRARY.records || [];
+    const stats = LIBRARY.stats || {};
+    const open = recs.filter(function (r) {
+      return !(((r.reading || {}).next) || []).length;
+    });
+    const thinLangs = Object.keys(stats.programming || {}).filter(function (k) {
+      return stats.programming[k] < 2;
+    });
+    const emptyLevels = Object.keys(stats.levels || {}).filter(function (k) {
+      return !stats.levels[k];
+    });
+    const missingMeta = recs.filter(function (r) {
+      return !(r.authors || []).length || !r.year
+        || !((r.source || {}).sha256);
+    }).length;
+    const lines = ["library gaps:"];
+    if (open.length) {
+      lines.push("· no recorded next book (" + open.length + "): "
+        + open.map(function (r) { return r.id; }).join(", "));
+    } else {
+      lines.push("· every record has a next-book link");
+    }
+    if (thinLangs.length) {
+      lines.push("· thin language coverage: " + thinLangs.map(function (k) {
+        return k + " (" + stats.programming[k] + ")";
+      }).join(", "));
+    }
+    if (emptyLevels.length) {
+      lines.push("· no records at level: " + emptyLevels.join(", "));
+    }
+    if (missingMeta) {
+      lines.push("· " + missingMeta + " record(s) still need authors, year, or a source hash");
+    }
+    lines.push("Add a free or purchased book, tag it, then link it with reading.next.");
+    return lines.join("\n");
   }
 
   function libNext(after) {
@@ -982,11 +1169,17 @@
     "library.language": function (a) {
       return libByLanguage(a.lang || "");
     },
+    "library.level": function (a) {
+      return libByLevel(a.level || "");
+    },
     "library.next": function () {
       return libNext("");
     },
     "library.after": function (a) {
       return libNext(a.id || "");
+    },
+    "library.gaps": function () {
+      return libGaps();
     },
     "lang.detect": function (a, ctx) {
       const L = root.toolrxLang;
@@ -1604,7 +1797,7 @@
     lines.push("  wikipedia ada lovelace then build a page about it");
     lines.push("  build a page about grace hopper · make a website about it");
     lines.push("  find a book about shaders · list books by language cpp");
-    lines.push("  what should i read next · library stats");
+    lines.push("  what should i read next · library stats · library gaps");
     lines.push("  what language is this: #include <iostream>");
     lines.push("  what natural language is this: ¿qué hora es?");
     lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
@@ -1763,6 +1956,7 @@
     count: function () { return meta.count; },
     categories: function () { return meta.categories; },
     library: function () { return LIBRARY; },
+    librarySearch: function (q, n) { return libSearch(q, n); },
     match: match,
     search: search,
     catalog: catalog,

@@ -162,7 +162,7 @@ commands. Localized prompts are normalized to canonical English intents and
 say so: `interpreted as: build a shooter game`. The catalog, acquisition gaps,
 schema, offline constraints, and phased acceptance tests are in
 `toolrx/vision/LIBRARY-EXPANSION.md`; roadmap steps 21–25 track the build-out,
-with 21 (catalog) and 22 (language recognition) landed.
+with 21–23 (catalog, language recognition, archive search) landed.
 
 The Pages build is installable and works offline after the first visit: the
 dashboard links `manifest.webmanifest`, and `sw.js` caches the shell, model,

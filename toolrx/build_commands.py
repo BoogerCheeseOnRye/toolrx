@@ -608,6 +608,17 @@ for pat in ("what should i read after {id}", "what comes after {id} in my librar
     add(f"library.after.{len(COMMANDS)}", "library.after",
         "^" + pat.replace("{id}", REST) + "$", {"id": "$1"}, pat, "library")
 
+for pat in ("library gaps", "library coverage", "what gaps are in my library",
+            "where is my library thin", "what is missing from my library"):
+    add(f"library.gaps.{len(COMMANDS)}", "library.gaps", "^" + re.escape(pat) + "$",
+        {}, pat, "library")
+
+for pat in ("list {level} books", "show {level} books", "which books are {level}",
+            "books at {level} level"):
+    add(f"library.level.{len(COMMANDS)}", "library.level",
+        "^" + pat.replace("{level}", "(beginner|intermediate|advanced|reference|all)")
+        + "$", {"level": "$1"}, pat, "library")
+
 # ------------------------------------------------------------- language ---
 # Exact forms first: a bare "what language is this" inspects the previous step.
 for pat in ("what language is this", "what language is that",

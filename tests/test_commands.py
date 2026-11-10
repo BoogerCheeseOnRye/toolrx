@@ -135,6 +135,8 @@ class CommandLibraryTest(unittest.TestCase):
             "find a book about shaders": ("library.find", "$1"),
             "list books by language c++": ("library.language", "$1"),
             "what should i read next": ("library.next", None),
+            "library gaps": ("library.gaps", None),
+            "list beginner books": ("library.level", "$1"),
             "what language is this": ("lang.detect", None),
             "what programming language is this: int main(){}": ("lang.detect", "$1"),
             "what natural language is this: hola amigos": ("lang.detect", "$1"),
@@ -144,8 +146,8 @@ class CommandLibraryTest(unittest.TestCase):
             self.assertIsNotNone(hit, query)
             self.assertEqual(hit["op"], op, query)
             if arg is not None:
-                self.assertEqual(hit["args"].get("text") or hit["args"].get("topic")
-                                 or hit["args"].get("lang"), arg, query)
+                values = [hit["args"].get(k) for k in ("text", "topic", "lang", "level", "id")]
+                self.assertIn(arg, values, query)
         self.assertIn("library", self.data)
         self.assertEqual(self.data["library"]["stats"]["records"], 10)
 
