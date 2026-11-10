@@ -237,7 +237,8 @@ class DashboardTest(unittest.TestCase):
 
     def test_pages_web_assets_match(self):
         for name in ("blake2b.js", "router.js", "sandbox.js", "skills.js",
-                     "templates.js", "engine2d.js", "engine2d.embed.js",
+                     "templates.js", "lang.js", "i18n.json",
+                     "engine2d.js", "engine2d.embed.js",
                      "engine3d.js", "engine3d.embed.js", "worldgen.js",
                      "worldgen.embed.js", "rpg2.js", "rpg2.embed.js",
                      "commands.json"):
@@ -279,7 +280,7 @@ class DashboardTest(unittest.TestCase):
     def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v4", sw)
+        self.assertIn("toolrx-shell-v5", sw)
         self.assertIn("./web/engine2d.js", sw)
         self.assertIn("./web/engine2d.embed.js", sw)
         self.assertIn("./web/engine3d.js", sw)
@@ -288,6 +289,8 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("./web/worldgen.embed.js", sw)
         self.assertIn("./web/rpg2.js", sw)
         self.assertIn("./web/rpg2.embed.js", sw)
+        self.assertIn("./web/lang.js", sw)
+        self.assertIn("./web/i18n.json", sw)
 
     def test_offline_app_is_installable_and_cached(self):
         for rel in ("toolrx/web/sw.js", "toolrx/web/manifest.webmanifest",

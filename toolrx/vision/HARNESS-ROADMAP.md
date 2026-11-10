@@ -210,11 +210,69 @@ This is the feature that makes the harness feel conversational without an LLM.
 **Done when** with the LLM off every command still works, and with it on the same
 prompt produces the same spec and files as the deterministic path.
 
+### 21. Archive catalog — done
+
+Turn the personal C++ / game-dev Drive collection into a real, queryable catalog:
+one metadata record per book (a 13-part set is one book), with topics,
+programming languages, natural language, level, rights, source hash, and reading
+links. Metadata only in git; personal PDFs and extracted text stay local.
+
+**Done when** `library/catalog.json` covers the 9 books plus the 13-part
+procedural-generation set, `python3 toolrx/library.py check` passes, and
+`library stats` / `find a book about <topic>` answer from it.
+
+### 22. Language recognition core — done
+
+One offline module that detects programming languages (C++, C#, C, Rust, Python,
+JS/TS, Lua, shaders, …) and natural languages (Spanish, French, German, Hindi,
+Japanese, …), returns confidence plus alternatives, and exposes
+`what language is this` / `what programming language is …` /
+`what natural language is …`. Alias tables and stopword profiles live in data,
+not in hand-written patterns.
+
+**Done when** the ambiguity fixtures in `LIBRARY-EXPANSION.md` pass, short or
+mixed input never gets a silent single guess, and 1 KB detection stays under
+5 ms.
+
+### 23. Archive search and recommendations
+
+Lexical, explainable search over the catalog: alias expansion, weighted fields,
+level/language filters, result reasons, and reading paths from `reading.next`.
+`which book covers quaternions`, `list books by language rust`,
+`what should i read after <id>`, and gap reports all work without an LLM.
+
+**Done when** results name why they matched, alias queries behave, and 10 000
+records search in under 10 ms.
+
+### 24. Localized intents and replies
+
+A curated phrase table maps known imperative templates (`crea un juego de
+naves`, `baue ein 3d-rpg`, `5 किमी को मील में बदलो`) to canonical English
+commands and shows `interpreted as: …`. A small phrase pack localizes the chat
+shell for Spanish, French, German, Hindi, and Japanese; preferences persist in
+`localStorage`.
+
+**Done when** localized prompts build the same project as their English form,
+`reply in <language>` switches and persists, and a missing pack falls back to
+English cleanly.
+
+### 25. Library surface and offline packaging
+
+Add a Library panel to the dashboard (search, topic/level/language filters,
+reading status, next up), cache catalog metadata in the PWA, and keep keyboard
+and dialog behavior consistent with the rest of the tool.
+
+**Done when** the panel works offline, the Pages build ships metadata only, and
+non-redistributable text never leaves the machine.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
 2. 16 (RPG world) — done → 17 (themes/titles) → 18 (library) → 19 (patches)
-3. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
+3. 21 (archive catalog) and 22 (language recognition) — done. 23 (archive
+   search and recommendations) is the active next step; 24 (localized intents)
+   and 25 (Library panel) follow.
+4. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
 
 ## Open questions
 
@@ -223,5 +281,6 @@ prompt produces the same spec and files as the deterministic path.
   checksums is deferred until after the 3D and RPG work; procedural sprites
   remain the fallback.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13 and 15–16 are complete; the next batch is 17 (more theme packs)
-  and 18 (the game library), with 14 when the subset is vendored.
+- Steps 11–13, 15–16, 21, and 22 are complete. 17 (more theme packs) and 18
+  (the game library) remain open; 23 (archive search) is the next step, with 24
+  and 25 after it. 14 lands when the sprite subset is vendored.

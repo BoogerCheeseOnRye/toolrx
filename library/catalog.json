@@ -1,0 +1,461 @@
+{
+  "version": 1,
+  "updated": "2026-11-10",
+  "notes": "Metadata only. Personal copies are not redistributable; PDFs and extracted text stay off git. Verify authors and years from each book's front matter during ingestion.",
+  "records": [
+    {
+      "id": "cpp-complete-guide",
+      "title": "A Complete Guide to Programming in C++",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "A_Complete_Guide_to_Programming_in_C++.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["cpp", "oop", "language-basics"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "self-study",
+        "era": "pre-c++11"
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 1,
+        "prerequisites": [],
+        "next": ["creating-games-in-cpp"]
+      },
+      "search": {
+        "aliases": ["complete guide c++", "cpp complete guide"],
+        "keywords": ["classes", "templates", "stl", "inheritance", "streams"],
+        "summary": "A broad C++ introduction covering language basics, classes, inheritance, and the standard library."
+      }
+    },
+    {
+      "id": "game-programmer-study-path",
+      "title": "A Study Path for Game Programmers",
+      "authors": [],
+      "year": 2017,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "A_Study_path_for_game-programmer(2017 links).pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; the embedded link list needs re-checking before reuse."
+      },
+      "classification": {
+        "topics": ["career", "study-path", "game-development"],
+        "programming_languages": [],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "self-study",
+        "era": "2017"
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 1,
+        "prerequisites": [],
+        "next": ["intro-game-programming"]
+      },
+      "search": {
+        "aliases": ["game programmer study path", "game dev learning path"],
+        "keywords": ["career", "curriculum", "reading list", "practice"],
+        "summary": "A 2017-curated reading and learning path for people entering game programming."
+      }
+    },
+    {
+      "id": "creating-games-in-cpp",
+      "title": "Creating Games in C++: A Step-by-Step Guide",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "Creating_Games_in_C-_A_Step-by-Step_Guide.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["cpp", "game-loop", "2d-games", "input"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "self-study",
+        "era": null
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 2,
+        "prerequisites": ["cpp-complete-guide"],
+        "next": ["programming-2d-games"]
+      },
+      "search": {
+        "aliases": ["creating games in c++", "step by step game guide"],
+        "keywords": ["game loop", "input", "sprites", "collision", "simple games"],
+        "summary": "A step-by-step C++ game guide that builds small playable games around a game loop and input."
+      }
+    },
+    {
+      "id": "developing-simple-games-opengl",
+      "title": "Developing Simple Games with OpenGL",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "DevelopingSimplegameswithOpenGL.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["cpp", "opengl", "graphics", "shaders"],
+        "programming_languages": ["cpp", "glsl"],
+        "natural_languages": ["en"],
+        "level": "intermediate",
+        "audience": "self-study",
+        "era": null
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 2,
+        "prerequisites": ["creating-games-in-cpp"],
+        "next": []
+      },
+      "search": {
+        "aliases": ["opengl simple games", "developing games with opengl"],
+        "keywords": ["rendering", "textures", "shaders", "camera", "2d graphics"],
+        "summary": "An OpenGL-based route from simple drawing to small games, covering rendering, textures, and shaders."
+      }
+    },
+    {
+      "id": "fundamentals-of-cpp",
+      "title": "Fundamentals of C++ Programming",
+      "authors": [],
+      "year": 2017,
+      "edition": "2017 draft",
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "Fundamentals_of_C++_programming(2017 Draft).pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; draft edition, metadata only."
+      },
+      "classification": {
+        "topics": ["cpp", "language-basics", "algorithms"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "coursework",
+        "era": "c++11"
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 2,
+        "prerequisites": [],
+        "next": ["cpp-complete-guide"]
+      },
+      "search": {
+        "aliases": ["fundamentals of c++", "cpp fundamentals"],
+        "keywords": ["variables", "functions", "arrays", "pointers", "classes"],
+        "summary": "A 2017 draft textbook of C++ fundamentals with exercises and early algorithm work."
+      }
+    },
+    {
+      "id": "intro-game-programming",
+      "title": "Introduction to Game Programming",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "Intro_to_Game_Programming.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["game-development", "game-loop", "2d-games", "design"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "self-study",
+        "era": null
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 1,
+        "prerequisites": [],
+        "next": ["creating-games-in-cpp"]
+      },
+      "search": {
+        "aliases": ["introduction to game programming", "intro game programming"],
+        "keywords": ["game loop", "state", "sprites", "collision", "design"],
+        "summary": "A survey-style introduction to the parts of a game program and how they fit together."
+      }
+    },
+    {
+      "id": "programming-2d-games",
+      "title": "Programming 2D Games",
+      "authors": [],
+      "year": null,
+      "edition": "1st edition",
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "Programming-2D-Games-1st-Edition.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["cpp", "2d-games", "sprites", "collision", "animation"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "intermediate",
+        "audience": "self-study",
+        "era": null
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 2,
+        "prerequisites": ["creating-games-in-cpp"],
+        "next": ["developing-simple-games-opengl"]
+      },
+      "search": {
+        "aliases": ["programming 2d games", "2d game programming"],
+        "keywords": ["sprites", "tiles", "animation", "collision", "input", "audio"],
+        "summary": "A focused 2D game-programming text covering sprites, tiles, animation, collision, and game structure."
+      }
+    },
+    {
+      "id": "cpp-language-tutorial",
+      "title": "The C++ Language Tutorial",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "The_C++_language_Tutorial.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["cpp", "language-basics", "reference"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "self-study",
+        "era": "pre-c++11"
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 2,
+        "prerequisites": [],
+        "next": ["fundamentals-of-cpp"]
+      },
+      "search": {
+        "aliases": ["c++ language tutorial", "cpp tutorial"],
+        "keywords": ["syntax", "classes", "templates", "references", "standard library"],
+        "summary": "A compact tutorial/reference for the C++ language, useful for quick syntax checks."
+      }
+    },
+    {
+      "id": "learn-cpp-tutorialspoint",
+      "title": "Learn C++ (Tutorials Point)",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf",
+      "parts": [],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "file_id": null,
+        "name": "TutorialsPoint_Learn_C++.pdf",
+        "url": "https://drive.google.com/drive/folders/16Sikf0ytQ9cLwPj7cORBeGEInsESuAmd",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private archive; metadata and our own summary only."
+      },
+      "classification": {
+        "topics": ["cpp", "language-basics", "reference"],
+        "programming_languages": ["cpp"],
+        "natural_languages": ["en"],
+        "level": "beginner",
+        "audience": "self-study",
+        "era": null
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 3,
+        "prerequisites": [],
+        "next": ["cpp-language-tutorial"]
+      },
+      "search": {
+        "aliases": ["tutorials point c++", "learn c++ tutorials point"],
+        "keywords": ["syntax", "examples", "classes", "stl", "reference"],
+        "summary": "A short example-driven C++ tutorial aimed at quick lookup and practice."
+      }
+    },
+    {
+      "id": "procedural-content-generation",
+      "title": "Procedural Content Generation",
+      "authors": [],
+      "year": null,
+      "edition": null,
+      "kind": "book",
+      "format": "pdf-set",
+      "parts": [
+        {"id": "chapter01", "file": "chapter01.pdf", "title": null},
+        {"id": "chapter02", "file": "chapter02.pdf", "title": null},
+        {"id": "chapter03", "file": "chapter03.pdf", "title": null},
+        {"id": "chapter04", "file": "chapter04.pdf", "title": null},
+        {"id": "chapter05", "file": "chapter05.pdf", "title": null},
+        {"id": "chapter06", "file": "chapter06.pdf", "title": null},
+        {"id": "chapter07", "file": "chapter07.pdf", "title": null},
+        {"id": "chapter08", "file": "chapter08.pdf", "title": null},
+        {"id": "chapter09", "file": "chapter09.pdf", "title": null},
+        {"id": "chapter10", "file": "chapter10.pdf", "title": null},
+        {"id": "chapter11", "file": "chapter11.pdf", "title": null},
+        {"id": "chapter12", "file": "chapter12.pdf", "title": null},
+        {"id": "interviews", "file": "interviews.pdf", "title": "Interviews"}
+      ],
+      "source": {
+        "provider": "google-drive",
+        "folder_id": "1-7D_S-pm2sU7wscXKvnUEQ7C2Irn9p-X",
+        "file_id": null,
+        "name": "Procedural content generation",
+        "url": "https://drive.google.com/drive/folders/1-7D_S-pm2sU7wscXKvnUEQ7C2Irn9p-X",
+        "sha256": null,
+        "bytes": null,
+        "pages": null
+      },
+      "rights": {
+        "status": "personal-copy",
+        "redistributable": false,
+        "notes": "Private 13-part set; verify title, authors, and licence from chapter01 before quoting it."
+      },
+      "classification": {
+        "topics": ["pcg", "procedural-generation", "level-design", "algorithms"],
+        "programming_languages": [],
+        "natural_languages": ["en"],
+        "level": "intermediate",
+        "audience": "self-study",
+        "era": null
+      },
+      "reading": {
+        "status": "unread",
+        "priority": 1,
+        "prerequisites": ["intro-game-programming"],
+        "next": []
+      },
+      "search": {
+        "aliases": ["procedural content generation", "pcg set", "procedural generation chapters"],
+        "keywords": ["terrains", "dungeons", "grammar", "cellular automata", "search", "evaluation"],
+        "summary": "A 12-chapter procedural-content-generation text with an interviews companion, stored as one 13-part set."
+      }
+    }
+  ]
+}

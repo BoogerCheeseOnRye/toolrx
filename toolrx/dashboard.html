@@ -778,6 +778,7 @@
 <script src="web/rpg2.js"></script>
 <script src="web/rpg2.embed.js"></script>
 <script src="web/templates.js"></script>
+<script src="web/lang.js"></script>
 <script src="web/skills.js"></script>
 <script src="web/sandbox.js"></script>
 <script>
@@ -817,6 +818,12 @@ async function loadConfig(){
     try{ if(await window.toolrxSkills.init('web/commands.json')) commandCount=window.toolrxSkills.count(); }
     catch(e){ commandCount=0; }
   }
+  if(clientMode && window.toolrxLang){
+    try{
+      const r=await fetch('web/i18n.json');
+      if(r.ok) window.toolrxLang.configure(await r.json());
+    }catch(e){}
+  }
   staticMode=!clientMode;
   document.body.classList.add(clientMode?'client-demo':'static-demo');
   const note=document.getElementById('staticNote');
@@ -843,6 +850,8 @@ async function loadConfig(){
       +'      build a calculator app\n'
       +'      build an rpg        (real files in a project)\n'
       +'      plan a todo app     (architecture, not a finished page)\n'
+      +'      find a book about shaders\n'
+      +'      what language is this: #include <iostream>\n'
       +'      wikipedia ursula k le guin\n'
       +'      i feel overwhelmed\n\n'
       +'projects: press ◫ in the composer bar to create, open, or delete one\n'

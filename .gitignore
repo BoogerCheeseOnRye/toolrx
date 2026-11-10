@@ -23,3 +23,8 @@ harness-devices.json
 toolrx/cmd_providers.json
 toolrx/cmd_github.json
 toolrx/labplan.json
+
+# Library: personal copies and extracted text stay local.
+library/.local/
+library/index.json
+library/*.tmp

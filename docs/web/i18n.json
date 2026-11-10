@@ -1,0 +1,1729 @@
+{
+  "version": 1,
+  "programming": {
+    "cpp": {
+      "name": "C++",
+      "aliases": [
+        "c++",
+        "cpp",
+        "cxx",
+        "c plus plus"
+      ],
+      "extensions": [
+        "cpp",
+        "cc",
+        "cxx",
+        "hpp",
+        "hxx"
+      ],
+      "signals": [
+        {
+          "re": "#include\\s*<",
+          "w": 3,
+          "label": "#include"
+        },
+        {
+          "re": "\\bstd::",
+          "w": 4,
+          "label": "std::"
+        },
+        {
+          "re": "\\b(?:cout|cin|cerr|clog)\\b",
+          "w": 3,
+          "label": "iostream"
+        },
+        {
+          "re": "\\btemplate\\s*<",
+          "w": 4,
+          "label": "template"
+        },
+        {
+          "re": "\\bnamespace\\s+\\w+",
+          "w": 2,
+          "label": "namespace"
+        },
+        {
+          "re": "\\b(?:public|private|protected)\\s*:",
+          "w": 2,
+          "label": "access specifier"
+        },
+        {
+          "re": "\\bnullptr\\b",
+          "w": 2,
+          "label": "nullptr"
+        },
+        {
+          "re": "\\b(?:unique_ptr|shared_ptr|make_unique|make_shared)\\b",
+          "w": 3,
+          "label": "smart pointer"
+        },
+        {
+          "re": "\\bclass\\s+\\w+",
+          "w": 1,
+          "label": "class"
+        },
+        {
+          "re": "::",
+          "w": 1,
+          "label": "scope resolution"
+        }
+      ]
+    },
+    "c": {
+      "name": "C",
+      "aliases": [
+        "c",
+        "ansi c"
+      ],
+      "extensions": [
+        "c",
+        "h"
+      ],
+      "signals": [
+        {
+          "re": "#include\\s*<(?:stdio|stdlib|string|math|time|ctype|errno)\\.h>",
+          "w": 5,
+          "label": "C header"
+        },
+        {
+          "re": "\\bprintf\\s*\\(",
+          "w": 3,
+          "label": "printf"
+        },
+        {
+          "re": "\\bscanf\\s*\\(",
+          "w": 3,
+          "label": "scanf"
+        },
+        {
+          "re": "\\bmalloc\\s*\\(|\\bcalloc\\s*\\(|\\brealloc\\s*\\(|\\bfree\\s*\\(",
+          "w": 2,
+          "label": "manual memory"
+        },
+        {
+          "re": "\\btypedef\\b",
+          "w": 1,
+          "label": "typedef"
+        },
+        {
+          "re": "\\bstruct\\s+\\w+\\s*\\{",
+          "w": 1,
+          "label": "struct"
+        },
+        {
+          "re": "#define\\s+\\w+",
+          "w": 2,
+          "label": "#define"
+        }
+      ]
+    },
+    "csharp": {
+      "name": "C#",
+      "aliases": [
+        "c#",
+        "csharp",
+        "c sharp",
+        "dotnet",
+        ".net"
+      ],
+      "extensions": [
+        "cs",
+        "csx"
+      ],
+      "signals": [
+        {
+          "re": "\\busing\\s+System\\b",
+          "w": 5,
+          "label": "using System"
+        },
+        {
+          "re": "\\bConsole\\.(?:Write|Read)",
+          "w": 4,
+          "label": "Console"
+        },
+        {
+          "re": "\\bnamespace\\s+\\w+",
+          "w": 2,
+          "label": "namespace"
+        },
+        {
+          "re": "\\bpublic\\s+(?:sealed\\s+)?class\\b",
+          "w": 2,
+          "label": "public class"
+        },
+        {
+          "re": "\\b(?:async\\s+)?Task<",
+          "w": 3,
+          "label": "Task<T>"
+        },
+        {
+          "re": "\\bvar\\s+\\w+\\s*=",
+          "w": 1,
+          "label": "var"
+        },
+        {
+          "re": "\\b(?:string|int|float|double|bool)\\[\\]",
+          "w": 2,
+          "label": "typed array"
+        },
+        {
+          "re": "\\b(?:get|set)\\s*;",
+          "w": 2,
+          "label": "property"
+        },
+        {
+          "re": "\\{\\s*get;\\s*set;\\s*\\}",
+          "w": 3,
+          "label": "auto property"
+        }
+      ]
+    },
+    "rust": {
+      "name": "Rust",
+      "aliases": [
+        "rust",
+        "rs",
+        "rustlang"
+      ],
+      "extensions": [
+        "rs"
+      ],
+      "signals": [
+        {
+          "re": "\\bfn\\s+main\\s*\\(",
+          "w": 4,
+          "label": "fn main"
+        },
+        {
+          "re": "\\blet\\s+mut\\b",
+          "w": 4,
+          "label": "let mut"
+        },
+        {
+          "re": "\\bprintln!\\s*\\(",
+          "w": 3,
+          "label": "println!"
+        },
+        {
+          "re": "\\buse\\s+std::",
+          "w": 4,
+          "label": "use std"
+        },
+        {
+          "re": "\\bimpl\\s+\\w+",
+          "w": 3,
+          "label": "impl"
+        },
+        {
+          "re": "\\bpub\\s+(?:fn|struct|enum)\\b",
+          "w": 2,
+          "label": "pub"
+        },
+        {
+          "re": "->\\s*(?:Result|Option)<",
+          "w": 3,
+          "label": "Result/Option"
+        },
+        {
+          "re": "\\bmatch\\s+\\w+\\s*\\{",
+          "w": 1,
+          "label": "match"
+        }
+      ]
+    },
+    "python": {
+      "name": "Python",
+      "aliases": [
+        "python",
+        "python3",
+        "py"
+      ],
+      "extensions": [
+        "py",
+        "pyw"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*def\\s+\\w+\\s*\\(.*\\)\\s*:",
+          "w": 4,
+          "label": "def"
+        },
+        {
+          "re": "^\\s*(?:from\\s+\\w+\\s+import|import\\s+\\w+)",
+          "w": 2,
+          "label": "import"
+        },
+        {
+          "re": "\\bprint\\s*\\(",
+          "w": 1,
+          "label": "print"
+        },
+        {
+          "re": "^\\s*(?:if|elif|for|while|with|try|except)\\b.*:\\s*$",
+          "w": 2,
+          "label": "colon block"
+        },
+        {
+          "re": "__name__\\s*==\\s*['\\\"]__main__['\\\"]",
+          "w": 4,
+          "label": "__main__"
+        },
+        {
+          "re": "\\bself\\.\\w+",
+          "w": 2,
+          "label": "self"
+        },
+        {
+          "re": "\\bNone\\b|\\bTrue\\b|\\bFalse\\b",
+          "w": 1,
+          "label": "None/True/False"
+        },
+        {
+          "re": "\\breturn\\b",
+          "w": 1,
+          "label": "return"
+        }
+      ]
+    },
+    "javascript": {
+      "name": "JavaScript",
+      "aliases": [
+        "javascript",
+        "js",
+        "ecmascript",
+        "node",
+        "nodejs"
+      ],
+      "extensions": [
+        "js",
+        "mjs",
+        "cjs",
+        "jsx"
+      ],
+      "signals": [
+        {
+          "re": "\\bconsole\\.(?:log|error|warn)\\s*\\(",
+          "w": 3,
+          "label": "console.log"
+        },
+        {
+          "re": "\\b(?:const|let)\\s+\\w+\\s*=",
+          "w": 1,
+          "label": "const/let"
+        },
+        {
+          "re": "=>",
+          "w": 2,
+          "label": "arrow function"
+        },
+        {
+          "re": "\\bdocument\\.\\w+",
+          "w": 2,
+          "label": "document"
+        },
+        {
+          "re": "\\brequire\\s*\\(",
+          "w": 2,
+          "label": "require"
+        },
+        {
+          "re": "\\bmodule\\.exports\\b",
+          "w": 3,
+          "label": "module.exports"
+        },
+        {
+          "re": "\\bfunction\\s+\\w+\\s*\\(",
+          "w": 1,
+          "label": "function"
+        },
+        {
+          "re": "\\b(?:addEventListener|querySelector)\\s*\\(",
+          "w": 2,
+          "label": "DOM call"
+        }
+      ]
+    },
+    "typescript": {
+      "name": "TypeScript",
+      "aliases": [
+        "typescript",
+        "ts"
+      ],
+      "extensions": [
+        "ts",
+        "tsx",
+        "mts",
+        "cts"
+      ],
+      "signals": [
+        {
+          "re": ":\\s*(?:string|number|boolean|void|any|unknown|never|object)\\b",
+          "w": 4,
+          "label": "type annotation"
+        },
+        {
+          "re": "\\binterface\\s+\\w+",
+          "w": 3,
+          "label": "interface"
+        },
+        {
+          "re": "\\btype\\s+\\w+\\s*=",
+          "w": 3,
+          "label": "type alias"
+        },
+        {
+          "re": "\\benum\\s+\\w+",
+          "w": 2,
+          "label": "enum"
+        },
+        {
+          "re": "\\bas\\s+const\\b",
+          "w": 2,
+          "label": "as const"
+        },
+        {
+          "re": "\\b(?:implements|extends)\\s+\\w+",
+          "w": 1,
+          "label": "implements"
+        },
+        {
+          "re": "\\w+\\?\\s*:",
+          "w": 2,
+          "label": "optional property"
+        }
+      ]
+    },
+    "lua": {
+      "name": "Lua",
+      "aliases": [
+        "lua",
+        "love2d"
+      ],
+      "extensions": [
+        "lua"
+      ],
+      "signals": [
+        {
+          "re": "--\\[\\[",
+          "w": 4,
+          "label": "block comment"
+        },
+        {
+          "re": "\\blocal\\s+\\w+",
+          "w": 2,
+          "label": "local"
+        },
+        {
+          "re": "\\bfunction\\b[\\s\\S]*\\bend\\b",
+          "w": 2,
+          "label": "function/end"
+        },
+        {
+          "re": "\\bnil\\b",
+          "w": 1,
+          "label": "nil"
+        },
+        {
+          "re": "\\bthen\\b",
+          "w": 1,
+          "label": "then"
+        },
+        {
+          "re": "\\brequire\\s*\\(['\\\"]",
+          "w": 2,
+          "label": "require"
+        },
+        {
+          "re": "\\b(?:pairs|ipairs)\\s*\\(",
+          "w": 3,
+          "label": "pairs"
+        }
+      ]
+    },
+    "glsl": {
+      "name": "GLSL",
+      "aliases": [
+        "glsl",
+        "glsl es",
+        "shader"
+      ],
+      "extensions": [
+        "glsl",
+        "vert",
+        "frag",
+        "vs",
+        "fs"
+      ],
+      "signals": [
+        {
+          "re": "#version\\s+\\d+",
+          "w": 6,
+          "label": "#version"
+        },
+        {
+          "re": "\\bgl_Position\\b",
+          "w": 5,
+          "label": "gl_Position"
+        },
+        {
+          "re": "\\bgl_FragColor\\b|\\bout\\s+vec4\\b",
+          "w": 4,
+          "label": "fragment output"
+        },
+        {
+          "re": "\\buniform\\s+\\w+",
+          "w": 3,
+          "label": "uniform"
+        },
+        {
+          "re": "\\bvarying\\s+\\w+|\\bin\\s+vec[234]\\b|\\bout\\s+vec[234]\\b",
+          "w": 3,
+          "label": "stage variable"
+        },
+        {
+          "re": "\\bvec[234]\\b",
+          "w": 2,
+          "label": "vec"
+        },
+        {
+          "re": "\\b(?:texture2D|texture)\\s*\\(",
+          "w": 2,
+          "label": "texture"
+        },
+        {
+          "re": "\\bvoid\\s+main\\s*\\(",
+          "w": 1,
+          "label": "main"
+        }
+      ]
+    },
+    "hlsl": {
+      "name": "HLSL",
+      "aliases": [
+        "hlsl",
+        "directx shader"
+      ],
+      "extensions": [
+        "hlsl",
+        "fx",
+        "fxh"
+      ],
+      "signals": [
+        {
+          "re": "\\bcbuffer\\b",
+          "w": 5,
+          "label": "cbuffer"
+        },
+        {
+          "re": "\\bSV_(?:Position|Target)\\b",
+          "w": 4,
+          "label": "semantic"
+        },
+        {
+          "re": "\\bTexture2D\\b",
+          "w": 3,
+          "label": "Texture2D"
+        },
+        {
+          "re": "\\bfloat[234](?:x[234])?\\b",
+          "w": 2,
+          "label": "float vector"
+        },
+        {
+          "re": "\\b(?:mul|saturate|lerp)\\s*\\(",
+          "w": 2,
+          "label": "hlsl intrinsic"
+        }
+      ]
+    },
+    "wgsl": {
+      "name": "WGSL",
+      "aliases": [
+        "wgsl",
+        "webgpu shader"
+      ],
+      "extensions": [
+        "wgsl"
+      ],
+      "signals": [
+        {
+          "re": "@(?:vertex|fragment|compute)",
+          "w": 5,
+          "label": "stage attribute"
+        },
+        {
+          "re": "\\bvec[234]<f32>",
+          "w": 4,
+          "label": "vec<f32>"
+        },
+        {
+          "re": "\\bfn\\s+main\\s*\\(",
+          "w": 2,
+          "label": "fn main"
+        },
+        {
+          "re": "@(?:group|binding)\\s*\\(",
+          "w": 3,
+          "label": "binding"
+        },
+        {
+          "re": "\\b(?:texture_2d|sampler)\\b",
+          "w": 2,
+          "label": "texture"
+        }
+      ]
+    },
+    "gdscript": {
+      "name": "GDScript",
+      "aliases": [
+        "gdscript",
+        "godot script"
+      ],
+      "extensions": [
+        "gd"
+      ],
+      "signals": [
+        {
+          "re": "\\bextends\\s+(?:Node|Node2D|Node3D|Control|SceneTree)\\b",
+          "w": 5,
+          "label": "extends Node"
+        },
+        {
+          "re": "\\bfunc\\s+_ready\\s*\\(",
+          "w": 4,
+          "label": "_ready"
+        },
+        {
+          "re": "@export\\b",
+          "w": 3,
+          "label": "@export"
+        },
+        {
+          "re": "\\bsignal\\s+\\w+",
+          "w": 2,
+          "label": "signal"
+        },
+        {
+          "re": "\\bonready\\b",
+          "w": 2,
+          "label": "onready"
+        }
+      ]
+    },
+    "java": {
+      "name": "Java",
+      "aliases": [
+        "java"
+      ],
+      "extensions": [
+        "java"
+      ],
+      "signals": [
+        {
+          "re": "\\bpublic\\s+static\\s+void\\s+main\\b",
+          "w": 6,
+          "label": "main method"
+        },
+        {
+          "re": "\\bSystem\\.out\\.",
+          "w": 4,
+          "label": "System.out"
+        },
+        {
+          "re": "^\\s*import\\s+java\\.",
+          "w": 4,
+          "label": "java import"
+        },
+        {
+          "re": "\\bpublic\\s+class\\s+\\w+",
+          "w": 2,
+          "label": "public class"
+        },
+        {
+          "re": "@Override\\b",
+          "w": 2,
+          "label": "annotation"
+        }
+      ]
+    },
+    "kotlin": {
+      "name": "Kotlin",
+      "aliases": [
+        "kotlin",
+        "kt"
+      ],
+      "extensions": [
+        "kt",
+        "kts"
+      ],
+      "signals": [
+        {
+          "re": "\\bfun\\s+main\\s*\\(",
+          "w": 4,
+          "label": "fun main"
+        },
+        {
+          "re": "\\bval\\s+\\w+\\s*=",
+          "w": 1,
+          "label": "val"
+        },
+        {
+          "re": "\\bprintln\\s*\\(",
+          "w": 1,
+          "label": "println"
+        },
+        {
+          "re": "\\bdata\\s+class\\b",
+          "w": 3,
+          "label": "data class"
+        },
+        {
+          "re": "\\b(?:suspend|coroutine)\\b",
+          "w": 2,
+          "label": "coroutine"
+        },
+        {
+          "re": "\\bval\\s+\\w+\\s*:",
+          "w": 3,
+          "label": "typed val"
+        },
+        {
+          "re": "\\bvar\\s+\\w+\\s*:",
+          "w": 2,
+          "label": "typed var"
+        },
+        {
+          "re": "\\bclass\\s+\\w+\\s*\\(",
+          "w": 2,
+          "label": "primary constructor"
+        }
+      ]
+    },
+    "swift": {
+      "name": "Swift",
+      "aliases": [
+        "swift"
+      ],
+      "extensions": [
+        "swift"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*import\\s+(?:SwiftUI|UIKit|Foundation)\\b",
+          "w": 5,
+          "label": "swift import"
+        },
+        {
+          "re": "\\bguard\\s+let\\b",
+          "w": 4,
+          "label": "guard let"
+        },
+        {
+          "re": "\\bfunc\\s+\\w+\\s*\\([^)]*\\)\\s*->",
+          "w": 3,
+          "label": "func ->"
+        },
+        {
+          "re": "\\b(?:let|var)\\s+\\w+\\s*:",
+          "w": 2,
+          "label": "typed binding"
+        },
+        {
+          "re": "@(?:State|Published|IBOutlet)\\b",
+          "w": 3,
+          "label": "property wrapper"
+        }
+      ]
+    },
+    "go": {
+      "name": "Go",
+      "aliases": [
+        "go",
+        "golang"
+      ],
+      "extensions": [
+        "go"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*package\\s+\\w+",
+          "w": 5,
+          "label": "package"
+        },
+        {
+          "re": "\\bfunc\\s+main\\s*\\(",
+          "w": 4,
+          "label": "func main"
+        },
+        {
+          "re": "\\bfmt\\.",
+          "w": 3,
+          "label": "fmt"
+        },
+        {
+          "re": ":=",
+          "w": 2,
+          "label": "short declaration"
+        },
+        {
+          "re": "\\bgo\\s+func\\b|\\bchan\\s+\\w+",
+          "w": 3,
+          "label": "goroutine/channel"
+        }
+      ]
+    },
+    "php": {
+      "name": "PHP",
+      "aliases": [
+        "php"
+      ],
+      "extensions": [
+        "php"
+      ],
+      "signals": [
+        {
+          "re": "<\\?php",
+          "w": 7,
+          "label": "<?php"
+        },
+        {
+          "re": "\\$\\w+\\s*=",
+          "w": 1,
+          "label": "$variable"
+        },
+        {
+          "re": "\\becho\\s+",
+          "w": 1,
+          "label": "echo"
+        },
+        {
+          "re": "\\b(?:function|class)\\s+\\w+",
+          "w": 1,
+          "label": "function/class"
+        }
+      ]
+    },
+    "ruby": {
+      "name": "Ruby",
+      "aliases": [
+        "ruby",
+        "rb"
+      ],
+      "extensions": [
+        "rb"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*def\\s+\\w+[!?=]?\\s*(?:\\(|$)",
+          "w": 1,
+          "label": "def"
+        },
+        {
+          "re": "^\\s*end\\s*$",
+          "w": 3,
+          "label": "end"
+        },
+        {
+          "re": "\\bputs\\s+",
+          "w": 2,
+          "label": "puts"
+        },
+        {
+          "re": "\\bdo\\s*\\|",
+          "w": 3,
+          "label": "block"
+        },
+        {
+          "re": "\\brequire\\s+['\\\"]",
+          "w": 2,
+          "label": "require"
+        }
+      ]
+    },
+    "sql": {
+      "name": "SQL",
+      "aliases": [
+        "sql",
+        "sqlite",
+        "postgres",
+        "mysql"
+      ],
+      "extensions": [
+        "sql"
+      ],
+      "signals": [
+        {
+          "re": "\\bselect\\b[\\s\\S]+\\bfrom\\b",
+          "w": 5,
+          "label": "SELECT ... FROM"
+        },
+        {
+          "re": "\\binsert\\s+into\\b",
+          "w": 4,
+          "label": "INSERT INTO"
+        },
+        {
+          "re": "\\bcreate\\s+table\\b",
+          "w": 4,
+          "label": "CREATE TABLE"
+        },
+        {
+          "re": "\\b(?:where|join|group\\s+by|order\\s+by)\\b",
+          "w": 1,
+          "label": "clause"
+        }
+      ]
+    },
+    "bash": {
+      "name": "Bash",
+      "aliases": [
+        "bash",
+        "sh",
+        "shell",
+        "zsh"
+      ],
+      "extensions": [
+        "sh",
+        "bash",
+        "zsh"
+      ],
+      "signals": [
+        {
+          "re": "^#!\\s*/bin/(?:ba|z)?sh",
+          "w": 6,
+          "label": "shebang"
+        },
+        {
+          "re": "\\b(?:sudo|apt|apt-get|chmod|chown|export|systemctl)\\b",
+          "w": 2,
+          "label": "shell command"
+        },
+        {
+          "re": "\\$\\{?\\w+",
+          "w": 2,
+          "label": "variable"
+        },
+        {
+          "re": "\\b(?:echo|grep|sed|awk|curl|wget)\\b",
+          "w": 1,
+          "label": "pipeline tool"
+        }
+      ]
+    },
+    "html": {
+      "name": "HTML",
+      "aliases": [
+        "html",
+        "html5"
+      ],
+      "extensions": [
+        "html",
+        "htm"
+      ],
+      "signals": [
+        {
+          "re": "<!doctype\\s+html",
+          "w": 5,
+          "label": "<!doctype html>"
+        },
+        {
+          "re": "<html\\b",
+          "w": 4,
+          "label": "<html>"
+        },
+        {
+          "re": "</[a-z][a-z0-9-]*>",
+          "w": 2,
+          "label": "closing tag"
+        },
+        {
+          "re": "<(?:div|span|p|a|img|script|link|meta)\\b",
+          "w": 2,
+          "label": "element"
+        }
+      ]
+    },
+    "xml": {
+      "name": "XML",
+      "aliases": [
+        "xml"
+      ],
+      "extensions": [
+        "xml",
+        "svg"
+      ],
+      "signals": [
+        {
+          "re": "^<\\?xml\\b",
+          "w": 6,
+          "label": "<?xml"
+        },
+        {
+          "re": "<[a-z][\\w.-]*:[a-z][\\w.-]*\\b",
+          "w": 4,
+          "label": "namespace tag"
+        },
+        {
+          "re": "<[a-z][\\w.-]*\\s+[\\w:-]+=",
+          "w": 2,
+          "label": "attribute"
+        }
+      ]
+    },
+    "css": {
+      "name": "CSS",
+      "aliases": [
+        "css",
+        "stylesheet"
+      ],
+      "extensions": [
+        "css",
+        "scss",
+        "sass"
+      ],
+      "signals": [
+        {
+          "re": "@media\\b",
+          "w": 4,
+          "label": "@media"
+        },
+        {
+          "re": ":root\\s*\\{",
+          "w": 3,
+          "label": ":root"
+        },
+        {
+          "re": "\\{[^}]*[\\w-]+\\s*:\\s*[^};]+;",
+          "w": 2,
+          "label": "declaration block"
+        },
+        {
+          "re": "\\.[\\w-]+\\s*\\{|\\#[\\w-]+\\s*\\{",
+          "w": 1,
+          "label": "selector"
+        }
+      ]
+    },
+    "json": {
+      "name": "JSON",
+      "aliases": [
+        "json"
+      ],
+      "extensions": [
+        "json",
+        "jsonl"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*[\\[{]\\s*\"",
+          "w": 4,
+          "label": "JSON container"
+        },
+        {
+          "re": "\"[^\"\\n]+\"\\s*:",
+          "w": 3,
+          "label": "key/value"
+        },
+        {
+          "re": "^\\s*\\[[\\s\\S]*\\]\\s*$",
+          "w": 1,
+          "label": "array"
+        }
+      ]
+    },
+    "yaml": {
+      "name": "YAML",
+      "aliases": [
+        "yaml",
+        "yml"
+      ],
+      "extensions": [
+        "yaml",
+        "yml"
+      ],
+      "signals": [
+        {
+          "re": "^---\\s*$",
+          "w": 4,
+          "label": "document marker"
+        },
+        {
+          "re": "^\\s*[\\w.-]+:\\s*(?:$|[^:]|$)",
+          "w": 1,
+          "label": "key"
+        },
+        {
+          "re": "^\\s*-\\s+\\w+",
+          "w": 1,
+          "label": "list item"
+        }
+      ]
+    },
+    "toml": {
+      "name": "TOML",
+      "aliases": [
+        "toml"
+      ],
+      "extensions": [
+        "toml"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*\\[[\\w.-]+\\]\\s*$",
+          "w": 4,
+          "label": "table"
+        },
+        {
+          "re": "^\\s*[\\w.-]+\\s*=\\s*",
+          "w": 2,
+          "label": "key/value"
+        }
+      ]
+    },
+    "asm": {
+      "name": "Assembly",
+      "aliases": [
+        "asm",
+        "assembly",
+        "nasm"
+      ],
+      "extensions": [
+        "asm",
+        "s"
+      ],
+      "signals": [
+        {
+          "re": "^\\s*section\\s+\\.text",
+          "w": 5,
+          "label": "section .text"
+        },
+        {
+          "re": "\\b(?:mov|add|sub|jmp|call)\\s+(?:e|r)?(?:ax|bx|cx|dx|si|di|sp|bp)\\b",
+          "w": 4,
+          "label": "register op"
+        },
+        {
+          "re": "^\\s*(?:push|pop)\\s+",
+          "w": 2,
+          "label": "stack op"
+        },
+        {
+          "re": "%[er]?(?:ax|bx|cx|dx|si|di|sp|bp)\\b",
+          "w": 2,
+          "label": "AT&T register"
+        }
+      ]
+    }
+  },
+  "natural": {
+    "en": {
+      "name": "English",
+      "stopwords": [
+        "the",
+        "and",
+        "of",
+        "to",
+        "in",
+        "is",
+        "that",
+        "for",
+        "with",
+        "you",
+        "a",
+        "an",
+        "can",
+        "this",
+        "it",
+        "on",
+        "at",
+        "be",
+        "are",
+        "what",
+        "how",
+        "why",
+        "not",
+        "do",
+        "does",
+        "i",
+        "we",
+        "my",
+        "your",
+        "build",
+        "make",
+        "convert",
+        "calculate",
+        "weather",
+        "time"
+      ],
+      "marks": null
+    },
+    "es": {
+      "name": "Spanish",
+      "stopwords": [
+        "el",
+        "la",
+        "los",
+        "las",
+        "de",
+        "del",
+        "que",
+        "y",
+        "en",
+        "un",
+        "una",
+        "por",
+        "para",
+        "con",
+        "no",
+        "es",
+        "son",
+        "qué",
+        "como",
+        "cómo",
+        "puedes",
+        "crear",
+        "crea",
+        "juego",
+        "hola",
+        "mi",
+        "tu",
+        "al",
+        "se",
+        "lo",
+        "más",
+        "pero",
+        "cuando",
+        "dónde",
+        "está",
+        "muy",
+        "hacer",
+        "construir"
+      ],
+      "marks": "[ñ¿¡]"
+    },
+    "fr": {
+      "name": "French",
+      "stopwords": [
+        "le",
+        "la",
+        "les",
+        "des",
+        "du",
+        "de",
+        "et",
+        "en",
+        "un",
+        "une",
+        "pour",
+        "avec",
+        "que",
+        "qui",
+        "est",
+        "pas",
+        "peux",
+        "construire",
+        "jeu",
+        "bonjour",
+        "je",
+        "tu",
+        "il",
+        "elle",
+        "nous",
+        "vous",
+        "dans",
+        "sur",
+        "au",
+        "aux",
+        "ce",
+        "cette",
+        "sont",
+        "plus",
+        "mais",
+        "faire",
+        "créer"
+      ],
+      "marks": "[çœàèêëîïôùûüÿ]"
+    },
+    "de": {
+      "name": "German",
+      "stopwords": [
+        "der",
+        "die",
+        "das",
+        "und",
+        "ist",
+        "nicht",
+        "ein",
+        "eine",
+        "einen",
+        "mit",
+        "für",
+        "von",
+        "zu",
+        "den",
+        "dem",
+        "des",
+        "baue",
+        "bauen",
+        "spiel",
+        "ich",
+        "du",
+        "wir",
+        "sie",
+        "auf",
+        "im",
+        "am",
+        "kann",
+        "kannst",
+        "wie",
+        "was",
+        "aber",
+        "erstellen",
+        "quests"
+      ],
+      "marks": "[ßäöü]"
+    },
+    "pt": {
+      "name": "Portuguese",
+      "stopwords": [
+        "o",
+        "a",
+        "os",
+        "as",
+        "de",
+        "do",
+        "da",
+        "que",
+        "e",
+        "não",
+        "um",
+        "uma",
+        "para",
+        "com",
+        "você",
+        "eu",
+        "ele",
+        "ela",
+        "é",
+        "são",
+        "como",
+        "mais",
+        "mas",
+        "jogo",
+        "criar",
+        "fazer"
+      ],
+      "marks": "[ãõçáâêóô]"
+    },
+    "it": {
+      "name": "Italian",
+      "stopwords": [
+        "il",
+        "lo",
+        "la",
+        "gli",
+        "le",
+        "di",
+        "del",
+        "che",
+        "e",
+        "non",
+        "un",
+        "una",
+        "per",
+        "con",
+        "sono",
+        "come",
+        "più",
+        "ma",
+        "gioco",
+        "creare",
+        "ciao",
+        "fare",
+        "costruire"
+      ],
+      "marks": "[àèéìòù]"
+    },
+    "nl": {
+      "name": "Dutch",
+      "stopwords": [
+        "de",
+        "het",
+        "een",
+        "en",
+        "van",
+        "niet",
+        "is",
+        "je",
+        "voor",
+        "met",
+        "op",
+        "dat",
+        "dit",
+        "ik",
+        "wij",
+        "zijn",
+        "kan",
+        "hoe",
+        "wat",
+        "maar",
+        "spel",
+        "maken",
+        "bouwen"
+      ],
+      "marks": null
+    },
+    "tr": {
+      "name": "Turkish",
+      "stopwords": [
+        "ve",
+        "bir",
+        "bu",
+        "için",
+        "ile",
+        "değil",
+        "ne",
+        "nasıl",
+        "ben",
+        "sen",
+        "o",
+        "biz",
+        "oyun",
+        "yap",
+        "mi",
+        "mı",
+        "da",
+        "de",
+        "var",
+        "oluştur"
+      ],
+      "marks": "[ıışğöüç]"
+    },
+    "id": {
+      "name": "Indonesian",
+      "stopwords": [
+        "yang",
+        "dan",
+        "di",
+        "ini",
+        "itu",
+        "untuk",
+        "dengan",
+        "tidak",
+        "saya",
+        "kamu",
+        "kita",
+        "adalah",
+        "bisa",
+        "buat",
+        "game",
+        "apa",
+        "bagaimana",
+        "membuat"
+      ],
+      "marks": null
+    },
+    "vi": {
+      "name": "Vietnamese",
+      "stopwords": [
+        "và",
+        "của",
+        "là",
+        "không",
+        "một",
+        "cho",
+        "với",
+        "tôi",
+        "bạn",
+        "chúng",
+        "này",
+        "đó",
+        "được",
+        "làm",
+        "trò",
+        "chơi",
+        "gì",
+        "như",
+        "thế",
+        "nào"
+      ],
+      "marks": "[ăâđêôơưàảãáạằẳẵắặầẩẫấậèẻẽéẹềểễếệìỉĩíịòỏõóọồổỗốộờởỡớợùủũúụừửữứựỳỷỹýỵ]"
+    },
+    "sw": {
+      "name": "Swahili",
+      "stopwords": [
+        "na",
+        "ya",
+        "kwa",
+        "ni",
+        "katika",
+        "hii",
+        "hiyo",
+        "mimi",
+        "wewe",
+        "sisi",
+        "si",
+        "kwamba",
+        "kama",
+        "nini",
+        "jinsi",
+        "mchezo",
+        "tengeneza"
+      ],
+      "marks": null
+    },
+    "pl": {
+      "name": "Polish",
+      "stopwords": [
+        "i",
+        "w",
+        "na",
+        "z",
+        "do",
+        "nie",
+        "jest",
+        "że",
+        "się",
+        "to",
+        "jak",
+        "co",
+        "dla",
+        "oraz",
+        "gra",
+        "zrobić",
+        "stwórz"
+      ],
+      "marks": "[ąćęłńóśźż]"
+    },
+    "ru": {
+      "name": "Russian",
+      "stopwords": [
+        "не",
+        "и",
+        "в",
+        "на",
+        "что",
+        "это",
+        "как",
+        "для",
+        "с",
+        "я",
+        "ты",
+        "мы",
+        "игра",
+        "сделать",
+        "привет",
+        "можешь"
+      ],
+      "marks": null
+    },
+    "cs": {
+      "name": "Czech",
+      "stopwords": [
+        "a",
+        "v",
+        "na",
+        "z",
+        "do",
+        "není",
+        "je",
+        "že",
+        "se",
+        "to",
+        "jak",
+        "co",
+        "pro",
+        "hru",
+        "vytvořit"
+      ],
+      "marks": "[ěščřžýáíéúůňťď]"
+    },
+    "hu": {
+      "name": "Hungarian",
+      "stopwords": [
+        "a",
+        "az",
+        "és",
+        "van",
+        "nem",
+        "egy",
+        "hogy",
+        "ez",
+        "mi",
+        "hogyan",
+        "játék",
+        "csinál",
+        "készíts"
+      ],
+      "marks": "[őűáéíóöúü]"
+    }
+  },
+  "scripts": [
+    {
+      "re": "[\\u0456\\u0457\\u0454\\u0491]",
+      "lang": "uk",
+      "confidence": 0.9,
+      "alternatives": [
+        "ru"
+      ]
+    },
+    {
+      "re": "[\\u3040-\\u30FF]",
+      "lang": "ja",
+      "confidence": 0.97,
+      "alternatives": [
+        "zh"
+      ]
+    },
+    {
+      "re": "[\\uAC00-\\uD7AF]",
+      "lang": "ko",
+      "confidence": 0.97,
+      "alternatives": []
+    },
+    {
+      "re": "[\\u0900-\\u097F]",
+      "lang": "hi",
+      "confidence": 0.86,
+      "alternatives": [
+        "mr",
+        "ne"
+      ]
+    },
+    {
+      "re": "[\\u0600-\\u06FF]",
+      "lang": "ar",
+      "confidence": 0.86,
+      "alternatives": [
+        "fa",
+        "ur"
+      ]
+    },
+    {
+      "re": "[\\u0400-\\u04FF]",
+      "lang": "ru",
+      "confidence": 0.86,
+      "alternatives": [
+        "uk",
+        "bg"
+      ]
+    },
+    {
+      "re": "[\\u0370-\\u03FF]",
+      "lang": "el",
+      "confidence": 0.9,
+      "alternatives": []
+    },
+    {
+      "re": "[\\u0590-\\u05FF]",
+      "lang": "he",
+      "confidence": 0.9,
+      "alternatives": []
+    },
+    {
+      "re": "[\\u0E00-\\u0E7F]",
+      "lang": "th",
+      "confidence": 0.9,
+      "alternatives": []
+    },
+    {
+      "re": "[\\u4E00-\\u9FFF]",
+      "lang": null,
+      "confidence": 0.5,
+      "alternatives": [
+        "zh",
+        "ja"
+      ],
+      "ambiguous": true,
+      "zh_markers": "[个们这说时会来对现发为国见语读写还过让给开关门问间电车里马鸟鱼龙风飞书长东乐习买卖钱头学觉点儿样种么应汉华义务动历压参双变号员响吗呢认讲请谢谁调谈论议计划记忆该试验]"
+    }
+  ],
+  "phrases": [
+    {
+      "lang": "es",
+      "re": "^(?:hola[, ]*)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye)\\s+un\\s+(?:juego\\s+de\\s+naves|juego\\s+de\\s+disparos|shooter)$",
+      "to": "build a shooter game"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:convierte|convertir|pasa)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:km|kilometros)\\s+(?:a|en)\\s+(?:millas|mi)$",
+      "to": "convert {1} km to miles"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:peux[- ]tu\\s+)?(?:construire|construis|creer|crée|faire|fais)\\s+un\\s+jeu\\s+de\\s+plates?[- ]formes$",
+      "to": "build a platformer game"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:baue|bau|erstelle)\\s+ein\\s+3d[- ]rpg(?:\\s+mit\\s+\\d+\\s+quests)?$",
+      "to": "build a 3d rpg"
+    },
+    {
+      "lang": "hi",
+      "re": "^(\\d+)\\s*किमी\\s*को\\s*मील\\s*में\\s*बदलो$",
+      "to": "convert {1} km to miles"
+    },
+    {
+      "lang": "ja",
+      "re": "^ゲームを作って$",
+      "to": "build a game"
+    }
+  ],
+  "reply": {
+    "en": {
+      "building": "building",
+      "done": "done",
+      "no_match": "no match",
+      "ambiguous": "ambiguous language",
+      "found": "found",
+      "not_in_archive": "not in the archive",
+      "next_up": "next up"
+    },
+    "es": {
+      "building": "construyendo",
+      "done": "hecho",
+      "no_match": "sin coincidencia",
+      "ambiguous": "idioma ambiguo",
+      "found": "encontrado",
+      "not_in_archive": "no está en el archivo",
+      "next_up": "siguiente"
+    },
+    "fr": {
+      "building": "construction",
+      "done": "terminé",
+      "no_match": "aucune correspondance",
+      "ambiguous": "langue ambiguë",
+      "found": "trouvé",
+      "not_in_archive": "absent de l'archive",
+      "next_up": "à suivre"
+    },
+    "de": {
+      "building": "wird gebaut",
+      "done": "fertig",
+      "no_match": "keine Übereinstimmung",
+      "ambiguous": "mehrdeutige Sprache",
+      "found": "gefunden",
+      "not_in_archive": "nicht im Archiv",
+      "next_up": "als Nächstes"
+    },
+    "hi": {
+      "building": "बना रहे हैं",
+      "done": "पूरा",
+      "no_match": "कोई मेल नहीं",
+      "ambiguous": "अस्पष्ट भाषा",
+      "found": "मिला",
+      "not_in_archive": "संग्रह में नहीं",
+      "next_up": "अगला"
+    },
+    "ja": {
+      "building": "作成中",
+      "done": "完了",
+      "no_match": "一致なし",
+      "ambiguous": "曖昧な言語",
+      "found": "見つかりました",
+      "not_in_archive": "アーカイブにありません",
+      "next_up": "次"
+    }
+  }
+}

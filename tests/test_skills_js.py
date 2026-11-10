@@ -18,6 +18,7 @@ NODE = shutil.which("node")
 
 JS = r"""
 const fs = require('fs');
+const FIXTURES = JSON.parse(fs.readFileSync(process.argv[6], 'utf8'));
 global.self = global;
 global.fetch = () => Promise.resolve({
   ok: true,
@@ -43,6 +44,8 @@ eval(fs.readFileSync(require('path').join(WEB, 'worldgen.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'worldgen.embed.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'rpg2.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'rpg2.embed.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'lang.js'), 'utf8'));
+self.toolrxLang.configure(JSON.parse(fs.readFileSync(process.argv[5], 'utf8')));
 eval(fs.readFileSync(process.argv[4], 'utf8'));
 
 (async () => {
@@ -622,6 +625,73 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     html: self.toolrxWeb.defaultPreview(),
     title: self.toolrxWeb.preview().title,
   };
+  const dp = self.toolrxLang.detectProgramming;
+  const dn = self.toolrxLang.detectNatural;
+  out.language = {
+    cpp: dp('#include <iostream>\nint main(){std::cout<<"hi";}'),
+    csharp: dp('using System; namespace A { class B {} }'),
+    rust: dp('fn main() { let mut x = 1; }'),
+    python: dp('def f(x):\n    return x + 1'),
+    typescript: dp('const x: string = "a"'),
+    lua: dp('--[[ comment ]] local function f() end'),
+    glsl: dp('#version 330\nvoid main(){gl_Position=vec4(0.0);}'),
+    html: dp('<html><body><script>let x=1</script></body></html>'),
+    es: dn('Hola, ¿puedes crear un juego de naves?'),
+    fr: dn('Peux-tu construire un jeu de plates-formes ?'),
+    de: dn('Baue ein 3D-RPG mit 5 Quests.'),
+    hi: dn('क्या आप एक शूटर गेम बना सकते हैं?'),
+    ja: dn('三角形の面積を計算して'),
+    han: dn('漢字文章'),
+    one: dn('no'),
+    english: dn('what time is it'),
+    normalized: [
+      self.toolrxLang.normalize('Hola, ¿puedes crear un juego de naves?'),
+      self.toolrxLang.normalize('Peux-tu construire un jeu de plates-formes ?'),
+      self.toolrxLang.normalize('Baue ein 3D-RPG mit 5 Quests.'),
+      self.toolrxLang.normalize('5 किमी को मील में बदलो'),
+      self.toolrxLang.normalize('ゲームを作って'),
+    ],
+  };
+  out.library = {
+    stats: (await run('library stats'))[0],
+    find: (await run('find a book about shaders'))[0],
+    findPcg: (await run('what do i have on procedural generation'))[0],
+    language: (await run('list books by language c++'))[0],
+    missing: (await run('find a book about quaternions'))[0],
+    next: (await run('what should i read next'))[0],
+    after: (await run('what should i read after programming-2d-games'))[0],
+    detect: (await run('what programming language is this: #include <iostream>'))[0],
+    natural: (await run('what natural language is this: Hola, ¿puedes crear un juego de naves?'))[0],
+    chain: await run('library stats then find a book about pcg'),
+  };
+  out.langFixtures = {
+    programming: FIXTURES.programming.map(f => ({
+      text: f.text, lang: f.lang, hit: dp(f.text),
+    })),
+    natural: FIXTURES.natural.map(f => ({
+      text: f.text, lang: f.lang, hit: dn(f.text),
+    })),
+    ambiguous: FIXTURES.ambiguous.map(f => ({
+      text: f.text, also: f.also, hit: dn(f.text),
+    })),
+    unknown: FIXTURES.unknown.map(f => ({
+      text: f.text, hit: dn(f.text),
+    })),
+  };
+  out.langPerf = (() => {
+    const small = '#include <iostream>\nint main(){std::cout<<"hi";}\n'.repeat(20);
+    const large = small.repeat(64);
+    const timed = (fn, text) => {
+      for (let i = 0; i < 3; i++) fn(text);
+      const t0 = performance.now();
+      fn(text);
+      return +(performance.now() - t0).toFixed(3);
+    };
+    return {
+      smallBytes: small.length, largeBytes: large.length,
+      smallMs: timed(dp, small), largeMs: timed(dp, large),
+    };
+  })();
   console.log(JSON.stringify(out));
 })();
 """
@@ -636,7 +706,9 @@ class SkillsBridgeTest(unittest.TestCase):
              os.path.join(ROOT, "toolrx", "web", "commands.json"),
              os.path.join(ROOT, "toolrx", "web", "skills.js"),
              os.path.join(ROOT, "toolrx", "web", "templates.js"),
-             os.path.join(ROOT, "toolrx", "web", "sandbox.js")],
+             os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
+             os.path.join(ROOT, "toolrx", "web", "i18n.json"),
+             os.path.join(ROOT, "tests", "lang_fixtures.json")],
             capture_output=True, text=True, timeout=120,
         )
         if proc.returncode != 0:
@@ -659,6 +731,95 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertTrue(tetris)
         self.assertTrue(all("tetris" in r["d"].lower() for r in tetris))
         self.assertTrue(all("{" not in r["d"] for r in tetris))
+
+    def test_programming_language_detection(self):
+        lang = self.out["language"]
+        cases = {
+            "cpp": ("cpp", 0.90),
+            "csharp": ("csharp", 0.80),
+            "rust": ("rust", 0.90),
+            "python": ("python", 0.90),
+            "typescript": ("typescript", 0.80),
+            "lua": ("lua", 0.85),
+            "glsl": ("glsl", 0.90),
+        }
+        for key, (code, floor) in cases.items():
+            hit = lang[key]
+            self.assertEqual(hit["lang"], code, key)
+            self.assertGreaterEqual(hit["confidence"], floor, key)
+        html = lang["html"]
+        self.assertEqual(html["lang"], "html")
+        self.assertIn("javascript", html["alternatives"])
+
+    def test_natural_language_detection_and_ambiguity(self):
+        lang = self.out["language"]
+        for key, code in (("es", "es"), ("fr", "fr"), ("de", "de"),
+                          ("hi", "hi"), ("ja", "ja"), ("english", "en")):
+            hit = lang[key]
+            self.assertEqual(hit["lang"], code, key)
+            self.assertGreaterEqual(hit["confidence"], 0.80, key)
+        han = lang["han"]
+        self.assertIsNone(han["lang"])
+        self.assertIn("zh", han["ambiguous"])
+        self.assertIn("ja", han["ambiguous"])
+        self.assertEqual(lang["one"]["lang"], None)
+
+    def test_programming_fixture_matrix(self):
+        rows = self.out["langFixtures"]["programming"]
+        self.assertGreaterEqual(len(rows), 40)
+        for row in rows:
+            self.assertEqual(row["hit"]["lang"], row["lang"], row["text"])
+
+    def test_natural_fixture_matrix(self):
+        rows = self.out["langFixtures"]["natural"]
+        self.assertGreaterEqual(len(rows), 30)
+        for row in rows:
+            self.assertEqual(row["hit"]["lang"], row["lang"], row["text"])
+
+    def test_ambiguous_and_unknown_stay_honest(self):
+        for row in self.out["langFixtures"]["ambiguous"]:
+            self.assertIsNone(row["hit"]["lang"], row["text"])
+            for code in row["also"]:
+                self.assertIn(code, row["hit"]["ambiguous"])
+        for row in self.out["langFixtures"]["unknown"]:
+            self.assertIsNone(row["hit"]["lang"], row["text"])
+
+    def test_language_detection_speed(self):
+        perf = self.out["langPerf"]
+        self.assertGreaterEqual(perf["smallBytes"], 500)
+        self.assertGreaterEqual(perf["largeBytes"], 50000)
+        self.assertLess(perf["smallMs"], 5, perf)
+        self.assertLess(perf["largeMs"], 20, perf)
+
+    def test_localized_intents_normalize_to_english(self):
+        cases = [
+            ("build a shooter game", "es"),
+            ("build a platformer game", "fr"),
+            ("build a 3d rpg", "de"),
+            ("convert 5 km to miles", "hi"),
+            ("build a game", "ja"),
+        ]
+        for hit, (text, code) in zip(self.out["language"]["normalized"], cases):
+            self.assertTrue(hit["interpreted"], hit)
+            self.assertEqual(hit["text"], text, hit)
+            self.assertEqual(hit["lang"], code, hit)
+
+    def test_archive_catalog_commands(self):
+        lib = self.out["library"]
+        self.assertIn("10 records", lib["stats"]["text"])
+        self.assertIn("cpp", lib["stats"]["text"])
+        self.assertIn("Developing Simple Games with OpenGL", lib["find"]["text"])
+        self.assertIn("why:", lib["find"]["text"])
+        self.assertIn("Procedural Content Generation", lib["findPcg"]["text"])
+        self.assertIn("books tagged cpp", lib["language"]["text"])
+        self.assertIn("not in the archive", lib["missing"]["text"])
+        self.assertIn("next up", lib["next"]["text"])
+        self.assertIn("Developing Simple Games with OpenGL", lib["after"]["text"])
+        self.assertIn("C++", lib["detect"]["text"])
+        self.assertIn("Spanish", lib["natural"]["text"])
+        self.assertEqual(len(lib["chain"]), 2)
+        self.assertIn("Procedural Content Generation", lib["chain"][1]["text"])
+        self.assertFalse(lib["find"]["error"])
 
     def test_build_spec_parses_dimension_view_art_scale_seed(self):
         s = self.out["spec"]

@@ -546,6 +546,108 @@ for pat, op in (
         "^" + pat.replace("{pat}", TXT).replace("{repl}", TXT).replace("{text}", TXT) + "$",
         {"op": op, "pat": "$1", "repl": "$2", "text": "$3"}, pat, "regex")
 
+# -------------------------------------------------------------- library ---
+# The book archive is metadata-only. Its catalog ships inside commands.json so
+# the browser can search it offline without a second fetch or a build step.
+LIBRARY_FILE = ROOT.parent / "library" / "catalog.json"
+LIBRARY = None
+if LIBRARY_FILE.exists():
+    try:
+        _catalog = json.loads(LIBRARY_FILE.read_text(encoding="utf-8"))
+        _records = _catalog.get("records", [])
+        _langs, _topics = {}, {}
+        for _rec in _records:
+            _cls = _rec.get("classification") or {}
+            for _lang in _cls.get("programming_languages") or []:
+                _langs[_lang] = _langs.get(_lang, 0) + 1
+            for _topic in _cls.get("topics") or []:
+                _topics[_topic] = _topics.get(_topic, 0) + 1
+        LIBRARY = {
+            "version": _catalog.get("version"),
+            "updated": _catalog.get("updated"),
+            "records": _records,
+            "stats": {
+                "records": len(_records),
+                "parts": sum(len(r.get("parts") or []) for r in _records),
+                "files": sum(len(r.get("parts") or []) or 1 for r in _records),
+                "programming": dict(sorted(_langs.items(), key=lambda kv: (-kv[1], kv[0]))),
+                "topics": dict(sorted(_topics.items(), key=lambda kv: (-kv[1], kv[0]))),
+            },
+        }
+    except (OSError, ValueError) as _exc:  # pragma: no cover - build-time warning
+        print(f"warning: could not read {LIBRARY_FILE}: {_exc}")
+
+for pat in ("library stats", "library summary", "show my library", "show the library",
+            "what books do i have", "what is in my library", "what's in my library",
+            "my library", "library"):
+    add(f"library.stats.{len(COMMANDS)}", "library.stats", "^" + re.escape(pat) + "$",
+        {}, pat, "library")
+
+for pat in ("find a book about {topic}", "find books about {topic}",
+            "find a book on {topic}", "find books on {topic}",
+            "which book covers {topic}", "which books cover {topic}",
+            "what do i have on {topic}", "what books do i have on {topic}",
+            "what books cover {topic}", "recommend a book about {topic}",
+            "recommend a book for {topic}", "search my library for {topic}",
+            "list books about {topic}", "list books on {topic}"):
+    add(f"library.find.{len(COMMANDS)}", "library.find",
+        "^" + pat.replace("{topic}", REST) + "$", {"topic": "$1"}, pat, "library")
+
+for pat in ("list books by language {lang}", "which books are in {lang}",
+            "books for {lang}", "books on {lang}"):
+    add(f"library.language.{len(COMMANDS)}", "library.language",
+        "^" + pat.replace("{lang}", REST) + "$", {"lang": "$1"}, pat, "library")
+
+for pat in ("what should i read next", "what should i read now",
+            "what is next in my library", "recommend my next book"):
+    add(f"library.next.{len(COMMANDS)}", "library.next", "^" + re.escape(pat) + "$",
+        {}, pat, "library")
+
+for pat in ("what should i read after {id}", "what comes after {id} in my library",
+            "what is next after {id}"):
+    add(f"library.after.{len(COMMANDS)}", "library.after",
+        "^" + pat.replace("{id}", REST) + "$", {"id": "$1"}, pat, "library")
+
+# ------------------------------------------------------------- language ---
+# Exact forms first: a bare "what language is this" inspects the previous step.
+for pat in ("what language is this", "what language is that",
+            "what language is this code", "what language is that code",
+            "what language is in this code", "what is this language"):
+    add(f"lang.auto.{len(COMMANDS)}", "lang.detect", "^" + re.escape(pat) + "$",
+        {"mode": "auto"}, pat, "lang")
+
+for pat in ("what programming language is this", "what programming language is that",
+            "what programming language is this code"):
+    add(f"lang.programming.{len(COMMANDS)}", "lang.detect", "^" + re.escape(pat) + "$",
+        {"mode": "programming"}, pat, "lang")
+
+for pat in ("what natural language is this", "what natural language is that",
+            "what human language is this"):
+    add(f"lang.natural.{len(COMMANDS)}", "lang.detect", "^" + re.escape(pat) + "$",
+        {"mode": "natural"}, pat, "lang")
+
+for pat in ("what language is this: {text}", "what language is this {text}",
+            "what is the language of {text}", "detect the language of {text}",
+            "detect language of {text}", "identify the language of {text}",
+            "what language is {text}"):
+    add(f"lang.auto.text.{len(COMMANDS)}", "lang.detect",
+        "^" + pat.replace("{text}", REST) + "$", {"mode": "auto", "text": "$1"},
+        pat, "lang")
+
+for pat in ("what programming language is this: {text}",
+            "what programming language is {text}",
+            "detect the programming language of {text}"):
+    add(f"lang.programming.text.{len(COMMANDS)}", "lang.detect",
+        "^" + pat.replace("{text}", REST) + "$",
+        {"mode": "programming", "text": "$1"}, pat, "lang")
+
+for pat in ("what natural language is this: {text}",
+            "what natural language is {text}",
+            "detect the natural language of {text}"):
+    add(f"lang.natural.text.{len(COMMANDS)}", "lang.detect",
+        "^" + pat.replace("{text}", REST) + "$",
+        {"mode": "natural", "text": "$1"}, pat, "lang")
+
 # ---------------------------------------------------------------- build ---
 BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdown",
                "pomodoro", "stopwatch", "notes", "note pad", "notepad", "tic tac toe",
@@ -862,7 +964,7 @@ for pat, op in (("who are you", "who"), ("what are you", "who"),
                 ("what is your name", "who"), ("help", "help"),
                 ("what can you do", "help"), ("commands", "help"),
                 ("list commands", "help"), ("show commands", "help"),
-                ("command library", "help"), ("library", "help")):
+                ("command library", "help")):
     add(f"misc.{op}.{len(COMMANDS)}", "system", "^" + re.escape(pat) + "$",
         {"op": op}, pat, "misc")
 
@@ -887,6 +989,7 @@ def main():
         "version": 1,
         "count": len(COMMANDS),
         "categories": cats,
+        "library": LIBRARY,
         "commands": COMMANDS,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)

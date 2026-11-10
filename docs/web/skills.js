@@ -16,6 +16,7 @@
 
   let COMMANDS = [];
   let BY_OP = Object.create(null);
+  let LIBRARY = null;
   let meta = { count: 0, categories: {} };
 
   /* ---------------------------------------------------------- numbers --- */
@@ -763,8 +764,259 @@
     return { title: title, text: prev, source: String(last.source || "") };
   }
 
+  /* ------------------------------------------------------------ library -- */
+  const LIB_ALIAS = {
+    "c++": "cpp", "c plus plus": "cpp", "c#": "csharp", "c sharp": "csharp",
+    "dotnet": "csharp", ".net": "csharp", "js": "javascript", "ts": "typescript",
+    "gfx": "graphics", "gpu": "graphics", "shader": "shaders",
+    "pcg": "procedural-generation", "procgen": "procedural-generation",
+    "procedural": "procedural-generation", "2d": "2d-games", "3d": "graphics"
+  };
+
+  function libFold(s) {
+    return String(s || "").normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  function libTokens(q) {
+    const raw = libFold(q).match(/[a-z0-9+#.]+/g) || [];
+    const out = [];
+    raw.forEach(function (t) {
+      const a = LIB_ALIAS[t] || t;
+      if (a.length > 1 && out.indexOf(a) < 0) out.push(a);
+    });
+    return out;
+  }
+
+  function libHit(token, text) {
+    if (!token || !text) return false;
+    if (text.indexOf(token) >= 0) return true;
+    if (token.length < 3) return false;
+    const words = text.split(/[^a-z0-9+#.]+/).filter(Boolean);
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      if (w === token) return true;
+      if (token.length >= 4 && w.length >= 4
+          && (w.indexOf(token) === 0 || token.indexOf(w) === 0)) return true;
+    }
+    return false;
+  }
+
+  function libFields(rec) {
+    const cls = rec.classification || {};
+    const search = rec.search || {};
+    return [
+      { name: "title", w: 5, text: rec.title },
+      { name: "alias", w: 4, text: (search.aliases || []).join(" ") },
+      { name: "topic", w: 3, text: (cls.topics || []).join(" ") },
+      { name: "language", w: 3, text: (cls.programming_languages || []).join(" ") },
+      { name: "keyword", w: 2, text: (search.keywords || []).join(" ") },
+      { name: "id", w: 2, text: rec.id },
+      { name: "summary", w: 1, text: search.summary || "" }
+    ];
+  }
+
+  function libLabel(rec) {
+    const cls = rec.classification || {};
+    const langs = (cls.programming_languages || []).join(", ") || "general";
+    return rec.title + " · " + (cls.level || "unrated") + " · " + langs
+      + " · id: " + rec.id;
+  }
+
+  function libResolve(term) {
+    if (!LIBRARY) return null;
+    const q = libFold(term);
+    if (!q) return null;
+    const recs = LIBRARY.records || [];
+    for (let i = 0; i < recs.length; i++) if (libFold(recs[i].id) === q) return recs[i];
+    for (let i = 0; i < recs.length; i++) {
+      if (libFold(recs[i].title) === q) return recs[i];
+    }
+    for (let i = 0; i < recs.length; i++) {
+      const r = recs[i];
+      if (libFold(r.id).indexOf(q) >= 0 || libFold(r.title).indexOf(q) >= 0) return r;
+      const aliases = (r.search && r.search.aliases) || [];
+      for (let j = 0; j < aliases.length; j++) {
+        if (libFold(aliases[j]).indexOf(q) >= 0) return r;
+      }
+    }
+    return null;
+  }
+
+  function libSearch(query, limit) {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const tokens = libTokens(query);
+    if (!tokens.length) return libStats();
+    const hits = [];
+    (LIBRARY.records || []).forEach(function (rec) {
+      let score = 0;
+      const reasons = [];
+      const fields = libFields(rec);
+      tokens.forEach(function (t) {
+        let best = 0, bestName = "";
+        fields.forEach(function (f) {
+          if (libHit(t, libFold(f.text)) && f.w > best) {
+            best = f.w;
+            bestName = f.name;
+          }
+        });
+        if (best) {
+          score += best;
+          reasons.push(bestName + ": " + t);
+        }
+      });
+      if (score) hits.push({ rec: rec, score: score, reasons: reasons });
+    });
+    hits.sort(function (a, b) {
+      return b.score - a.score || (a.rec.title < b.rec.title ? -1 : 1);
+    });
+    const top = hits.slice(0, limit || 5);
+    if (!top.length) {
+      const topics = Object.keys((LIBRARY.stats && LIBRARY.stats.topics) || {}).slice(0, 10);
+      return "not in the archive for \"" + query + "\".\n\n"
+        + "No record mentions that. Topics I do have: " + topics.join(", ") + ".\n"
+        + "Try: find a book about cpp · what do i have on shaders · library stats";
+    }
+    return "archive matches for \"" + query + "\" (" + top.length + "):\n\n"
+      + top.map(function (h, i) {
+        return (i + 1) + ". " + libLabel(h.rec) + "\n   why: "
+          + h.reasons.slice(0, 4).join(", ");
+      }).join("\n");
+  }
+
+  function libStats() {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const s = LIBRARY.stats || {};
+    const langs = Object.keys(s.programming || {}).map(function (k) {
+      return k + " " + s.programming[k];
+    }).join(", ") || "none";
+    const topics = Object.keys(s.topics || {}).slice(0, 10).join(", ");
+    return "library · " + (s.records || 0) + " records · " + (s.files || 0)
+      + " source files" + (s.parts ? " (" + s.parts + " parts)" : "") + "\n"
+      + "by language: " + langs + "\n"
+      + "topics: " + (topics || "none") + "\n"
+      + "ask: find a book about shaders · list books by language cpp · what should i read next";
+  }
+
+  function libByLanguage(lang) {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const wanted = libTokens(lang);
+    const code = wanted[0] || libFold(lang);
+    const hits = (LIBRARY.records || []).filter(function (rec) {
+      const langs = (rec.classification || {}).programming_languages || [];
+      return langs.indexOf(code) >= 0;
+    });
+    if (!hits.length) {
+      return "no books tagged \"" + lang + "\" in the archive.\n\n"
+        + "Coverage right now is C++ and a little GLSL. Ask \"library stats\" for the full list.";
+    }
+    return "books tagged " + code + " (" + hits.length + "):\n\n"
+      + hits.map(function (rec, i) { return (i + 1) + ". " + libLabel(rec); }).join("\n");
+  }
+
+  function libNext(after) {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const recs = LIBRARY.records || [];
+    if (after) {
+      const rec = libResolve(after);
+      if (!rec) {
+        return "no catalog record matched \"" + after + "\".\n\n"
+          + "Try a title or id, for example: what should i read after programming-2d-games";
+      }
+      const next = ((rec.reading || {}).next || []).map(function (id) {
+        return recs.filter(function (r) { return r.id === id; })[0];
+      }).filter(Boolean);
+      if (!next.length) {
+        return "after " + rec.title + ": no next book is recorded.\n\n"
+          + "That is a coverage gap — add a free or purchased follow-up, then link it with reading.next.";
+      }
+      return "after " + rec.title + ":\n\n"
+        + next.map(function (r, i) { return (i + 1) + ". " + libLabel(r); }).join("\n");
+    }
+    const unread = recs.filter(function (r) {
+      return ((r.reading || {}).status || "unread") !== "done";
+    }).sort(function (a, b) {
+      const pa = (a.reading || {}).priority || 9;
+      const pb = (b.reading || {}).priority || 9;
+      return pa - pb || (a.title < b.title ? -1 : 1);
+    });
+    if (!unread.length) return "everything in the archive is marked done.";
+    return "next up:\n\n"
+      + unread.slice(0, 3).map(function (r, i) { return (i + 1) + ". " + libLabel(r); }).join("\n");
+  }
+
+  /* ----------------------------------------------------------- language -- */
+  function langPct(r) {
+    return Math.round((r.confidence || 0) * 100) + "%";
+  }
+
+  function langReport(r, mode) {
+    const L = root.toolrxLang;
+    if (!r || (!r.lang && !(r.ambiguous && r.ambiguous.length))) {
+      return "unknown — no strong " + mode + "-language signals";
+    }
+    if (!r.lang && r.ambiguous) {
+      return "ambiguous — could be "
+        + r.ambiguous.map(function (x) { return L.nameOf(mode, x) + " (" + x + ")"; }).join(" or ")
+        + " · " + langPct(r) + " confidence";
+    }
+    let out = r.name + " (" + r.lang + ") · " + langPct(r) + " confidence";
+    if (r.signals && r.signals.length) out += "\n  signals: " + r.signals.join(", ");
+    if (r.alternatives && r.alternatives.length) {
+      out += "\n  also possible: " + r.alternatives.map(function (x) {
+        return L.nameOf(mode, x) + " (" + x + ")";
+      }).join(", ");
+    }
+    if (r.uncertain) out += "\n  not confident enough to act on without a clearer sample";
+    return out;
+  }
+
   /* -------------------------------------------------------------- ops ---- */
   const OPS = {
+    "library.stats": function () {
+      return libStats();
+    },
+    "library.find": function (a) {
+      return libSearch(a.topic || "", 5);
+    },
+    "library.language": function (a) {
+      return libByLanguage(a.lang || "");
+    },
+    "library.next": function () {
+      return libNext("");
+    },
+    "library.after": function (a) {
+      return libNext(a.id || "");
+    },
+    "lang.detect": function (a, ctx) {
+      const L = root.toolrxLang;
+      if (!L || !L.ready || !L.ready()) {
+        throw new Error("language detection module is not loaded");
+      }
+      let text = String(a.text || "").trim();
+      if (!text || /^(?:this|that|it|the code|the text|this code|this text)$/i.test(text)) {
+        text = String((ctx && ctx.prev) || "").trim();
+      }
+      if (!text) {
+        throw new Error("no text to inspect — paste a snippet, or run a command first");
+      }
+      if (a.mode === "programming") return langReport(L.detectProgramming(text), "programming");
+      if (a.mode === "natural") return langReport(L.detectNatural(text), "natural");
+      const p = L.detectProgramming(text);
+      const n = L.detectNatural(text);
+      if (p.lang && p.confidence >= 0.75) return langReport(p, "programming");
+      if (n.lang && n.confidence >= 0.75) return langReport(n, "natural");
+      if (p.lang || n.lang
+          || (p.ambiguous && p.ambiguous.length)
+          || (n.ambiguous && n.ambiguous.length)) {
+        return "not confident enough to choose one language.\n\n"
+          + "programming: " + langReport(p, "programming") + "\n\n"
+          + "natural: " + langReport(n, "natural");
+      }
+      return "unknown — no strong programming or natural-language signals.\n\n"
+        + "Paste a code sample, or ask \"what programming language is …\" / "
+        + "\"what natural language is …\".";
+    },
     "math.binary": function (a) {
       const x = numOrThrow(a.a), y = numOrThrow(a.b);
       switch (a.op) {
@@ -1351,6 +1603,10 @@
     lines.push("  wikipedia ursula k le guin / define serendipity / weather in reykjavik");
     lines.push("  wikipedia ada lovelace then build a page about it");
     lines.push("  build a page about grace hopper · make a website about it");
+    lines.push("  find a book about shaders · list books by language cpp");
+    lines.push("  what should i read next · library stats");
+    lines.push("  what language is this: #include <iostream>");
+    lines.push("  what natural language is this: ¿qué hora es?");
     lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
     lines.push("  remember my favorite color is teal · what do you remember · forget my favorite color");
     lines.push("  what was i working on · what did i build last");
@@ -1363,6 +1619,7 @@
   /* ------------------------------------------------------------ matching -- */
   function compile(data) {
     meta = { count: data.count || data.commands.length, categories: data.categories || {} };
+    LIBRARY = data.library || null;
     COMMANDS = data.commands.map(c => Object.assign({}, c, { rx: new RegExp(c.re, "i") }));
     BY_OP = Object.create(null);
     for (const c of COMMANDS) (BY_OP[c.op] = BY_OP[c.op] || []).push(c);
@@ -1505,6 +1762,7 @@
     },
     count: function () { return meta.count; },
     categories: function () { return meta.categories; },
+    library: function () { return LIBRARY; },
     match: match,
     search: search,
     catalog: catalog,

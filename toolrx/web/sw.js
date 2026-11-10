@@ -5,7 +5,7 @@
  * while online) with a cached shell fallback. Assets are cache-first with a
  * background refresh. Bump CACHE when the shipped asset list changes.
  */
-const CACHE = "toolrx-shell-v4";
+const CACHE = "toolrx-shell-v5";
 const CORE = [
   "./",
   "./index.html",
@@ -16,6 +16,8 @@ const CORE = [
   "./web/sandbox.js",
   "./web/skills.js",
   "./web/templates.js",
+  "./web/lang.js",
+  "./web/i18n.json",
   "./web/engine2d.js",
   "./web/engine2d.embed.js",
   "./web/engine3d.js",

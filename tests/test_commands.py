@@ -129,6 +129,26 @@ class CommandLibraryTest(unittest.TestCase):
                 joined = json.dumps(hit["args"])
                 self.assertIn(arg, joined, f"{query}: {hit['id']} {hit['args']}")
 
+    def test_library_and_language_commands(self):
+        cases = {
+            "library stats": ("library.stats", None),
+            "find a book about shaders": ("library.find", "$1"),
+            "list books by language c++": ("library.language", "$1"),
+            "what should i read next": ("library.next", None),
+            "what language is this": ("lang.detect", None),
+            "what programming language is this: int main(){}": ("lang.detect", "$1"),
+            "what natural language is this: hola amigos": ("lang.detect", "$1"),
+        }
+        for query, (op, arg) in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+            if arg is not None:
+                self.assertEqual(hit["args"].get("text") or hit["args"].get("topic")
+                                 or hit["args"].get("lang"), arg, query)
+        self.assertIn("library", self.data)
+        self.assertEqual(self.data["library"]["stats"]["records"], 10)
+
     def test_build_variants_capture_the_modifier(self):
         cases = {
             "build a tetris game with 3d elements": ("tetris", "3d elements"),

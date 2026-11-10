@@ -1,0 +1,386 @@
+{
+  "programming": [
+    {
+      "text": "#include <iostream>\nint main(){std::cout<<\"hi\";}",
+      "lang": "cpp"
+    },
+    {
+      "text": "template <typename T> class Box { public: T value; };",
+      "lang": "cpp"
+    },
+    {
+      "text": "auto p = std::make_unique<Foo>();",
+      "lang": "cpp"
+    },
+    {
+      "text": "#include <stdio.h>\nint main(){printf(\"hi\");}",
+      "lang": "c"
+    },
+    {
+      "text": "struct Node { int x; };\nNode *n = malloc(sizeof(Node));",
+      "lang": "c"
+    },
+    {
+      "text": "using System; namespace A { class B {} }",
+      "lang": "csharp"
+    },
+    {
+      "text": "public class P { public string Name { get; set; } }",
+      "lang": "csharp"
+    },
+    {
+      "text": "fn main() { let mut x = 1; }",
+      "lang": "rust"
+    },
+    {
+      "text": "impl Foo { pub fn new() -> Result<Foo, Error> { } }",
+      "lang": "rust"
+    },
+    {
+      "text": "def f(x):\n    return x + 1",
+      "lang": "python"
+    },
+    {
+      "text": "import os\nif __name__ == \"__main__\":\n    print(os.getcwd())",
+      "lang": "python"
+    },
+    {
+      "text": "console.log(\"hi\"); const x = 1;",
+      "lang": "javascript"
+    },
+    {
+      "text": "document.querySelector(\"#a\").addEventListener(\"click\", () => {});",
+      "lang": "javascript"
+    },
+    {
+      "text": "const x: string = \"a\"",
+      "lang": "typescript"
+    },
+    {
+      "text": "interface User { id: number; name: string; }",
+      "lang": "typescript"
+    },
+    {
+      "text": "--[[ comment ]] local function f() end",
+      "lang": "lua"
+    },
+    {
+      "text": "for k, v in pairs(t) do print(k, v) end",
+      "lang": "lua"
+    },
+    {
+      "text": "#version 330\nvoid main(){gl_Position=vec4(0.0);}",
+      "lang": "glsl"
+    },
+    {
+      "text": "uniform sampler2D tex; out vec4 color;",
+      "lang": "glsl"
+    },
+    {
+      "text": "cbuffer Params { float4x4 mvp; };\nfloat4 main(float4 p : SV_Position) : SV_Target { return p; }",
+      "lang": "hlsl"
+    },
+    {
+      "text": "float4 c = mul(a, b); c = saturate(c);",
+      "lang": "hlsl"
+    },
+    {
+      "text": "@fragment fn main() -> @location(0) vec4<f32> { return vec4<f32>(1.0); }",
+      "lang": "wgsl"
+    },
+    {
+      "text": "@group(0) @binding(0) var tex: texture_2d<f32>;",
+      "lang": "wgsl"
+    },
+    {
+      "text": "extends Node\nfunc _ready():\n    print(\"hi\")",
+      "lang": "gdscript"
+    },
+    {
+      "text": "@export var speed: float = 1.0\nsignal died",
+      "lang": "gdscript"
+    },
+    {
+      "text": "public static void main(String[] args) { System.out.println(\"hi\"); }",
+      "lang": "java"
+    },
+    {
+      "text": "import java.util.List;\npublic class A {}",
+      "lang": "java"
+    },
+    {
+      "text": "fun main() { println(\"hi\") }",
+      "lang": "kotlin"
+    },
+    {
+      "text": "data class User(val id: Int, val name: String)",
+      "lang": "kotlin"
+    },
+    {
+      "text": "import UIKit\nfunc f() -> Int { return 1 }",
+      "lang": "swift"
+    },
+    {
+      "text": "guard let x = y else { return }\nlet name: String = \"a\"",
+      "lang": "swift"
+    },
+    {
+      "text": "package main\nfunc main(){ fmt.Println(\"x\") }",
+      "lang": "go"
+    },
+    {
+      "text": "ch := make(chan int)\ngo func() { ch <- 1 }()",
+      "lang": "go"
+    },
+    {
+      "text": "<?php\n$name = \"a\";\necho $name;",
+      "lang": "php"
+    },
+    {
+      "text": "<?php function f() { return 1; }",
+      "lang": "php"
+    },
+    {
+      "text": "def hello\n  puts \"hi\"\nend",
+      "lang": "ruby"
+    },
+    {
+      "text": "items.each do |x|\n  puts x\nend",
+      "lang": "ruby"
+    },
+    {
+      "text": "SELECT id, name FROM users WHERE active = 1;",
+      "lang": "sql"
+    },
+    {
+      "text": "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);",
+      "lang": "sql"
+    },
+    {
+      "text": "#!/bin/bash\nsudo apt install foo",
+      "lang": "bash"
+    },
+    {
+      "text": "<!doctype html><html><body><div>hi</div></body></html>",
+      "lang": "html"
+    },
+    {
+      "text": "<html><body><script>let x=1</script></body></html>",
+      "lang": "html"
+    },
+    {
+      "text": "<?xml version=\"1.0\"?><root><item id=\"1\"/></root>",
+      "lang": "xml"
+    },
+    {
+      "text": "@media (max-width: 900px) { .a { color: red; } }",
+      "lang": "css"
+    },
+    {
+      "text": "{\"a\": 1, \"b\": [2,3]}",
+      "lang": "json"
+    },
+    {
+      "text": "---\nname: toolrx\nitems:\n  - one",
+      "lang": "yaml"
+    },
+    {
+      "text": "[package]\nname = \"toolrx\"\nversion = \"1.0\"",
+      "lang": "toml"
+    },
+    {
+      "text": "section .text\nmov eax, 1\npush ebp",
+      "lang": "asm"
+    }
+  ],
+  "natural": [
+    {
+      "text": "the player can build a small game and then test it",
+      "lang": "en"
+    },
+    {
+      "text": "how do i convert this value to another unit",
+      "lang": "en"
+    },
+    {
+      "text": "remember my name is ada",
+      "lang": "en"
+    },
+    {
+      "text": "hola amigo puedes crear un juego para mi",
+      "lang": "es"
+    },
+    {
+      "text": "convierte cinco kilometros en millas por favor",
+      "lang": "es"
+    },
+    {
+      "text": "el juego tiene tres niveles y un jefe",
+      "lang": "es"
+    },
+    {
+      "text": "necesito ayuda con este proyecto",
+      "lang": "es"
+    },
+    {
+      "text": "bonjour je veux construire un jeu pour mon ami",
+      "lang": "fr"
+    },
+    {
+      "text": "le jeu contient trois niveaux et un boss",
+      "lang": "fr"
+    },
+    {
+      "text": "peux tu faire un jeu de plates formes",
+      "lang": "fr"
+    },
+    {
+      "text": "ich mochte ein spiel mit funf levels bauen",
+      "lang": "de"
+    },
+    {
+      "text": "das spiel ist nicht fertig und ich brauche hilfe",
+      "lang": "de"
+    },
+    {
+      "text": "kannst du eine app fur mich erstellen",
+      "lang": "de"
+    },
+    {
+      "text": "voce pode criar um jogo para mim",
+      "lang": "pt"
+    },
+    {
+      "text": "o jogo tem tres niveis e um chefe",
+      "lang": "pt"
+    },
+    {
+      "text": "ciao puoi creare un gioco per me",
+      "lang": "it"
+    },
+    {
+      "text": "il gioco non e ancora finito",
+      "lang": "it"
+    },
+    {
+      "text": "ik wil een spel maken voor mijn vriend",
+      "lang": "nl"
+    },
+    {
+      "text": "het spel is niet klaar en ik heb hulp nodig",
+      "lang": "nl"
+    },
+    {
+      "text": "benim icin bir oyun yapabilir misin",
+      "lang": "tr"
+    },
+    {
+      "text": "bu oyun hazir degil ve yardim lazim",
+      "lang": "tr"
+    },
+    {
+      "text": "saya ingin membuat game untuk teman saya",
+      "lang": "id"
+    },
+    {
+      "text": "game ini tidak selesai dan butuh bantuan",
+      "lang": "id"
+    },
+    {
+      "text": "tôi muốn tạo một trò chơi cho bạn tôi",
+      "lang": "vi"
+    },
+    {
+      "text": "trò chơi này không hoàn thành",
+      "lang": "vi"
+    },
+    {
+      "text": "nataka kutengeneza mchezo kwa rafiki yangu",
+      "lang": "sw"
+    },
+    {
+      "text": "mchezo huu si tayari",
+      "lang": "sw"
+    },
+    {
+      "text": "chce zrobic gre dla mojego przyjaciela",
+      "lang": "pl"
+    },
+    {
+      "text": "ta gra nie jest skonczona",
+      "lang": "pl"
+    },
+    {
+      "text": "привет как дела у тебя сегодня",
+      "lang": "ru"
+    },
+    {
+      "text": "я хочу сделать игру для друга",
+      "lang": "ru"
+    },
+    {
+      "text": "привіт як справи сьогодні",
+      "lang": "uk"
+    },
+    {
+      "text": "मुझे एक खेल बनाना है",
+      "lang": "hi"
+    },
+    {
+      "text": "क्या आप मदद कर सकते हैं",
+      "lang": "hi"
+    },
+    {
+      "text": "ゲームを作りたいです",
+      "lang": "ja"
+    },
+    {
+      "text": "これは日本語の文章です",
+      "lang": "ja"
+    },
+    {
+      "text": "게임을 만들고 싶습니다",
+      "lang": "ko"
+    },
+    {
+      "text": "هل يمكنك إنشاء لعبة من فضلك",
+      "lang": "ar"
+    },
+    {
+      "text": "θέλω να φτιάξω ένα παιχνίδι",
+      "lang": "el"
+    },
+    {
+      "text": "אני רוצה לבנות משחק",
+      "lang": "he"
+    },
+    {
+      "text": "ฉันต้องการสร้างเกม",
+      "lang": "th"
+    },
+    {
+      "text": "我想做一个游戏",
+      "lang": "zh"
+    }
+  ],
+  "ambiguous": [
+    {
+      "text": "漢字文章",
+      "lang": null,
+      "also": [
+        "zh",
+        "ja"
+      ]
+    }
+  ],
+  "unknown": [
+    {
+      "text": "no",
+      "lang": null
+    },
+    {
+      "text": "blorp wobble zzz",
+      "lang": null
+    }
+  ]
+}
