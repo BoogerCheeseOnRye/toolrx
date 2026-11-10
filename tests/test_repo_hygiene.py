@@ -6,6 +6,7 @@ phone-specific paths, no training UI by default, no Grok mark, and a context
 bar that stays hidden until a model supplies a window.
 """
 
+import json
 import os
 import re
 import subprocess
@@ -178,6 +179,32 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("writeProjectFile", self.html)
         self.assertIn("projectFile", self.html)
 
+    def test_project_export_import_ui(self):
+        self.assertIn('id="pjImport"', self.html)
+        self.assertIn('id="pjFile"', self.html)
+        self.assertIn("exportProject", self.html)
+        self.assertIn("importProject", self.html)
+        sandbox = open(os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
+                       encoding="utf-8").read()
+        for marker in ("function exportProject", "function importProject",
+                       "MAX_IMPORT_FILE", "safeImportName", "uniqueSlug(name)"):
+            self.assertIn(marker, sandbox)
+
+    def test_dialogs_are_keyboard_accessible(self):
+        for marker in ('role="dialog"', 'aria-modal="true"',
+                       'aria-labelledby="pjTitle"', 'aria-labelledby="fileTitle"',
+                       'aria-labelledby="cpTitle"', 'aria-live="polite"',
+                       "prefers-reduced-motion", "function openDialog",
+                       "function closeDialog", "offsetParent",
+                       "stopImmediatePropagation"):
+            self.assertIn(marker, self.html)
+
+    def test_command_catalog_ui(self):
+        for marker in ('id="cmdBtn"', 'id="cmdPalette"', 'id="cpInput"',
+                       'id="cpCat"', "function renderCatalog",
+                       "function openCmdPalette", "toolrxSkills.catalog"):
+            self.assertIn(marker, self.html)
+
     def test_conversation_memory_is_explicit_and_local(self):
         sandbox = open(os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
                        encoding="utf-8").read()
@@ -213,6 +240,29 @@ class DashboardTest(unittest.TestCase):
         self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
         self.assertEqual(open(model, "rb").read(), open(out, "rb").read(),
                          "docs/web/model.json is stale")
+
+    def test_offline_app_is_installable_and_cached(self):
+        for rel in ("toolrx/web/sw.js", "toolrx/web/manifest.webmanifest",
+                    "toolrx/web/icon.svg", "docs/sw.js", "docs/manifest.webmanifest",
+                    "docs/icon.svg"):
+            self.assertTrue(os.path.exists(os.path.join(ROOT, rel)), rel)
+        for name in ("sw.js", "manifest.webmanifest", "icon.svg"):
+            src = open(os.path.join(ROOT, "toolrx", "web", name), "rb").read()
+            out = open(os.path.join(ROOT, "docs", name), "rb").read()
+            self.assertEqual(src, out, f"docs/{name} is stale")
+        manifest = json.loads(open(os.path.join(ROOT, "toolrx", "web", "manifest.webmanifest"),
+                                   encoding="utf-8").read())
+        self.assertEqual(manifest["display"], "standalone")
+        self.assertEqual(manifest["start_url"], "./")
+        self.assertTrue(manifest["icons"])
+        sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"), encoding="utf-8").read()
+        for marker in ("addEventListener(\"install\"", "addEventListener(\"activate\"",
+                       "addEventListener(\"fetch\"", "caches.match", "skipWaiting",
+                       "./web/commands.json", "./web/model.json"):
+            self.assertIn(marker, sw)
+        self.assertIn('rel="manifest"', self.html)
+        self.assertIn("registerOffline", self.html)
+        self.assertIn("serviceWorker.register", self.html)
 
     def test_no_phone_paths_in_training_options(self):
         # training is hidden, but its options should not leak a phone path

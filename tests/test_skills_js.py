@@ -105,6 +105,11 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   };
   const out = {};
   out.count = self.toolrxSkills.count();
+  out.catalog = self.toolrxSkills.catalog('build', '', 5);
+  out.catalogCat = self.toolrxSkills.catalog('', 'memory', 100);
+  out.catalogEmpty = self.toolrxSkills.catalog('zzzznotacommand', '', 10);
+  out.catalogRpg = self.toolrxSkills.catalog('rpg', '', 12);
+  out.catalogFill = self.toolrxSkills.catalog('tetris', '', 8);
   out.multiply = await run('multiply 67 and 420');
   out.square = await run('square 67');
   out.chain = await run('convert 5 km to miles then square the result');
@@ -409,6 +414,20 @@ class SkillsBridgeTest(unittest.TestCase):
 
     def test_library_loaded(self):
         self.assertGreaterEqual(self.out["count"], 2500)
+        self.assertGreaterEqual(len(self.out["catalog"]), 1)
+        for row in self.out["catalog"]:
+            self.assertTrue("build" in row["d"].lower() or row["op"] == "build", row)
+        self.assertTrue(all(r["c"] == "memory" for r in self.out["catalogCat"]))
+        self.assertGreaterEqual(len(self.out["catalogCat"]), 40)
+        self.assertEqual(self.out["catalogEmpty"], [])
+        rpg = self.out["catalogRpg"]
+        self.assertTrue(rpg)
+        self.assertTrue(all("rpg" in r["d"].lower() for r in rpg))
+        self.assertEqual(len({r["d"] for r in rpg}), len(rpg))
+        tetris = self.out["catalogFill"]
+        self.assertTrue(tetris)
+        self.assertTrue(all("tetris" in r["d"].lower() for r in tetris))
+        self.assertTrue(all("{" not in r["d"] for r in tetris))
 
     def test_math_prompts(self):
         self.assertEqual(self.out["multiply"][0]["text"], "28140")

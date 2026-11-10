@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>toolrx · micro tool router</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#070a12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{
     --bg:#070a12; --panel:#0d1220; --panel2:#111827; --border:#1e293b;
@@ -472,12 +477,27 @@
   .cm-ghinfo{font-size:11px;color:var(--muted);margin-top:8px}
 
   /* projects */
-  #projBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;max-width:230px;
+  #projBtn,#cmdBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;max-width:230px;
     background:var(--panel2);border:1px solid var(--border);border-radius:999px;
     color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #projBtn b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
-  #projBtn:hover{border-color:var(--accent);color:var(--text)}
+  #projBtn b,#cmdBtn b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+  #projBtn:hover,#cmdBtn:hover{border-color:var(--accent);color:var(--text)}
+  #cmdPalette{position:fixed;inset:0;z-index:115;display:none;flex-direction:column;
+    background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
+  #cmdPalette.open{display:flex}
+  .cp-search{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+  .cp-search input{flex:1;min-width:180px;background:var(--panel2);border:1px solid var(--border);
+    border-radius:8px;color:var(--text);padding:8px 10px;font:inherit;font-size:12.5px}
+  .cp-search select{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);padding:8px 10px;font:inherit;font-size:12px}
+  .cp-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+  .cp-item{text-align:left;background:var(--panel);border:1px solid var(--border);border-radius:9px;
+    color:var(--text);padding:8px 10px;cursor:pointer;font:inherit}
+  .cp-item:hover{border-color:var(--accent);background:rgba(34,211,238,.06)}
+  .cp-item .d{font-size:12.5px}
+  .cp-item .m{display:block;color:var(--muted);font-size:10.5px;margin-top:2px;font-family:ui-monospace,monospace}
+  @media(max-width:900px){#cmdPalette{border-radius:0;padding:14px}}
   #projModal{position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
     background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
   #projModal.open{display:flex}
@@ -487,6 +507,11 @@
   .pj-new{display:flex;gap:8px;margin:12px 0}
   .pj-new input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--border);
     border-radius:8px;color:var(--text);padding:8px 10px;font:inherit;font-size:12.5px}
+  .pj-tools{display:flex;align-items:center;gap:8px;margin:-4px 0 10px;flex-wrap:wrap}
+  .pj-tools button{background:var(--panel2);border:1px solid var(--border);border-radius:7px;
+    color:var(--text);font-size:11px;padding:5px 10px;cursor:pointer}
+  .pj-tools button:hover{border-color:var(--accent)}
+  .pj-tools input[type=file]{display:none}
   .pj-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
   .pj-item{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
   .pj-item.active{border-color:var(--accent)}
@@ -521,6 +546,15 @@
     .fe-list button{white-space:nowrap}
   }
   .entry .lbl.chat{background:rgba(167,139,250,.14);color:var(--accent2)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+  @media(max-width:900px){
+    .pj-item .acts button{min-height:34px;padding:6px 11px}
+    .pj-tools button{min-height:34px}
+  }
 </style>
 </head>
 <body>
@@ -601,17 +635,18 @@
   <div class="workspace">
     <div id="eq" aria-hidden="true"><div class="eq-track" id="eqTrack"></div></div>
     <div class="panes">
-      <div class="pane on" id="chatPane"><div id="log"></div></div>
-      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview">⤢</button><iframe id="pv" title="preview"></iframe></div>
+      <div class="pane on" id="chatPane"><div id="log" role="log" aria-live="polite" aria-relevant="additions text" aria-label="conversation"></div></div>
+      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><iframe id="pv" title="preview"></iframe></div>
     </div>
     <div class="composer">
       <form id="f">
-        <textarea id="q" rows="1" placeholder="ask toolrx… (enter to send, shift+enter for newline)"></textarea>
+        <textarea id="q" rows="1" aria-label="ask toolrx" placeholder="ask toolrx… (enter to send, shift+enter for newline)"></textarea>
         <button id="send" type="submit">Send</button>
       </form>
       <div class="hintrow">
         <span class="hint">tool calls resolve instantly · build tasks run in the background & render in Preview</span>
         <button type="button" id="projBtn" title="projects: new, open, delete">◫ <b>no project</b></button>
+        <button type="button" id="cmdBtn" title="browse the command catalog" style="display:none">▤ <b>commands</b></button>
         <button type="button" id="pvMobile" title="show the preview pane">▣ preview</button>
         <div class="ctxbar" id="ctxbar">
           <span class="ctxlab">context</span>
@@ -624,14 +659,14 @@
 </main>
 
 <!-- command center modal -->
-<div id="cmdModal">
+<div id="cmdModal" role="dialog" aria-modal="true" aria-labelledby="cmTitle" aria-hidden="true">
   <div class="cm-header">
     <div class="cm-bot" id="cmBot"></div>
     <div class="cm-title">
-      <div class="cm-name">Command Center</div>
+      <div class="cm-name" id="cmTitle">Command Center</div>
       <div class="cm-sub">UI/UX · models · providers · network · github</div>
     </div>
-    <button class="cm-close" id="cmClose">✕</button>
+    <button class="cm-close" id="cmClose" type="button" aria-label="close command center">✕</button>
   </div>
   <div class="cm-body">
     <section>
@@ -677,25 +712,30 @@
 </div>
 
 <!-- projects modal -->
-<div id="projModal">
+<div id="projModal" role="dialog" aria-modal="true" aria-labelledby="pjTitle" aria-hidden="true">
   <div class="pj-head">
-    <h3>Projects</h3>
+    <h3 id="pjTitle">Projects</h3>
     <div class="sub">each build writes real files · click a project to activate it</div>
-    <button class="cm-close" id="pjClose" type="button">✕</button>
+    <button class="cm-close" id="pjClose" type="button" aria-label="close projects">✕</button>
   </div>
   <div class="pj-new">
     <input id="pjName" placeholder="new project name (e.g. notes, rpg, portfolio)" autocomplete="off">
     <button class="cm-btn" id="pjCreate" type="button">New project</button>
   </div>
+  <div class="pj-tools">
+    <button id="pjImport" type="button">⇩ Import project JSON</button>
+    <input type="file" id="pjFile" accept=".json,application/json">
+    <span class="muted small" id="pjStatus">export a project to move it between browsers</span>
+  </div>
   <div class="pj-list" id="pjList"></div>
 </div>
 
 <!-- project file editor -->
-<div id="fileModal">
+<div id="fileModal" role="dialog" aria-modal="true" aria-labelledby="fileTitle" aria-hidden="true">
   <div class="pj-head">
     <h3 id="fileTitle">Project files</h3>
     <div class="sub" id="fileSub">edit a real file · save re-bundles the preview</div>
-    <button class="cm-close" id="fileClose" type="button">✕</button>
+    <button class="cm-close" id="fileClose" type="button" aria-label="close file editor">✕</button>
   </div>
   <div class="fe-body">
     <div class="fe-list" id="fileList"></div>
@@ -708,6 +748,20 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- command catalog -->
+<div id="cmdPalette" role="dialog" aria-modal="true" aria-labelledby="cpTitle" aria-hidden="true">
+  <div class="pj-head">
+    <h3 id="cpTitle">Command catalog</h3>
+    <div class="sub" id="cpSub">browse the deterministic library · click one to put it in the composer</div>
+    <button class="cm-close" id="cpClose" type="button" aria-label="close command catalog">✕</button>
+  </div>
+  <div class="cp-search">
+    <input id="cpInput" placeholder="search commands… (build, convert, memory, rpg)" autocomplete="off" aria-label="search commands">
+    <select id="cpCat" aria-label="filter by category"></select>
+  </div>
+  <div class="cp-list" id="cpList"></div>
 </div>
 
 <!-- in-browser router: used when the page is served statically (GitHub Pages) -->
@@ -726,6 +780,11 @@ let trainingEnabled=false;   // opt-in via TOOLRX_SHOW_TRAINING=1
 let staticMode=false;        // no API and no in-browser router
 let configReady=null;        // resolves once the backend/router decision is made
 let clientMode=false;        // router model running in this tab (GitHub Pages)
+function registerOffline(){
+  if(!('serviceWorker' in navigator)) return;
+  if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1') return;
+  navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
+}
 async function loadConfig(){
   try{
     const r=await fetch('/config');
@@ -764,6 +823,9 @@ async function loadConfig(){
     if(window.toolrxWeb.onPreview) window.toolrxWeb.onPreview(renderPreview);
     loadPreview();
     refreshProjectChip();
+    registerOffline();
+    const cmdBtn=document.getElementById('cmdBtn');
+    if(cmdBtn) cmdBtn.style.display='inline-flex';
     entry('toolrx ready',
       'in-browser router · 27 tools · '+(commandCount?commandCount.toLocaleString()+' deterministic commands':'pattern library')+'\n\n'
       +'try:  multiply 67 and 420\n'
@@ -889,7 +951,7 @@ function openCmdCenter(){
   cmBot.style.transition='transform .5s cubic-bezier(.34,1.56,.64,1),opacity .4s';
   cmBot.style.opacity='0';
   cmBot.style.transform='scale(0.6)';
-  modal.classList.add('open');
+  openDialog(modal, '#cmClose');
   loadLocalModels();
   wgPoll();
   requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
@@ -897,6 +959,8 @@ function openCmdCenter(){
     cmBot.style.transform='scale(1)';
   }); });
 }
+
+function closeCmdCenter(){ closeDialog(document.getElementById('cmdModal')); }
 
 async function loadLocalModels(){
   const sel=document.getElementById('cmLocal');
@@ -950,10 +1014,8 @@ async function loadLocalModels(){
 (function(){
   const modal=document.getElementById('cmdModal');
   const close=document.getElementById('cmClose');
-  close.addEventListener('click',()=>{
-    modal.classList.remove('open');
-  });
-  modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+  close.addEventListener('click',closeCmdCenter);
+  modal.addEventListener('click',e=>{ if(e.target===modal) closeCmdCenter(); });
 
   // load persisted prefs
   try{
@@ -1078,6 +1140,18 @@ function renderProjectList(){
       if(!p.active){ try{window.toolrxWeb.openProject(p.slug);}catch(e){} }
       refreshProjectChip(); loadPreview(); renderProjectList(); openFileEditor(p.slug);
     });
+    mk('export',null,()=>{
+      try{
+        const text=window.toolrxWeb.exportProject(p.slug);
+        const blob=new Blob([text],{type:'application/json'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url; a.download=p.slug+'.toolrx.json';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),1500);
+        entry('projects','exported '+p.slug+' as JSON','stat');
+      }catch(e){ alert(e.message||e); }
+    });
     mk('delete','del',()=>{
       if(!confirm('Delete project "'+p.name+'"? This removes its files from this browser.')) return;
       try{window.toolrxWeb.deleteProject(p.slug);}catch(e){alert(e.message||e);}
@@ -1088,8 +1162,48 @@ function renderProjectList(){
     box.appendChild(d);
   });
 }
-function openProjects(){ renderProjectList(); document.getElementById('projModal').classList.add('open'); }
-function closeProjects(){ document.getElementById('projModal').classList.remove('open'); }
+/* ---- accessible dialogs -------------------------------------------------- */
+const dialogReturn = new WeakMap();
+function openDialog(modal, focusSel){
+  if(!modal) return;
+  dialogReturn.set(modal, document.activeElement);
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  const target=focusSel?modal.querySelector(focusSel):null;
+  if(target) setTimeout(()=>{ try{target.focus();}catch(e){} },0);
+}
+function closeDialog(modal){
+  if(!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  const back=dialogReturn.get(modal);
+  dialogReturn.delete(modal);
+  if(back && typeof back.focus==='function') setTimeout(()=>{ try{back.focus();}catch(e){} },0);
+}
+document.addEventListener('keydown',e=>{
+  const modal=document.querySelector('#projModal.open,#fileModal.open,#cmdModal.open,#cmdPalette.open');
+  if(!modal) return;
+  if(e.key==='Escape'){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if(modal.id==='projModal') closeProjects();
+    else if(modal.id==='fileModal') closeFileEditor();
+    else if(modal.id==='cmdModal') closeCmdCenter();
+    else if(modal.id==='cmdPalette') closeCmdPalette();
+    return;
+  }
+  if(e.key!=='Tab') return;
+  const list=[].slice.call(modal.querySelectorAll(
+    'button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href]'
+  )).filter(el=>el.offsetParent!==null);
+  if(!list.length) return;
+  const first=list[0], last=list[list.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+});
+
+function openProjects(){ renderProjectList(); openDialog(document.getElementById('projModal'), '#pjName'); }
+function closeProjects(){ closeDialog(document.getElementById('projModal')); }
 (function(){
   const btn=document.getElementById('projBtn');
   if(btn) btn.addEventListener('click',openProjects);
@@ -1107,6 +1221,93 @@ function closeProjects(){ document.getElementById('projModal').classList.remove(
   }
   if(create) create.addEventListener('click',make);
   if(input) input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();make();} });
+  const importBtn=document.getElementById('pjImport');
+  const fileInput=document.getElementById('pjFile');
+  const status=document.getElementById('pjStatus');
+  if(importBtn&&fileInput) importBtn.addEventListener('click',()=>fileInput.click());
+  if(fileInput) fileInput.addEventListener('change',async()=>{
+    const f=fileInput.files&&fileInput.files[0];
+    if(!f) return;
+    try{
+      const text=await f.text();
+      const msg=window.toolrxWeb.importProject(text);
+      if(status) status.textContent=msg;
+      refreshProjectChip(); renderProjectList(); loadPreview();
+      entry('projects',msg,'stat');
+    }catch(e){
+      if(status) status.textContent=e.message||String(e);
+      alert(e.message||e);
+    }
+    fileInput.value='';
+  });
+})();
+
+/* ---- command catalog ----------------------------------------------------- */
+function renderCatalog(){
+  const box=document.getElementById('cpList');
+  const input=document.getElementById('cpInput');
+  const cat=document.getElementById('cpCat');
+  const sub=document.getElementById('cpSub');
+  if(!box || !window.toolrxSkills || !window.toolrxSkills.catalog) return;
+  const term=(input.value||'').trim();
+  const c=cat.value||'';
+  const rows=window.toolrxSkills.catalog(term,c,120);
+  const total=window.toolrxSkills.count();
+  if(sub) sub.textContent = rows.length
+    ? (term||c ? rows.length+' shown · '+total.toLocaleString()+' commands'
+               : 'showing '+rows.length+' of '+total.toLocaleString()+' commands')
+    : 'no commands matched that search';
+  box.innerHTML='';
+  rows.forEach(r=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='cp-item';
+    const d=document.createElement('span'); d.className='d'; d.textContent=r.d;
+    const m=document.createElement('span'); m.className='m'; m.textContent=r.c+' · '+r.op;
+    b.append(d,m);
+    b.addEventListener('click',()=>insertCommand(r.d));
+    box.appendChild(b);
+  });
+}
+function insertCommand(text){
+  closeCmdPalette();
+  q.value=text; q.focus();
+  const i=text.indexOf('{');
+  if(i>=0){ const j=text.indexOf('}',i); if(j>i) q.setSelectionRange(i,j+1); }
+}
+function openCmdPalette(){
+  if(!window.toolrxSkills || !window.toolrxSkills.count()) return;
+  const sel=document.getElementById('cpCat');
+  if(sel && !sel.options.length){
+    sel.innerHTML='<option value="">all categories</option>';
+    const cats=window.toolrxSkills.categories()||{};
+    Object.keys(cats).forEach(k=>{
+      const o=document.createElement('option');
+      o.value=k; o.textContent=k+' ('+cats[k]+')';
+      sel.appendChild(o);
+    });
+  }
+  renderCatalog();
+  openDialog(document.getElementById('cmdPalette'),'#cpInput');
+}
+function closeCmdPalette(){ closeDialog(document.getElementById('cmdPalette')); }
+(function(){
+  const btn=document.getElementById('cmdBtn');
+  const close=document.getElementById('cpClose');
+  const input=document.getElementById('cpInput');
+  const cat=document.getElementById('cpCat');
+  if(btn) btn.addEventListener('click',openCmdPalette);
+  if(close) close.addEventListener('click',closeCmdPalette);
+  if(input){
+    input.addEventListener('input',renderCatalog);
+    input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        const first=document.querySelector('#cpList .cp-item');
+        if(first) first.click();
+      }
+    });
+  }
+  if(cat) cat.addEventListener('change',renderCatalog);
 })();
 
 /* ---- project file editor ----------------------------------------------- */
@@ -1118,13 +1319,13 @@ function openFileEditor(slug){
   feSlug=p.slug;
   document.getElementById('fileTitle').textContent=p.name+' · files';
   document.getElementById('fileSub').textContent=p.slug+' · '+p.files.length+' real files · save re-bundles the preview';
-  document.getElementById('fileModal').classList.add('open');
+  openDialog(document.getElementById('fileModal'), null);
   renderFileList(p);
   const first=p.files.indexOf('index.html')>=0?'index.html':p.files[0];
   if(first) loadProjectFile(first);
   else { document.getElementById('fileName').textContent='no files yet'; }
 }
-function closeFileEditor(){ document.getElementById('fileModal').classList.remove('open'); }
+function closeFileEditor(){ closeDialog(document.getElementById('fileModal')); }
 function renderFileList(p, selected){
   const box=document.getElementById('fileList');
   box.innerHTML='';
@@ -1828,8 +2029,6 @@ document.getElementById('devinfo').addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
-  const modal=document.getElementById('cmdModal');
-  if(modal && modal.classList.contains('open')){ modal.classList.remove('open'); return; }
   const pvPane=document.getElementById('previewPane');
   if(pvPane && pvPane.classList.contains('mobile-show')){
     pvPane.classList.remove('mobile-show');

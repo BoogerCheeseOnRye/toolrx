@@ -30,9 +30,13 @@ def main():
              "templates.js", "commands.json")
     for name in names:
         shutil.copyfile(WEB_SRC / name, WEB_OUT / name)
+    pwa = ("sw.js", "manifest.webmanifest", "icon.svg")
+    for name in pwa:
+        shutil.copyfile(WEB_SRC / name, DOCS / name)
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     print(f"wrote {DOCS / 'index.html'} ({SRC.stat().st_size} bytes)")
     print(f"wrote {WEB_OUT}/model.json ({MODEL.stat().st_size} bytes) + {len(names)} web assets")
+    print(f"wrote {len(pwa)} offline assets (sw.js, manifest.webmanifest, icon.svg)")
 
 
 if __name__ == "__main__":

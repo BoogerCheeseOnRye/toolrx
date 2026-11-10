@@ -1400,6 +1400,43 @@
     return out;
   }
 
+  /* The generator stores one display pattern per shape (for example
+   * "build a {k} app") with the literal values in args. A few display
+   * placeholders are shorthand for a longer arg name; map those, fill only
+   * literal values, and leave capture placeholders ($1) for the composer. */
+  const FILL_ALIAS = { k: "kind", d: "desc", t: "theme" };
+  function fillDisplay(cmd) {
+    const d = String(cmd.d || "");
+    if (d.indexOf("{") < 0) return d;
+    const args = cmd.args || {};
+    return d.replace(/\{(\w+)\}/g, function (m, k) {
+      const key = Object.prototype.hasOwnProperty.call(args, k) ? k : FILL_ALIAS[k];
+      const v = key ? args[key] : undefined;
+      if (typeof v === "string" && v && v[0] !== "$") return v;
+      return m;
+    });
+  }
+
+  /* Browsable catalog for the UI: filter by display text, op, and/or category,
+   * without compiling or executing anything. Rows are deduped on the visible
+   * text so one shape does not flood the list with identical lines. */
+  function catalog(term, cat, limit) {
+    const t = String(term || "").toLowerCase();
+    const c = String(cat || "").toLowerCase();
+    const out = [];
+    const seen = Object.create(null);
+    for (const cmd of COMMANDS) {
+      if (c && cmd.c !== c) continue;
+      const d = fillDisplay(cmd);
+      if (t && (d + " " + (cmd.op || "")).toLowerCase().indexOf(t) < 0) continue;
+      if (seen[d]) continue;
+      seen[d] = 1;
+      out.push({ id: cmd.id, op: cmd.op, d: d, c: cmd.c });
+      if (out.length >= (limit || 100)) break;
+    }
+    return out;
+  }
+
   /* ------------------------------------------------------------- planner -- */
   function splitPrompt(q) {
     let text = String(q).replace(/\r/g, "").trim();
@@ -1462,6 +1499,7 @@
     categories: function () { return meta.categories; },
     match: match,
     search: search,
+    catalog: catalog,
     splitPrompt: splitPrompt,
     exec: exec,
     runPrompt: runPrompt,

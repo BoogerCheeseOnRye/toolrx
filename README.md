@@ -65,7 +65,9 @@ a complete offline page from `toolrx/web/templates.js` into the preview pane
 `README.md`, `ARCHITECTURE.md`) into the active project under
 `projects/<slug>/`. The ◫ button in the composer opens the project manager:
 create, open, preview, or delete projects; the workspace and project files
-persist in `localStorage`.
+persist in `localStorage`. Every project also has an `export` button that writes
+a portable JSON document, and `⇩ Import project JSON` restores one without
+overwriting anything (the import gets a unique slug).
 
 Build modifiers are deterministic: `build a tetris game with 3d elements`
 renders depth-sorted 3D cuboids with a small software projection renderer, and
@@ -104,6 +106,18 @@ writes a real research project under `projects/<slug>/` with the title,
 paragraphs, and source link; `build a page about ada lovelace` performs the
 lookup and the build in one step. Results show their source URL; failures are
 reported honestly rather than invented.
+
+The Pages build is installable and works offline after the first visit: the
+dashboard links `manifest.webmanifest`, and `sw.js` caches the shell, model,
+command library, and templates. Navigation is network-first so a deploy is
+picked up while online; assets fall back to the cache with a background refresh.
+Bump `CACHE` in `toolrx/web/sw.js` whenever the cached asset list changes.
+
+The ▤ button in the composer opens a searchable catalog of every generated
+command, filterable by category. Selecting a row puts the pattern in the
+composer and selects its first `{placeholder}`. Dialogs are keyboard-friendly:
+`Escape` closes, `Tab` stays inside the active dialog, focus returns to the
+opener, and `prefers-reduced-motion` disables the transitions.
 
 Rebuild the library and the Pages copy after editing the dashboard, patterns,
 router, or model:

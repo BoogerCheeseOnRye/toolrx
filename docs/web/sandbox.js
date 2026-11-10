@@ -226,6 +226,79 @@
     return "deleted " + p.name + " · " + (projects.active ? "active is now " + projects.active : "no projects left");
   }
 
+  /* Project portability: a single project is a JSON document with its real
+   * files. Import never overwrites — it gets a unique slug. */
+  const MAX_IMPORT_FILE = 200000;
+  const MAX_IMPORT_TOTAL = 2000000;
+
+  function exportProject(ref) {
+    const p = findProject(ref);
+    if (!p) throw new Error("no such project: " + ref);
+    return JSON.stringify({
+      format: "toolrx.project",
+      version: 1,
+      exported: new Date().toISOString(),
+      project: {
+        name: p.name, kind: p.kind, desc: p.desc,
+        created: p.created || null, updated: p.updated || null,
+        files: p.files,
+      },
+    }, null, 2);
+  }
+
+  function safeImportName(name) {
+    return String(name || "").replace(/\\/g, "/").split("/").pop()
+      .replace(/[^A-Za-z0-9._-]/g, "-").replace(/^[.-]+/, "").slice(0, 80);
+  }
+
+  function importProject(text) {
+    let raw;
+    try { raw = JSON.parse(String(text || "")); }
+    catch (e) { throw new Error("that file is not valid JSON"); }
+    const src = raw && raw.project && typeof raw.project === "object" ? raw.project : raw;
+    if (!src || typeof src !== "object" || !src.files || typeof src.files !== "object") {
+      throw new Error("no project files found in that JSON");
+    }
+    const out = {};
+    let total = 0;
+    Object.keys(src.files).forEach(function (orig) {
+      let name = safeImportName(orig);
+      if (!name) return;
+      let n = 2;
+      const base = name;
+      while (out[name]) name = n++ + "-" + base;
+      const body = String(src.files[orig] === undefined || src.files[orig] === null ? "" : src.files[orig]);
+      if (body.length > MAX_IMPORT_FILE) {
+        throw new Error(base + " is larger than " + MAX_IMPORT_FILE + " characters");
+      }
+      total += body.length;
+      out[name] = body;
+    });
+    if (!Object.keys(out).length) throw new Error("the project has no files");
+    if (total > MAX_IMPORT_TOTAL) throw new Error("that project is too large to import");
+    const name = String(src.name || "Imported project").trim().slice(0, 60) || "Imported project";
+    const p = {
+      slug: uniqueSlug(name), name: name,
+      kind: String(src.kind || "imported").slice(0, 40),
+      desc: String(src.desc || "").slice(0, 300),
+      files: out, bundled: "", created: Date.now(), updated: Date.now(),
+    };
+    projects.items[p.slug] = p;
+    projects.active = p.slug;
+    p.bundled = bundleProject(p);
+    writeProjects();
+    writeProjectFiles(p);
+    if (p.bundled) {
+      preview = {
+        html: p.bundled, kind: p.kind, desc: p.desc, title: p.name,
+        theme: htmlTheme(out["index.html"]) || preview.theme, at: Date.now(),
+      };
+      notifyPreview();
+    }
+    return "imported \"" + p.name + "\" → projects/" + p.slug
+      + " (" + Object.keys(p.files).length + " files)";
+  }
+
   function filesForProject(p) {
     const out = [];
     for (const name in p.files) out.push(name);
@@ -1152,6 +1225,8 @@
     newProject: function (name) { const p = newProject(name); return p.slug; },
     openProject: function (slug) { return openProject(slug); },
     deleteProject: function (slug) { return deleteProject(slug); },
+    exportProject: function (slug) { return exportProject(slug); },
+    importProject: function (text) { return importProject(text); },
     renameProject: function (slug, name) { return renameProject(slug, name); },
     chatHistory: chatHistory,
     memory: function (k, v) { return remember(k, v); },
