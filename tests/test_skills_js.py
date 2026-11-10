@@ -58,6 +58,16 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       Object.keys(p.files).forEach(k => { files['projects/' + p.slug + '/' + k] = p.files[k]; });
       return 'built ' + Object.keys(p.files).join(',');
     },
+    webPage: info => {
+      const p = self.toolrxTemplates.webPage(Object.assign({}, info, { theme: state.theme }));
+      state.html = p.html;
+      state.kind = p.kind;
+      state.lastTitle = p.title;
+      state.lastSlug = p.slug;
+      state.files = p.files;
+      Object.keys(p.files).forEach(k => { files['projects/' + p.slug + '/' + k] = p.files[k]; });
+      return 'built ' + p.title + ' → projects/' + p.slug + ' (' + Object.keys(p.files).length + ' files)';
+    },
     architecture: (kind, desc) => self.toolrxTemplates.architecture(kind, desc, { theme: state.theme }),
     blueprint: (kind, desc) => ({ text: self.toolrxTemplates.brief(kind, desc) }),
     project: {
@@ -74,7 +84,8 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       keys: () => Object.keys(memory),
     },
     web: {
-      search: async q => ({ text: 'summary about ' + q + '.', source: 'https://en.wikipedia.org/wiki/' + q }),
+      search: async q => ({ text: 'summary about ' + q + '.', source: 'https://en.wikipedia.org/wiki/' + q,
+                           title: q.replace(/\b\w/g, c => c.toUpperCase()) }),
       define: async w => ({ text: w + ': a test definition', source: 'https://dictionaryapi.dev/' }),
       weather: async p => ({ text: p + ': 7°C · clear', source: 'https://open-meteo.com/' }),
       answer: async q => ({ text: 'instant answer for ' + q, source: 'https://duckduckgo.com/' }),
@@ -159,6 +170,35 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.memory.nameAfterForget = await run('what is my name');
   out.memory.clear = await run('forget everything');
   out.memory.afterClear = await run('what do you remember');
+  out.webBuild = {};
+  {
+    const r = await run('wikipedia ada lovelace then build a page about it');
+    out.webBuild.pipeline = {
+      steps: r.length, via: r.map(x => x.via), ok: !r.some(x => x.error),
+      text: r[1] ? r[1].text : '', title: state.lastTitle || '',
+      slug: state.lastSlug || '', html: state.html, files: Object.keys(state.files).sort(),
+      css: state.files['styles.css'] || '', js: state.files['app.js'] || '',
+    };
+  }
+  {
+    const r = await run('build a page about grace hopper');
+    out.webBuild.topic = {
+      steps: r.length, via: r[0] ? r[0].via : '', ok: !r[0].error,
+      title: state.lastTitle || '', slug: state.lastSlug || '',
+      html: state.html, files: Object.keys(state.files).sort(),
+    };
+  }
+  {
+    const r = await run('build a page about it');
+    out.webBuild.noPrev = { via: r[0] ? r[0].via : '', error: !!r[0].error, text: r[0] ? r[0].text : '' };
+  }
+  {
+    const r = await run('wikipedia ada lovelace then summarize it then build a page about it');
+    out.webBuild.summary = {
+      steps: r.length, via: r.map(x => x.via), ok: !r.some(x => x.error),
+      source: r[1] ? r[1].source : '', title: state.lastTitle || '', html: state.html,
+    };
+  }
   out.variants = {};
   for (const q of ['build a tetris game with 3d elements',
                    'build an rpg based on king arthur',
@@ -686,6 +726,47 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(mem["clear"][0]["via"], "memory.forget")
         self.assertIn("cleared", mem["clear"][0]["text"])
         self.assertIn("don't have anything saved", mem["afterClear"][0]["text"])
+
+    def test_web_lookup_feeds_a_page_build(self):
+        wb = self.out["webBuild"]["pipeline"]
+        self.assertTrue(wb["ok"])
+        self.assertEqual(wb["steps"], 2)
+        self.assertEqual(wb["via"], ["web.search", "build.web"])
+        self.assertIn("projects/ada-lovelace", wb["text"])
+        self.assertEqual(wb["title"], "Ada Lovelace")
+        self.assertEqual(wb["slug"], "ada-lovelace")
+        self.assertIn("summary about ada lovelace", wb["html"].lower())
+        self.assertIn("https://en.wikipedia.org/wiki/ada lovelace", wb["html"].lower())
+        self.assertIn("from the web", wb["html"].lower())
+        self.assertEqual(wb["files"], ["ARCHITECTURE.md", "README.md", "app.js",
+                                       "index.html", "styles.css"])
+        self.assertIn("styles.css", wb["html"])
+        self.assertIn("app.js", wb["html"])
+        self.assertIn('getElementById("prog")', wb["js"])
+
+    def test_explicit_topic_builds_a_page(self):
+        tb = self.out["webBuild"]["topic"]
+        self.assertTrue(tb["ok"])
+        self.assertEqual(tb["via"], "build.web")
+        self.assertEqual(tb["title"], "Grace Hopper")
+        self.assertEqual(tb["slug"], "grace-hopper")
+        self.assertIn("grace hopper", tb["html"].lower())
+        self.assertEqual(tb["files"], ["ARCHITECTURE.md", "README.md", "app.js",
+                                       "index.html", "styles.css"])
+
+    def test_page_build_without_context_fails_honestly(self):
+        np = self.out["webBuild"]["noPrev"]
+        self.assertEqual(np["via"], "build.web")
+        self.assertTrue(np["error"])
+        self.assertIn("wikipedia", np["text"].lower())
+
+    def test_summary_keeps_the_source_for_a_page_build(self):
+        s = self.out["webBuild"]["summary"]
+        self.assertTrue(s["ok"])
+        self.assertEqual(s["via"], ["web.search", "text.summarize", "build.web"])
+        self.assertEqual(s["source"], "https://en.wikipedia.org/wiki/ada lovelace")
+        self.assertIn("https://en.wikipedia.org/wiki/ada lovelace", s["html"].lower())
+        self.assertEqual(s["title"], "Ada Lovelace")
 
 
 if __name__ == "__main__":

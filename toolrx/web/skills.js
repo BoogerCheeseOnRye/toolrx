@@ -749,6 +749,20 @@
     return "Here is where you left off:\n\n" + lines.join("\n");
   }
 
+  /* The previous step feeds a page build. Keep the title and source from the
+   * step result when they exist, then fall back to the text itself. */
+  function prevWebInfo(ctx) {
+    const prev = String(ctx.prev || "").trim();
+    if (!prev) {
+      throw new Error("say what the page should be about — try: wikipedia ada lovelace then build a page about it");
+    }
+    const last = ctx.prevResult || {};
+    const lines = prev.split(/\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+    let title = String(last.title || lines[0] || "Research note").replace(/^#+\s*/, "").slice(0, 90);
+    if (!title) title = "Research note";
+    return { title: title, text: prev, source: String(last.source || "") };
+  }
+
   /* -------------------------------------------------------------- ops ---- */
   const OPS = {
     "math.binary": function (a) {
@@ -1215,6 +1229,16 @@
     "build": function (a, ctx) {
       return ctx.build(a.kind, a.desc);
     },
+    "build.web": async function (a, ctx) {
+      if (!ctx.webPage) throw new Error("web pages need the browser workspace");
+      const topic = String(a.topic || "").trim();
+      if (topic) {
+        if (!ctx.web || typeof ctx.web.search !== "function") throw new Error("web search is not available here");
+        const r = await ctx.web.search(topic);
+        return ctx.webPage({ title: r.title || topic, text: r.text || "", source: r.source || "" });
+      }
+      return ctx.webPage(prevWebInfo(ctx));
+    },
     "plan": function (a, ctx) {
       if (!ctx.architecture) throw new Error("architecture briefs need the browser workspace");
       return ctx.architecture(a.kind || a.desc || "app", a.desc || a.kind || "");
@@ -1290,7 +1314,13 @@
       return ctx.web.weather(a.place);
     },
     "text.summarize": function (a, ctx) {
-      return summarizeText(resolveText(a.text, ctx), a.n ? Number(a.n) : 3);
+      const text = resolveText(a.text, ctx);
+      const out = summarizeText(text, a.n ? Number(a.n) : 3);
+      const last = ctx.prevResult;
+      if (last && last.source) {
+        return { text: out, source: last.source, title: last.title || "" };
+      }
+      return out;
     },
   };
 
@@ -1319,6 +1349,8 @@
     lines.push("  change the page title to … / add a theme toggle / make this project light");
     lines.push("  add a footer note saying …");
     lines.push("  wikipedia ursula k le guin / define serendipity / weather in reykjavik");
+    lines.push("  wikipedia ada lovelace then build a page about it");
+    lines.push("  build a page about grace hopper · make a website about it");
     lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
     lines.push("  remember my favorite color is teal · what do you remember · forget my favorite color");
     lines.push("  what was i working on · what did i build last");
@@ -1394,8 +1426,9 @@
     const steps = splitPrompt(query);
     const results = [];
     let prev = "";
+    let prevResult = null;
     for (const step of steps) {
-      const local = Object.assign({}, ctx, { prev, step });
+      const local = Object.assign({}, ctx, { prev, prevResult, step });
       let result;
       const skill = match(step);
       if (skill) {
@@ -1412,7 +1445,7 @@
         result = { text: "no command matched that step", error: true };
       }
       result.step = step;
-      if (result && result.text) prev = result.text;
+      if (result && result.text) { prev = result.text; prevResult = result; }
       results.push(result);
     }
     return results;

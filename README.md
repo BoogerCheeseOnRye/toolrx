@@ -99,8 +99,11 @@ and the last build live under `localStorage`; nothing is inferred or sent
 anywhere, and `what did i build last` reports the most recent project. It pulls
 CORS-safe web data into `prev`:
 `wikipedia ada lovelace`, `define serendipity`, `weather in reykjavik`,
-`duckduckgo …`, then `summarize it` or `build a page about it`. Results show
-their source URL; failures are reported honestly rather than invented.
+`duckduckgo …`, then `summarize it` or `build a page about it`. A page build
+writes a real research project under `projects/<slug>/` with the title,
+paragraphs, and source link; `build a page about ada lovelace` performs the
+lookup and the build in one step. Results show their source URL; failures are
+reported honestly rather than invented.
 
 Rebuild the library and the Pages copy after editing the dashboard, patterns,
 router, or model:

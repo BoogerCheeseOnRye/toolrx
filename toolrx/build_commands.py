@@ -585,6 +585,32 @@ for kind in BUILD_KINDS:
             "^" + pat.replace("{k}", re.escape(kind)).replace("{d}", REST) + "$",
             {"kind": kind, "desc": "$1"}, pat, "build")
 
+# --------------------------------------------------------- web → build ---
+# A web lookup feeds `prev`; these patterns turn that text into a real
+# research page project. Pronoun forms must come before the {topic} forms.
+for pat in ("build a page about it", "build a page about that", "build a page about this",
+            "build a webpage about it", "build a web page about it",
+            "make a page about it", "make a page about that",
+            "make a webpage about it", "make a web page about it",
+            "build an article about it", "build an article about that",
+            "make an article about it", "make an article about that",
+            "build a website about it", "make a website about it",
+            "turn it into a page", "turn that into a page",
+            "turn it into an article", "turn that into an article",
+            "build a page from it", "build a page from that",
+            "make a page from it", "make a page from that"):
+    add(f"build.web.prev.{len(COMMANDS)}", "build.web",
+        "^" + re.escape(pat) + "$", {}, pat, "build")
+
+for pat in ("build a page about {topic}", "build a webpage about {topic}",
+            "build a web page about {topic}", "make a page about {topic}",
+            "make a webpage about {topic}", "make a web page about {topic}",
+            "build an article about {topic}", "make an article about {topic}",
+            "build a website about {topic}", "make a website about {topic}",
+            "turn {topic} into a page", "turn {topic} into an article"):
+    add(f"build.web.topic.{len(COMMANDS)}", "build.web",
+        "^" + pat.replace("{topic}", REST) + "$", {"topic": "$1"}, pat, "build")
+
 for pat in ("build a program that {desc}", "build a site that {desc}",
             "make an app that {desc}", "build me a program that {desc}",
             "make a program that {desc}", "build {desc}"):

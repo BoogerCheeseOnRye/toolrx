@@ -1571,6 +1571,14 @@
     forum: { files: ["index.html", "styles.css", "app.js"], state: "threads [{id,title,author,posts[]}]", modules: ["list", "open thread", "reply", "new thread"], flow: "open → render replies → append → save", extend: "categories, votes, quoting", steps: ["threads contain posts", "open one thread at a time", "append replies to the thread", "persist the whole tree"] },
     chat: { files: ["index.html", "styles.css", "app.js"], state: "messages [{who,text}]", modules: ["append", "render", "deterministic reply"], flow: "send → append → render → reply → append", extend: "rooms, presence, real transport", steps: ["append and scroll", "persist the last N", "reply from a pattern function", "keep transport separate"] },
     landing: { files: ["index.html", "styles.css", "app.js"], state: "none (content only)", modules: ["hero", "features", "call to action"], flow: "static layout, one small enhancement", extend: "forms, pricing, analytics", steps: ["one message per section", "one primary action", "responsive grid", "no unnecessary script"] },
+    research: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "the article text, its title, and the source URL",
+      modules: ["source normalization", "paragraph rendering", "reading-progress bar"],
+      flow: "lookup result → clean text → render article → link the original source",
+      extend: "citations, related links, local notes, a saved reading list",
+      steps: ["keep the fetched text separate from presentation", "escape the text before rendering", "show the source URL explicitly", "add one small progressive enhancement"]
+    },
     dashboard: { files: ["index.html", "styles.css", "app.js"], state: "metrics array", modules: ["cards", "chart", "refresh"], flow: "state → card + chart render", extend: "filters, time ranges, live data", steps: ["define the metric shape", "render cards from data", "draw a simple chart", "keep refresh deterministic"] },
     game: {
       files: ["index.html", "styles.css", "app.js"],
@@ -1748,7 +1756,7 @@
     breakout: "Breakout", pong: "Pong", "2048": "2048", minesweeper: "Minesweeper",
     tetris: "Tetris", maze: "Maze", adventure: "Hollow Archive",
     typing: "Typing test", social: "Tiny social feed", blog: "Journal",
-    forum: "Forum", chat: "Chat"
+    forum: "Forum", chat: "Chat", research: "Research note"
   };
 
   function wants3d(desc) {
@@ -1805,9 +1813,9 @@
    * using the bundled page, so nothing depends on file:// fetch(). */
   function project(kind, desc, opts) {
     opts = opts || {};
-    var real = canonical(kind, desc);
-    var name = titleFor(real, desc);
-    var html = build(real, desc, opts);
+    var real = opts.real || canonical(kind, desc);
+    var name = opts.name || titleFor(real, desc);
+    var html = opts.html || build(real, desc, opts);
     var css = "", js = "";
     html = html.replace(/<style>([\s\S]*?)<\/style>/, function (_, inner) {
       css = inner.trim() + "\n";
@@ -1819,9 +1827,11 @@
     });
     html = html.replace(/offline · self-contained/, "offline · separate files");
     var a = archFor(real);
-    var slug = real === "playground" ? "app" : real;
-    if (real === "rpg" && rpgTheme(desc)) slug = slugOf(rpgTheme(desc).title);
-    else if (wants3d(desc) && GAME3D[real]) slug = slugOf(real + "-3d");
+    var slug = opts.slug || (real === "playground" ? "app" : real);
+    if (!opts.slug) {
+      if (real === "rpg" && rpgTheme(desc)) slug = slugOf(rpgTheme(desc).title);
+      else if (wants3d(desc) && GAME3D[real]) slug = slugOf(real + "-3d");
+    }
     var readme = [
       "# " + name,
       "",
@@ -1909,11 +1919,60 @@
     };
   }
 
+  /* A research page assembled from an existing lookup. The caller has already
+   * fetched the text; this function only cleans, escapes, and packages it, so
+   * the result is deterministic and works offline like any other build. */
+  function webPage(info) {
+    info = info || {};
+    var title = String(info.title || "Research note").trim().slice(0, 90) || "Research note";
+    var raw = String(info.text || "").trim();
+    var lines = raw.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+    if (lines.length && lines[0].toLowerCase() === title.toLowerCase()) lines.shift();
+    var paras = [];
+    var also = [];
+    var src = String(info.source || "").trim();
+    lines.forEach(function (line) {
+      var ms = /^source:\s*(.+)$/i.exec(line);
+      if (ms) { if (!src) src = ms[1].trim(); return; }
+      var ma = /^also:\s*(.+)$/i.exec(line);
+      if (ma) { also = ma[1].split(/\s*·\s*/).filter(Boolean); return; }
+      paras.push(line);
+    });
+    var body = paras.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("\n");
+    var srcHtml = src
+      ? '<p class="src">source: <a href="' + esc(src) + '" target="_blank" rel="noopener noreferrer">'
+          + esc(src) + '</a></p>'
+      : '<p class="src">no source URL was returned for this lookup.</p>';
+    var alsoHtml = also.length
+      ? '<p class="src">related: ' + also.map(esc).join(" · ") + '</p>' : "";
+    var html = shell({
+      title: title,
+      sub: info.sub || "a research page from a live lookup",
+      theme: info.theme,
+      css: ".research{max-width:760px;margin:0 auto}.research h2{margin:6px 0 16px;font-size:clamp(22px,4vw,32px);letter-spacing:-.02em}" +
+        ".research p{font-size:17px;line-height:1.7}.research .src{font-size:13px;color:var(--muted);word-break:break-word}" +
+        ".research a{color:var(--accent)}#prog{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:9;transition:width .1s linear}",
+      body: '<div id="prog"></div><article class="card research">' +
+        '<span class="badge">from the web</span>' +
+        '<h2>' + esc(title) + '</h2>' + body + srcHtml + alsoHtml +
+        '<p class="muted small">assembled deterministically by toolrx from the lookup above. ' +
+        'the page is offline; the link is the original source.</p></article>',
+      js: 'var bar=document.getElementById("prog");' +
+        'function tick(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;' +
+        'var y=h.scrollTop||document.body.scrollTop||0;bar.style.width=(max>0?Math.min(100,y/max*100):0)+"%";}' +
+        'document.addEventListener("scroll",tick,{passive:true});tick();'
+    });
+    return project("research", title, {
+      html: html, name: title, slug: slugOf(title), real: "research", theme: info.theme
+    });
+  }
+
   root.toolrxTemplates = {
     build: build,
     title: title,
     canonical: canonical,
     project: project,
+    webPage: webPage,
     architecture: architecture,
     blueprint: blueprint,
     brief: brief,

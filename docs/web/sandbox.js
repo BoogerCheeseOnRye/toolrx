@@ -429,11 +429,7 @@
       + "preview re-bundled from the project files";
   }
 
-  function buildProject(kind, desc) {
-    const t = root.toolrxTemplates;
-    if (!t || !t.project) throw new Error("build templates are not loaded");
-    const theme = preview.theme === "light" ? "light" : "dark";
-    const built = t.project(kind, desc, { theme: theme });
+  function installBuilt(built, desc) {
     // Reuse a project with the same kind + description; otherwise create one.
     let p = null;
     for (const k in projects.items) {
@@ -457,18 +453,34 @@
     writeProjectFiles(p);
     preview = {
       html: p.bundled, kind: built.kind, desc: String(desc || ""),
-      title: built.title, theme: theme, at: Date.now(),
+      title: built.title, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
     };
     notifyPreview();
     remember("last_build", {
       title: built.title, kind: built.kind, desc: String(desc || ""),
-      slug: p.slug, theme: theme, at: Date.now(),
+      slug: p.slug, theme: preview.theme, at: Date.now(),
     });
     const names = filesForProject(p);
     return 'built "' + built.title + '" → projects/' + p.slug + " (" + names.length + " files)\n"
       + "  " + names.join(" · ") + "\n"
       + "preview updated · active project: " + p.slug + "\n"
       + "try: show project files · read projects/" + p.slug + "/ARCHITECTURE.md";
+  }
+
+  function buildProject(kind, desc) {
+    const t = root.toolrxTemplates;
+    if (!t || !t.project) throw new Error("build templates are not loaded");
+    const theme = preview.theme === "light" ? "light" : "dark";
+    return installBuilt(t.project(kind, desc, { theme: theme }), desc);
+  }
+
+  function buildWebPage(info) {
+    const t = root.toolrxTemplates;
+    if (!t || !t.webPage) throw new Error("build templates are not loaded");
+    const theme = preview.theme === "light" ? "light" : "dark";
+    const built = t.webPage(Object.assign({}, info, { theme: theme }));
+    const desc = "web page: " + built.title;
+    return installBuilt(built, desc);
   }
 
   /* ------------------------------------------------------------- chat ----- */
@@ -736,6 +748,7 @@
       preview: function () { return defaultPreview(); },
       theme: function (name) { return setTheme(name); },
       build: function (kind, desc) { return buildPage(kind, desc); },
+      webPage: function (info) { return buildWebPage(info); },
       architecture: function (kind, desc) {
         const t = root.toolrxTemplates;
         if (!t || !t.architecture) throw new Error("templates are not loaded");
