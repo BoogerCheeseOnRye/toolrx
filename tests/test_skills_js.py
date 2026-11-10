@@ -34,6 +34,9 @@ global.dispatchEvent = () => {};
 global.toolrxRouter = { load: () => ({}), route: () => ({ tool: 'none', args: {}, confidence: 0 }) };
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 eval(fs.readFileSync(process.argv[3], 'utf8'));
+const WEB = require('path').dirname(process.argv[4]);
+eval(fs.readFileSync(require('path').join(WEB, 'engine2d.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'engine2d.embed.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[4], 'utf8'));
 
 (async () => {
@@ -111,6 +114,63 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.catalogEmpty = self.toolrxSkills.catalog('zzzznotacommand', '', 10);
   out.catalogRpg = self.toolrxSkills.catalog('rpg', '', 12);
   out.catalogFill = self.toolrxSkills.catalog('tetris', '', 8);
+  const specOf = (k, d) => {
+    const s = self.toolrxTemplates.spec(k, d);
+    return { spec: s, line: self.toolrxTemplates.specLine(s) };
+  };
+  out.spec = {
+    p3d: specOf('3d platformer', 'with a neon city theme'),
+    isoRpg: specOf('isometric rpg', 'in a desert with 3 quests'),
+    shooter: specOf('top-down shooter', 'pixel art, 3 levels'),
+    maze: specOf('first-person maze', 'low-poly'),
+    racing: specOf('racer', '2d at night, seed 42'),
+    rpg: specOf('rpg', ''),
+    repeat: specOf('top-down shooter', 'pixel art, 3 levels'),
+    seed: specOf('platformer', 'seed 42'),
+    tower: specOf('tower defense', '')
+  };
+  out.engine = {};
+  for (const kind of ['platformer', 'snake', 'breakout', 'shooter', 'racer']) {
+    const p = self.toolrxTemplates.project(kind, '', {});
+    out.engine[kind] = {
+      files: Object.keys(p.files), html: p.html,
+      src: p.files['engine2d.js'] || '', spec: p.specLine || ''
+    };
+  }
+  out.engineRuntime = await new Promise(resolve => {
+    const calls = { update: 0, draw: 0, ctx: false };
+    const grad = { addColorStop() {} };
+    const canvas = {
+      width: 0, height: 0,
+      getContext: () => ctx,
+      addEventListener() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 180 }),
+    };
+    const ctx = new Proxy({}, {
+      get(t, p) {
+        if (p === 'createLinearGradient' || p === 'createRadialGradient') return () => grad;
+        if (p === 'canvas') return canvas;
+        return () => {};
+      },
+      set() { return true; },
+    });
+    let frames = 0;
+    const prevRaf = global.requestAnimationFrame;
+    global.requestAnimationFrame = fn => {
+      if (frames++ < 4) setTimeout(() => fn(frames * 16), 0);
+      return frames;
+    };
+    const E = self.toolrxEngine2d.create({ canvas, width: 320, height: 180 });
+    // Games assign these after create(); the loop must pick them up.
+    E.update = () => { calls.update++; };
+    E.draw = c => { calls.draw++; calls.ctx = c === ctx; };
+    E.start();
+    setTimeout(() => {
+      E.stop();
+      global.requestAnimationFrame = prevRaf;
+      resolve(calls);
+    }, 180);
+  });
   out.multiply = await run('multiply 67 and 420');
   out.square = await run('square 67');
   out.chain = await run('convert 5 km to miles then square the result');
@@ -258,6 +318,17 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   await self.toolrxWeb.init('model.json');
   self.toolrxWeb.reset();
   out.sandbox = {};
+  out.sandbox.engineBuild = (await self.toolrxWeb.prompt('build a platformer game'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  let eng = self.toolrxWeb.project();
+  out.sandbox.engine = {
+    slug: eng.slug,
+    files: eng.files.slice().sort(),
+    previewHasEngine: /toolrxEngine2d/.test(self.toolrxWeb.preview().html),
+    previewHasExternalTag: /src=["']engine2d\.js/.test(self.toolrxWeb.preview().html),
+    readme: self.toolrxWeb.projectFile(eng.slug, 'README.md'),
+    arch: self.toolrxWeb.projectFile(eng.slug, 'ARCHITECTURE.md')
+  };
   const h1 = html => ((String(html).match(/<h1>([^<]*)<\/h1>/) || [])[1] || '');
   out.sandbox.build = (await self.toolrxWeb.prompt('build an rpg based on king arthur'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
@@ -429,6 +500,52 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertTrue(tetris)
         self.assertTrue(all("tetris" in r["d"].lower() for r in tetris))
         self.assertTrue(all("{" not in r["d"] for r in tetris))
+
+    def test_build_spec_parses_dimension_view_art_scale_seed(self):
+        s = self.out["spec"]
+        self.assertEqual(s["p3d"]["spec"]["dim"], "3D")
+        self.assertEqual(s["p3d"]["spec"]["view"], "side-scroller")
+        self.assertEqual(s["isoRpg"]["spec"]["view"], "isometric")
+        self.assertEqual(s["isoRpg"]["spec"]["scale"], "3 quests")
+        self.assertEqual(s["shooter"]["spec"]["view"], "top-down")
+        self.assertEqual(s["shooter"]["spec"]["scale"], "3 levels")
+        self.assertEqual(s["maze"]["spec"]["view"], "first-person")
+        self.assertEqual(s["maze"]["spec"]["dim"], "3D")
+        self.assertEqual(s["maze"]["spec"]["art"], "low-poly")
+        self.assertEqual(s["racing"]["spec"]["seed"], 42)
+        self.assertEqual(s["racing"]["spec"]["theme"], "night")
+        self.assertEqual(s["seed"]["spec"]["seed"], 42)
+
+    def test_spec_is_deterministic_and_explains_closest_match(self):
+        self.assertEqual(self.out["spec"]["shooter"]["spec"],
+                         self.out["spec"]["repeat"]["spec"])
+        self.assertIn("closest supported: shooter", self.out["spec"]["tower"]["line"])
+        self.assertIn("seed", self.out["spec"]["rpg"]["line"])
+
+    def test_engine_projects_ship_the_shared_runtime(self):
+        for kind in ("platformer", "snake", "breakout", "shooter", "racer"):
+            e = self.out["engine"][kind]
+            self.assertIn("engine2d.js", e["files"])
+            self.assertIn('src="engine2d.js"', e["html"])
+            self.assertEqual(e["html"].count('src="engine2d.js"'), 1,
+                             "engine tag must appear once or the preview double-inlines")
+            self.assertGreater(len(e["src"]), 4000)
+            self.assertIn("toolrxEngine2d", e["src"])
+
+    def test_engine_runs_handlers_assigned_after_create(self):
+        r = self.out["engineRuntime"]
+        self.assertGreater(r["update"], 0, "engine loop never called E.update")
+        self.assertGreater(r["draw"], 0, "engine loop never called E.draw")
+        self.assertTrue(r["ctx"], "E.draw should receive the 2d context")
+
+    def test_preview_inlines_the_engine_and_keeps_files(self):
+        e = self.out["sandbox"]["engine"]
+        self.assertIn("engine2d.js", e["files"])
+        self.assertTrue(e["previewHasEngine"])
+        self.assertFalse(e["previewHasExternalTag"])
+        self.assertIn("engine2d.js", e["readme"])
+        self.assertIn("engine2d.js", e["arch"])
+        self.assertIn("spec ·", self.out["sandbox"]["engineBuild"][0]["text"])
 
     def test_math_prompts(self):
         self.assertEqual(self.out["multiply"][0]["text"], "28140")

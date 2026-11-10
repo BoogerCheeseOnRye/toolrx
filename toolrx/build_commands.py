@@ -556,6 +556,15 @@ BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdo
                "rpg", "rpg game", "role playing game", "platformer", "snake",
                "snake game", "breakout", "pong", "2048", "minesweeper", "tetris",
                "maze", "maze game", "adventure game", "text adventure",
+               "shooter", "top-down shooter", "twin-stick shooter", "wave shooter",
+               "shmup", "bullet hell", "racer", "racing game", "racing",
+               "kart racer", "kart game", "roguelike", "roguelike game",
+               "dungeon crawler", "tower defense", "tower defense game",
+               "farming sim", "farming game", "exploration game",
+               "3d platformer", "3d rpg", "3d maze", "3d snake", "3d breakout",
+               "isometric rpg", "isometric platformer", "top-down rpg",
+               "first-person maze", "third-person platformer",
+               "2d platformer", "2d rpg", "2d shooter",
                "typing test", "typing game", "social media website", "social network",
                "social feed", "blog", "blog website", "forum", "forum website",
                "chat app", "chat website", "chat page"]
@@ -584,6 +593,26 @@ for kind in BUILD_KINDS:
         add(f"build.variant.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}", "build",
             "^" + pat.replace("{k}", re.escape(kind)).replace("{d}", REST) + "$",
             {"kind": kind, "desc": "$1"}, pat, "build")
+
+# Explicit seed: `build a platformer seed 42` replays an exact world.
+SEED = r"(\d{1,10})"
+for kind in BUILD_KINDS:
+    for pat in ("build a {k} seed {n}", "build an {k} seed {n}",
+                "build a {k} game seed {n}", "build an {k} game seed {n}",
+                "make a {k} seed {n}", "make a {k} game seed {n}"):
+        add(f"build.seed.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}", "build",
+            "^" + pat.replace("{k}", re.escape(kind)).replace("{n}", SEED) + "$",
+            {"kind": kind, "desc": "seed $1"}, pat, "build")
+
+# Dimension prefixes: `build a 3d platformer`, `build an isometric rpg`.
+for dim in ("2d", "3d", "isometric", "top-down", "first-person", "third-person"):
+    for kind in ("rpg", "platformer", "shooter", "maze", "racer", "snake",
+                 "breakout", "pong", "tetris"):
+        for pat in ("build a {dim} {k} game", "build an {dim} {k} game",
+                    "make a {dim} {k} game", "build a {dim} {k}"):
+            add(f"build.dim.{dim}.{kind}.{len(COMMANDS)}", "build",
+                "^" + pat.replace("{dim}", re.escape(dim)).replace("{k}", re.escape(kind)) + "$",
+                {"kind": kind, "desc": dim}, pat, "build")
 
 # --------------------------------------------------------- web → build ---
 # A web lookup feeds `prev`; these patterns turn that text into a real

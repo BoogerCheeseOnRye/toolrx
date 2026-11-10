@@ -43,9 +43,32 @@ later fill a validated spec or propose a patch, but it never becomes required.
   that this is not model inference.
 - Later: show cache hits and p50/p95 plan time in the same slot.
 
-### 12. Build spec parser v2
+### 12. Build spec parser v2 — done
 
-Replace ad-hoc `desc` sniffing with a deterministic parser. Accept:
+`buildSpec(kind, desc)` now returns
+`{dim, view, genre, art, theme, scale, seed, engine}` and `specLine()` renders
+the one-line plan shown in chat. Dimensions, views, art directions, scale
+(`64x64`, `3 levels`, `5 quests`), and explicit `seed N` are parsed; the default
+seed is a hash of the normalized prompt. Genre aliases map to real starters
+(`tower defense` → shooter, `roguelike` → RPG, `racing`/`kart` → racer) and the
+reply names the closest supported option when the request is approximate.
+`build a 3d platformer`, `build an isometric rpg in a desert with 3 quests`,
+`build a top-down shooter with pixel art, 3 levels`, `build a first-person maze,
+low-poly`, and `build a 2d racing game at night, seed 42` all produce inspectable
+specs and complete projects.
+
+### 13. Shared 2D engine — done
+
+`toolrx/web/engine2d.js` is a dependency-free runtime with a fixed-step loop,
+pause/resume, DPR-aware resizing, keyboard/pointer/touch/on-screen buttons,
+camera follow, tile and sprite drawing, AABB physics, a particle pool, and
+WebAudio beeps with a mute switch. Platformer, snake, breakout, top-down
+shooter, and kart racer build on it. Generated projects ship `engine2d.js` as a
+real file; `bundleProject()` inlines the same source for the preview.
+`toolrx/embed_engine.py` generates `engine2d.embed.js` from the source, and the
+PWA cache (`toolrx-shell-v2`) carries both files.
+
+The parser accepts:
 
 - dimension: `2d`, `3d`, `isometric`, `top-down`, `side-scroller`,
   `first-person`, `third-person`
@@ -72,22 +95,6 @@ return the closest supported options instead of falling through to chat.
 
 **Done when** 40+ phrasing tests pass, identical prompts yield identical specs,
 and the chat output names the chosen spec.
-
-### 13. Shared 2D engine
-
-Extract `engine2d.js` (roughly <12 KB, no dependencies):
-
-- fixed-step loop, pause, resize, device-pixel-ratio scaling
-- keyboard, pointer, touch, and on-screen buttons
-- camera, tilemap, sprite atlas, layered draw order
-- AABB collision, simple physics, particle pool
-- WebAudio beeps with a mute switch
-
-Platformer, top-down, shooter, and racing templates move onto it. Projects ship
-the engine as a real file, so a later patch can change movement without
-regenerating the world.
-
-**Done when** at least three genres share it and each project runs offline.
 
 ### 14. Sprite pack pipeline
 
@@ -212,7 +219,9 @@ prompt produces the same spec and files as the deterministic path.
 
 ## Open questions
 
-- Which GitHub sprite repository, and what licence does it carry?
-- For 3D, lead with low-poly WebGL or stay isometric-first?
-- Should the first batch stop after engines and the RPG world, or continue
-  through the full library before the LLM adapter?
+- The supplied sprite repository (`github.com/angais/pixel-art-atlas-1.4m`)
+  returns 404; step 14 needs the public URL and its licence. Procedural sprites
+  remain the fallback until then.
+- 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
+- Steps 12–13 are complete; the next batch is 15 (shared 3D engine) and 16
+  (RPG world v2), with 14 unblocked as soon as the pack URL is known.

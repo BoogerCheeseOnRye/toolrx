@@ -858,8 +858,8 @@
     return null;
   }
 
-  function applyRpgTheme(html, desc) {
-    var t = rpgTheme(desc);
+  function applyRpgTheme(html, desc, theme) {
+    var t = theme || rpgTheme(desc);
     if (!t) return html;
     var bossCap = t.boss.charAt(0).toUpperCase() + t.boss.slice(1);
     var pairs = [
@@ -991,15 +991,16 @@
       "el('load').addEventListener('click',function(){try{var d=JSON.parse(localStorage.getItem('toolrx.rpg.v1'));if(d&&d.S){S=d.S;draw();paint();say('Game loaded.');}}catch(e){say('no save found');}});",
       "fresh();"
     ].join("\n");
-    return applyRpgTheme(shell({ title: "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG", body: body, css: css, js: js, theme: opts.theme }), desc);
+    var rpgPack = rpgTheme(desc) || (opts.spec ? rpgDefault(opts.spec.seed) : null);
+    return applyRpgTheme(shell({ title: rpgPack ? rpgPack.title : "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG", body: body, css: css, js: js, theme: opts.theme }), desc, rpgPack);
   }
 
   /* --------------------------------------------------------- platformer -- */
   function platformer(desc, opts) {
     var body = [
       '<div class="card" style="padding:12px">',
-      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">coins <b id="score" style="color:var(--text)">0 / 8</b></span><span class="pill" id="msg">reach the flag →</span></div>',
-      '<canvas id="cv" width="720" height="420" style="width:100%;height:auto;border-radius:12px;background:#0b1226;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">coins <b id="score" style="color:var(--text)">0 / 9</b></span><span class="pill" id="msg">reach the flag →</span></div>',
+      '<canvas id="cv" width="720" height="420" style="width:100%;height:auto;border-radius:12px;background:#0b1226;border:1px solid var(--border);image-rendering:pixelated"></canvas>',
       '<div class="row" style="justify-content:center;margin-top:10px;gap:10px">',
       '<button class="btn ghost" data-k="left" type="button">◀</button>',
       '<button class="btn ghost" data-k="jump" type="button">jump</button>',
@@ -1008,31 +1009,31 @@
       '</div></div>'
     ].join("");
     var js = [
-      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),msg=document.getElementById('msg'),scoreEl=document.getElementById('score');",
-      "var W=720,H=420,keys={},P={x:40,y:300,w:26,h:32,vx:0,vy:0,on:false},coins=[],cam=0;",
-      "var PLAT=[[0,388,720,32],[120,320,120,16],[300,270,130,16],[490,220,120,16],[620,320,100,16],[250,150,90,16],[40,210,90,16]];",
-      "var GOAL={x:672,y:158,w:24,h:60};",
-      "function reset(){P={x:40,y:300,w:26,h:32,vx:0,vy:0,on:false};coins=[[140,292],[160,292],[330,242],[350,242],[520,192],[540,192],[285,122],[660,292]].map(function(p){return {x:p[0],y:p[1],got:false};});msg.textContent='reach the flag →';scoreEl.textContent='0 / 8';}",
-      "function loop(){var left=keys.left||keys.a,right=keys.right||keys.d;P.vx=(right?1:0)*3.4-(left?1:0)*3.4;P.vy+=0.5;if(P.vy>13)P.vy=13;",
-      "P.x+=P.vx;P.y+=P.vy;P.on=false;",
-      "PLAT.forEach(function(p){if(P.x+P.w>p[0]&&P.x<p[0]+p[2]&&P.y+P.h>p[1]&&P.y+P.h-P.vy<=p[1]+6&&P.vy>=0){P.y=p[1]-P.h;P.vy=0;P.on=true;}});",
-      "if(P.x<0)P.x=0;if(P.x+P.w>W)P.x=W-P.w;if(P.y>H+80)reset();",
-      "coins.forEach(function(c){if(!c.got&&Math.abs(P.x+P.w/2-c.x)<20&&Math.abs(P.y+P.h/2-c.y)<24){c.got=true;var n=coins.filter(function(z){return z.got}).length;scoreEl.textContent=n+' / 8';}});",
-      "if(P.x+P.w>GOAL.x&&P.x<GOAL.x+GOAL.w&&P.y+P.h>GOAL.y&&P.y<GOAL.y+GOAL.h){var n=coins.filter(function(z){return z.got}).length;msg.textContent='flag reached · '+n+'/8 coins';}",
-      "draw();requestAnimationFrame(loop);}",
-      "function draw(){var g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b1226');g.addColorStop(1,'#111c3a');cx.fillStyle=g;cx.fillRect(0,0,W,H);",
-      "cx.fillStyle='rgba(167,139,250,.18)';for(var i=0;i<6;i++){cx.beginPath();cx.arc(80+i*120,70+(i%3)*18,26,0,7);cx.fill();}",
-      "cx.fillStyle='#22d3ee';PLAT.forEach(function(p){cx.fillRect(p[0],p[1],p[2],p[3]);});",
-      "cx.fillStyle='#fbbf24';coins.forEach(function(c){if(c.got)return;cx.beginPath();cx.arc(c.x,c.y,7,0,7);cx.fill();});",
-      "cx.fillStyle='#34d399';cx.fillRect(GOAL.x,GOAL.y,GOAL.w,GOAL.h);cx.fillStyle='#04121a';cx.font='bold 16px system-ui';cx.fillText('GO',GOAL.x+1,GOAL.y+34);",
-      "cx.fillStyle='#f8fafc';cx.fillRect(P.x,P.y,P.w,P.h);cx.fillStyle='#0f172a';cx.fillRect(P.x+5,P.y+7,6,6);cx.fillRect(P.x+16,P.y+7,6,6);}",
-      "document.addEventListener('keydown',function(e){var k=e.key.toLowerCase();keys[k]=true;if(k===' '||k==='arrowup'||k==='w'){if(P.on){P.vy=-11;P.on=false;}e.preventDefault();}});",
-      "document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});",
-      "document.querySelectorAll('[data-k]').forEach(function(b){var k=b.dataset.k;",
-      "var on=function(e){e.preventDefault();if(k==='jump'){if(P.on){P.vy=-11;P.on=false;}}else keys[k]=true;};",
-      "var off=function(e){e.preventDefault();keys[k]=false;};",
-      "b.addEventListener('touchstart',on,{passive:false});b.addEventListener('touchend',off,{passive:false});b.addEventListener('mousedown',on);b.addEventListener('mouseup',off);b.addEventListener('mouseleave',off);});",
-      "document.getElementById('reset').addEventListener('click',reset);reset();loop();"
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine2d.create({canvas:cv,width:720,height:420,background:'#0b1226'});",
+      "var msg=document.getElementById('msg'),scoreEl=document.getElementById('score'),WORLD=1180;",
+      "var P={x:40,y:300,w:26,h:34,vx:0,vy:0,on:false},coins=[],goal={x:1110,y:150,w:26,h:96};",
+      "var PLAT=[[0,388,1180,32],[150,330,130,16],[340,280,150,16],[560,230,140,16],[760,300,110,16],[930,210,120,16],[40,210,100,16]];",
+      "function solids(){return PLAT.map(function(p){return {x:p[0],y:p[1],w:p[2],h:p[3]};});}",
+      "function reset(){P={x:40,y:300,w:26,h:34,vx:0,vy:0,on:false};coins=[[170,302],[190,302],[370,252],[390,252],[600,202],[620,202],[790,272],[960,182],[990,182]].map(function(p){return {x:p[0],y:p[1],got:false};});msg.textContent='reach the flag →';scoreEl.textContent='0 / 9';E.camera.x=0;}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],jump:[' ','ArrowUp','w']});",
+      "E.bindButtons();",
+      "E.update=function(dt){var left=E.held('left'),right=E.held('right');P.vx=(right?230:0)-(left?230:0);",
+      "if(E.tap('jump')&&P.on){P.vy=-470;P.on=false;E.beep(520,.07,'square');}",
+      "E.physics(P,solids(),dt,{gravity:1500,maxFall:900});",
+      "if(P.x<0)P.x=0;if(P.x+P.w>WORLD)P.x=WORLD-P.w;if(P.y>470){E.beep(160,.12,'sawtooth');reset();}",
+      "coins.forEach(function(c){if(!c.got&&Math.abs(P.x+P.w/2-c.x)<22&&Math.abs(P.y+P.h/2-c.y)<26){c.got=true;E.beep(880,.05,'triangle');var n=coins.filter(function(z){return z.got}).length;scoreEl.textContent=n+' / 9';}});",
+      "if(P.x+P.w>goal.x&&P.x<goal.x+goal.w&&P.y+P.h>goal.y&&P.y<goal.y+goal.h){var n=coins.filter(function(z){return z.got}).length;msg.textContent='flag reached · '+n+'/9 coins';E.beep(1040,.15,'triangle');}",
+      "E.follow(P.x+P.w/2,P.y+P.h/2,.12,WORLD,420);};",
+      "E.draw=function(ctx){var g=ctx.createLinearGradient(0,0,0,420);g.addColorStop(0,'#0b1226');g.addColorStop(1,'#111c3a');ctx.fillStyle=g;ctx.fillRect(0,0,720,420);",
+      "ctx.save();ctx.translate(-E.camera.x,0);",
+      "for(var i=0;i<9;i++){ctx.fillStyle='rgba(167,139,250,.16)';ctx.beginPath();ctx.arc(90+i*140,70+(i%3)*18,26,0,7);ctx.fill();}",
+      "PLAT.forEach(function(p){E.rect(p[0],p[1],p[2],p[3],'#22d3ee');E.rect(p[0],p[1],p[2],3,'#67e8f9');});",
+      "coins.forEach(function(c){if(!c.got)E.circle(c.x,c.y,7,'#fbbf24');});",
+      "E.rect(goal.x,goal.y,goal.w,goal.h,'#34d399');E.text('GO',goal.x+2,goal.y+48,15,'#04121a','center');",
+      "E.rect(P.x,P.y,P.w,P.h,'#f8fafc');E.rect(P.x+5,P.y+8,7,7,'#0f172a');E.rect(P.x+16,P.y+8,7,7,'#0f172a');",
+      "E.drawParticles();ctx.restore();};",
+      "document.getElementById('reset').addEventListener('click',reset);reset();E.start();"
     ].join("\n");
     return shell({ title: "Platformer", sub: "run, jump, collect coins, reach the flag", body: body, js: js, theme: opts.theme });
   }
@@ -1042,29 +1043,33 @@
     var body = [
       '<div class="card" style="padding:12px;text-align:center">',
       '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><span class="pill" id="msg">arrows / swipe</span></div>',
-      '<canvas id="cv" width="480" height="360" style="width:100%;height:auto;border-radius:12px;background:#08101f;border:1px solid var(--border)"></canvas>',
+      '<canvas id="cv" width="480" height="360" style="width:100%;height:auto;border-radius:12px;background:#08101f;border:1px solid var(--border);image-rendering:pixelated"></canvas>',
       '<div class="row" style="justify-content:center;margin-top:10px"><button class="btn" id="go" type="button">Start</button><button class="btn ghost" id="reset" type="button">Reset</button></div>',
       '</div>'
     ].join("");
     var js = [
-      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),G=24,C=20,scoreEl=document.getElementById('score'),msg=document.getElementById('msg');",
-      "var snake,dir,next,food,score,dead,iv;",
-      "function place(){var ok=false,f;while(!ok){f={x:Math.floor(Math.random()*G),y:Math.floor(Math.random()*G)};ok=!snake.some(function(s){return s.x===f.x&&s.y===f.y;});}return f;}",
-      "function reset(){snake=[{x:8,y:10},{x:7,y:10},{x:6,y:10}];dir={x:1,y:0};next=dir;food=place();score=0;dead=false;scoreEl.textContent='0';msg.textContent='arrows / swipe';draw();}",
-      "function step(){if(dead)return;dir=next;var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};",
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine2d.create({canvas:cv,width:480,height:360,background:'#08101f'});",
+      "var G=24,C=20,scoreEl=document.getElementById('score'),msg=document.getElementById('msg');",
+      "var snake,dir,next,food,score,dead,active;",
+      "function place(){var ok=false,f;while(!ok){f={x:Math.floor(Math.random()*G),y:Math.floor(Math.random()*C)};ok=!snake.some(function(s){return s.x===f.x&&s.y===f.y;});}return f;}",
+      "function reset(){snake=[{x:8,y:10},{x:7,y:10},{x:6,y:10}];dir={x:1,y:0};next=dir;food=place();score=0;dead=false;active=false;scoreEl.textContent='0';msg.textContent='press start';}",
+      "function step(){if(dead||!active)return;dir=next;var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};",
       "if(h.x<0)h.x=G-1;if(h.x>=G)h.x=0;if(h.y<0)h.y=C-1;if(h.y>=C)h.y=0;",
-      "if(snake.some(function(s){return s.x===h.x&&s.y===h.y;})){dead=true;msg.textContent='game over · press start';return;}",
-      "snake.unshift(h);if(h.x===food.x&&h.y===food.y){score++;scoreEl.textContent=score;food=place();}else snake.pop();draw();}",
-      "function draw(){cx.fillStyle='#08101f';cx.fillRect(0,0,cv.width,cv.height);var t=cv.width/G;",
-      "cx.fillStyle='#fb7185';cx.beginPath();cx.arc(food.x*t+t/2,food.y*t+t/2,t*0.34,0,7);cx.fill();",
-      "snake.forEach(function(s,i){cx.fillStyle=i? '#22d3ee':'#a78bfa';cx.fillRect(s.x*t+1,s.y*t+1,t-2,t-2);});}",
-      "function start(){if(iv)clearInterval(iv);if(dead)reset();msg.textContent='running';iv=setInterval(step,130);}",
-      "document.getElementById('go').addEventListener('click',start);document.getElementById('reset').addEventListener('click',function(){if(iv)clearInterval(iv);iv=null;reset();});",
-      "document.addEventListener('keydown',function(e){var k=e.key;var d=next;if(k==='ArrowLeft'&&dir.x!==1)next={x:-1,y:0};if(k==='ArrowRight'&&dir.x!==-1)next={x:1,y:0};if(k==='ArrowUp'&&dir.y!==1)next={x:0,y:-1};if(k==='ArrowDown'&&dir.y!==-1)next={x:0,y:1};});",
-      "var sx=0,sy=0;cv.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});",
-      "cv.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;",
-      "if(Math.abs(dx)>Math.abs(dy)){if(dx>0&&dir.x!==-1)next={x:1,y:0};else if(dx<0&&dir.x!==1)next={x:-1,y:0};}else{if(dy>0&&dir.y!==-1)next={x:0,y:1};else if(dy<0&&dir.y!==1)next={x:0,y:-1};}},{passive:true});",
-      "reset();"
+      "if(snake.some(function(s){return s.x===h.x&&s.y===h.y;})){dead=true;active=false;msg.textContent='game over · '+score+' points';E.beep(130,.18,'sawtooth');return;}",
+      "snake.unshift(h);if(h.x===food.x&&h.y===food.y){score++;scoreEl.textContent=score;food=place();E.beep(760,.05,'square');E.burst(h.x*20+10,h.y*20+10,'#fb7185',6,{speed:60,life:.35});}else snake.pop();}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],up:['ArrowUp','w'],down:['ArrowDown','s']});",
+      "E.bindButtons();",
+      "E.every(.13,step);",
+      "E.update=function(){if(E.tap('left')&&dir.x!==1)next={x:-1,y:0};if(E.tap('right')&&dir.x!==-1)next={x:1,y:0};if(E.tap('up')&&dir.y!==1)next={x:0,y:-1};if(E.tap('down')&&dir.y!==-1)next={x:0,y:1};};",
+      "E.draw=function(){var t=E.width/G;E.rect(0,0,E.width,E.height,'#08101f');",
+      "E.circle(food.x*t+t/2,food.y*t+t/2,t*.34,'#fb7185');",
+      "snake.forEach(function(s,i){E.rect(s.x*t+1,s.y*t+1,t-2,t-2,i?'#22d3ee':'#a78bfa');});",
+      "E.drawParticles();};",
+      "document.getElementById('go').addEventListener('click',function(){if(dead)reset();active=true;msg.textContent='running';});",
+      "document.getElementById('reset').addEventListener('click',function(){reset();drawOnce();});",
+      "function drawOnce(){E.start();}",
+      "reset();E.start();"
     ].join("\n");
     return shell({ title: "Snake", sub: "eat, grow, don't bite yourself", body: body, js: js, theme: opts.theme });
   }
@@ -1075,29 +1080,122 @@
       '<div class="card" style="padding:12px">',
       '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><span class="pill">lives <b id="lives" style="color:var(--text)">3</b></span></div>',
       '<canvas id="cv" width="720" height="460" style="width:100%;height:auto;border-radius:12px;background:#080d1a;border:1px solid var(--border)"></canvas>',
-      '<p class="muted small" style="margin:8px 2px 0">move the mouse or use ← → · space to launch</p></div>'
+      '<p class="muted small" style="margin:8px 2px 0">move the mouse or use ← → · space or tap to launch</p></div>'
     ].join("");
     var js = [
-      "var cv=document.getElementById('cv'),cx=cv.getContext('2d'),W=720,H=460,scoreEl=document.getElementById('score'),livesEl=document.getElementById('lives');",
-      "var pad={x:310,w:100,h:12},ball={x:360,y:400,r:7,vx:4.2,vy:-4.4},bricks=[],score=0,lives=3,run=false;",
-      "function reset(){bricks=[];for(var r=0;r<5;r++){for(var c=0;c<9;c++)bricks.push({x:40+c*72,y:50+r*26,w:62,h:16,on:true,hp:r<2?2:1});}score=0;scoreEl.textContent='0';lives=3;livesEl.textContent='3';ball={x:360,y:400,r:7,vx:4.2,vy:-4.4};pad.x=310;run=false;}",
-      "function launch(){if(run)return;run=true;ball.vx=4.2*(Math.random()<.5?-1:1);ball.vy=-4.6;}",
-      "function loop(){if(run){ball.x+=ball.vx;ball.y+=ball.vy;",
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine2d.create({canvas:cv,width:720,height:460,background:'#080d1a'});",
+      "var scoreEl=document.getElementById('score'),livesEl=document.getElementById('lives');",
+      "var W=720,H=460,pad={x:310,y:H-28,w:100,h:12},ball={x:360,y:400,r:7,vx:0,vy:0},bricks=[],score=0,lives=3,run=false;",
+      "function reset(){bricks=[];for(var r=0;r<5;r++)for(var c=0;c<9;c++)bricks.push({x:40+c*72,y:50+r*26,w:62,h:16,on:true,hp:r<2?2:1});score=0;scoreEl.textContent='0';lives=3;livesEl.textContent='3';ball={x:360,y:400,r:7,vx:0,vy:0};pad.x=310;run=false;}",
+      "function launch(){if(run||lives<=0)return;run=true;ball.vx=310*(Math.random()<.5?-1:1);ball.vy=-330;E.beep(420,.06,'square');}",
+      "function hit(b){return ball.x+ball.r>b.x&&ball.x-ball.r<b.x+b.w&&ball.y+ball.r>b.y&&ball.y-ball.r<b.y+b.h;}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],launch:[' ','Space']});",
+      "E.update=function(dt){if(E.held('left'))pad.x-=520*dt;if(E.held('right'))pad.x+=520*dt;",
+      "if(E.pointer.down)pad.x=E.pointer.x-pad.w/2;pad.x=Math.max(0,Math.min(W-pad.w,pad.x));",
+      "if(E.tap('launch')||E.pointer.clicked)launch();",
+      "if(!run)return;ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;",
       "if(ball.x<8){ball.x=8;ball.vx*=-1;}if(ball.x>W-8){ball.x=W-8;ball.vx*=-1;}if(ball.y<8){ball.y=8;ball.vy*=-1;}",
-      "if(ball.y>H-8){lives--;livesEl.textContent=Math.max(0,lives);run=false;ball={x:360,y:400,r:7,vx:0,vy:0};if(lives<=0){scoreEl.textContent='game over · '+score;}}",
-      "if(ball.y+ball.r>H-34&&ball.y<H-18&&ball.x>pad.x-6&&ball.x<pad.x+pad.w+6&&ball.vy>0){ball.vy=-Math.abs(ball.vy);ball.vx+=((ball.x-(pad.x+pad.w/2))/pad.w)*4;}",
-      "bricks.forEach(function(b){if(!b.on)return;if(ball.x>b.x-ball.r&&ball.x<b.x+b.w+ball.r&&ball.y>b.y-ball.r&&ball.y<b.y+b.h+ball.r){b.hp--;if(b.hp<=0)b.on=false;ball.vy*=-1;score+=10;scoreEl.textContent=score;}});",
-      "if(!bricks.some(function(b){return b.on;})){score+=100;scoreEl.textContent=score;reset();}}",
-      "draw();requestAnimationFrame(loop);}",
-      "function draw(){var g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b1226');g.addColorStop(1,'#080d1a');cx.fillStyle=g;cx.fillRect(0,0,W,H);",
-      "bricks.forEach(function(b){if(!b.on)return;cx.fillStyle=b.hp>1?'#a78bfa':'#22d3ee';cx.fillRect(b.x,b.y,b.w,b.h);});",
-      "cx.fillStyle='#e2e8f0';cx.fillRect(pad.x,H-28,pad.w,12);cx.fillStyle='#fbbf24';cx.beginPath();cx.arc(ball.x,ball.y,ball.r,0,7);cx.fill();}",
-      "document.addEventListener('mousemove',function(e){var r=cv.getBoundingClientRect();pad.x=Math.max(0,Math.min(W-pad.w,(e.clientX-r.left)*(W/r.width)-pad.w/2));});",
-      "document.addEventListener('keydown',function(e){if(e.key==='ArrowLeft')pad.x=Math.max(0,pad.x-26);if(e.key==='ArrowRight')pad.x=Math.min(W-pad.w,pad.x+26);if(e.key===' '){e.preventDefault();launch();}});",
-      "cv.addEventListener('touchmove',function(e){var r=cv.getBoundingClientRect();pad.x=Math.max(0,Math.min(W-pad.w,(e.touches[0].clientX-r.left)*(W/r.width)-pad.w/2));},{passive:true});",
-      "cv.addEventListener('click',launch);reset();loop();"
+      "if(ball.y>H-8){lives--;livesEl.textContent=Math.max(0,lives);run=false;ball={x:360,y:400,r:7,vx:0,vy:0};E.beep(150,.16,'sawtooth');if(lives<=0)scoreEl.textContent='game over · '+score;return;}",
+      "if(ball.y+ball.r>pad.y&&ball.y<pad.y+pad.h&&ball.x>pad.x-6&&ball.x<pad.x+pad.w+6&&ball.vy>0){ball.vy=-Math.abs(ball.vy);ball.vx+=((ball.x-(pad.x+pad.w/2))/pad.w)*220;E.beep(300,.04,'square');}",
+      "bricks.forEach(function(b){if(!b.on||!hit(b))return;b.hp--;if(b.hp<=0){b.on=false;score+=10;scoreEl.textContent=score;E.burst(b.x+b.w/2,b.y+b.h/2,b.hp>0?'#a78bfa':'#22d3ee',5,{speed:80,life:.3});E.beep(640,.03,'triangle');}ball.vy*=-1;});",
+      "if(!bricks.some(function(b){return b.on;})){score+=100;scoreEl.textContent=score;E.beep(980,.12,'triangle');reset();}};",
+      "E.draw=function(){var g=E.ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b1226');g.addColorStop(1,'#080d1a');E.ctx.fillStyle=g;E.ctx.fillRect(0,0,W,H);",
+      "bricks.forEach(function(b){if(b.on)E.rect(b.x,b.y,b.w,b.h,b.hp>1?'#a78bfa':'#22d3ee');});",
+      "E.rect(pad.x,pad.y,pad.w,pad.h,'#e2e8f0');E.circle(ball.x,ball.y,ball.r,'#fbbf24');E.drawParticles();};",
+      "reset();E.start();"
     ].join("\n");
     return shell({ title: "Breakout", sub: "clear the bricks, keep the ball alive", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ------------------------------------------------------------ shooter -- */
+  function shooter(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">score <b id="score" style="color:var(--text)">0</b></span><span class="pill">wave <b id="wave" style="color:var(--text)">1</b></span><span class="pill">hp <b id="lives" style="color:var(--text)">5</b></span></div>',
+      '<canvas id="cv" width="720" height="480" style="width:100%;height:auto;border-radius:12px;background:#070d18;border:1px solid var(--border);image-rendering:pixelated"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
+      '<button class="btn ghost" data-k="left" type="button">◀</button>',
+      '<button class="btn ghost" data-k="up" type="button">▲</button>',
+      '<button class="btn ghost" data-k="down" type="button">▼</button>',
+      '<button class="btn ghost" data-k="right" type="button">▶</button>',
+      '<button class="btn" data-k="shoot" type="button">fire</button>',
+      '<button class="btn ghost" id="reset" type="button" style="padding:6px 11px;font-size:12px">reset</button>',
+      '</div>',
+      '<p class="muted small" style="margin:8px 2px 0">WASD / arrows to move · space or fire shoots at the nearest enemy</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine2d.create({canvas:cv,width:720,height:480,background:'#070d18'});",
+      "var scoreEl=document.getElementById('score'),waveEl=document.getElementById('wave'),livesEl=document.getElementById('lives');",
+      "var P={x:360,y:240,w:18,h:18,speed:210},enemies=[],bullets=[],score=0,wave=1,lives=5,cd=0,spawn=.8,over=false;",
+      "function reset(){P={x:360,y:240,w:18,h:18,speed:210};enemies=[];bullets=[];score=0;wave=1;lives=5;cd=0;spawn=.8;over=false;scoreEl.textContent='0';waveEl.textContent='1';livesEl.textContent='5';}",
+      "function nearest(){var best=null,bd=1e9;enemies.forEach(function(e){var d=(e.x-P.x)*(e.x-P.x)+(e.y-P.y)*(e.y-P.y);if(d<bd){bd=d;best=e;}});return best;}",
+      "function fire(){var t=nearest();if(!t)return;var a=Math.atan2(t.y-P.y,t.x-P.x);bullets.push({x:P.x,y:P.y,vx:Math.cos(a)*430,vy:Math.sin(a)*430,life:1.6});E.beep(720,.03,'square',.02);}",
+      "function hurt(){lives--;livesEl.textContent=Math.max(0,lives);E.burst(P.x,P.y,'#fb7185',14,{speed:120,life:.5});E.beep(140,.18,'sawtooth');if(lives<=0){over=true;E.beep(90,.4,'sawtooth');}}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],up:['ArrowUp','w'],down:['ArrowDown','s'],shoot:[' ','Space']});",
+      "E.bindButtons();",
+      "E.every(.9,function(){if(over)return;spawn-=.02;var n=1+Math.floor(wave/3);for(var i=0;i<n;i++){var side=Math.floor(Math.random()*4),x=Math.random()*720,y=Math.random()*480;if(side===0){y=-20;}else if(side===1){x=740;}else if(side===2){y=500;}else{x=-20;}enemies.push({x:x,y:y,w:20,h:20,hp:1+Math.floor(wave/4),speed:34+wave*5});}});",
+      "E.update=function(dt){if(over)return;var dx=(E.held('right')?1:0)-(E.held('left')?1:0),dy=(E.held('down')?1:0)-(E.held('up')?1:0);",
+      "if(dx&&dy){dx*=.707;dy*=.707;}P.x=Math.max(12,Math.min(708,P.x+dx*P.speed*dt));P.y=Math.max(12,Math.min(468,P.y+dy*P.speed*dt));",
+      "cd-=dt;if((E.held('shoot')||E.tap('shoot'))&&cd<=0){fire();cd=.18;}",
+      "bullets.forEach(function(b){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;});bullets=bullets.filter(function(b){return b.life>0&&b.x>-20&&b.x<740&&b.y>-20&&b.y<500;});",
+      "enemies.forEach(function(e){var a=Math.atan2(P.y-e.y,P.x-e.x);e.x+=Math.cos(a)*e.speed*dt;e.y+=Math.sin(a)*e.speed*dt;});",
+      "bullets.forEach(function(b){enemies.forEach(function(e){if(e.dead)return;if(b.x>e.x-e.w/2&&b.x<e.x+e.w/2&&b.y>e.y-e.h/2&&b.y<e.y+e.h/2){e.hp--;b.life=0;if(e.hp<=0){e.dead=true;score+=25;scoreEl.textContent=score;E.burst(e.x,e.y,'#fb7185',8,{speed:90,life:.35});E.beep(520,.04,'triangle');}}});});",
+      "enemies.forEach(function(e){if(e.dead)return;if(Math.abs(e.x-P.x)<16&&Math.abs(e.y-P.y)<16){e.dead=true;hurt();}});",
+      "enemies=enemies.filter(function(e){return !e.dead;});if(score>0&&score%300===0&&wave<9){wave++;waveEl.textContent=wave;score++;}};",
+      "E.draw=function(){E.rect(0,0,720,480,'#070d18');E.ctx.strokeStyle='#122036';E.ctx.lineWidth=1;for(var x=0;x<720;x+=40)E.line(x,0,x,480,'#0f1b2e');for(var y=0;y<480;y+=40)E.line(0,y,720,y,'#0f1b2e');",
+      "enemies.forEach(function(e){E.rect(e.x-e.w/2,e.y-e.h/2,e.w,e.h,'#fb7185');E.rect(e.x-5,e.y-5,3,3,'#1b0b12');E.rect(e.x+2,e.y-5,3,3,'#1b0b12');});",
+      "bullets.forEach(function(b){E.circle(b.x,b.y,3,'#fbbf24');});",
+      "E.ctx.save();E.ctx.translate(P.x,P.y);E.ctx.rotate(-Math.PI/2);E.rect(-9,-9,18,18,'#22d3ee');E.rect(-3,-11,6,6,'#a78bfa');E.ctx.restore();",
+      "E.drawParticles();",
+      "if(over)E.text('GAME OVER · '+score,360,230,30,'#f8fafc','center');};",
+      "document.getElementById('reset').addEventListener('click',reset);reset();E.start();"
+    ].join("\n");
+    return shell({ title: "Top-down shooter", sub: "survive the waves · auto-aim fire", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ------------------------------------------------------------- racer --- */
+  function racer(desc, opts) {
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="pill">lap <b id="lap" style="color:var(--text)">1 / 3</b></span><span class="pill">time <b id="time" style="color:var(--text)">0.0</b></span><span class="pill">best <b id="best" style="color:var(--text)">—</b></span></div>',
+      '<canvas id="cv" width="720" height="460" style="width:100%;height:auto;border-radius:12px;background:#0a1324;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
+      '<button class="btn ghost" data-k="left" type="button">◀</button>',
+      '<button class="btn ghost" data-k="accel" type="button">gas</button>',
+      '<button class="btn ghost" data-k="brake" type="button">brake</button>',
+      '<button class="btn ghost" data-k="right" type="button">▶</button>',
+      '<button class="btn ghost" id="reset" type="button" style="padding:6px 11px;font-size:12px">restart</button>',
+      '</div>',
+      '<p class="muted small" style="margin:8px 2px 0">arrows / WASD · pass the checkpoints in order · 3 laps</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine2d.create({canvas:cv,width:720,height:460,background:'#0a1324'});",
+      "var lapEl=document.getElementById('lap'),timeEl=document.getElementById('time'),bestEl=document.getElementById('best');",
+      "var CP=[[180,110],[540,110],[600,230],[540,350],[180,350],[120,230]],car={x:180,y:110,a:0,v:0},next=1,lap=1,time=0,done=false,best=parseFloat(E.store('toolrx.race.best')||'0')||0;",
+      "if(best)bestEl.textContent=best.toFixed(1);",
+      "function reset(){car={x:180,y:110,a:0,v:0};next=1;lap=1;time=0;done=false;lapEl.textContent='1 / 3';timeEl.textContent='0.0';}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],accel:['ArrowUp','w'],brake:['ArrowDown','s']});",
+      "E.bindButtons();",
+      "E.update=function(dt){if(done)return;var gas=E.held('accel'),brake=E.held('brake');",
+      "car.v+=gas*230*dt-brake*300*dt;car.v-=car.v*.55*dt;car.v=Math.max(0,Math.min(290,car.v));",
+      "var steer=(E.held('right')?1:0)-(E.held('left')?1:0);car.a+=steer*2.5*dt*Math.min(1,car.v/90);",
+      "car.x+=Math.cos(car.a)*car.v*dt;car.y+=Math.sin(car.a)*car.v*dt;car.x=Math.max(18,Math.min(702,car.x));car.y=Math.max(18,Math.min(442,car.y));",
+      "time+=dt;timeEl.textContent=time.toFixed(1);",
+      "var cp=CP[next];if(Math.hypot(car.x-cp[0],car.y-cp[1])<52){next++;E.beep(620+next*30,.04,'square',.02);if(next>=CP.length){next=0;lap++;lapEl.textContent=Math.min(lap,3)+' / 3';E.beep(900,.1,'triangle');if(lap>3){done=true;if(!best||time<best){best=time;bestEl.textContent=best.toFixed(1);E.store('toolrx.race.best',best.toFixed(1));}E.beep(1100,.2,'triangle');}}}};",
+      "E.draw=function(){E.rect(0,0,720,460,'#0a1324');",
+      "E.ctx.fillStyle='#18243a';E.ctx.beginPath();E.ctx.ellipse(360,230,300,180,0,0,Math.PI*2);E.ctx.fill();",
+      "E.ctx.fillStyle='#0a1324';E.ctx.beginPath();E.ctx.ellipse(360,230,185,92,0,0,Math.PI*2);E.ctx.fill();",
+      "E.ctx.strokeStyle='#2b3c5c';E.ctx.lineWidth=2;E.ctx.setLineDash([10,12]);E.ctx.beginPath();E.ctx.ellipse(360,230,242,136,0,0,Math.PI*2);E.ctx.stroke();E.ctx.setLineDash([]);",
+      "CP.forEach(function(p,i){if(i===next)E.circle(p[0],p[1],7,'#fbbf24');else E.circle(p[0],p[1],3,'#334765');});",
+      "E.ctx.save();E.ctx.translate(car.x,car.y);E.ctx.rotate(car.a);E.rect(-13,-9,26,18,'#22d3ee');E.rect(1,-6,7,12,'#a78bfa');E.rect(-14,-10,3,20,'#0b1226');E.ctx.restore();",
+      "E.drawParticles();",
+      "if(done)E.text('FINISH · '+time.toFixed(1)+'s',360,230,30,'#f8fafc','center');};",
+      "document.getElementById('reset').addEventListener('click',reset);reset();E.start();"
+    ].join("\n");
+    return shell({ title: "Kart racer", sub: "three laps · pass the checkpoints in order", body: body, js: js, theme: opts.theme });
   }
 
   /* --------------------------------------------------------------- pong -- */
@@ -1559,6 +1657,8 @@
     },
     snake: { files: ["index.html", "styles.css", "app.js"], state: "snake array, direction, next direction, food, score", modules: ["step()", "place food", "draw()"], flow: "interval → step → collision/food → draw", extend: "speed ramp, walls, wrap toggle", steps: ["grid state", "one step per tick", "collision against self", "food placement that avoids the snake"] },
     breakout: { files: ["index.html", "styles.css", "app.js"], state: "paddle, ball, bricks, lives, score", modules: ["launch", "physics", "brick collision", "draw"], flow: "frame → move ball → bounce/collide → draw", extend: "power-ups, levels, sound", steps: ["paddle follows pointer", "ball bounces off edges", "brick grid with hp", "reset on life loss"] },
+    shooter: { files: ["index.html", "styles.css", "app.js"], state: "player, enemies[], bullets[], score, wave, hp", modules: ["move", "auto-aim fire", "spawn waves", "collision", "draw"], flow: "input → move/fire → advance bullets/enemies → resolve hits → draw", extend: "weapon types, upgrades, bosses, cover", steps: ["draw a grid arena", "move the player with clamped input", "fire toward the nearest enemy", "spawn waves and resolve bullet hits", "end the run when hp reaches zero"] },
+    racer: { files: ["index.html", "styles.css", "app.js"], state: "car {x,y,angle,speed}, checkpoints[], lap, time", modules: ["accelerate/steer", "checkpoint order", "lap timing", "draw track"], flow: "input → speed/angle → move → checkpoint test → lap/finish", extend: "drift, rivals, minimap, more tracks", steps: ["define the track oval", "give the car speed and steering", "require checkpoints in order", "count three laps and store the best time"] },
     pong: { files: ["index.html", "styles.css", "app.js"], state: "two paddles, ball, scores", modules: ["frame loop", "CPU follow with a cap", "score + reset"], flow: "frame → move ball → paddle collision → score", extend: "difficulty, two-player, spin", steps: ["draw two paddles", "reflect the ball on contact", "add a beatable CPU", "first to 7"] },
     "2048": { files: ["index.html", "styles.css", "app.js"], state: "16 tiles, score, over flag", modules: ["move(dx,dy)", "merge lines", "add random tile", "canMove"], flow: "arrow → transform grid → merge → add tile → render", extend: "undo, animations, size variants", steps: ["represent the grid as 16 values", "compress a line then merge neighbours", "spawn a tile only after a real move", "detect no-moves"] },
     minesweeper: { files: ["index.html", "styles.css", "app.js"], state: "cells {mine, open, flag, count}, first-click flag", modules: ["plant mines after first click", "flood reveal", "check win"], flow: "click → plant (once) → reveal/flood → win/lose", extend: "board sizes, timers, safe-start", steps: ["build 100 cells", "plant mines away from the first click", "count neighbours", "flood-open empty cells"] },
@@ -1604,8 +1704,9 @@
 
   function architecture(kind, desc, opts) {
     var real = canonical(kind, desc);
+    var spec = buildSpec(kind, desc);
     var a = archFor(real);
-    var name = titleFor(real, desc);
+    var name = titleFor(real, desc, spec);
     var body = [
       '<div class="card">',
       '<p class="muted small" style="margin-top:0">this is a build brief, not the finished app. it tells you the shape to build.</p>',
@@ -1624,15 +1725,17 @@
 
   function blueprint(kind, desc, opts) {
     var real = canonical(kind, desc);
+    var spec = buildSpec(kind, desc);
     var a = archFor(real);
-    var name = titleFor(real, desc);
+    var name = titleFor(real, desc, spec);
     return brief(kind, desc);
   }
 
   function brief(kind, desc) {
     var real = canonical(kind, desc);
+    var spec = buildSpec(kind, desc);
     var a = archFor(real);
-    var name = titleFor(real, desc);
+    var name = titleFor(real, desc, spec);
     return [
       name + " · blueprint",
       "",
@@ -1663,8 +1766,11 @@
     [/markdown/i, "markdown"],
     [/expense|budget|spend/i, "expenses"],
     [/clock|time/i, "clock"],
+    [/rogue[\s-]*like|dungeon crawl|exploration|open[\s-]*world|farming sim|life sim/i, "rpg"],
     [/rpg|role[\s-]*playing/i, "rpg"],
-    [/platformer|jump/i, "platformer"],
+    [/shooter|shmup|twin[\s-]*stick|wave shooter|bullet hell|tower[\s-]*defen[cs]e/i, "shooter"],
+    [/racing|race|kart|driving|racer/i, "racer"],
+    [/platformer|jump|runner|metroidvania/i, "platformer"],
     [/snake/i, "snake"],
     [/breakout|brick/i, "breakout"],
     [/pong/i, "pong"],
@@ -1686,6 +1792,7 @@
 
   function canonical(kind, desc) {
     var text = String(kind || "").toLowerCase().trim();
+    text = text.replace(/^(?:a |an )?(?:2d|3d|isometric|top[\s-]*down|side[\s-]*(?:scroller|view)|first[\s-]*person|third[\s-]*person)\s+/, "");
     if (text === "pomodoro") return "pomodoro";
     if (text === "tictactoe" || text === "tic tac toe") return "tictactoe";
     for (var i = 0; i < CANON.length; i++) {
@@ -1697,6 +1804,163 @@
       }
     }
     return "playground";
+  }
+
+  /* -------------------------------------------------------------- spec --- */
+  /* Codegen reads a spec, never the prose again. Everything here is derived
+   * from the normalized prompt, so the same request always yields the same
+   * seed, palette, scale, and files. */
+  var GAME_GENRES = {
+    rpg: 1, platformer: 1, snake: 1, breakout: 1, pong: 1, "2048": 1,
+    minesweeper: 1, tetris: 1, maze: 1, adventure: 1, typing: 1,
+    shooter: 1, racer: 1, game: 1
+  };
+  var ENGINE_GENRES = { platformer: 1, snake: 1, breakout: 1, shooter: 1, racer: 1 };
+  var GENRE_VIEW = {
+    rpg: "top-down", maze: "top-down", snake: "top-down", shooter: "top-down",
+    racer: "top-down", "2048": "top-down", minesweeper: "top-down",
+    game: "top-down", platformer: "side-scroller", breakout: "side-scroller",
+    pong: "side-scroller", tetris: "side-scroller", adventure: "text", typing: "text"
+  };
+  var GENRE_LABEL = {
+    rpg: "RPG", "2048": "2048", tictactoe: "tic tac toe", shooter: "shooter",
+    racer: "racer", maze: "maze", game: "guessing game"
+  };
+  var RPG_DEFAULT_PACKS = [
+    "arthur camelot", "india bharata", "space derelict", "cyber neon",
+    "noir rain", "greek olympus", "japan sakura", "egypt nile",
+    "ocean abyss", "west frontier"
+  ];
+
+  function rpgDefault(seed) {
+    var pack = RPG_DEFAULT_PACKS[(seed >>> 0) % RPG_DEFAULT_PACKS.length];
+    return rpgTheme(pack) || rpgTheme("arthur camelot");
+  }
+
+  function themeName(desc, genre) {
+    if (genre === "rpg") {
+      var th = rpgTheme(desc);
+      if (th) return th.title.replace(/ RPG$/, "");
+    }
+    var mt = /([a-z0-9'’-]+(?:\s+[a-z0-9'’-]+){0,3})\s+theme\b/i.exec(String(desc || ""));
+    if (mt) return mt[1].replace(/^(?:a|an|the)\s+/i, "").trim() || null;
+    var m = /\b(?:theme:?\s+|set in\s+|based on\s+|with (?:a|an)\s+|in (?:a|an)\s+)([a-z0-9'’-]+(?:\s+[a-z0-9'’-]+){0,3})/i
+      .exec(String(desc || ""));
+    if (m) {
+      return m[1].replace(/\s+theme\b.*$/i, "")
+        .replace(/\b(?:and|with|seed)\b.*$/i, "").trim() || null;
+    }
+    if (/\bat night\b/i.test(desc)) return "night";
+    return null;
+  }
+
+  function artName(text, game) {
+    if (/low[\s-]*poly|lowpoly/i.test(text)) return "low-poly";
+    if (/voxel/i.test(text)) return "voxel";
+    if (/monochrome|black and white|grayscale/i.test(text)) return "monochrome";
+    if (/pixel/i.test(text)) return "pixel";
+    if (/neon|synthwave|cyberpunk/i.test(text)) return "neon";
+    if (/vector|svg/i.test(text)) return "vector";
+    if (/\bflat\b/i.test(text)) return "flat";
+    return game ? "pixel" : "flat";
+  }
+
+  function scaleName(text) {
+    var m = /(\d{2,3})\s*[x×]\s*(\d{2,3})/.exec(text);
+    if (m) return m[1] + "×" + m[2];
+    m = /(\d+)\s*levels?/.exec(text);
+    if (m) return m[1] + " levels";
+    m = /(\d+)\s*quests?/.exec(text);
+    if (m) return m[1] + " quests";
+    m = /\b(small|medium|large|huge|epic)\b/.exec(text);
+    if (m) return m[1];
+    return "medium";
+  }
+
+  var WANTED = [
+    [/tower[\s-]*defen[cs]e/i, "tower defense", "shooter"],
+    [/rogue[\s-]*like|dungeon crawl/i, "roguelike", "rpg"],
+    [/farming sim|stardew/i, "farming sim", "rpg"],
+    [/card[\s-]*battl|deck[\s-]*build/i, "card battler", "memory"],
+    [/exploration|open[\s-]*world/i, "exploration", "rpg"],
+    [/wave[\s-]*shooter|horde/i, "wave shooter", "shooter"],
+    [/twin[\s-]*stick/i, "twin-stick", "shooter"],
+    [/rhythm|beat[\s-]*match/i, "rhythm", "typing"]
+  ];
+
+  function wantedGenre(text) {
+    for (var i = 0; i < WANTED.length; i++) {
+      if (WANTED[i][0].test(text)) {
+        return { label: WANTED[i][1], closest: WANTED[i][2] };
+      }
+    }
+    return null;
+  }
+
+  function buildSpec(kind, desc, opts) {
+    var raw = String(desc || "");
+    var text = (String(kind || "") + " " + raw).toLowerCase().replace(/\s+/g, " ").trim();
+    var genre = canonical(kind, desc);
+    var game = !!GAME_GENRES[genre];
+    var view = "";
+    if (/first[\s-]?person|\bfps\b/.test(text)) view = "first-person";
+    else if (/third[\s-]?person/.test(text)) view = "third-person";
+    else if (/isometric/.test(text)) view = "isometric";
+    else if (/top[\s-]?down/.test(text)) view = "top-down";
+    else if (/side[\s-]*(?:scroller|view)/.test(text)) view = "side-scroller";
+    if (!view) view = GENRE_VIEW[genre] || "app";
+    var dim = "2D";
+    if (/first[\s-]?person|third[\s-]?person|\b3d\b|three[\s-]?d|voxel|perspective/.test(text)) dim = "3D";
+    if (view === "app" || view === "text") dim = "2D";
+    var explicit = /\bseed\s+(\d+)/i.exec(text);
+    var seed = explicit ? (parseInt(explicit[1], 10) >>> 0)
+      : (toolrxHash !== null ? toolrxHash(text) : 0);
+    var wanted = wantedGenre(text);
+    var spec = {
+      kind: String(kind || ""),
+      genre: genre,
+      label: GENRE_LABEL[genre] || genre,
+      dim: dim,
+      view: view,
+      art: artName(text, game),
+      theme: themeName(raw, genre),
+      scale: scaleName(text),
+      seed: seed,
+      requested: wanted ? wanted.label : null,
+      note: "",
+      engine: !!ENGINE_GENRES[genre],
+      game: game
+    };
+    if (opts && opts.seed != null) spec.seed = opts.seed >>> 0;
+    if (!spec.theme && genre === "rpg") {
+      spec.theme = rpgDefault(spec.seed).title.replace(/ RPG$/, "");
+    }
+    if (wanted && !(wanted.label === genre || (wanted.label === "racing" && genre === "racer"))) {
+      spec.note = "requested " + wanted.label + " → closest supported: "
+        + (GENRE_LABEL[genre] || genre);
+    }
+    return spec;
+  }
+
+  var toolrxHash = (function () {
+    if (root && root.toolrxEngine2d && root.toolrxEngine2d.hash) return root.toolrxEngine2d.hash;
+    return function (s) {
+      var h = 2166136261;
+      s = String(s == null ? "" : s);
+      for (var i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    };
+  })();
+
+  function specLine(spec) {
+    var bits = [spec.dim + " " + spec.view, spec.label, spec.art];
+    if (spec.theme) bits.push(spec.theme);
+    bits.push(spec.scale, "seed " + spec.seed);
+    return "spec · " + bits.join(" · ")
+      + (spec.note ? "\nspec note · " + spec.note : "");
   }
 
   function pomodoro(desc, opts) {
@@ -1732,6 +1996,8 @@
     platformer: platformer,
     snake: snake,
     breakout: breakout,
+    shooter: shooter,
+    racer: racer,
     pong: pong,
     "2048": game2048,
     minesweeper: minesweeper,
@@ -1753,7 +2019,8 @@
     markdown: "Markdown editor", expenses: "Expense tracker", clock: "Clock",
     game: "Number guessing game", playground: "Program playground", welcome: "Preview ready",
     rpg: "Verdant Wood RPG", platformer: "Platformer", snake: "Snake",
-    breakout: "Breakout", pong: "Pong", "2048": "2048", minesweeper: "Minesweeper",
+    breakout: "Breakout", shooter: "Top-down shooter", racer: "Kart racer",
+    pong: "Pong", "2048": "2048", minesweeper: "Minesweeper",
     tetris: "Tetris", maze: "Maze", adventure: "Hollow Archive",
     typing: "Typing test", social: "Tiny social feed", blog: "Journal",
     forum: "Forum", chat: "Chat", research: "Research note"
@@ -1765,7 +2032,7 @@
 
   var GAME3D = {
     tetris: 1, snake: 1, breakout: 1, pong: 1, maze: 1, platformer: 1,
-    minesweeper: 1, "2048": 1, game: 1
+    shooter: 1, racer: 1, minesweeper: 1, "2048": 1, game: 1
   };
 
   var THREE_D_CSS = "body{perspective:1500px}main,.wrap{transform-style:preserve-3d}" +
@@ -1777,34 +2044,50 @@
       .replace(/^-+|-+$/g, "").slice(0, 40) || "project";
   }
 
-  function titleFor(real, desc) {
+  function titleFor(real, desc, spec) {
     if (real === "rpg") {
-      var th = rpgTheme(desc);
+      var th = rpgTheme(desc) || (spec ? rpgDefault(spec.seed) : null);
       if (th) return th.title;
     }
-    if (wants3d(desc) && GAME3D[real]) return (TITLES[real] || "Game") + " 3D";
+    if (((spec && spec.dim === "3D") || wants3d(desc)) && GAME3D[real]) {
+      return (TITLES[real] || "Game") + " 3D";
+    }
     if (real === "playground" && desc) return String(desc).slice(0, 60);
     return TITLES[real] || "Built page";
   }
 
+  function engineSource() {
+    return root.toolrxEngine2dSource || "";
+  }
+
   function build(kind, desc, opts) {
     opts = opts || {};
-    var real = canonical(kind, desc);
+    var spec = opts.spec || buildSpec(kind, desc);
+    var real = spec.genre || canonical(kind, desc);
     var fn = BUILDERS[real] || BUILDERS.playground;
-    var d3 = wants3d(desc);
+    var d3 = spec.dim === "3D";
     var html = fn(String(desc || ""), {
       theme: opts.theme === "light" ? "light" : "dark",
       d3: d3,
-      variant: rpgTheme(desc) ? "themed-rpg" : (d3 ? "3d" : ""),
+      spec: spec,
+      variant: rpgTheme(desc) ? "themed-rpg" : (d3 ? "3d" : "")
     });
     if (d3 && GAME3D[real] && real !== "tetris") {
       html = html.replace("</style>", THREE_D_CSS + "</style>");
+    }
+    if (ENGINE_GENRES[real]) {
+      var src = engineSource();
+      if (opts.inlineEngine === false) {
+        html = html.replace("<script>\n", '<script src="engine2d.js"></script>\n<script>\n');
+      } else if (src) {
+        html = html.replace("<script>\n", "<script>\n" + src + "\n</script>\n<script>\n");
+      }
     }
     return html;
   }
 
   function title(kind, desc) {
-    return titleFor(canonical(kind, desc), desc);
+    return titleFor(canonical(kind, desc), desc, buildSpec(kind, desc));
   }
 
   /* ------------------------------------------------------ multi-file build -- */
@@ -1813,9 +2096,20 @@
    * using the bundled page, so nothing depends on file:// fetch(). */
   function project(kind, desc, opts) {
     opts = opts || {};
-    var real = opts.real || canonical(kind, desc);
-    var name = opts.name || titleFor(real, desc);
-    var html = opts.html || build(real, desc, opts);
+    var spec = opts.spec || buildSpec(opts.real || kind, desc);
+    var real = opts.real || spec.genre || canonical(kind, desc);
+    if (opts.real && spec.genre !== opts.real) {
+      spec.genre = opts.real;
+      spec.label = opts.real;
+      spec.game = false;
+      spec.engine = false;
+      spec.view = "app";
+      spec.dim = "2D";
+    }
+    var name = opts.name || titleFor(real, desc, spec);
+    var html = opts.html || build(real, desc, Object.assign({}, opts, {
+      spec: spec, inlineEngine: false
+    }));
     var css = "", js = "";
     html = html.replace(/<style>([\s\S]*?)<\/style>/, function (_, inner) {
       css = inner.trim() + "\n";
@@ -1825,18 +2119,33 @@
       js = inner.trim() + "\n";
       return '<script src="app.js"></script>';
     });
+    if (ENGINE_GENRES[real] && html.indexOf('src="engine2d.js"') < 0) {
+      html = html.replace('<script src="app.js"></script>',
+        '<script src="engine2d.js"></script>\n<script src="app.js"></script>');
+    }
     html = html.replace(/offline · self-contained/, "offline · separate files");
     var a = archFor(real);
     var slug = opts.slug || (real === "playground" ? "app" : real);
     if (!opts.slug) {
-      if (real === "rpg" && rpgTheme(desc)) slug = slugOf(rpgTheme(desc).title);
-      else if (wants3d(desc) && GAME3D[real]) slug = slugOf(real + "-3d");
+      if (real === "rpg") {
+        var pack = rpgTheme(desc) || rpgDefault(spec.seed);
+        if (pack) slug = slugOf(pack.title);
+      } else if (spec.dim === "3D" && GAME3D[real]) {
+        slug = slugOf(real + "-3d");
+      }
     }
+    var docFiles = a.files.slice();
+    if (ENGINE_GENRES[real]) docFiles.push("engine2d.js");
+    var specTxt = specLine(spec);
     var readme = [
       "# " + name,
       "",
       "A small, self-contained " + (a.files ? "project" : "app") + " built by toolrx.",
       "No build step, no dependencies, no network. Open `index.html`.",
+      "",
+      "## Build spec",
+      "",
+      specTxt,
       "",
       "## Files",
       "",
@@ -1844,7 +2153,8 @@
       "| --- | --- |",
       "| `index.html` | markup and the page shell |",
       "| `styles.css` | all presentation, including the responsive rules |",
-      "| `app.js` | state, render, and event handlers |",
+      "| `app.js` | state, render, and event handlers |"
+        + (ENGINE_GENRES[real] ? "\n| `engine2d.js` | shared loop, input, camera, physics, particles, audio |" : ""),
       "| `ARCHITECTURE.md` | the shape of the program and how to extend it |",
       "",
       "## Run",
@@ -1876,6 +2186,10 @@
     var arch = [
       "# Architecture · " + name,
       "",
+      "## Build spec",
+      "",
+      specTxt,
+      "",
       "## State",
       "",
       a.state,
@@ -1890,7 +2204,7 @@
       "",
       "## Files",
       "",
-      a.files.map(function (f) { return "- `" + f + "`"; }).join("\n"),
+      docFiles.map(function (f) { return "- `" + f + "`"; }).join("\n"),
       "",
       "## Build order",
       "",
@@ -1904,18 +2218,24 @@
       "handler. That is enough to grow this into something much larger.",
       ""
     ].join("\n");
+    var outFiles = {
+      "index.html": html,
+      "styles.css": css || "/* no extra styles */\n",
+      "app.js": js || "/* no extra script */\n",
+      "README.md": readme,
+      "ARCHITECTURE.md": arch
+    };
+    if (ENGINE_GENRES[real]) {
+      outFiles["engine2d.js"] = engineSource() || "/* engine2d source unavailable */\n";
+    }
     return {
       kind: real,
       slug: slug,
       title: name,
       html: html,
-      files: {
-        "index.html": html,
-        "styles.css": css || "/* no extra styles */\n",
-        "app.js": js || "/* no extra script */\n",
-        "README.md": readme,
-        "ARCHITECTURE.md": arch
-      }
+      spec: spec,
+      specLine: specTxt,
+      files: outFiles
     };
   }
 
@@ -1972,6 +2292,8 @@
     title: title,
     canonical: canonical,
     project: project,
+    spec: buildSpec,
+    specLine: specLine,
     webPage: webPage,
     architecture: architecture,
     blueprint: blueprint,

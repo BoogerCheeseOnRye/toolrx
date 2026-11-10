@@ -78,6 +78,35 @@ Sakura, Nile, Abyss, Frontier). Project references are tolerant:
 and `change the project name to bharata` re-theme the same project instead of
 starting a chat or creating a duplicate.
 
+Build modifiers are deterministic and are parsed into a one-line **build spec**
+before any code is generated:
+
+```
+> build a top-down shooter with pixel art, 3 levels
+spec · 2D top-down · shooter · pixel · 3 levels · seed 1233879146
+```
+
+The spec records dimension (`2D`/`3D`), view (`side-scroller`, `top-down`,
+`isometric`, `first-person`, `third-person`), genre, art direction (`pixel`,
+`low-poly`, `neon`, `monochrome`, `flat`, `vector`), theme, scale, and a seed.
+The seed is a hash of the normalized prompt unless you write `seed 42`, so the
+same request always produces the same files and an explicit seed replays a world.
+Unsupported genres still build the closest supported starter and say so:
+`build a tower defense` reports `closest supported: shooter`.
+
+The shared `engine2d.js` runtime powers platformer, snake, breakout, top-down
+shooter, and kart racer builds. It provides a fixed-step loop, keyboard/pointer/
+touch input, camera follow, tile and sprite drawing, AABB physics, particles, and
+WebAudio beeps. Generated projects include it as a real file next to `app.js`;
+the preview inlines the same source so it stays self-contained. Three-dimensional
+requests keep the low-poly presentation path and use the existing projection
+renderer where a template has one. A shared WebGL 3D engine and the sprite-pack
+pipeline are the next roadmap steps.
+
+`build an rpg` picks its starting pack from the seed (Camelot, Bharata,
+Derelict, Neon, Rain City, Olympus, Sakura, Nile, Abyss, Frontier) instead of
+always starting in Verdant Wood; add `seed N` to replay a specific world.
+
 Every result in the chat shows measured throughput as `tok/s` (estimated output
 tokens = characters ÷ 4 over wall-clock time, with the step's token count and
 milliseconds). It is a real measurement of the deterministic step, not model

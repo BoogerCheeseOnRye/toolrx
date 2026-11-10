@@ -345,8 +345,12 @@
     if (!html) return "";
     const css = String(f["styles.css"] || "");
     const js = String(f["app.js"] || "");
+    const engine = String(f["engine2d.js"] || "");
     html = html.replace(/<link\b[^>]*href\s*=\s*["']styles\.css["'][^>]*>/i, function () {
       return "<style>\n" + css + "\n</style>";
+    });
+    html = html.replace(/<script\b[^>]*src\s*=\s*["']engine2d\.js["'][^>]*>\s*<\/script>/gi, function () {
+      return "<script>\n" + engine + "\n</script>";
     });
     html = html.replace(/<script\b[^>]*src\s*=\s*["']app\.js["'][^>]*>\s*<\/script>/i, function () {
       return "<script>\n" + js + "\n</script>";
@@ -534,7 +538,8 @@
       slug: p.slug, theme: preview.theme, at: Date.now(),
     });
     const names = filesForProject(p);
-    return 'built "' + built.title + '" → projects/' + p.slug + " (" + names.length + " files)\n"
+    return (built.specLine ? built.specLine + "\n" : "")
+      + 'built "' + built.title + '" → projects/' + p.slug + " (" + names.length + " files)\n"
       + "  " + names.join(" · ") + "\n"
       + "preview updated · active project: " + p.slug + "\n"
       + "try: show project files · read projects/" + p.slug + "/ARCHITECTURE.md";

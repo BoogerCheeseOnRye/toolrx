@@ -1372,8 +1372,12 @@
     const out = {};
     for (const k in spec) {
       const v = spec[k];
-      if (typeof v === "string" && v[0] === "$" && /^\$\d+$/.test(v)) {
+      if (typeof v === "string" && /^\$\d+$/.test(v)) {
         out[k] = m[Number(v.slice(1))];
+      } else if (typeof v === "string" && /\$\d+/.test(v)) {
+        out[k] = v.replace(/\$(\d+)/g, function (_, n) {
+          return m[Number(n)] == null ? "" : m[Number(n)];
+        });
       } else out[k] = v;
     }
     return out;

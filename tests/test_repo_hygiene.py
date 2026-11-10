@@ -237,7 +237,8 @@ class DashboardTest(unittest.TestCase):
 
     def test_pages_web_assets_match(self):
         for name in ("blake2b.js", "router.js", "sandbox.js", "skills.js",
-                     "templates.js", "commands.json"):
+                     "templates.js", "engine2d.js", "engine2d.embed.js",
+                     "commands.json"):
             src = os.path.join(ROOT, "toolrx", "web", name)
             out = os.path.join(ROOT, "docs", "web", name)
             self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
@@ -248,6 +249,30 @@ class DashboardTest(unittest.TestCase):
         self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
         self.assertEqual(open(model, "rb").read(), open(out, "rb").read(),
                          "docs/web/model.json is stale")
+
+    def test_engine_embed_matches_source(self):
+        src = open(os.path.join(ROOT, "toolrx", "web", "engine2d.js"),
+                   encoding="utf-8").read()
+        embed = open(os.path.join(ROOT, "toolrx", "web", "engine2d.embed.js"),
+                     encoding="utf-8").read()
+        m = re.search(r"toolrxEngine2dSource = (\".*\");", embed)
+        self.assertTrue(m, "run python3 toolrx/embed_engine.py")
+        self.assertEqual(json.loads(m.group(1)), src)
+
+    def test_engine_loads_before_templates(self):
+        marks = ['src="web/engine2d.js"', 'src="web/engine2d.embed.js"',
+                 'src="web/templates.js"']
+        for mark in marks:
+            self.assertIn(mark, self.html)
+        order = [self.html.index(m) for m in marks]
+        self.assertEqual(order, sorted(order))
+
+    def test_offline_cache_includes_the_engine(self):
+        sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
+                  encoding="utf-8").read()
+        self.assertIn("toolrx-shell-v2", sw)
+        self.assertIn("./web/engine2d.js", sw)
+        self.assertIn("./web/engine2d.embed.js", sw)
 
     def test_offline_app_is_installable_and_cached(self):
         for rel in ("toolrx/web/sw.js", "toolrx/web/manifest.webmanifest",
