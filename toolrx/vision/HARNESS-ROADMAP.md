@@ -5,7 +5,7 @@ general LLM coding harness, while keeping the deterministic core. The rule is
 simple: **the deterministic path stays first, complete, and offline**. An LLM may
 later fill a validated spec or propose a patch, but it never becomes required.
 
-## What exists today
+## Where this plan started
 
 - Builds are chosen by fixed phrasings over a fixed list of kinds
   (`build a {kind}`, `build a {kind} with {desc}`).
@@ -110,7 +110,7 @@ and the chat output names the chosen spec.
 **Blocked on** the repository URL and its licence. Until then, the interface and
 procedural fallback can land.
 
-### 15. Shared 3D engine
+### 15. Shared 3D engine — done
 
 `engine3d.js` with a tiny WebGL1 renderer:
 
@@ -126,7 +126,7 @@ same input layer as the 2D engine.
 **Done when** each 3D template runs in the iframe preview at 60 fps on desktop,
 is playable on a phone, and degrades to a clear fallback without WebGL.
 
-### 16. RPG world engine v2
+### 16. RPG world engine v2 — done
 
 Replace the fixed map with `worldgen.js`:
 
@@ -212,16 +212,16 @@ prompt produces the same spec and files as the deterministic path.
 
 ## Order
 
-1. 12 (spec) → 13 (2D engine) → 15 (3D engine)
-2. 16 (RPG world) → 17 (themes/titles)
-3. 18 (library) → 19 (patches)
-4. 20 (LLM adapter), with 14 (sprites) as soon as the pack URL is known
+1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
+2. 16 (RPG world) — done → 17 (themes/titles) → 18 (library) → 19 (patches)
+3. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
 
 ## Open questions
 
-- The supplied sprite repository (`github.com/angais/pixel-art-atlas-1.4m`)
-  returns 404; step 14 needs the public URL and its licence. Procedural sprites
-  remain the fallback until then.
+- Step 14 source is known: `huggingface.co/datasets/Angais/pixel-art-atlas-1.4m`,
+  CC0-1.0, native 16×16 RGBA. Vendoring a pinned subset with a manifest and
+  checksums is deferred until after the 3D and RPG work; procedural sprites
+  remain the fallback.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 12–13 are complete; the next batch is 15 (shared 3D engine) and 16
-  (RPG world v2), with 14 unblocked as soon as the pack URL is known.
+- Steps 11–13 and 15–16 are complete; the next batch is 17 (more theme packs)
+  and 18 (the game library), with 14 when the subset is vendored.

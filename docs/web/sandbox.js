@@ -345,12 +345,19 @@
     if (!html) return "";
     const css = String(f["styles.css"] || "");
     const js = String(f["app.js"] || "");
-    const engine = String(f["engine2d.js"] || "");
     html = html.replace(/<link\b[^>]*href\s*=\s*["']styles\.css["'][^>]*>/i, function () {
       return "<style>\n" + css + "\n</style>";
     });
-    html = html.replace(/<script\b[^>]*src\s*=\s*["']engine2d\.js["'][^>]*>\s*<\/script>/gi, function () {
-      return "<script>\n" + engine + "\n</script>";
+    // Inline every shared runtime the page references, in place, so previews
+    // need no base URL and the order of engine/world/game files is preserved.
+    ["engine2d.js", "engine3d.js", "worldgen.js", "rpg2.js"].forEach(function (name) {
+      const body = String(f[name] || "");
+      if (!body) return;
+      const tag = new RegExp("<script\\b[^>]*src\\s*=\\s*[\"']"
+        + name.replace(/\./g, "\\.") + "[\"'][^>]*>\\s*<\\/script>", "gi");
+      html = html.replace(tag, function () {
+        return "<script>\n" + body + "\n</script>";
+      });
     });
     html = html.replace(/<script\b[^>]*src\s*=\s*["']app\.js["'][^>]*>\s*<\/script>/i, function () {
       return "<script>\n" + js + "\n</script>";

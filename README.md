@@ -98,10 +98,17 @@ The shared `engine2d.js` runtime powers platformer, snake, breakout, top-down
 shooter, and kart racer builds. It provides a fixed-step loop, keyboard/pointer/
 touch input, camera follow, tile and sprite drawing, AABB physics, particles, and
 WebAudio beeps. Generated projects include it as a real file next to `app.js`;
-the preview inlines the same source so it stays self-contained. Three-dimensional
-requests keep the low-poly presentation path and use the existing projection
-renderer where a template has one. A shared WebGL 3D engine and the sprite-pack
-pipeline are the next roadmap steps.
+the preview inlines the same source so it stays self-contained. `engine3d.js`
+adds a WebGL1 batch renderer with a Canvas2D perspective fallback for the
+third-person platformer, first-person maze, and kart racer.
+
+RPG builds ship two more real files: `worldgen.js` (seeded biomes, rivers, roads,
+3–5 towns with houses, a multi-room dungeon, NPCs, enemies, pickups, and 4–5
+quests) and `rpg2.js` (isometric explorer with camera follow, fogged minimap,
+dialogue, shops, action combat, XP/levels, quest log, and three save slots).
+Small worlds are 64×64 and `large` / `huge` requests reach 96×96. The optional
+sprite-pack pipeline (step 14) is pinned to a CC0 pixel-art atlas and remains a
+fallback to the procedural sprites.
 
 `build an rpg` picks its starting pack from the seed (Camelot, Bharata,
 Derelict, Neon, Rain City, Olympus, Sakura, Nile, Abyss, Frontier) instead of
@@ -123,7 +130,7 @@ regenerate the page from its template.
 
 Builds cover calculators, notes, dashboards, landing pages, a social feed,
 blog, forum, chat, arcade games (snake, breakout, pong, 2048, minesweeper,
-tetris, maze, platformer, typing), and a complete tiny RPG. `plan a todo app`
+tetris, maze, platformer, typing), and a full seeded RPG. `plan a todo app`
 or `blueprint an rpg` returns the architecture instead of the finished page:
 state, modules, data flow, file list, and build order.
 

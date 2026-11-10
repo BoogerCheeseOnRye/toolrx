@@ -37,6 +37,12 @@ eval(fs.readFileSync(process.argv[3], 'utf8'));
 const WEB = require('path').dirname(process.argv[4]);
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.embed.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'engine3d.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'engine3d.embed.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'worldgen.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'worldgen.embed.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'rpg2.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'rpg2.embed.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[4], 'utf8'));
 
 (async () => {
@@ -137,8 +143,145 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       src: p.files['engine2d.js'] || '', spec: p.specLine || ''
     };
   }
-  out.engineRuntime = await new Promise(resolve => {
-    const calls = { update: 0, draw: 0, ctx: false };
+  out.engine3d = {};
+  for (const [kind, desc] of [['platformer', '3d low-poly'],
+                              ['maze', 'first-person low-poly'],
+                              ['racer', '3d low-poly']]) {
+    const p = self.toolrxTemplates.project(kind, desc, {});
+    out.engine3d[kind] = {
+      files: Object.keys(p.files), html: p.html,
+      src: p.files['engine3d.js'] || '', spec: p.specLine || '',
+      htmlSource: p.files['index.html'] || ''
+    };
+  }
+  out.engine3dRuntime = await new Promise(resolve => {
+    const calls = { update: 0, draw: 0, fills: 0, mode: '', culled: 0 };
+    const grad = { addColorStop() {} };
+    const ctx2d = new Proxy({}, {
+      get(t, p) {
+        if (p === 'createLinearGradient' || p === 'createRadialGradient') return () => grad;
+        if (p === 'fill') return () => { calls.fills++; };
+        return () => {};
+      },
+      set() { return true; },
+    });
+    const canvas = {
+      width: 0, height: 0,
+      getContext: t => (t === '2d' ? ctx2d : null),
+      addEventListener() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 180 }),
+    };
+    const E = self.toolrxEngine3d.create({ canvas, width: 320, height: 180, sky: '#102030' });
+    calls.mode = E.mode;
+    E.update = () => { calls.update++; };
+    E.draw = () => {
+      calls.draw++;
+      E.clearScene();
+      E.box({ x: 0, y: 1, z: 4, w: 2, h: 2, d: 2, color: '#ff8800' });
+      E.box({ x: 3, y: 1, z: -6, w: 2, h: 2, d: 2, color: '#22cc88' });
+      E.sprite({ x: -2, y: 1, z: 5, w: 1, h: 1, color: '#ffffff' });
+      // Behind the camera: must be clipped away, not drawn.
+      E.box({ x: 0, y: 1, z: -30, w: 2, h: 2, d: 2, color: '#ff0000' });
+    };
+    E.camera.x = 0; E.camera.y = 1.6; E.camera.z = 0; E.camera.yaw = 0; E.camera.pitch = 0;
+    E.renderOnce();
+    let frames = 0;
+    const prevRaf = global.requestAnimationFrame;
+    global.requestAnimationFrame = fn => {
+      if (frames++ < 3) setTimeout(() => fn(frames * 16), 0);
+      return frames;
+    };
+    E.start();
+    setTimeout(() => {
+      E.stop();
+      global.requestAnimationFrame = prevRaf;
+      resolve(calls);
+    }, 160);
+  });
+  out.rpgWorld = (() => {
+    const make = seed => self.toolrxWorldgen.generate({
+      seed, size: 64, theme: self.toolrxWorldgen.defaultTheme,
+    });
+    const a = make(12345), b = make(12345), c = make(999);
+    const big = self.toolrxWorldgen.generate({
+      seed: 5, size: 96, theme: self.toolrxWorldgen.defaultTheme,
+    });
+    return {
+      size: a.size, seed: a.seed,
+      towns: a.towns.length, npcs: a.npcs.length, quests: a.quests.length,
+      enemies: a.enemies.length, pickups: a.pickups.length,
+      townNames: a.towns.map(t => t.name),
+      sameTiles: JSON.stringify(a.tiles) === JSON.stringify(b.tiles),
+      sameNpcs: a.npcs.map(n => n.name).join(',') === b.npcs.map(n => n.name).join(','),
+      diffTiles: JSON.stringify(a.tiles) !== JSON.stringify(c.tiles),
+      dungeonRooms: a.dungeonMap.rooms.length,
+      hasBoss: !!(a.dungeonMap.boss && a.dungeonMap.boss.hp > 0),
+      startWalkable: a.walkable(a.start.x, a.start.y),
+      bigSize: big.size, bigTowns: big.towns.length,
+      questGivers: a.quests.filter(q => q.giver).length,
+    };
+  })();
+  out.rpgProject = (() => {
+    const p = self.toolrxTemplates.project('rpg', 'an rpg based on india', {});
+    return {
+      files: Object.keys(p.files).sort(),
+      hasWorldgenTag: /src="worldgen\.js"/.test(p.html),
+      hasRpgTag: /src="rpg2\.js"/.test(p.html),
+      engineTagOnce: (p.html.match(/src="engine2d\.js"/g) || []).length,
+      appCreates: /toolrxRpg2\.create/.test(p.files['app.js'] || ''),
+      appHasBoss: /Asura King/.test(p.files['app.js'] || ''),
+      worldSrc: /toolrxWorldgen/.test(p.files['worldgen.js'] || ''),
+    };
+  })();
+  out.rpgRuntime = (() => {
+    const grad = { addColorStop() {} };
+    const calls = { fills: 0, texts: 0 };
+    const ctx = new Proxy({}, {
+      get(t, p) {
+        if (p === 'createLinearGradient' || p === 'createRadialGradient') return () => grad;
+        if (p === 'measureText') return s => ({ width: String(s).length * 7 });
+        if (p === 'fill') return () => { calls.fills++; };
+        if (p === 'fillText') return () => { calls.texts++; };
+        return () => {};
+      },
+      set() { return true; },
+    });
+    const canvas = {
+      width: 960, height: 540,
+      getContext: () => ctx,
+      addEventListener() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 960, height: 540 }),
+    };
+    const E = {
+      canvas, ctx, width: 960, height: 540,
+      tap: () => false, held: () => false,
+      bind() {}, press() {}, release() {}, beep() {}, start() {}, stop() {},
+      update: null, draw: null,
+    };
+    const W = self.toolrxWorldgen.generate({
+      seed: 7, size: 64, theme: self.toolrxWorldgen.defaultTheme,
+    });
+    const G = self.toolrxRpg2.create({
+      engine: E, canvas, world: W, theme: W.theme, width: 960, height: 540,
+    });
+    G.start();
+    G.renderOnce();
+    for (let i = 0; i < 6; i++) G.update(1 / 60);
+    G.enterDungeon();
+    G.renderOnce();
+    const inDungeon = G.state.map;
+    G.leaveDungeon();
+    const back = G.state.map;
+    const saved = G.save(2);
+    const loaded = G.load(2);
+    return {
+      fills: calls.fills, texts: calls.texts, inDungeon, back, saved, loaded,
+      quests: G.world().quests.length, npcs: G.world().npcs.length,
+      mode: G.state.mode, level: G.player().level,
+      slots: G.slots().map(s => !!s),
+    };
+  })();
+  out.engineRuntime = await new Promise(resolve => {    const calls = { update: 0, draw: 0, ctx: false };
     const grad = { addColorStop() {} };
     const canvas = {
       width: 0, height: 0,
@@ -329,11 +472,27 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     readme: self.toolrxWeb.projectFile(eng.slug, 'README.md'),
     arch: self.toolrxWeb.projectFile(eng.slug, 'ARCHITECTURE.md')
   };
+  out.sandbox.engine3dBuild = (await self.toolrxWeb.prompt('build a 3d platformer game'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  const eng3 = self.toolrxWeb.project();
+  out.sandbox.engine3d = {
+    slug: eng3.slug,
+    files: eng3.files.slice().sort(),
+    previewHasEngine: /toolrxEngine3d/.test(self.toolrxWeb.preview().html),
+    previewHasExternalTag: /src=["']engine3d\.js/.test(self.toolrxWeb.preview().html),
+    previewHasCreate: /toolrxEngine3d\.create/.test(self.toolrxWeb.preview().html),
+  };
   const h1 = html => ((String(html).match(/<h1>([^<]*)<\/h1>/) || [])[1] || '');
   out.sandbox.build = (await self.toolrxWeb.prompt('build an rpg based on king arthur'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
   let p = self.toolrxWeb.project();
   out.sandbox.first = { slug: p.slug, name: p.name, h1: h1(p.html), desc: p.desc };
+  out.sandbox.rpgPreview = {
+    files: p.files.slice().sort(),
+    hasWorldgen: /toolrxWorldgen/.test(self.toolrxWeb.preview().html),
+    hasRpg: /toolrxRpg2/.test(self.toolrxWeb.preview().html),
+    external: /src=["'](?:worldgen|rpg2|engine2d)\.js/.test(self.toolrxWeb.preview().html),
+  };
   out.sandbox.stale = (await self.toolrxWeb.prompt('change the name from verdant wood rpg to india'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
   p = self.toolrxWeb.project();
@@ -522,6 +681,25 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("closest supported: shooter", self.out["spec"]["tower"]["line"])
         self.assertIn("seed", self.out["spec"]["rpg"]["line"])
 
+    def test_engine_3d_projects_ship_the_shared_runtime(self):
+        for kind in ("platformer", "maze", "racer"):
+            e = self.out["engine3d"][kind]
+            self.assertIn("engine3d.js", e["files"])
+            self.assertIn('src="engine3d.js"', e["html"])
+            self.assertEqual(e["html"].count('src="engine3d.js"'), 1,
+                             "engine3d tag must appear once or the preview double-inlines")
+            self.assertNotIn('src="engine2d.js"', e["html"])
+            self.assertIn("3D", e["spec"])
+            self.assertIn("toolrxEngine3d", e["src"])
+            self.assertIn("3d", e["spec"].lower())
+
+    def test_engine_3d_falls_back_to_canvas_and_draws(self):
+        r = self.out["engine3dRuntime"]
+        self.assertEqual(r["mode"], "canvas", "no WebGL should select the 2d fallback")
+        self.assertGreater(r["update"], 0, "3d loop never called E.update")
+        self.assertGreater(r["draw"], 0, "3d loop never called E.draw")
+        self.assertGreater(r["fills"], 0, "3d fallback never filled a polygon")
+
     def test_engine_projects_ship_the_shared_runtime(self):
         for kind in ("platformer", "snake", "breakout", "shooter", "racer"):
             e = self.out["engine"][kind]
@@ -546,6 +724,64 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("engine2d.js", e["readme"])
         self.assertIn("engine2d.js", e["arch"])
         self.assertIn("spec ·", self.out["sandbox"]["engineBuild"][0]["text"])
+
+    def test_preview_inlines_the_3d_engine(self):
+        e = self.out["sandbox"]["engine3d"]
+        self.assertIn("engine3d.js", e["files"])
+        self.assertNotIn("engine2d.js", e["files"])
+        self.assertTrue(e["previewHasEngine"], "3d preview must inline the runtime")
+        self.assertFalse(e["previewHasExternalTag"], "preview cannot fetch external files")
+        self.assertTrue(e["previewHasCreate"])
+
+    def test_rpg_world_is_large_seeded_and_reproducible(self):
+        w = self.out["rpgWorld"]
+        self.assertGreaterEqual(w["size"], 64)
+        self.assertGreaterEqual(w["towns"], 3)
+        self.assertGreaterEqual(w["npcs"], 6)
+        self.assertGreaterEqual(w["quests"], 3)
+        self.assertGreaterEqual(w["enemies"], 18)
+        self.assertGreaterEqual(w["dungeonRooms"], 4)
+        self.assertTrue(w["hasBoss"])
+        self.assertTrue(w["startWalkable"])
+        self.assertTrue(w["sameTiles"], "same seed must reproduce the map")
+        self.assertTrue(w["sameNpcs"], "same seed must reproduce the cast")
+        self.assertTrue(w["diffTiles"], "different seeds must differ")
+        self.assertGreaterEqual(w["bigSize"], 96)
+        self.assertGreaterEqual(w["bigTowns"], 4)
+        self.assertGreaterEqual(w["questGivers"], 3)
+        self.assertEqual(len(set(w["townNames"])), len(w["townNames"]))
+
+    def test_rpg_project_ships_worldgen_and_runtime(self):
+        r = self.out["rpgProject"]
+        for f in ("engine2d.js", "worldgen.js", "rpg2.js", "app.js"):
+            self.assertIn(f, r["files"])
+        self.assertTrue(r["hasWorldgenTag"])
+        self.assertTrue(r["hasRpgTag"])
+        self.assertEqual(r["engineTagOnce"], 1,
+                         "engine2d tag must appear once or preview double-inlines")
+        self.assertTrue(r["appCreates"])
+        self.assertTrue(r["appHasBoss"])
+        self.assertTrue(r["worldSrc"])
+
+    def test_rpg_runtime_draws_and_saves(self):
+        r = self.out["rpgRuntime"]
+        self.assertGreater(r["fills"], 0, "rpg drew no tiles")
+        self.assertGreater(r["texts"], 0, "rpg drew no hud text")
+        self.assertEqual(r["inDungeon"], "dungeon")
+        self.assertEqual(r["back"], "overworld")
+        self.assertTrue(r["saved"])
+        self.assertTrue(r["loaded"])
+        self.assertGreaterEqual(r["quests"], 3)
+        self.assertEqual(r["mode"], "play")
+        self.assertTrue(r["slots"][1])
+
+    def test_rpg_preview_inlines_all_shared_runtimes(self):
+        r = self.out["sandbox"]["rpgPreview"]
+        for f in ("engine2d.js", "worldgen.js", "rpg2.js"):
+            self.assertIn(f, r["files"])
+        self.assertTrue(r["hasWorldgen"])
+        self.assertTrue(r["hasRpg"])
+        self.assertFalse(r["external"], "previews cannot fetch shared runtimes")
 
     def test_math_prompts(self):
         self.assertEqual(self.out["multiply"][0]["text"], "28140")

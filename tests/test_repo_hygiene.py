@@ -238,6 +238,8 @@ class DashboardTest(unittest.TestCase):
     def test_pages_web_assets_match(self):
         for name in ("blake2b.js", "router.js", "sandbox.js", "skills.js",
                      "templates.js", "engine2d.js", "engine2d.embed.js",
+                     "engine3d.js", "engine3d.embed.js", "worldgen.js",
+                     "worldgen.embed.js", "rpg2.js", "rpg2.embed.js",
                      "commands.json"):
             src = os.path.join(ROOT, "toolrx", "web", name)
             out = os.path.join(ROOT, "docs", "web", name)
@@ -251,28 +253,41 @@ class DashboardTest(unittest.TestCase):
                          "docs/web/model.json is stale")
 
     def test_engine_embed_matches_source(self):
-        src = open(os.path.join(ROOT, "toolrx", "web", "engine2d.js"),
-                   encoding="utf-8").read()
-        embed = open(os.path.join(ROOT, "toolrx", "web", "engine2d.embed.js"),
-                     encoding="utf-8").read()
-        m = re.search(r"toolrxEngine2dSource = (\".*\");", embed)
-        self.assertTrue(m, "run python3 toolrx/embed_engine.py")
-        self.assertEqual(json.loads(m.group(1)), src)
+        for name, var in (("engine2d", "toolrxEngine2dSource"),
+                          ("engine3d", "toolrxEngine3dSource"),
+                          ("worldgen", "toolrxWorldgenSource"),
+                          ("rpg2", "toolrxRpg2Source")):
+            src = open(os.path.join(ROOT, "toolrx", "web", name + ".js"),
+                       encoding="utf-8").read()
+            embed = open(os.path.join(ROOT, "toolrx", "web", name + ".embed.js"),
+                         encoding="utf-8").read()
+            m = re.search(var + r' = (".*");', embed)
+            self.assertTrue(m, "run python3 toolrx/embed_engine.py")
+            self.assertEqual(json.loads(m.group(1)), src, name + " embed is stale")
 
     def test_engine_loads_before_templates(self):
         marks = ['src="web/engine2d.js"', 'src="web/engine2d.embed.js"',
+                 'src="web/engine3d.js"', 'src="web/engine3d.embed.js"',
+                 'src="web/worldgen.js"', 'src="web/worldgen.embed.js"',
+                 'src="web/rpg2.js"', 'src="web/rpg2.embed.js"',
                  'src="web/templates.js"']
         for mark in marks:
             self.assertIn(mark, self.html)
         order = [self.html.index(m) for m in marks]
         self.assertEqual(order, sorted(order))
 
-    def test_offline_cache_includes_the_engine(self):
+    def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v2", sw)
+        self.assertIn("toolrx-shell-v4", sw)
         self.assertIn("./web/engine2d.js", sw)
         self.assertIn("./web/engine2d.embed.js", sw)
+        self.assertIn("./web/engine3d.js", sw)
+        self.assertIn("./web/engine3d.embed.js", sw)
+        self.assertIn("./web/worldgen.js", sw)
+        self.assertIn("./web/worldgen.embed.js", sw)
+        self.assertIn("./web/rpg2.js", sw)
+        self.assertIn("./web/rpg2.embed.js", sw)
 
     def test_offline_app_is_installable_and_cached(self):
         for rel in ("toolrx/web/sw.js", "toolrx/web/manifest.webmanifest",

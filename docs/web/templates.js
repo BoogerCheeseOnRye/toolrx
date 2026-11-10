@@ -887,112 +887,334 @@
     return html;
   }
 
+  var WORLD_EXTRA = {
+    "Camelot RPG": {
+      places: ["Camelot", "Mistwood", "Glastonbury", "Avalon Reach", "Caerleon"],
+      npcs: ["Merlin", "Bedivere", "Morgana", "Gawain", "Elaine", "Percival", "Kay", "Igraine"],
+      enemies: ["wandering knight", "mist hound", "bog wraith"],
+      items: ["grail shard", "mist herb", "old seal"],
+      dungeonName: "the Black Chapel"
+    },
+    "Bharata RPG": {
+      places: ["Hastinapur", "Lotus Ford", "Varanasi", "Ujjain", "Dvaraka"],
+      npcs: ["Vyasa", "Draupadi", "Karna", "Arjuna", "Sita", "Bhima", "Kunti", "Nakula"],
+      enemies: ["rakshasa", "ashura scout", "naga"],
+      items: ["soma leaf", "copper bowl", "temple key"],
+      dungeonName: "the Asura Deep"
+    },
+    "Derelict RPG": {
+      places: ["Docking Ring", "Hydroponics", "Reactor Deck", "Crew Quarters", "Cargo Bay"],
+      npcs: ["the ship's log", "Navigator Vale", "Engineer Rho", "Captain Ilex",
+        "Medic Sorn", "Archivist Nine", "Deckhand Jax", "Pilot Ona"],
+      enemies: ["husk drone", "vacuum wraith", "repair spider"],
+      items: ["stim", "circuit shard", "access card"],
+      dungeonName: "the Warden Core"
+    },
+    "Neon RPG": {
+      places: ["Neon Central", "Kowloon Stack", "The Sprawl", "Chrome Market", "Data Docks"],
+      npcs: ["the fixer", "Razor", "Mika", "Dex", "Nyx", "Bolt", "Sable", "Echo"],
+      enemies: ["chrome drone", "grid hound", "static wraith"],
+      items: ["data shard", "synth vial", "keycard"],
+      dungeonName: "the Architect's Vault"
+    },
+    "Rain City RPG": {
+      places: ["Rain Street", "The Docks", "Old Town", "Uptown", "Marlow Row"],
+      npcs: ["the informant", "Vera Crowe", "Sam Hollis", "Iris Vale",
+        "Lucky Pete", "Dana Ross", "Moe", "Sister Ann"],
+      enemies: ["mugger", "debt collector", "shadow"],
+      items: ["envelope", "case file", "favour"],
+      dungeonName: "the Fixer's Office"
+    },
+    "Olympus RPG": {
+      places: ["Olympus", "Delphi", "Thessaly", "The Stoa", "Troy"],
+      npcs: ["the oracle", "Athena", "Hermes", "Ariadne", "Theseus", "Hector",
+        "Cassandra", "Priam"],
+      enemies: ["shade", "cypress boar", "harpy"],
+      items: ["ambrosia", "laurel", "bronze key"],
+      dungeonName: "the Titan's Vault"
+    },
+    "Sakura RPG": {
+      places: ["Sakura Road", "Edo", "Kyoto", "The Cedars", "Onsen Village"],
+      npcs: ["the shrine maiden", "Hana", "Toshi", "Kenji", "Aiko", "Ryo", "Yuki", "Sora"],
+      enemies: ["bandit", "paper spirit", "ronin"],
+      items: ["lacquer box", "petal tea", "seal"],
+      dungeonName: "the Shogun's Keep"
+    },
+    "Nile RPG": {
+      places: ["Nile Bank", "Memphis", "Thebes", "Giza", "Karnak"],
+      npcs: ["the scribe", "Nefertari", "Anubis-priest", "Rameses", "Tia", "Hapu",
+        "Merit", "Seti"],
+      enemies: ["scarab swarm", "sand wraith", "jackal"],
+      items: ["canopic jar", "papyrus", "scarab seal"],
+      dungeonName: "the Pharaoh's Tomb"
+    },
+    "Abyss RPG": {
+      places: ["The Abyss", "Coral Gate", "Sunken Market", "The Trench", "Reef Home"],
+      npcs: ["the reef keeper", "Nerida", "Corin", "Tide", "Mako", "Pearl",
+        "Undine", "Brine"],
+      enemies: ["jelly", "angler", "crab knight"],
+      items: ["pearl", "coral shard", "tide key"],
+      dungeonName: "the Leviathan's Cradle"
+    },
+    "Frontier RPG": {
+      places: ["Dry Gulch", "Red Mesa", "The Crossing", "Dust Creek", "Coyote Wells"],
+      npcs: ["the sheriff", "Dolores", "Hank", "Belle", "Cody", "Ruth", "Amos",
+        "Calamity"],
+      enemies: ["rustler", "coyote", "desperado"],
+      items: ["canteen", "gold nugget", "rail key"],
+      dungeonName: "the Outlaw's Mine"
+    }
+  };
+
+  /* Merge a curated pack with the extra world fields worldgen needs. */
+  function worldTheme(pack) {
+    if (!pack) return null;
+    var out = {};
+    Object.keys(pack).forEach(function (k) { out[k] = pack[k]; });
+    var extra = WORLD_EXTRA[pack.title] || {};
+    Object.keys(extra).forEach(function (k) { out[k] = extra[k]; });
+    out.places = out.places || ["Verdant Hollow", "Mossford", "Greenreach",
+      "Thornvale", "Emberfield"];
+    out.npcs = out.npcs || ["Mira", "Bram", "Sable", "Oren", "Pella", "Rook",
+      "Wren", "Ivo"];
+    out.enemies = out.enemies || [out.enemy || "slime", "thornling", "bog bat"];
+    out.items = out.items || ["moon herb", "river stone", "old key"];
+    out.dungeonName = out.dungeonName || "the Sunken Barrow";
+    return out;
+  }
+
   function rpg(desc, opts) {
+    var spec = opts.spec || buildSpec("rpg", desc);
+    var pack = rpgTheme(desc) || rpgDefault(spec.seed);
+    var theme = worldTheme(pack);
+    var title = (theme && theme.title) || "Verdant RPG";
+    var seed = spec.seed >>> 0;
+    var big = /large|huge|epic|96|128/i.test(String(spec.scale || "") + " " + String(desc || ""));
+    var size = big ? 96 : 64;
     var body = [
       '<div class="card" style="padding:12px">',
-      '<div class="row" style="justify-content:space-between;gap:6px;font-size:12px;margin-bottom:8px">',
-      '<span class="pill">HP <b id="hp" style="color:var(--text)">30/30</b></span>',
-      '<span class="pill">LV <b id="lv" style="color:var(--text)">1</b></span>',
-      '<span class="pill">XP <b id="xp" style="color:var(--text)">0</b></span>',
-      '<span class="pill">potion <b id="pot" style="color:var(--text)">1</b></span>',
+      '<div class="row" style="justify-content:space-between;gap:6px;font-size:12px;margin-bottom:8px;flex-wrap:wrap">',
+      '<span class="pill">seed <b style="color:var(--text)">' + seed + '</b></span>',
+      '<span class="pill">world <b style="color:var(--text)">' + size + '×' + size + '</b></span>',
+      '<span class="pill">towns · dungeon · quests</span>',
       '</div>',
-      '<canvas id="cv" width="640" height="416" style="width:100%;height:auto;border-radius:12px;background:#0a1420;border:1px solid var(--border);image-rendering:pixelated"></canvas>',
-      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
-      '<button class="btn ghost" data-d="up" type="button">▲</button>',
-      '<button class="btn ghost" data-d="left" type="button">◀</button>',
-      '<button class="btn ghost" data-d="down" type="button">▼</button>',
-      '<button class="btn ghost" data-d="right" type="button">▶</button>',
-      '</div>',
-      '<div class="row" style="justify-content:center;margin-top:8px;gap:8px">',
-      '<button class="btn ghost" id="save" type="button" style="padding:6px 11px;font-size:12px">save</button>',
-      '<button class="btn ghost" id="load" type="button" style="padding:6px 11px;font-size:12px">load</button>',
-      '<button class="btn ghost" id="fresh" type="button" style="padding:6px 11px;font-size:12px">new game</button>',
-      '</div>',
-      '<div id="log" class="muted small" style="min-height:38px;margin-top:10px;line-height:1.5">find the Warden in the south-east.</div>',
-      '</div>',
-      '<div id="battle" hidden style="position:fixed;inset:0;z-index:20;background:rgba(3,6,12,.82);display:grid;place-items:center;padding:16px">',
-      '<div class="card" style="max-width:420px;width:100%;text-align:center">',
-      '<div class="badge" style="margin:0 auto">battle</div>',
-      '<h2 id="foe" style="margin:8px 0 2px;font-size:22px">slime</h2>',
-      '<div class="muted small" id="foehp">10 / 10 HP</div>',
-      '<div id="bl" class="muted small" style="min-height:44px;margin:12px 0;line-height:1.5"></div>',
-      '<div class="row" style="justify-content:center">',
-      '<button class="btn" data-b="attack" type="button">Attack</button>',
-      '<button class="btn ghost" data-b="defend" type="button">Defend</button>',
-      '<button class="btn ghost" data-b="heal" type="button">Potion</button>',
-      '<button class="btn ghost" data-b="flee" type="button">Flee</button>',
-      '</div></div></div>'
+      '<canvas id="cv" width="960" height="540" style="display:block;width:100%;height:auto;border-radius:12px;background:#0b1020;border:1px solid var(--border);touch-action:none"></canvas>',
+      '<p class="muted small" style="margin:10px 2px 0">WASD / arrows move · space or E talks · F attacks · I bag · Q quests · M map · Esc saves</p>',
+      '</div>'
     ].join("");
-    var css = '#battle[hidden]{display:none!important}' +
-      '@media(max-width:560px){[data-d]{padding:12px 16px!important;font-size:16px!important}}';
     var js = [
-      "var MAP=[",
-      "'####################',",
-      "'#..................#',",
-      "'#..T....E..........#',",
-      "'#......###.........#',",
-      "'#..P...E.....C.....#',",
-      "'#......###.........#',",
-      "'#..........E.......#',",
-      "'#....N.............#',",
-      "'#..................#',",
-      "'#.........E........#',",
-      "'#..................#',",
-      "'#...........B......#',",
-      "'####################'];",
-      "var T=32,W=20,H=13,KIND={E:{name:'slime',hp:10,atk:3,xp:8},B:{name:'the Warden',hp:44,atk:7,xp:40,boss:true}};",
-      "var cv=document.getElementById('cv'),cx=cv.getContext('2d');",
-      "var S,B=null,rand=(function(seed){var h=2166136261;for(var i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619);}",
-      "return function(){h+=0x6D2B79F5;var t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};})('verdant');",
-      "function hit(lo,hi){return lo+Math.floor(rand()*(hi-lo+1));}",
-      "function el(id){return document.getElementById(id);}",
-      "function say(t){S.log.push(t);if(S.log.length>4)S.log.shift();el('log').textContent=S.log.join('  ·  ');}",
-      "function paint(){el('hp').textContent=S.hp+'/'+S.max;el('lv').textContent=S.lv;el('xp').textContent=S.xp;el('pot').textContent=S.pot;}",
-      "function fresh(){S={x:2,y:4,hp:30,max:30,lv:1,xp:0,pot:1,cleared:{},log:[],won:false};B=null;el('battle').hidden=true;say('You wake at the edge of the Verdant Wood. Find the Warden to the south-east.');draw();paint();}",
-      "function draw(){var g=cx.createLinearGradient(0,0,0,cv.height);g.addColorStop(0,'#0d1b2e');g.addColorStop(1,'#0a1420');cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);",
-      "for(var y=0;y<H;y++){for(var x=0;x<W;x++){var ch=MAP[y][x],px=x*T,py=y*T;",
-      "if(ch==='#'){cx.fillStyle='#26364f';cx.fillRect(px,py,T,T);cx.fillStyle='#1b283d';cx.fillRect(px+2,py+2,T-4,T-4);}",
-      "else{cx.fillStyle=(x+y)%2?'#12291f':'#123024';cx.fillRect(px,py,T,T);}",
-      "if(ch==='T'){cx.fillStyle='#1f513a';cx.beginPath();cx.arc(px+16,py+16,10,0,7);cx.fill();}",
-      "if(ch==='C'&&!S.cleared[x+','+y]){cx.fillStyle='#fbbf24';cx.font='20px serif';cx.textAlign='center';cx.fillText('▣',px+16,py+22);}",
-      "if(ch==='N'){cx.fillStyle='#93c5fd';cx.font='20px serif';cx.textAlign='center';cx.fillText('☺',px+16,py+22);}",
-      "if(ch==='E'&&!S.cleared[x+','+y]){cx.fillStyle='#fb7185';cx.font='20px serif';cx.textAlign='center';cx.fillText('◆',px+16,py+22);}",
-      "if(ch==='B'&&!S.cleared[x+','+y]){cx.fillStyle='#a78bfa';cx.font='22px serif';cx.textAlign='center';cx.fillText('☠',px+16,py+23);}}}",
-      "cx.fillStyle='#fffdf7';cx.beginPath();cx.arc(S.x*T+16,S.y*T+16,11,0,7);cx.fill();",
-      "cx.fillStyle='#0f172a';cx.beginPath();cx.arc(S.x*T+13,S.y*T+13,2,0,7);cx.arc(S.x*T+19,S.y*T+13,2,0,7);cx.fill();}",
-      "function move(dx,dy){if(B||S.won)return;var nx=S.x+dx,ny=S.y+dy,ch=MAP[ny][nx];",
-      "if(ch==='#'||ch==='T')return;var key=nx+','+ny;",
-      "if((ch==='E'||ch==='B')&&!S.cleared[key]){start(ch,nx,ny);return;}",
-      "S.x=nx;S.y=ny;if(ch==='C'&&!S.cleared[key]){S.cleared[key]=1;S.pot++;say('Chest: +1 potion.');}",
-      "if(ch==='N')say('Elder: the Warden fears a steady hand. Strike, then guard.');",
-      "draw();paint();}",
-      "function start(ch,x,y){var d=KIND[ch];B={ch:ch,x:x,y:y,name:d.name,hp:d.hp,max:d.hp,atk:d.atk,xp:d.xp,boss:!!d.boss,guard:false};",
-      "el('battle').hidden=false;el('foe').textContent=d.name;el('bl').textContent='A '+d.name+' blocks the path.';battle();}",
-      "function battle(){el('foehp').textContent=B.hp+' / '+B.max+' HP';}",
-      "function endBattle(msg){el('battle').hidden=true;say(msg);B=null;draw();paint();}",
-      "function win(){S.cleared[B.x+','+B.y]=1;S.xp+=B.xp;var up=false;while(S.xp>=S.lv*20){S.xp-=S.lv*20;S.lv++;S.max+=5;S.hp=S.max;up=true;}",
-      "if(B.boss){S.won=true;endBattle('The Warden falls. You win — the Verdant Wood is safe. ('+(up?'level up! ':'')+')');}",
-      "else endBattle((up?'Level up! ':'')+'Defeated '+B.name+'. +'+B.xp+' XP.');}",
-      "function foeTurn(mult){if(!B)return;var dmg=hit(1,B.atk);if(B.guard){dmg=Math.max(1,Math.ceil(dmg/2));B.guard=false;}",
-      "S.hp-=Math.round(dmg*(mult||1));if(S.hp<=0){S.hp=S.max;S.x=2;S.y=4;endBattle('You fall... and wake at the shrine. Nothing is lost but pride.');return;}",
-      "battle();el('bl').textContent='The '+B.name+' hits for '+dmg+'.';paint();}",
-      "function act(kind){if(!B)return;",
-      "if(kind==='attack'){var d=hit(4,7)+S.lv*2;B.hp-=d;battle();el('bl').textContent='You strike for '+d+'.';",
-      "if(B.hp<=0){win();return;}foeTurn(1);}",
-      "else if(kind==='defend'){B.guard=true;el('bl').textContent='You raise your guard.';foeTurn(1);}",
-      "else if(kind==='heal'){if(!S.pot){el('bl').textContent='No potions left.';return;}S.pot--;S.hp=Math.min(S.max,S.hp+12);paint();el('bl').textContent='You drink a potion (+12 HP).';foeTurn(1);}",
-      "else if(kind==='flee'){if(B.boss){el('bl').textContent='The Warden blocks your escape.';foeTurn(1);}else endBattle('You slip away from the '+B.name+'.');}}",
-      "document.querySelectorAll('[data-d]').forEach(function(b){b.addEventListener('click',function(){var d=b.dataset.d;move(d==='left'?-1:d==='right'?1:0,d==='up'?-1:d==='down'?1:0);});});",
-      "document.querySelectorAll('[data-b]').forEach(function(b){b.addEventListener('click',function(){act(b.dataset.b);});});",
-      "document.addEventListener('keydown',function(e){var k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')move(-1,0);if(k==='arrowright'||k==='d')move(1,0);if(k==='arrowup'||k==='w')move(0,-1);if(k==='arrowdown'||k==='s')move(0,1);",
-      "if(k==='1')act('attack');if(k==='2')act('defend');if(k==='3')act('heal');if(k==='4')act('flee');});",
-      "el('fresh').addEventListener('click',fresh);",
-      "el('save').addEventListener('click',function(){try{localStorage.setItem('toolrx.rpg.v1',JSON.stringify({S:S,x:S.x,y:S.y}));say('Game saved.');}catch(e){say('save unavailable');}});",
-      "el('load').addEventListener('click',function(){try{var d=JSON.parse(localStorage.getItem('toolrx.rpg.v1'));if(d&&d.S){S=d.S;draw();paint();say('Game loaded.');}}catch(e){say('no save found');}});",
-      "fresh();"
+      "var THEME=" + JSON.stringify(theme) + ";",
+      "var SEED=" + seed + ",SIZE=" + size + ";",
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine2d.create({canvas:cv,width:960,height:540,background:'#0b1020'});",
+      "var W=toolrxWorldgen.generate({seed:SEED,size:SIZE,theme:THEME});",
+      "var G=toolrxRpg2.create({engine:E,canvas:cv,world:W,theme:THEME,width:960,height:540});",
+      "G.start();",
+      "window.toolrxGame=G;"
     ].join("\n");
-    var rpgPack = rpgTheme(desc) || (opts.spec ? rpgDefault(opts.spec.seed) : null);
-    return applyRpgTheme(shell({ title: rpgPack ? rpgPack.title : "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG", body: body, css: css, js: js, theme: opts.theme }), desc, rpgPack);
+    return shell({
+      title: title,
+      sub: (theme && theme.sub) || "explore, fight, level up — a seeded world",
+      body: body, js: js, theme: opts.theme
+    });
+  }
+
+  /* ------------------------------------------------------ platformer 3D -- */
+  function platformer3d(desc, opts) {
+    var spec = opts.spec || buildSpec("platformer", desc);
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px">',
+      '<span class="pill">coins <b id="score" style="color:var(--text)">0 / 10</b></span>',
+      '<span class="pill" id="msg">reach the gate →</span></div>',
+      '<canvas id="cv" width="720" height="420" style="width:100%;height:auto;border-radius:12px;background:#08111f;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
+      '<button class="btn ghost" data-k="left" type="button">◀</button>',
+      '<button class="btn ghost" data-k="forward" type="button">▲</button>',
+      '<button class="btn ghost" data-k="back" type="button">▼</button>',
+      '<button class="btn ghost" data-k="right" type="button">▶</button>',
+      '<button class="btn" data-k="jump" type="button">jump</button>',
+      '<button class="btn ghost" id="reset" type="button" style="padding:6px 11px;font-size:12px">reset</button>',
+      '</div>',
+      '<p class="muted small" style="margin:8px 2px 0">WASD / arrows move · space jumps · third-person camera follows</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine3d.create({canvas:cv,width:720,height:420,sky:'#08111f',fov:60});",
+      "var msg=document.getElementById('msg'),scoreEl=document.getElementById('score');",
+      "var START={x:0,y:1,z:0},P={x:0,y:1,z:0,vy:0,on:true},coins=[],got=0,goal={x:0,z:70};",
+      "var PL;",
+      "function layout(){return [",
+      "  [0,1,0,9,9],[2,1.4,9,6,7],[-3,1.9,17,5,6],[1,2.5,24,5,6],[5,3.1,31,5,6],",
+      "  [0,2.2,38,6,6],[-5,3.4,45,5,6],[-1,4.1,52,5,6],[4,3.2,59,5,6],[0,4.4,66,9,9]",
+      "].map(function(a){return {x:a[0],top:a[1],z:a[2],w:a[3],d:a[4]};});}",
+      "function reset(){PL=layout();P={x:START.x,y:START.y,z:START.z,vy:0,on:true};got=0;scoreEl.textContent='0 / 10';msg.textContent='reach the gate →';",
+      "coins=PL.map(function(pl){return {x:pl.x,y:pl.top+1.35,z:pl.z,got:false};});E.camera.x=0;E.camera.y=5.4;E.camera.z=-9;}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],forward:['ArrowUp','w'],back:['ArrowDown','s'],jump:[' ','Space']});",
+      "E.bindButtons();",
+      "E.update=function(dt){",
+      "  var side=(E.held('right')?1:0)-(E.held('left')?1:0),fwd=(E.held('forward')?1:0)-(E.held('back')?1:0);",
+      "  P.x=Math.max(-16,Math.min(16,P.x+side*5.6*dt));P.z=Math.max(-4,Math.min(74,P.z+fwd*6.6*dt));",
+      "  if(E.tap('jump')&&P.on){P.vy=9.4;P.on=false;E.beep(520,.06,'square');}",
+      "  P.vy-=23*dt;P.y+=P.vy*dt;P.on=false;",
+      "  PL.forEach(function(pl){if(P.x>pl.x-pl.w/2&&P.x<pl.x+pl.w/2&&P.z>pl.z-pl.d/2&&P.z<pl.z+pl.d/2){",
+      "    if(P.vy<=0&&P.y<=pl.top+0.4&&P.y>=pl.top-1.4){P.y=pl.top;P.vy=0;P.on=true;}}});",
+      "  if(P.y<-9){E.beep(160,.14,'sawtooth');reset();}",
+      "  coins.forEach(function(c){if(c.got)return;if(Math.abs(P.x-c.x)<0.9&&Math.abs(P.z-c.z)<0.9&&Math.abs(P.y+0.9-c.y)<1.4){c.got=true;got++;scoreEl.textContent=got+' / 10';E.beep(880,.05,'triangle');}});",
+      "  if(P.z>goal.z-2&&Math.abs(P.x-goal.x)<3){if(got>=10){msg.textContent='gate open · '+got+' coins · complete';}else{msg.textContent='the gate needs all 10 coins ('+got+'/10)';}}",
+      "  var k=Math.min(1,dt*5);E.camera.x+=(P.x-E.camera.x)*k;E.camera.y+=(P.y+4.3-E.camera.y)*k;E.camera.z+=(P.z-9-E.camera.z)*Math.min(1,dt*6);E.camera.yaw=0;E.camera.pitch=0.2;",
+      "};",
+      "E.draw=function(){E.clearScene();",
+      "  E.box({x:0,y:-0.9,z:34,w:120,h:1,d:110,color:'#0c1628'});",
+      "  PL.forEach(function(pl,i){var c=i%2?'#2a4a6b':'#24405e';E.box({x:pl.x,y:pl.top-0.5,z:pl.z,w:pl.w,h:1,d:pl.d,color:c});",
+      "    E.box({x:pl.x,y:pl.top+0.01,z:pl.z,w:pl.w,h:0.08,d:pl.d,color:i%2?'#3d6f8f':'#35607d'});});",
+      "  coins.forEach(function(c){if(!c.got)E.sprite({x:c.x,y:c.y,z:c.z,w:.8,h:.8,color:'#fbbf24'});});",
+      "  E.box({x:goal.x-2.6,y:2.2,z:goal.z,w:.5,h:4.4,d:.5,color:'#34d399'});",
+      "  E.box({x:goal.x+2.6,y:2.2,z:goal.z,w:.5,h:4.4,d:.5,color:'#34d399'});",
+      "  E.box({x:goal.x,y:4.3,z:goal.z,w:5.7,h:.5,d:.5,color:'#34d399',light:.8});",
+      "  for(var i=0;i<8;i++){E.box({x:(i%2?1:-1)*(15+i*0.4),y:1.6+i*.3,z:i*9-4,w:1.1,h:3+i%3,d:1.1,color:'#1b3350'});}",
+      "  E.box({x:P.x,y:P.y+0.85,z:P.z,w:1,h:1.7,d:1,color:'#f8fafc'});",
+      "  E.box({x:P.x,y:P.y+1.45,z:P.z+.42,w:.5,h:.5,d:.3,color:'#22d3ee',light:1});",
+      "};",
+      "document.getElementById('reset').addEventListener('click',reset);reset();E.start();"
+    ].join("\n");
+    return shell({ title: "Platformer 3D", sub: "a low-poly run through floating platforms", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ----------------------------------------------------------- maze 3D -- */
+  function maze3d(desc, opts) {
+    var spec = opts.spec || buildSpec("maze", desc);
+    var size = /large|huge|epic/i.test(spec.scale) ? 21 : 15;
+    var body = [
+      '<div class="card" style="padding:12px;position:relative">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px">',
+      '<span class="pill">keys <b id="keys" style="color:var(--text)">0 / 3</b></span>',
+      '<span class="pill">steps <b id="steps" style="color:var(--text)">0</b></span>',
+      '<span class="pill" id="msg">find 3 keys, then the exit</span></div>',
+      '<canvas id="cv" width="720" height="440" style="width:100%;height:auto;border-radius:12px;background:#070d18;border:1px solid var(--border)"></canvas>',
+      '<canvas id="mm" width="132" height="132" aria-label="minimap" style="position:absolute;right:22px;top:64px;width:88px;height:88px;border-radius:8px;border:1px solid var(--border);opacity:.85"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
+      '<button class="btn ghost" data-k="turnL" type="button">↺</button>',
+      '<button class="btn ghost" data-k="forward" type="button">▲</button>',
+      '<button class="btn ghost" data-k="back" type="button">▼</button>',
+      '<button class="btn ghost" data-k="turnR" type="button">↻</button>',
+      '<button class="btn ghost" data-k="strafeL" type="button">◀</button>',
+      '<button class="btn ghost" data-k="strafeR" type="button">▶</button>',
+      '<button class="btn ghost" id="reset" type="button" style="padding:6px 11px;font-size:12px">new maze</button>',
+      '</div>',
+      '<p class="muted small" style="margin:8px 2px 0">turn with arrows or drag the view · WASD moves · first-person camera</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv'),mm=document.getElementById('mm'),mx=mm.getContext('2d');",
+      "var E=toolrxEngine3d.create({canvas:cv,width:720,height:440,sky:'#070d18',fov:72});",
+      "var msg=document.getElementById('msg'),keysEl=document.getElementById('keys'),stepsEl=document.getElementById('steps');",
+      "var N=" + size + ",CELL=3,WALL=3.4,SEED=" + (spec.seed >>> 0) + ";",
+      "var grid,keys,exitCell,P={x:0,z:0,yaw:0},found=0,steps=0,won=false,drag=null;",
+      "function seedRng(s){var h=s>>>0;return function(){h+=0x6D2B79F5;var t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}",
+      "function carve(seed){var r=seedRng(seed),g=[],x,y;for(y=0;y<N;y++){g[y]=[];for(x=0;x<N;x++)g[y][x]=1;}",
+      "  var stack=[[1,1]];g[1][1]=0;",
+      "  while(stack.length){var c=stack[stack.length-1],opts=[];[[2,0],[-2,0],[0,2],[0,-2]].forEach(function(d){var nx=c[0]+d[0],ny=c[1]+d[1];if(nx>0&&nx<N-1&&ny>0&&ny<N-1&&g[ny][nx]===1)opts.push(d);});",
+      "    if(!opts.length){stack.pop();continue;}var d=opts[Math.floor(r()*opts.length)];g[c[1]+d[1]/2][c[0]+d[0]/2]=0;g[c[1]+d[1]][c[0]+d[0]]=0;stack.push([c[0]+d[0],c[1]+d[1]]);}",
+      "  return g;}",
+      "function open(x,y){return x>0&&y>0&&x<N-1&&y<N-1&&grid[y][x]===0;}",
+      "function world(cx,cz){return {x:(cx-(N-1)/2)*CELL,z:(cz-(N-1)/2)*CELL};}",
+      "function cellAt(x,z){return {x:Math.round(x/CELL+(N-1)/2),z:Math.round(z/CELL+(N-1)/2)};}",
+      "function blocked(x,z){var r=.34,pts=[[x-r,z-r],[x+r,z-r],[x-r,z+r],[x+r,z+r]];for(var i=0;i<4;i++){var c=cellAt(pts[i][0],pts[i][1]);if(!open(c.x,c.z))return true;}return false;}",
+      "function reset(){grid=carve(SEED);var s=world(1,1);P={x:s.x,z:s.z,yaw:0};found=0;steps=0;won=false;",
+      "  var far=[1,1],best=-1;for(var yy=1;yy<N-1;yy++)for(var xx=1;xx<N-1;xx++){if(!open(xx,yy))continue;var d=(xx-1)*(xx-1)+(yy-1)*(yy-1);if(d>best){best=d;far=[xx,yy];}}",
+      "  exitCell=far;",
+      "  var cand=[];for(var y=1;y<N-1;y++)for(var x=1;x<N-1;x++){if(!open(x,y)||(x===1&&y===1)||(x===far[0]&&y===far[1]))continue;var n=0;[[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){if(open(x+d[0],y+d[1]))n++;});cand.push({c:[x,y],dead:n===1?1:0,d:(x-1)*(x-1)+(y-1)*(y-1)});}",
+      "  cand.sort(function(a,b){return b.dead-a.dead||b.d-a.d||a.c[1]-b.c[1]||a.c[0]-b.c[0];});",
+      "  keys=cand.slice(0,3).map(function(o){var w=world(o.c[0],o.c[1]);return {x:w.x,z:w.z,got:false};});",
+      "  msg.textContent='find 3 keys, then the exit';keysEl.textContent='0 / 3';stepsEl.textContent='0';",
+      "  E.camera.x=s.x;E.camera.y=1.7;E.camera.z=s.z;return world(far[0],far[1]);}",
+      "E.bind({turnL:['ArrowLeft','a'],turnR:['ArrowRight','d'],forward:['ArrowUp','w'],back:['ArrowDown','s'],strafeL:['q'],strafeR:['e']});",
+      "E.bindButtons();",
+      "cv.addEventListener('pointerdown',function(e){drag=e.clientX;cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);});",
+      "cv.addEventListener('pointermove',function(e){if(drag==null)return;P.yaw-=(e.clientX-drag)*0.006;drag=e.clientX;});",
+      "cv.addEventListener('pointerup',function(){drag=null;});cv.addEventListener('pointercancel',function(){drag=null;});",
+      "var clock=0;",
+      "E.update=function(dt){if(won)return;",
+      "  var turn=(E.held('turnR')?1:0)-(E.held('turnL')?1:0);P.yaw+=turn*2.1*dt;",
+      "  var fwd=(E.held('forward')?1:0)-(E.held('back')?1:0),side=(E.held('strafeR')?1:0)-(E.held('strafeL')?1:0);",
+      "  if(fwd||side){var vx=Math.sin(P.yaw)*fwd+Math.cos(P.yaw)*side,vz=Math.cos(P.yaw)*fwd-Math.sin(P.yaw)*side;var len=Math.hypot(vx,vz)||1;",
+      "    var nx=P.x+vx/len*3.4*dt,nz=P.z+vz/len*3.4*dt;if(!blocked(nx,nz)){P.x=nx;P.z=nz;}if(fwd)steps+=dt*3.4;}",
+      "  keys.forEach(function(k){if(k.got)return;if(Math.hypot(P.x-k.x,P.z-k.z)<1.2){k.got=true;found++;keysEl.textContent=found+' / 3';E.beep(880,.07,'triangle');msg.textContent=found<3?'a key turns in the lock':'all keys found · find the exit';}});",
+      "  var ex=world(exitCell[0],exitCell[1]);if(found>=3&&Math.hypot(P.x-ex.x,P.z-ex.z)<1.5){won=true;msg.textContent='escaped in '+steps.toFixed(0)+' steps';E.beep(1040,.18,'triangle');}",
+      "  E.camera.x=P.x;E.camera.z=P.z;E.camera.y=1.7;E.camera.yaw=P.yaw;E.camera.pitch=0.02;stepsEl.textContent=steps.toFixed(0);",
+      "  clock+=dt;if(clock>0.12){clock=0;minimap();}",
+      "};",
+      "function minimap(){var s=mm.width/N;mx.fillStyle='#0b1424';mx.fillRect(0,0,mm.width,mm.height);",
+      "  for(var y=0;y<N;y++)for(var x=0;x<N;x++){if(grid[y][x]===1){mx.fillStyle='#1f3350';mx.fillRect(x*s,y*s,s,s);}else{mx.fillStyle='#101d31';mx.fillRect(x*s,y*s,s,s);}}",
+      "  var p=cellAt(P.x,P.z);mx.fillStyle='#f8fafc';mx.fillRect(p.x*s+s/2-1.5,p.z*s+s/2-1.5,3,3);",
+      "  keys.forEach(function(k){if(k.got)return;var c=cellAt(k.x,k.z);mx.fillStyle='#fbbf24';mx.fillRect(c.x*s+s/2-1,c.z*s+s/2-1,2,2);});",
+      "  var e=cellAt(world(exitCell[0],exitCell[1]).x,world(exitCell[0],exitCell[1]).z);mx.fillStyle='#34d399';mx.fillRect(e.x*s+s/2-2,e.z*s+s/2-2,4,4);}",
+      "E.draw=function(){E.clearScene();",
+      "  var half=N*CELL/2;E.box({x:0,y:-0.2,z:0,w:N*CELL,h:.4,d:N*CELL,color:'#101c30'});",
+      "  for(var y=0;y<N;y++){var run=0;for(var x=0;x<N;x++){if(grid[y][x]===1){run++;}else if(run){addWall(x-run,y,run);run=0;}}if(run)addWall(N-run,y,run);}",
+      "  keys.forEach(function(k){if(!k.got)E.sprite({x:k.x,y:1.1,z:k.z,w:.6,h:.9,color:'#fbbf24'});});",
+      "  var e=world(exitCell[0],exitCell[1]);E.sprite({x:e.x,y:found>=3?1.4:0.7,z:e.z,w:1.4,h:found>=3?2.8:1.4,color:found>=3?'#34d399':'#1f6b55'});",
+      "};",
+      "function addWall(x,y,run){var c=world(x+run/2-0.5,y);E.box({x:c.x,y:WALL/2,z:c.z,w:run*CELL,h:WALL,d:CELL,color:'#2c4b70'});}",
+      "document.getElementById('reset').addEventListener('click',function(){reset();});reset();minimap();E.start();"
+    ].join("\n");
+    return shell({ title: "Maze 3D", sub: "a first-person maze with keys and a minimap", body: body, js: js, theme: opts.theme });
+  }
+
+  /* ---------------------------------------------------------- racer 3D -- */
+  function racer3d(desc, opts) {
+    var spec = opts.spec || buildSpec("racer", desc);
+    var body = [
+      '<div class="card" style="padding:12px">',
+      '<div class="row" style="justify-content:space-between;margin-bottom:8px">',
+      '<span class="pill">lap <b id="lap" style="color:var(--text)">1 / 3</b></span>',
+      '<span class="pill">time <b id="time" style="color:var(--text)">0.0</b></span>',
+      '<span class="pill">best <b id="best" style="color:var(--text)">—</b></span></div>',
+      '<canvas id="cv" width="720" height="440" style="width:100%;height:auto;border-radius:12px;background:#0a1220;border:1px solid var(--border)"></canvas>',
+      '<div class="row" style="justify-content:center;margin-top:10px;gap:8px">',
+      '<button class="btn ghost" data-k="left" type="button">◀</button>',
+      '<button class="btn ghost" data-k="accel" type="button">gas</button>',
+      '<button class="btn ghost" data-k="brake" type="button">brake</button>',
+      '<button class="btn ghost" data-k="right" type="button">▶</button>',
+      '<button class="btn ghost" id="reset" type="button" style="padding:6px 11px;font-size:12px">restart</button>',
+      '</div>',
+      '<p class="muted small" style="margin:8px 2px 0">arrows / WASD · pass the gates in order · three laps</p></div>'
+    ].join("");
+    var js = [
+      "var cv=document.getElementById('cv');",
+      "var E=toolrxEngine3d.create({canvas:cv,width:720,height:440,sky:'#0a1220',fov:66});",
+      "var lapEl=document.getElementById('lap'),timeEl=document.getElementById('time'),bestEl=document.getElementById('best');",
+      "var START={x:24,z:0,h:Math.PI/2},car={x:24,z:0,h:Math.PI/2,spd:0},next=0,lap=1,time=0,done=false,best=parseFloat(E.store('toolrx.race3d.best')||'0')||0;",
+      "var CP=[[24,0],[22,18],[0,22],[-22,18],[-24,0],[-22,-18],[0,-22],[22,-18]];",
+      "if(best)bestEl.textContent=best.toFixed(1);",
+      "function reset(){car={x:START.x,z:START.z,h:START.h,spd:0};next=0;lap=1;time=0;done=false;lapEl.textContent='1 / 3';timeEl.textContent='0.0';E.camera.x=car.x;E.camera.z=car.z;E.camera.y=5.4;}",
+      "E.bind({left:['ArrowLeft','a'],right:['ArrowRight','d'],accel:['ArrowUp','w'],brake:['ArrowDown','s']});",
+      "E.bindButtons();",
+      "E.update=function(dt){if(done)return;",
+      "  car.spd+=((E.held('accel')?17:0)-(E.held('brake')?24:0))*dt-car.spd*0.55*dt;car.spd=Math.max(0,Math.min(27,car.spd));",
+      "  var turn=(E.held('right')?1:0)-(E.held('left')?1:0);car.h+=turn*1.9*dt*Math.min(1,car.spd/7);",
+      "  var nx=car.x+Math.cos(car.h)*car.spd*dt,nz=car.z+Math.sin(car.h)*car.spd*dt;",
+      "  var off=(Math.abs(nx)>34||Math.abs(nz)>24),inner=(Math.abs(nx)<20&&Math.abs(nz)<12);",
+      "  if(off||inner){car.spd*=0.35;E.beep(120,.08,'sawtooth',.02);}else{car.x=nx;car.z=nz;}",
+      "  time+=dt;timeEl.textContent=time.toFixed(1);",
+      "  var cp=CP[next];if(Math.hypot(car.x-cp[0],car.z-cp[1])<7){next++;E.beep(620+next*30,.04,'square',.02);",
+      "    if(next>=CP.length){next=0;lap++;lapEl.textContent=Math.min(lap,3)+' / 3';E.beep(900,.1,'triangle');",
+      "      if(lap>3){done=true;if(!best||time<best){best=time;bestEl.textContent=best.toFixed(1);E.store('toolrx.race3d.best',best.toFixed(1));}E.beep(1100,.2,'triangle');}}}",
+      "  var k=Math.min(1,dt*8);E.camera.x+=(car.x-Math.cos(car.h)*9-E.camera.x)*k;E.camera.z+=(car.z-Math.sin(car.h)*9-E.camera.z)*k;E.camera.y+=(4.9-E.camera.y)*k;E.camera.yaw=Math.PI/2-car.h;E.camera.pitch=0.2;",
+      "};",
+      "E.draw=function(){E.clearScene();",
+      "  E.box({x:0,y:-0.6,z:0,w:76,h:1,d:56,color:'#1b283c'});",
+      "  E.box({x:0,y:0.1,z:0,w:40,h:1,d:24,color:'#16324a'});",
+      "  E.box({x:0,y:0.62,z:0,w:40,h:1,d:24,color:'#1d4b3d'});",
+      "  [[0,26,76,2],[0,-26,76,2],[36,0,2,54],[-36,0,2,54]].forEach(function(w){E.box({x:w[0],y:1,z:w[1],w:w[2],h:2,d:w[3],color:'#324a68'});});",
+      "  [[-34,-12],[34,-12],[-34,12],[34,12]].forEach(function(c){E.box({x:c[0],y:.7,z:c[1],w:1,h:1.4,d:1,color:'#fbbf24'});});",
+      "  CP.forEach(function(cp,i){var c=i===next?'#fbbf24':'#2c4560';E.box({x:cp[0]-2,y:1.2,z:cp[1],w:.5,h:2.4,d:.5,color:c});E.box({x:cp[0]+2,y:1.2,z:cp[1],w:.5,h:2.4,d:.5,color:c});});",
+      "  E.box({x:car.x,y:.6,z:car.z,w:2.2,h:.9,d:3.4,color:'#22d3ee'});",
+      "  E.box({x:car.x+Math.cos(car.h)*1.6,y:.6,z:car.z+Math.sin(car.h)*1.6,w:1.6,h:.5,d:1,color:'#a78bfa',light:1});",
+      "};",
+      "document.getElementById('reset').addEventListener('click',reset);reset();E.start();"
+    ].join("\n");
+    return shell({ title: "Kart racer 3D", sub: "a low-poly circuit with gates and three laps", body: body, js: js, theme: opts.theme });
   }
 
   /* --------------------------------------------------------- platformer -- */
@@ -1655,6 +1877,30 @@
       extend: "enemies, moving platforms, levels as data",
       steps: ["define the platform rectangles", "apply gravity and integrate position", "resolve vertical then horizontal collisions", "collect coins by rectangle overlap", "draw from state each frame"]
     },
+    platformer3d: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "player {x,y,z,vy,grounded}, platforms [{x,y,z,w,h,d}], coins[], camera",
+      modules: ["input", "third-person camera", "gravity + landing", "coin pickup", "scene boxes"],
+      flow: "input → move/jump → land on platforms → camera follows → push boxes → render",
+      extend: "moving platforms, enemies, checkpoints, more tracks",
+      steps: ["place low-poly platforms along the path", "gravity and landing on platform tops", "third-person camera behind the player", "coins and the goal gate", "fall reset and camera smoothing"]
+    },
+    maze3d: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "maze grid, player {x,z}, yaw, keys[], exit, steps",
+      modules: ["seeded carve", "first-person camera", "wall collision", "key pickup", "minimap"],
+      flow: "turn/move → collision → camera → keys/exit → draw 3D + minimap",
+      extend: "larger mazes, fog, patrolling enemies",
+      steps: ["carve a maze with a seeded DFS", "first-person camera at eye height", "check wall cells before moving", "collect keys in dead ends", "open the exit and draw a minimap"]
+    },
+    racer3d: {
+      files: ["index.html", "styles.css", "app.js"],
+      state: "car {x,z,heading,speed}, checkpoints[], lap, time",
+      modules: ["accelerate/steer", "track collision", "checkpoint order", "chase camera"],
+      flow: "input → speed/heading → move + collide → checkpoint test → camera → render",
+      extend: "rivals, drift, more tracks, splits",
+      steps: ["build the ground and inner block", "accelerate and steer the car", "keep the car on the track", "hit checkpoints in order", "three laps and a stored best time"]
+    },
     snake: { files: ["index.html", "styles.css", "app.js"], state: "snake array, direction, next direction, food, score", modules: ["step()", "place food", "draw()"], flow: "interval → step → collision/food → draw", extend: "speed ramp, walls, wrap toggle", steps: ["grid state", "one step per tick", "collision against self", "food placement that avoids the snake"] },
     breakout: { files: ["index.html", "styles.css", "app.js"], state: "paddle, ball, bricks, lives, score", modules: ["launch", "physics", "brick collision", "draw"], flow: "frame → move ball → bounce/collide → draw", extend: "power-ups, levels, sound", steps: ["paddle follows pointer", "ball bounces off edges", "brick grid with hp", "reset on life loss"] },
     shooter: { files: ["index.html", "styles.css", "app.js"], state: "player, enemies[], bullets[], score, wave, hp", modules: ["move", "auto-aim fire", "spawn waves", "collision", "draw"], flow: "input → move/fire → advance bullets/enemies → resolve hits → draw", extend: "weapon types, upgrades, bosses, cover", steps: ["draw a grid arena", "move the player with clamped input", "fire toward the nearest enemy", "spawn waves and resolve bullet hits", "end the run when hp reaches zero"] },
@@ -1815,7 +2061,20 @@
     minesweeper: 1, tetris: 1, maze: 1, adventure: 1, typing: 1,
     shooter: 1, racer: 1, game: 1
   };
-  var ENGINE_GENRES = { platformer: 1, snake: 1, breakout: 1, shooter: 1, racer: 1 };
+  var ENGINE_GENRES = { platformer: 1, snake: 1, breakout: 1, shooter: 1, racer: 1, rpg: 1 };
+  var THREE_D_ROUTE = { platformer: 1, maze: 1, racer: 1 };
+  var SHARED_EMBED = {
+    "engine2d.js": "toolrxEngine2dSource",
+    "engine3d.js": "toolrxEngine3dSource",
+    "worldgen.js": "toolrxWorldgenSource",
+    "rpg2.js": "toolrxRpg2Source"
+  };
+  var SHARED_ROLE = {
+    "engine2d.js": "fixed-step loop, input, camera, tiles, physics, particles, audio",
+    "engine3d.js": "WebGL boxes and billboards with a Canvas2D fallback",
+    "worldgen.js": "seeded biomes, towns, roads, dungeons, NPCs, and quests",
+    "rpg2.js": "world rendering, dialogue, shops, battles, quests, and save slots"
+  };
   var GENRE_VIEW = {
     rpg: "top-down", maze: "top-down", snake: "top-down", shooter: "top-down",
     racer: "top-down", "2048": "top-down", minesweeper: "top-down",
@@ -1994,15 +2253,18 @@
     welcome: welcome,
     rpg: rpg,
     platformer: platformer,
+    platformer3d: platformer3d,
     snake: snake,
     breakout: breakout,
     shooter: shooter,
     racer: racer,
+    racer3d: racer3d,
     pong: pong,
     "2048": game2048,
     minesweeper: minesweeper,
     tetris: tetris,
     maze: maze,
+    maze3d: maze3d,
     adventure: adventure,
     typing: typing,
     social: social,
@@ -2060,11 +2322,39 @@
     return root.toolrxEngine2dSource || "";
   }
 
+  function sharedSource(name) {
+    var key = SHARED_EMBED[name];
+    return key ? (root[key] || "") : "";
+  }
+
+  function templateFor(spec) {
+    return (spec.dim === "3D" && THREE_D_ROUTE[spec.genre])
+      ? spec.genre + "3d" : spec.genre;
+  }
+
+  function sharedFor(tpl) {
+    if (tpl === "rpg") return ["engine2d.js", "worldgen.js", "rpg2.js"];
+    if (/3d$/.test(tpl) && THREE_D_ROUTE[tpl.replace(/3d$/, "")]) return ["engine3d.js"];
+    if (ENGINE_GENRES[tpl]) return ["engine2d.js"];
+    return [];
+  }
+
+  function sharedTags(files) {
+    return files.map(function (f) { return '<script src="' + f + '"></script>'; }).join("\n");
+  }
+
+  function sharedInline(files) {
+    return files.map(function (f) {
+      return "<script>\n" + sharedSource(f) + "\n</script>";
+    }).join("\n");
+  }
+
   function build(kind, desc, opts) {
     opts = opts || {};
     var spec = opts.spec || buildSpec(kind, desc);
     var real = spec.genre || canonical(kind, desc);
-    var fn = BUILDERS[real] || BUILDERS.playground;
+    var tpl = opts.template || templateFor(spec);
+    var fn = BUILDERS[tpl] || BUILDERS[real] || BUILDERS.playground;
     var d3 = spec.dim === "3D";
     var html = fn(String(desc || ""), {
       theme: opts.theme === "light" ? "light" : "dark",
@@ -2072,15 +2362,15 @@
       spec: spec,
       variant: rpgTheme(desc) ? "themed-rpg" : (d3 ? "3d" : "")
     });
-    if (d3 && GAME3D[real] && real !== "tetris") {
+    if (d3 && GAME3D[real] && !THREE_D_ROUTE[real] && real !== "tetris") {
       html = html.replace("</style>", THREE_D_CSS + "</style>");
     }
-    if (ENGINE_GENRES[real]) {
-      var src = engineSource();
+    var shared = sharedFor(tpl);
+    if (shared.length) {
       if (opts.inlineEngine === false) {
-        html = html.replace("<script>\n", '<script src="engine2d.js"></script>\n<script>\n');
-      } else if (src) {
-        html = html.replace("<script>\n", "<script>\n" + src + "\n</script>\n<script>\n");
+        html = html.replace("<script>\n", sharedTags(shared) + "\n<script>\n");
+      } else {
+        html = html.replace("<script>\n", sharedInline(shared) + "\n<script>\n");
       }
     }
     return html;
@@ -2106,9 +2396,10 @@
       spec.view = "app";
       spec.dim = "2D";
     }
+    var tpl = opts.template || templateFor(spec);
     var name = opts.name || titleFor(real, desc, spec);
     var html = opts.html || build(real, desc, Object.assign({}, opts, {
-      spec: spec, inlineEngine: false
+      spec: spec, template: tpl, inlineEngine: false
     }));
     var css = "", js = "";
     html = html.replace(/<style>([\s\S]*?)<\/style>/, function (_, inner) {
@@ -2119,12 +2410,13 @@
       js = inner.trim() + "\n";
       return '<script src="app.js"></script>';
     });
-    if (ENGINE_GENRES[real] && html.indexOf('src="engine2d.js"') < 0) {
+    var shared = sharedFor(tpl);
+    if (shared.length && html.indexOf('src="' + shared[0] + '"') < 0) {
       html = html.replace('<script src="app.js"></script>',
-        '<script src="engine2d.js"></script>\n<script src="app.js"></script>');
+        sharedTags(shared) + '\n<script src="app.js"></script>');
     }
     html = html.replace(/offline · self-contained/, "offline · separate files");
-    var a = archFor(real);
+    var a = archFor(tpl) || archFor(real);
     var slug = opts.slug || (real === "playground" ? "app" : real);
     if (!opts.slug) {
       if (real === "rpg") {
@@ -2135,7 +2427,7 @@
       }
     }
     var docFiles = a.files.slice();
-    if (ENGINE_GENRES[real]) docFiles.push("engine2d.js");
+    shared.forEach(function (f) { if (docFiles.indexOf(f) < 0) docFiles.push(f); });
     var specTxt = specLine(spec);
     var readme = [
       "# " + name,
@@ -2154,7 +2446,9 @@
       "| `index.html` | markup and the page shell |",
       "| `styles.css` | all presentation, including the responsive rules |",
       "| `app.js` | state, render, and event handlers |"
-        + (ENGINE_GENRES[real] ? "\n| `engine2d.js` | shared loop, input, camera, physics, particles, audio |" : ""),
+        + shared.map(function (f) {
+          return "\n| `" + f + "` | " + (SHARED_ROLE[f] || "shared runtime") + " |";
+        }).join(""),
       "| `ARCHITECTURE.md` | the shape of the program and how to extend it |",
       "",
       "## Run",
@@ -2225,8 +2519,10 @@
       "README.md": readme,
       "ARCHITECTURE.md": arch
     };
-    if (ENGINE_GENRES[real]) {
-      outFiles["engine2d.js"] = engineSource() || "/* engine2d source unavailable */\n";
+    if (shared.length) {
+      shared.forEach(function (f) {
+        outFiles[f] = sharedSource(f) || "/* " + f + " source unavailable */\n";
+      });
     }
     return {
       kind: real,
