@@ -288,7 +288,7 @@ class DashboardTest(unittest.TestCase):
     def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v6", sw)
+        self.assertIn("toolrx-shell-v7", sw)
         self.assertIn("./web/engine2d.js", sw)
         self.assertIn("./web/engine2d.embed.js", sw)
         self.assertIn("./web/engine3d.js", sw)

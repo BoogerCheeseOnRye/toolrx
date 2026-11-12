@@ -436,7 +436,7 @@ stay English in phase 1; only the chat shell is localized.
 Shipped as the `▥ library` dialog. Search and filters use the same ranked
 catalog as the command path; reading status is a browser-local override under
 `toolrx.library.status`, and metadata travels in `web/commands.json` inside
-`toolrx-shell-v6`.
+`toolrx-shell-v7`.
 
 ---
 
@@ -505,7 +505,7 @@ Steps 21–25 are complete and covered by `tests/test_library.py`,
 and the dashboard checks in `tests/test_repo_hygiene.py`. Step 24 added 76
 curated phrase entries, reply packs, and the persisted `toolrx.reply.lang`
 preference; step 25 added the Library panel and moved the PWA cache to
-`toolrx-shell-v6`.
+`toolrx-shell-v7`.
 
 The remaining roadmap work is step 18 (library growth), step 19 (patches), step
 20 (optional LLM adapter), and step 14 (vendored sprite subset). Step 17 added

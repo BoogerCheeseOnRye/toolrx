@@ -283,7 +283,7 @@ non-redistributable text never leaves the machine.
 Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
-`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v6`
+`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v7`
 cache, so the panel works offline with no second fetch.
 
 ## Order
