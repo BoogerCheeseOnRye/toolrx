@@ -507,6 +507,6 @@ curated phrase entries, reply packs, and the persisted `toolrx.reply.lang`
 preference; step 25 added the Library panel and moved the PWA cache to
 `toolrx-shell-v6`.
 
-The remaining roadmap work is step 17 (more theme packs), step 18 (library
-growth), step 19 (patches), step 20 (optional LLM adapter), and step 14
-(vendored sprite subset).
+The remaining roadmap work is step 18 (library growth), step 19 (patches), step
+20 (optional LLM adapter), and step 14 (vendored sprite subset). Step 17 added
+ten more theme packs and generated default RPG titles.

@@ -145,7 +145,7 @@ World layout, NPC placement, and quest order derive from the seed.
 loads, and two seeds produce visibly different worlds while one seed reproduces
 exactly.
 
-### 17. Themes and titles without a default
+### 17. Themes and titles without a default — done
 
 - Expand from 10 packs to at least 20 (add e.g. frost, volcanic, fungal,
   sky-islands, clockwork, dream, plague, archipelago).
@@ -156,6 +156,14 @@ exactly.
   and title in place.
 
 **Done when** ten default builds give ten distinct titles and `seed 7` is stable.
+
+Landed with twenty packs (the original ten plus frost, volcanic, fungal,
+sky-islands, clockwork, dream, plague, archipelago, verdant, and astral). The
+first ten keep curated titles; the second ten use generated
+`<adjective> <place> RPG` names. A default RPG build mixes a session counter into
+the seed hash, so consecutive prompts choose different packs, and the printed
+seed reproduces the exact world with `seed N`. Renaming to any pack keyword
+rebuilds the same project in place.
 
 ### 18. Intro-to-medium game library
 
@@ -281,7 +289,7 @@ cache, so the panel works offline with no second fetch.
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
-2. 16 (RPG world) — done → 17 (themes/titles) → 18 (library) → 19 (patches)
+2. 16 (RPG world) — done → 17 (themes/titles) — done → 18 (library) → 19 (patches)
 3. 21 (archive catalog) → 22 (language recognition) → 23 (archive search) →
    24 (localized intents) → 25 (Library panel) — done
 4. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
@@ -293,6 +301,6 @@ cache, so the panel works offline with no second fetch.
   checksums is deferred until after the 3D and RPG work; procedural sprites
   remain the fallback.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–16, and 21–23 are complete. 17 (more theme packs) and 18
-  (the game library) remain open; 24 (localized intents) and 25 (Library panel)
-  are next. 14 lands when the sprite subset is vendored.
+- Steps 11–13, 15–17, and 21–25 are complete. 18 (the game library) and 19
+  (patches) remain open; 20 (optional LLM adapter) follows. 14 lands when the
+  sprite subset is vendored.

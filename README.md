@@ -73,7 +73,9 @@ Build modifiers are deterministic: `build a tetris game with 3d elements`
 renders depth-sorted 3D cuboids with a small software projection renderer, and
 `build an rpg based on king arthur` or `build an rpg based on india` produces
 different themed worlds (Camelot, Bharata, Derelict, Rain City, Neon, Olympus,
-Sakura, Nile, Abyss, Frontier). Project references are tolerant:
+Sakura, Nile, Abyss, Frontier, Frostfall, Cinderforge, Mycelia, Aether Reach,
+Clockwork, Reverie, Blightfall, Tidewreck, Verdant Wood, Astral). Project
+references are tolerant:
 `change the name from verdant wood rpg to india`, `rename it to camelot`,
 and `change the project name to bharata` re-theme the same project instead of
 starting a chat or creating a duplicate.
@@ -90,7 +92,10 @@ The spec records dimension (`2D`/`3D`), view (`side-scroller`, `top-down`,
 `isometric`, `first-person`, `third-person`), genre, art direction (`pixel`,
 `low-poly`, `neon`, `monochrome`, `flat`, `vector`), theme, scale, and a seed.
 The seed is a hash of the normalized prompt unless you write `seed 42`, so the
-same request always produces the same files and an explicit seed replays a world.
+same request always produces the same files and an explicit seed replays a world
+exactly. The one exception is a default RPG request: each build advances a
+session counter before hashing, so consecutive `build an rpg` prompts land in
+different packs. The printed `seed N` replays any one of them exactly.
 Unsupported genres still build the closest supported starter and say so:
 `build a tower defense` reports `closest supported: shooter`.
 
@@ -110,9 +115,13 @@ Small worlds are 64×64 and `large` / `huge` requests reach 96×96. The optional
 sprite-pack pipeline (step 14) is pinned to a CC0 pixel-art atlas and remains a
 fallback to the procedural sprites.
 
-`build an rpg` picks its starting pack from the seed (Camelot, Bharata,
-Derelict, Neon, Rain City, Olympus, Sakura, Nile, Abyss, Frontier) instead of
-always starting in Verdant Wood; add `seed N` to replay a specific world.
+`build an rpg` picks its starting pack from the seed (twenty packs, from
+Camelot, Bharata, Derelict, Neon, Rain City, Olympus, Sakura, Nile, Abyss, and
+Frontier through Frostfall, Cinderforge, Mycelia, Aether Reach, Clockwork,
+Reverie, Blightfall, Tidewreck, Verdant Wood, and Astral) instead of always
+starting in Verdant Wood. The second ten default packs get generated
+`<adjective> <place> RPG` titles, while named settings keep their curated
+titles. Add `seed N` to replay a specific world.
 
 Every result in the chat shows measured throughput as `tok/s` (estimated output
 tokens = characters ÷ 4 over wall-clock time, with the step's token count and

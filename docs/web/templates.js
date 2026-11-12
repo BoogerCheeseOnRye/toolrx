@@ -855,6 +855,116 @@
         groundA: "#2b1d13", groundB: "#332317", wall: "#4d3320", wall2: "#3b2718", tree: "#5e4a2a"
       };
     }
+    if (/\bfrost|snow|winter|glacier|tundra|aurora|blizzard|\bice\b|icy/.test(t)) {
+      return {
+        title: "Frostfall RPG", sub: "a crossing over the frozen white",
+        intro: "You wake at the edge of Frostfall. Find the Pale Warden before the long night.",
+        hint: "find the Pale Warden in the south-east.",
+        enemy: "ice wraith", boss: "the Pale Warden", elder: "the hearth-keeper", shrine: "the aurora well",
+        win: "The Pale Warden thaws. You win — the long night ends.",
+        chest: "Ember flask: +1 potion.",
+        groundA: "#14212b", groundB: "#182833", wall: "#2f4a5c", wall2: "#223744", tree: "#4a7f8c"
+      };
+    }
+    if (/\bvolcan|volcano|lava|magma|\bember|forge|basalt|cinder|ashfall/.test(t)) {
+      return {
+        title: "Cinderforge RPG", sub: "a climb through the burning deep",
+        intro: "You wake at the mouth of Cinderforge. Find the Ember Tyrant before the mountain opens.",
+        hint: "find the Ember Tyrant in the south-east.",
+        enemy: "cinder hound", boss: "the Ember Tyrant", elder: "the smith", shrine: "the magma well",
+        win: "The Ember Tyrant cools. You win — Cinderforge goes quiet.",
+        chest: "Ember core: +1 potion.",
+        groundA: "#241410", groundB: "#2c1913", wall: "#5a2a1e", wall2: "#401f17", tree: "#7a3b24"
+      };
+    }
+    if (/\bfung|mushroom|spore|mycel|mold|toadstool/.test(t)) {
+      return {
+        title: "Mycelia RPG", sub: "a walk beneath the breathing canopy",
+        intro: "You wake under the cap of Mycelia. Find the Spore Mother before the bloom spreads.",
+        hint: "find the Spore Mother in the south-east.",
+        enemy: "sporeling", boss: "the Spore Mother", elder: "the forager", shrine: "the ringstone",
+        win: "The Spore Mother sleeps. You win — the canopy breathes easy.",
+        chest: "Glowcap: +1 potion.",
+        groundA: "#1c2418", groundB: "#222b1c", wall: "#3f4a2c", wall2: "#2f3822", tree: "#6b7d3a"
+      };
+    }
+    if (/\bsky\b|cloud|floating|aether|zephyr|airship|windward|skyward/.test(t)) {
+      return {
+        title: "Aether Reach RPG", sub: "a crossing between the floating isles",
+        intro: "You wake on the dock at Aether Reach. Find the Storm Marshal before the wind turns.",
+        hint: "find the Storm Marshal in the south-east.",
+        enemy: "gust sprite", boss: "the Storm Marshal", elder: "the wind-reader", shrine: "the sky altar",
+        win: "The Storm Marshal grounds. You win — the isles hold their height.",
+        chest: "Sky shard: +1 potion.",
+        groundA: "#1a2433", groundB: "#1f2c3d", wall: "#3a4f66", wall2: "#2b3c50", tree: "#4f7a8c"
+      };
+    }
+    if (/\bclock|gear|steam|brass|automaton|\bcog\b|mechan/.test(t)) {
+      return {
+        title: "Clockwork RPG", sub: "a race through the brass catacombs",
+        intro: "You wake beside the great escapement. Find the Regulator before the works seize.",
+        hint: "find the Regulator in the south-east.",
+        enemy: "cog sentinel", boss: "the Regulator", elder: "the tinker", shrine: "the great escapement",
+        win: "The Regulator winds down. You win — the works turn again.",
+        chest: "Brass gear: +1 potion.",
+        groundA: "#211d18", groundB: "#29231c", wall: "#4a3f2c", wall2: "#382f22", tree: "#7a6334"
+      };
+    }
+    if (/\bdream|sleep|slumber|nightmare|reverie|lucid/.test(t)) {
+      return {
+        title: "Reverie RPG", sub: "a walk through the sleeping country",
+        intro: "You wake inside Reverie. Find the Dream Eater before the moon sets.",
+        hint: "find the Dream Eater in the south-east.",
+        enemy: "figment", boss: "the Dream Eater", elder: "the lucid guide", shrine: "the moon gate",
+        win: "The Dream Eater wakes. You win — the sleeping country is still.",
+        chest: "Dream shard: +1 potion.",
+        groundA: "#1b1a2e", groundB: "#211f36", wall: "#3a3560", wall2: "#2b2848", tree: "#5a4f8c"
+      };
+    }
+    if (/\bplague|blight|pestilence|quarantine|\brot\b|wasting/.test(t)) {
+      return {
+        title: "Blightfall RPG", sub: "a road through the quarantined country",
+        intro: "You wake at the quarantine stone. Find the Blight Herald before the fever spreads.",
+        hint: "find the Blight Herald in the south-east.",
+        enemy: "blight rat", boss: "the Blight Herald", elder: "the plague doctor", shrine: "the quarantine stone",
+        win: "The Blight Herald falls. You win — the road is clean again.",
+        chest: "Clean water: +1 potion.",
+        groundA: "#23201a", groundB: "#2a261d", wall: "#4a422c", wall2: "#38321f", tree: "#6b6b3a"
+      };
+    }
+    if (/archipelago|pirate|buccaneer|lagoon|\bisland|\bisle\b|tropic/.test(t)) {
+      return {
+        title: "Tidewreck RPG", sub: "a voyage between the green islands",
+        intro: "You wake on the shore of Tidewreck. Find the Admiral before the tide turns.",
+        hint: "find the Admiral in the south-east.",
+        enemy: "wreck scavenger", boss: "the Admiral", elder: "the harbor master", shrine: "the tide shrine",
+        win: "The Admiral strikes sail. You win — the green isles are free.",
+        chest: "Coral coin: +1 potion.",
+        groundA: "#12251f", groundB: "#162c25", wall: "#2c4a3c", wall2: "#20382d", tree: "#3f7a5a"
+      };
+    }
+    if (/\bverdant|forest|woodland|grove|greenwood|thorn|wildwood/.test(t)) {
+      return {
+        title: "Verdant Wood RPG", sub: "explore, fight, level up — a complete tiny RPG",
+        intro: "You wake at the edge of the Verdant Wood. Find the Warden to the south-east.",
+        hint: "find the Warden in the south-east.",
+        enemy: "slime", boss: "the Warden", elder: "the elder", shrine: "the shrine",
+        win: "The Warden falls. You win — the Verdant Wood is safe.",
+        chest: "Chest: +1 potion.",
+        groundA: "#12291f", groundB: "#123024", wall: "#26364f", wall2: "#1b283d", tree: "#1f513a"
+      };
+    }
+    if (/\bstars?\b|astral|comet|nebula|constellation|cosmic|celestial|starfall/.test(t)) {
+      return {
+        title: "Astral RPG", sub: "a path across the sleeping stars",
+        intro: "You wake beneath the observatory dome. Find the Void Herald before the stars go out.",
+        hint: "find the Void Herald in the south-east.",
+        enemy: "star mote", boss: "the Void Herald", elder: "the star-reader", shrine: "the observatory",
+        win: "The Void Herald fades. You win — the sky keeps its lights.",
+        chest: "Star shard: +1 potion.",
+        groundA: "#15182b", groundB: "#1a1d33", wall: "#2f3560", wall2: "#232847", tree: "#4a4f8c"
+      };
+    }
     return null;
   }
 
@@ -963,6 +1073,80 @@
       enemies: ["rustler", "coyote", "desperado"],
       items: ["canteen", "gold nugget", "rail key"],
       dungeonName: "the Outlaw's Mine"
+    },
+    "Frostfall RPG": {
+      places: ["Frostfall", "Hoarfrost Gate", "The Long Shelf", "Aurora Camp", "White Reach"],
+      npcs: ["the hearth-keeper", "Bryn", "Sigrid", "Halvor", "Yara", "Sten",
+        "Eira", "Ulf"],
+      enemies: ["ice wraith", "snow stalker", "rime hound"],
+      items: ["ember flask", "rime crystal", "ice key"],
+      dungeonName: "the Pale Vault"
+    },
+    "Cinderforge RPG": {
+      places: ["Cinderforge", "Ashfall", "The Molten Stair", "Basalt Hold", "Ember Gate"],
+      npcs: ["the smith", "Tala", "Orin", "Vek", "Sora", "Dain", "Mira", "Brann"],
+      enemies: ["cinder hound", "magma crawler", "ash wraith"],
+      items: ["ember core", "basalt key", "forge coal"],
+      dungeonName: "the Ember Tyrant's Forge"
+    },
+    "Mycelia RPG": {
+      places: ["Mycelia", "Sporefall", "The Breathing Canopy", "Ringstone", "Damproot"],
+      npcs: ["the forager", "Pip", "Nema", "Fenn", "Luma", "Brack", "Odile", "Tuck"],
+      enemies: ["sporeling", "cap crawler", "mold wraith"],
+      items: ["glowcap", "spore sac", "root key"],
+      dungeonName: "the Spore Mother's Bloom"
+    },
+    "Aether Reach RPG": {
+      places: ["Aether Reach", "Cloudmarket", "The Windward Isles", "Skyfall Dock", "High Perch"],
+      npcs: ["the wind-reader", "Ari", "Nim", "Sela", "Corin", "Wren", "Pell", "Ione"],
+      enemies: ["gust sprite", "sky ray", "storm hawk"],
+      items: ["sky shard", "cloud silk", "anchor key"],
+      dungeonName: "the Storm Marshal's Roost"
+    },
+    "Clockwork RPG": {
+      places: ["Clockwork", "Brassgate", "The Escapement", "Gearworks", "Tinker's Row"],
+      npcs: ["the tinker", "Ada", "Cog", "Vela", "Bolt", "Rook", "Tess", "Wick"],
+      enemies: ["cog sentinel", "steam hound", "spring wraith"],
+      items: ["brass gear", "mainspring", "winding key"],
+      dungeonName: "the Regulator's Works"
+    },
+    "Reverie RPG": {
+      places: ["Reverie", "The Sleeping Country", "Moon Gate", "Hushwood", "Wakeless Shore"],
+      npcs: ["the lucid guide", "Mora", "Kip", "Elowen", "Sable", "Nox", "Lark", "Pim"],
+      enemies: ["figment", "sleep hound", "shadow self"],
+      items: ["dream shard", "moon thread", "wake key"],
+      dungeonName: "the Dream Eater's Court"
+    },
+    "Blightfall RPG": {
+      places: ["Blightfall", "Quarantine Row", "The Wasting Fields", "Greyhaven", "Cinder Chapel"],
+      npcs: ["the plague doctor", "Mara", "Sick Tom", "Elsa", "Fen", "Ruth",
+        "Abel", "Nell"],
+      enemies: ["blight rat", "fever wraith", "rot hound"],
+      items: ["clean water", "bitterroot", "ward key"],
+      dungeonName: "the Blight Herald's Pit"
+    },
+    "Tidewreck RPG": {
+      places: ["Tidewreck", "Port Coral", "The Green Isles", "Buccaneer Bay", "Lagoon Hold"],
+      npcs: ["the harbor master", "Koa", "Marisol", "Finn", "Tala", "Rook",
+        "Isla", "Bram"],
+      enemies: ["wreck scavenger", "reef shark", "mutineer"],
+      items: ["tide chart", "coral coin", "captain's key"],
+      dungeonName: "the Admiral's Grotto"
+    },
+    "Verdant Wood RPG": {
+      places: ["Verdant Hollow", "Mossford", "Greenreach", "Thornvale", "Emberfield"],
+      npcs: ["Mira", "Bram", "Sable", "Oren", "Pella", "Rook", "Wren", "Ivo"],
+      enemies: ["slime", "thornling", "bog bat"],
+      items: ["moon herb", "river stone", "old key"],
+      dungeonName: "the Sunken Barrow"
+    },
+    "Astral RPG": {
+      places: ["Astral", "Observatory", "The Comet Road", "Nebula Reach", "Starfall"],
+      npcs: ["the star-reader", "Lyra", "Orion", "Vega", "Nova", "Cygni",
+        "Mira", "Atlas"],
+      enemies: ["star mote", "comet wraith", "void hound"],
+      items: ["star shard", "comet dust", "lens key"],
+      dungeonName: "the Void Herald's Observatory"
     }
   };
 
@@ -971,7 +1155,7 @@
     if (!pack) return null;
     var out = {};
     Object.keys(pack).forEach(function (k) { out[k] = pack[k]; });
-    var extra = WORLD_EXTRA[pack.title] || {};
+    var extra = WORLD_EXTRA[pack.packTitle || pack.title] || {};
     Object.keys(extra).forEach(function (k) { out[k] = extra[k]; });
     out.places = out.places || ["Verdant Hollow", "Mossford", "Greenreach",
       "Thornvale", "Emberfield"];
@@ -2088,12 +2272,41 @@
   var RPG_DEFAULT_PACKS = [
     "arthur camelot", "india bharata", "space derelict", "cyber neon",
     "noir rain", "greek olympus", "japan sakura", "egypt nile",
-    "ocean abyss", "west frontier"
+    "ocean abyss", "west frontier",
+    "frost snow", "volcanic ember", "fungal spore", "sky floating isles",
+    "clockwork brass", "dream reverie", "plague blight",
+    "archipelago island", "verdant forest", "astral stars"
   ];
 
+  /* Second-half packs get a generated `<adjective> <place> RPG` name, so a
+   * default build never falls back to one canned title. The first ten keep
+   * their curated names (seed 7 still maps to Nile RPG). */
+  var RPG_ADJECTIVES = [
+    "Frostbound", "Emberfall", "Mossgrown", "Skyward", "Brasswrought",
+    "Moonlit", "Blighted", "Tideworn", "Thornwild", "Starfall"
+  ];
+  var RPG_PLACES = [
+    "Reach", "Keep", "Hollow", "Bastion", "Spire", "Reverie", "Marches",
+    "Harbor", "Vale", "Expanse"
+  ];
+
+  function rpgGrammarTitle(seed) {
+    var s = seed >>> 0;
+    return RPG_ADJECTIVES[s % RPG_ADJECTIVES.length] + " "
+      + RPG_PLACES[(s * 7) % RPG_PLACES.length] + " RPG";
+  }
+
   function rpgDefault(seed) {
-    var pack = RPG_DEFAULT_PACKS[(seed >>> 0) % RPG_DEFAULT_PACKS.length];
-    return rpgTheme(pack) || rpgTheme("arthur camelot");
+    var s = seed >>> 0;
+    var index = s % RPG_DEFAULT_PACKS.length;
+    var pack = rpgTheme(RPG_DEFAULT_PACKS[index]) || rpgTheme("arthur camelot");
+    if (!pack) return null;
+    if (index < 10) return pack;
+    var out = {};
+    Object.keys(pack).forEach(function (k) { out[k] = pack[k]; });
+    out.packTitle = pack.title;
+    out.title = rpgGrammarTitle(s);
+    return out;
   }
 
   function themeName(desc, genre) {
@@ -2156,6 +2369,16 @@
     return null;
   }
 
+  var BUILD_SEQ = 0;
+
+  function nextBuildSeed(text) {
+    // Default RPG builds advance a session counter so consecutive builds pick
+    // different packs. The printed seed reproduces any result with `seed N`.
+    BUILD_SEQ = (BUILD_SEQ + 1) >>> 0;
+    var base = toolrxHash !== null ? toolrxHash(text) : 0;
+    return (base + Math.imul(BUILD_SEQ, 0x9E3779B1)) >>> 0;
+  }
+
   function buildSpec(kind, desc, opts) {
     var raw = String(desc || "");
     var text = (String(kind || "") + " " + raw).toLowerCase().replace(/\s+/g, " ").trim();
@@ -2171,9 +2394,11 @@
     var dim = "2D";
     if (/first[\s-]?person|third[\s-]?person|\b3d\b|three[\s-]?d|voxel|perspective/.test(text)) dim = "3D";
     if (view === "app" || view === "text") dim = "2D";
+    var curated = genre === "rpg" ? rpgTheme(raw) : null;
     var explicit = /\bseed\s+(\d+)/i.exec(text);
     var seed = explicit ? (parseInt(explicit[1], 10) >>> 0)
-      : (toolrxHash !== null ? toolrxHash(text) : 0);
+      : (genre === "rpg" && !curated ? nextBuildSeed(text)
+        : (toolrxHash !== null ? toolrxHash(text) : 0));
     var wanted = wantedGenre(text);
     var spec = {
       kind: String(kind || ""),
@@ -2594,6 +2819,10 @@
     architecture: architecture,
     blueprint: blueprint,
     brief: brief,
+    rpgTheme: rpgTheme,
+    rpgDefault: rpgDefault,
+    rpgGrammarTitle: rpgGrammarTitle,
+    themePacks: function () { return RPG_DEFAULT_PACKS.slice(); },
     kinds: Object.keys(BUILDERS)
   };
 })(typeof self !== "undefined" ? self : this);

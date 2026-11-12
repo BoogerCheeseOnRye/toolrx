@@ -185,7 +185,7 @@
     let themed = false;
     const t = root.toolrxTemplates;
     // Renaming an RPG to a known setting also re-themes its files + preview.
-    if (t && p.kind === "rpg" && /arthur|camelot|knight|india|bharat|sanskrit|space|sci-?fi|noir|detective|greek|olympus|japan|samurai|sakura|egypt|nile|pharaoh|ocean|abyss|atlantis|west|cowboy|frontier|cyber|neon/i.test(label)) {
+    if (t && p.kind === "rpg" && /arthur|camelot|knight|india|bharat|sanskrit|space|sci-?fi|noir|detective|greek|olympus|japan|samurai|sakura|egypt|nile|pharaoh|ocean|abyss|atlantis|west|cowboy|frontier|cyber|neon|frost|snow|winter|volcan|lava|magma|ember|fung|mushroom|spore|sky|cloud|aether|clock|gear|brass|dream|sleep|reverie|plague|blight|archipelago|pirate|island|verdant|forest|astral|\bstars?\b|comet/i.test(label)) {
       try {
         const built = t.project("rpg", label, { theme: preview.theme });
         p.files = built.files;
@@ -514,11 +514,13 @@
   }
 
   function installBuilt(built, desc) {
-    // Reuse a project with the same kind + description; otherwise create one.
+    // Reuse a project with the same kind, description, and generated title.
+    // Default RPG builds advance the seed, so a new title is a new project.
     let p = null;
     for (const k in projects.items) {
       const it = projects.items[k];
-      if (it.kind === built.kind && it.desc === String(desc || "")) { p = it; break; }
+      if (it.kind === built.kind && it.desc === String(desc || "")
+          && it.name === built.title) { p = it; break; }
     }
     if (!p) {
       p = newProject(built.title);

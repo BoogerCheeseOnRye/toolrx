@@ -459,6 +459,56 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       js: state.files['app.js'] || '',
     };
   }
+  // Theme/title pass: the shipped pack list, generated default titles, and
+  // exact seed replay. These call the templates directly so the session
+  // counter advances exactly as it does for ten separate builds.
+  out.rpgPacks = self.toolrxTemplates.themePacks();
+  out.rpgDeterministic = (() => {
+    const a = self.toolrxTemplates.project('rpg', 'build an rpg based on india', { theme: 'dark' });
+    const b = self.toolrxTemplates.project('rpg', 'build an rpg based on india', { theme: 'dark' });
+    return {
+      title: a.title, seed: a.spec.seed,
+      same: a.title === b.title && a.spec.seed === b.spec.seed && a.html === b.html,
+    };
+  })();
+  out.rpgDefaults = (() => {
+    const titles = [], slugs = [], htmls = [];
+    for (let i = 0; i < 10; i++) {
+      const p = self.toolrxTemplates.project('rpg', 'build an rpg', { theme: 'dark' });
+      titles.push(p.title); slugs.push(p.slug); htmls.push(p.html);
+    }
+    const a = self.toolrxTemplates.project('rpg', 'build an rpg seed 7', { theme: 'dark' });
+    const b = self.toolrxTemplates.project('rpg', 'build an rpg seed 7', { theme: 'dark' });
+    const grammar = self.toolrxTemplates.rpgGrammarTitle(14);
+    return {
+      titles, slugs, uniqueTitles: new Set(titles).size,
+      uniqueSlugs: new Set(slugs).size, uniqueHtml: new Set(htmls).size,
+      seed7: { a: a.title, b: b.title, seed: a.spec.seed,
+               same: a.html === b.html && a.title === b.title },
+      grammar,
+    };
+  })();
+  out.newThemes = {};
+  for (const q of ['build an rpg in the frost',
+                   'build an rpg in a volcano',
+                   'build an rpg with mushrooms',
+                   'build an rpg in the sky islands',
+                   'build an rpg with clockwork',
+                   'build an rpg in a dream',
+                   'build an rpg in a plague',
+                   'build an rpg on an archipelago',
+                   'build an rpg in the verdant forest',
+                   'build an rpg among the stars']) {
+    const p = self.toolrxTemplates.project('rpg', q, { theme: 'dark' });
+    out.newThemes[q] = {
+      title: p.title,
+      theme: p.spec.theme,
+      places: (p.files['app.js'].match(/"places":\[[^\]]*\]/) || [''])[0],
+      css: p.files['styles.css'] || '',
+      js: p.files['app.js'] || '',
+      html: p.html,
+    };
+  }
   // Real sandbox rename flow: build one RPG, then refer to it by a stale name
   // and by "it". The same project must be re-themed, not duplicated.
   await self.toolrxWeb.init('model.json');
@@ -625,6 +675,20 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     html: self.toolrxWeb.defaultPreview(),
     title: self.toolrxWeb.preview().title,
   };
+  // Two identical default RPG prompts in one session must create two projects
+  // with different names; the previous install would have collapsed them.
+  self.toolrxWeb.reset();
+  await self.toolrxWeb.init('model.json');
+  out.sandbox.defaults = {};
+  out.sandbox.defaults.first = (await self.toolrxWeb.prompt('build an rpg'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  const def1 = self.toolrxWeb.project();
+  out.sandbox.defaults.one = { slug: def1.slug, name: def1.name };
+  out.sandbox.defaults.second = (await self.toolrxWeb.prompt('build an rpg'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  const def2 = self.toolrxWeb.project();
+  out.sandbox.defaults.two = { slug: def2.slug, name: def2.name };
+  out.sandbox.defaults.count = self.toolrxWeb.projects().length;
   const dp = self.toolrxLang.detectProgramming;
   const dn = self.toolrxLang.detectNatural;
   out.language = {
@@ -1203,6 +1267,68 @@ class SkillsBridgeTest(unittest.TestCase):
             pages.add(t["html"])
         self.assertEqual(len(titles), len(expected))
         self.assertEqual(len(pages), len(expected))
+
+    def test_rpg_pack_list_and_default_titles_advance(self):
+        d = self.out["rpgDefaults"]
+        self.assertEqual(len(self.out["rpgPacks"]), 20)
+        self.assertEqual(len(set(self.out["rpgPacks"])), 20)
+        self.assertEqual(d["uniqueTitles"], 10, d["titles"])
+        self.assertEqual(d["uniqueSlugs"], 10, d["slugs"])
+        self.assertEqual(d["uniqueHtml"], 10)
+        self.assertRegex(d["grammar"], r"^[A-Z][a-z]+ [A-Z][a-z]+ RPG$")
+        self.assertEqual(d["seed7"]["seed"], 7)
+        self.assertEqual(d["seed7"]["a"], "Nile RPG")
+        self.assertTrue(d["seed7"]["same"])
+
+    def test_named_rpg_theme_stays_deterministic(self):
+        d = self.out["rpgDeterministic"]
+        self.assertEqual(d["title"], "Bharata RPG")
+        self.assertTrue(d["same"], d)
+
+    def test_new_rpg_packs_are_distinct(self):
+        expected = {
+            "build an rpg in the frost": (
+                "Frostfall RPG", "the Pale Warden", "Hoarfrost Gate", "#4a7f8c"),
+            "build an rpg in a volcano": (
+                "Cinderforge RPG", "the Ember Tyrant", "The Molten Stair", "#7a3b24"),
+            "build an rpg with mushrooms": (
+                "Mycelia RPG", "the Spore Mother", "Breathing Canopy", "#6b7d3a"),
+            "build an rpg in the sky islands": (
+                "Aether Reach RPG", "the Storm Marshal", "Windward Isles", "#4f7a8c"),
+            "build an rpg with clockwork": (
+                "Clockwork RPG", "the Regulator", "The Escapement", "#7a6334"),
+            "build an rpg in a dream": (
+                "Reverie RPG", "the Dream Eater", "Moon Gate", "#5a4f8c"),
+            "build an rpg in a plague": (
+                "Blightfall RPG", "the Blight Herald", "The Wasting Fields", "#6b6b3a"),
+            "build an rpg on an archipelago": (
+                "Tidewreck RPG", "the Admiral", "The Green Isles", "#3f7a5a"),
+            "build an rpg in the verdant forest": (
+                "Verdant Wood RPG", "the Warden", "Verdant Hollow", "#1f513a"),
+            "build an rpg among the stars": (
+                "Astral RPG", "the Void Herald", "The Comet Road", "#4a4f8c"),
+        }
+        titles = set()
+        pages = set()
+        for prompt, (title, marker, place, colour) in expected.items():
+            t = self.out["newThemes"][prompt]
+            self.assertEqual(t["title"], title, prompt)
+            self.assertEqual(t["theme"], title[:-4], prompt)
+            self.assertIn(marker, t["js"], prompt)
+            self.assertIn(place, t["places"], prompt)
+            self.assertIn(colour, t["css"] + t["js"], prompt)
+            titles.add(t["title"])
+            pages.add(t["html"])
+        self.assertEqual(len(titles), len(expected))
+        self.assertEqual(len(pages), len(expected))
+
+    def test_consecutive_default_rpg_builds_are_not_collapsed(self):
+        d = self.out["sandbox"]["defaults"]
+        self.assertEqual(d["first"][0]["via"], "build")
+        self.assertEqual(d["second"][0]["via"], "build")
+        self.assertNotEqual(d["one"]["name"], d["two"]["name"])
+        self.assertNotEqual(d["one"]["slug"], d["two"]["slug"])
+        self.assertEqual(d["count"], 2)
 
     def test_renaming_an_rpg_to_a_new_pack_rethemes_it(self):
         s = self.out["sandbox"]
