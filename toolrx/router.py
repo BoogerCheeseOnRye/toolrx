@@ -83,7 +83,7 @@ def extract_args(query, param_specs, host_allowlist=None):
             mtool = _extract_module_tool(query)
             if mtool is not None:
                 args[name] = mtool
-    cands = _path_candidates(query)[::-1]  # pop from end
+    cands = _path_candidates(query)       # pop from end -> last path first
     for p in reversed(string_params):     # assign the LAST path param first
         name = p["name"]
         if name in args:
@@ -119,25 +119,58 @@ def extract_args(query, param_specs, host_allowlist=None):
     return args
 
 
+def _quoted_or_fenced_content(text):
+    """Return the first fenced/triple-quoted block, if one is present."""
+    for pattern in (r"```[^\n]*\n?(.*?)```",
+                    r'"""(.*?)"""',
+                    r"'''(.*?)'''"):
+        m = re.search(pattern, text, re.DOTALL)
+        if m:
+            return m.group(1)
+    return None
+
+
+def _strip_single_quotes(text):
+    s = text.strip()
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in "\"'":
+        return s[1:-1]
+    return s
+
+
 def _extract_content(query, param_specs, args):
     """For a 'content' param, take everything after the first ':' or after the
-    extracted path token (chat path; the UI form is the reliable one)."""
+    extracted path token(s).
+
+    Multi-sentence content, fenced blocks, triple-quoted blocks, and indented
+    lists are preserved verbatim. When several paths were extracted, every one
+    of them is removed before the remaining content is derived, so a
+    multi-path request does not leak a filename into the content.
+    """
     if not any(p.get("name") == "content" for p in param_specs):
         return
     if "content" in args and args.get("content"):
         return
     q = query
-    if ":" in q:
-        args["content"] = q.split(":", 1)[1].strip()
+
+    fenced = _quoted_or_fenced_content(q)
+    if fenced is not None:
+        args["content"] = fenced.rstrip("\n")
         return
-    path = args.get("path")
-    if path:
-        q = q.replace(path, "", 1)
+
+    if ":" in q:
+        args["content"] = _strip_single_quotes(q.split(":", 1)[1])
+        return
+
+    path_names = ("path", "path_a", "path_b", "file", "dir", "target")
+    for name in path_names:
+        value = args.get(name)
+        if isinstance(value, str) and value:
+            q = q.replace(value, "", 1)
     # strip leading edit verbs / filler
     q = re.sub(r"^(write|create|edit|save|append|update|set|make|add|change|put|insert|with|to|in|the|a|an|for|contents?|as)\b\s*",
                "", q, count=6)
     q = q.strip(" :")
-    args["content"] = q
+    args["content"] = _strip_single_quotes(q)
 
 
 def _extract_interval(query):

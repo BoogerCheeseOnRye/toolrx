@@ -15,6 +15,7 @@ import router
 import executor
 import longform
 import security
+import blocks
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MODEL = os.path.join(HERE, "micro_model.json")
@@ -106,6 +107,27 @@ def process_plan(clean, pol, info):
 
 def process(query):
     pol = policy()
+    # A "write the following into <file>:" request carries user-authored
+    # content that must not be lowercased, split into a plan, or passed
+    # through the word allowlist. Capture it verbatim first, validate the
+    # path and safety properties, then hand the pending edit to the same
+    # confirm-gated executor used by every other write.
+    if blocks.detect(query):
+        block = blocks.capture(query, pol, pol.max_plan_len)
+        if not block["ok"]:
+            return {"blocked": True, "reason": block["reason"],
+                    "decision": {}, "result": {"ok": False,
+                                                "reason": block["reason"]}}
+        decision = {"tool": "file.edit", "confidence": 1.0, "margin": 1.0,
+                    "args": {"path": block["path"], "content": block["content"],
+                             "mode": "replace"}}
+        res = executor.execute(decision, model()["tools"], pol)
+        if res.get("blocked"):
+            return {"blocked": True, "reason": res.get("reason"),
+                    "decision": decision, "result": res}
+        return {"blocked": False, "reason": None,
+                "decision": decision, "result": res}
+
     # `;` and `->` are plan separators but shell metacharacters. Rewrite them
     # to newlines before sanitizing, then check every resulting step again.
     ok, clean, reason = pol.sanitize_plan(longform.normalize_connectors(query))

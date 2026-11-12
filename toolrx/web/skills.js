@@ -653,6 +653,77 @@
     return take + "\n\n(" + words + " words, " + parts.length + " sentences)";
   }
 
+  /* Deterministic extractors. They read the previous step by default, so
+   * "wikipedia ada lovelace then extract headings" and "outline it" work
+   * without a model. Output is stable: same input, same lines. */
+  function headingsOf(text) {
+    const lines = String(text == null ? "" : text).replace(/\r/g, "").split("\n");
+    const out = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      let m = /^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);
+      if (m) {
+        out.push({ level: m[1].length, text: m[2].replace(/\s+/g, " ").trim() });
+        continue;
+      }
+      m = /^\s*<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>\s*$/i.exec(line);
+      if (m) {
+        out.push({ level: Number(m[1]),
+          text: m[2].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim() });
+        continue;
+      }
+      const next = lines[i + 1] || "";
+      if (line.trim() && /^\s*(=+|-+)\s*$/.test(next)) {
+        out.push({ level: next.trim().charAt(0) === "=" ? 1 : 2,
+          text: line.replace(/\s+/g, " ").trim() });
+        i++;
+      }
+    }
+    return out;
+  }
+
+  function outlineOf(text) {
+    const headings = headingsOf(text);
+    if (!headings.length) return "(no headings found)";
+    return headings.map(function (h) {
+      return "  ".repeat(Math.max(0, h.level - 1)) + "- " + h.text;
+    }).join("\n");
+  }
+
+  function firstLines(text, n) {
+    const count = Math.max(1, Math.min(200, Math.trunc(num(n)) || 5));
+    const lines = String(text == null ? "" : text).replace(/\r/g, "").split("\n");
+    return lines.slice(0, count).join("\n");
+  }
+
+  function tableOf(text) {
+    const lines = String(text == null ? "" : text).replace(/\r/g, "")
+      .split("\n").filter(function (line) { return line.trim(); });
+    if (!lines.length) return "(no rows)";
+    // An existing markdown table is already the format we would produce.
+    if (lines.every(function (line) { return line.indexOf("|") !== -1; })) {
+      return lines.join("\n");
+    }
+    const delim = lines[0].indexOf("\t") !== -1 ? "\t"
+      : (lines[0].indexOf(",") !== -1 ? "," : /\s{2,}/);
+    const rows = lines.map(function (line) {
+      return line.split(delim).map(function (cell) { return cell.trim(); });
+    });
+    const width = rows.reduce(function (n, row) {
+      return Math.max(n, row.length);
+    }, 0);
+    rows.forEach(function (row) {
+      while (row.length < width) row.push("");
+    });
+    const esc = function (cell) { return String(cell).replace(/\|/g, "\\|"); };
+    const out = ["| " + rows[0].map(esc).join(" | ") + " |",
+      "| " + rows[0].map(function () { return "---"; }).join(" | ") + " |"];
+    for (let i = 1; i < rows.length; i++) {
+      out.push("| " + rows[i].map(esc).join(" | ") + " |");
+    }
+    return out.join("\n");
+  }
+
   /* ------------------------------------------------------------ memory ---- */
   function memoryStore(ctx) {
     const m = ctx && ctx.memory;
@@ -1971,6 +2042,22 @@
       }
       return out;
     },
+    "text.headings": function (a, ctx) {
+      const text = resolveText(a.text, ctx);
+      const headings = headingsOf(text);
+      return headings.length
+        ? headings.map(function (h) { return h.text; }).join("\n")
+        : "(no headings found)";
+    },
+    "text.outline": function (a, ctx) {
+      return outlineOf(resolveText(a.text, ctx));
+    },
+    "text.firstlines": function (a, ctx) {
+      return firstLines(resolveText(a.text, ctx), a.n);
+    },
+    "text.table": function (a, ctx) {
+      return tableOf(resolveText(a.text, ctx));
+    },
   };
 
   function helpText(topic, ctx) {
@@ -2097,9 +2184,94 @@
 
   /* ------------------------------------------------------------- planner -- */
   /* Keep these limits in sync with toolrx/longform.py and policy.json. */
-  const LIMITS = Object.freeze({ single: 2000, plan: 8000, steps: 40 });
+  const LIMITS = Object.freeze({ single: 2000, plan: 8000, steps: 40, block: 8000 });
   const CONNECTOR_RE = /\s*(?:;|->|→|\bthen\b|\bafter that\b|\band then\b|\bfollowed by\b)\s*/i;
   const SENTENCE_RE = /(?<=[.!?])\s+(?=[a-z0-9"'(\[])/i;
+
+  /* Verbatim "write the following into <file>:" capture. The block bypasses
+   * plan splitting and the command matcher, but the target path still has to
+   * be relative and traversal-free, and the body is checked for injection. */
+  const BLOCK_HEADER = /^[ \t]*(?:write|save|put|create|append)[ \t]+(?:the[ \t]+)?(?:following|below|block|text)[ \t]+(?:into|to|in|as)[ \t]+([A-Za-z0-9._/\-]+)[ \t]*:[ \t]*(?:\r?\n)?/i;
+  const BLOCK_END = /^[ \t]*(?:end|eof|end[ \t]+of[ \t]+block|end[ \t]+block|\.)[ \t]*$/im;
+  const BLOCK_INJECTION = [
+    /ignore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions/i,
+    /disregard\s+(?:all\s+)?(?:previous|prior|above)\s+instructions/i,
+    /reveal\s+(?:the\s+)?(?:system\s+)?prompt/i,
+    /developer\s+mode/i,
+    /jailbreak/i,
+    /you\s+are\s+now\s+(?:dan|unrestricted|root)/i,
+  ];
+
+  function byteLength(text) {
+    if (root.toolrxContext && root.toolrxContext.byteLength) {
+      return root.toolrxContext.byteLength(text);
+    }
+    return new TextEncoder().encode(String(text == null ? "" : text)).length;
+  }
+
+  function blockCapture(text) {
+    const raw = String(text == null ? "" : text);
+    const m = BLOCK_HEADER.exec(raw);
+    if (!m) return null;
+    const header = raw.slice(0, m.index + m[0].length).trim().split(/\n/)[0];
+    const path = m[1];
+    if (raw.indexOf("\x00") !== -1) {
+      return { ok: false, header: header, path: path, reason: "null byte rejected" };
+    }
+    if (path.charAt(0) === "/" || path.indexOf("\\") !== -1
+        || path.split("/").indexOf("..") !== -1) {
+      return { ok: false, header: header, path: path,
+               reason: "path traversal (..) rejected" };
+    }
+    let rest = raw.slice(m.index + m[0].length);
+    const end = BLOCK_END.exec(rest);
+    const terminated = !!end;
+    if (end) rest = rest.slice(0, end.index);
+    if (rest.endsWith("\r\n")) rest = rest.slice(0, -2);
+    else if (rest.endsWith("\n")) rest = rest.slice(0, -1);
+    if (!rest.trim()) {
+      return { ok: false, header: header, path: path,
+               reason: "empty block — nothing to write" };
+    }
+    const bytes = byteLength(rest);
+    if (bytes > LIMITS.block) {
+      return { ok: false, header: header, path: path,
+               reason: "block too large (" + bytes + " > " + LIMITS.block
+                 + " bytes); split it into smaller writes" };
+    }
+    for (const re of BLOCK_INJECTION) {
+      const hit = re.exec(rest);
+      if (hit) {
+        return { ok: false, header: header, path: path,
+                 reason: "injection pattern: " + JSON.stringify(hit[0]) };
+      }
+    }
+    return { ok: true, header: header, path: path, content: rest,
+             bytes: bytes, terminated: terminated };
+  }
+
+  function runBlockWrite(block, ctx) {
+    if (!block.ok) {
+      return { step: block.header, text: block.reason, error: true,
+               via: "block.write" };
+    }
+    if (!ctx || !ctx.fs || typeof ctx.fs.write !== "function") {
+      return { step: block.header, error: true, via: "block.write",
+               text: "file writes need the browser workspace" };
+    }
+    try {
+      const wrote = ctx.fs.write(block.path, block.content);
+      return {
+        step: block.header, via: "block.write",
+        text: "wrote " + block.path + " · " + block.bytes + " bytes byte-exact"
+          + (block.terminated ? " (terminated by an end marker)" : "") + "\n"
+          + String(wrote == null ? "" : wrote),
+      };
+    } catch (e) {
+      return { step: block.header, text: String(e && e.message || e),
+               error: true, via: "block.write" };
+    }
+  }
 
   function chunkStep(text, limit) {
     let rest = String(text || "").trim();
@@ -2177,6 +2349,16 @@
    * labelled with their operation; the rest will use the hashed router. */
   function planPreview(q) {
     const text = String(q == null ? "" : q);
+    const block = blockCapture(text);
+    if (block) {
+      if (!block.ok) {
+        return { blocked: true, reason: block.reason, steps: [], total: 0,
+                 truncated: false, overLimit: false, plan: false, block: true };
+      }
+      return { blocked: false, reason: null, total: 1, truncated: false,
+               overLimit: false, plan: false, block: true,
+               steps: [{ text: block.header, via: "block.write", exact: true }] };
+    }
     if (text.length > LIMITS.plan) {
       return { blocked: true, reason: "query too long (" + text.length + " > "
         + LIMITS.plan + "); split it into fewer steps", steps: [], total: 0,
@@ -2205,6 +2387,8 @@
   }
 
   async function runPrompt(query, ctx) {
+    const block = blockCapture(query);
+    if (block) return [runBlockWrite(block, ctx)];
     const preview = planPreview(query);
     if (preview.blocked) {
       return [{ step: String(query), text: preview.reason, error: true, via: "limit" }];

@@ -417,6 +417,46 @@ for pat in ("replace {find} with {repl} in {text}", "replace {find} by {repl} in
         "^" + pat.replace("{find}", TXT).replace("{repl}", TXT).replace("{text}", TXT) + "$",
         {"find": "$1", "repl": "$2", "text": "$3"}, pat, "text")
 
+# Deterministic summarizers and extractors. Each reads the previous step when
+# no explicit text/path is given, so a lookup -> summarize chain is exact.
+for pat in ("extract headings from {text}", "extract the headings from {text}",
+            "extract heading from {text}", "headings from {text}",
+            "list the headings in {text}", "list headings in {text}",
+            "show the headings in {text}", "get the headings from {text}"):
+    add(f"text.headings.{len(COMMANDS)}", "text.headings",
+        "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+for pat in ("extract headings", "extract the headings", "list the headings",
+            "show the headings", "get the headings", "headings"):
+    add(f"text.headings.prev.{len(COMMANDS)}", "text.headings",
+        "^" + re.escape(pat) + "$", {}, pat, "text")
+
+for pat in ("first {n} lines of {text}", "first {n} lines from {text}",
+            "show the first {n} lines of {text}", "show me the first {n} lines of {text}",
+            "give me the first {n} lines of {text}"):
+    add(f"text.firstlines.{len(COMMANDS)}", "text.firstlines",
+        "^" + pat.replace("{n}", N).replace("{text}", TXT) + "$",
+        {"n": "$1", "text": "$2"}, pat, "text")
+for pat in ("first {n} lines", "first {n} lines of it", "first {n} lines of that",
+            "show the first {n} lines", "show me the first {n} lines"):
+    add(f"text.firstlines.prev.{len(COMMANDS)}", "text.firstlines",
+        "^" + pat.replace("{n}", N) + "$", {"n": "$1"}, pat, "text")
+
+for pat in ("outline it", "outline that", "outline this", "outline the text",
+            "outline the result", "outline the output", "make an outline"):
+    add(f"text.outline.prev.{len(COMMANDS)}", "text.outline",
+        "^" + re.escape(pat) + "$", {}, pat, "text")
+for pat in ("outline {text}", "make an outline of {text}",
+            "make an outline from {text}", "extract the outline from {text}",
+            "build an outline of {text}"):
+    add(f"text.outline.{len(COMMANDS)}", "text.outline",
+        "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+
+for pat in ("table from {text}", "make a table from {text}",
+            "make a table out of {text}", "turn {text} into a table",
+            "format {text} as a table", "convert {text} to a table"):
+    add(f"text.table.{len(COMMANDS)}", "text.table",
+        "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+
 # -------------------------------------------------------------- encoding --
 ENCODE = {
     "b64e": ["base64 encode {text}", "encode {text} as base64"],

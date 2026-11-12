@@ -338,7 +338,7 @@ never means unbounded.
 | Project files | 32 files | 32 files |
 | Project text | 512 KB total | 512 KB total |
 | Undo snapshots | 16, configurable | 16 |
-| Command patterns | 12,460 | 12,000 |
+| Command patterns | 12,502 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
 
 ### Guardrails
@@ -419,7 +419,7 @@ not from hard-coded numbers.
 routing, the catalog regenerates byte-identically, no duplicate patterns remain,
 and existing routes keep their current answers.
 
-Landed at 12,425 patterns (12,460 after step 31 added 35 context routes). New families cover theme + genre, genre + feature,
+Landed at 12,425 patterns (12,502 after step 31 added 35 context routes). New families cover theme + genre, genre + feature,
 scale + genre, scale + theme + genre + feature, and one generic tail pattern per
 genre that accepts any number of scale/theme modifiers plus a feature clause.
 The generator now skips whitespace-insensitive duplicate regexes (seven existing
@@ -544,7 +544,7 @@ files · KB · partial %` status in the preview pane. Tests build a maximum RPG
 with and without an observer, refusal under a 16 KB budget, cancellation, and a
 fake-clock timeout.
 
-### 33. Argument extraction and long-form content
+### 33. Argument extraction and long-form content — done
 
 Improve `extractArgs` for multi-sentence content, fenced blocks, indented lists,
 quoted blocks, and multiple paths. Support `write the following into <file>:` by
@@ -557,6 +557,19 @@ injection fixtures for block capture.
 **Done when** a long block round-trips byte-exact under the cap, an over-cap block
 is refused rather than silently cut, traversal and injection fixtures are
 rejected, and summarizers are reproducible.
+
+Landed with `toolrx/blocks.py` (Python) and `blockCapture` in `skills.js`
+(browser). A block write bypasses plan splitting and the command matcher,
+preserves case, punctuation, and indentation byte-for-byte, and is capped at
+8,000 bytes; an over-cap block is refused, never truncated. The target path is
+still relative, traversal-free, and extension-checked, and the body is checked
+for NUL bytes and injection patterns. Python returns a pending `file.edit`
+(dry-run until confirmed); the browser writes through `ctx.fs.write`. Fenced,
+triple-quoted, and multi-sentence arguments are extracted verbatim, and the
+multi-path assignment order is fixed so `path_a`/`path_b` match the query order.
+`text.headings`, `text.outline`, `text.firstlines`, and `text.table` read a
+file or the previous step and are deterministic. The command catalog is now
+12,502 routes.
 
 ### 34. Vocabulary, knowledge, and centroid scaling
 

@@ -153,17 +153,42 @@
     return toks.length ? toks[toks.length - 1] : null;
   }
 
+  function quotedOrFencedContent(text) {
+    const patterns = [/```[^\n]*\n?([\s\S]*?)```/, /"""([\s\S]*?)"""/, /'''([\s\S]*?)'''/];
+    for (const re of patterns) {
+      const m = re.exec(text);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function stripSingleQuotes(text) {
+    const s = String(text).trim();
+    if (s.length >= 2 && (s[0] === '"' || s[0] === "'") && s[0] === s[s.length - 1]) {
+      return s.slice(1, -1);
+    }
+    return s;
+  }
+
   function extractContent(query, specs, args) {
     if (!specs.some(function (p) { return p.name === "content"; })) return;
     if (args.content) return;
+    const fenced = quotedOrFencedContent(query);
+    if (fenced !== null) {
+      args.content = fenced.replace(/\n$/, "");
+      return;
+    }
     if (query.indexOf(":") !== -1) {
-      args.content = query.split(":").slice(1).join(":").trim();
+      args.content = stripSingleQuotes(query.split(":").slice(1).join(":"));
       return;
     }
     let q = query;
-    if (args.path) q = q.replace(args.path, "");
+    for (const name of ["path", "path_a", "path_b", "file", "dir", "target"]) {
+      const value = args[name];
+      if (typeof value === "string" && value) q = q.replace(value, "");
+    }
     q = q.replace(/^(write|create|edit|save|append|update|set|make|add|change|put|insert|with|to|in|the|a|an|for|contents?|as)\b\s*/gi, "");
-    args.content = q.replace(/^[ :]+|[ :]+$/g, "");
+    args.content = stripSingleQuotes(q.replace(/^[ :]+|[ :]+$/g, ""));
   }
 
   function extractArgs(query, specs, hostAllowlist) {
@@ -188,7 +213,7 @@
         if (v !== null) args.tool = v;
       }
     }
-    const cands = pathCandidates(query).reverse();
+    const cands = pathCandidates(query);
     for (let i = stringParams.length - 1; i >= 0; i--) {
       const name = stringParams[i].name;
       if (name in args) continue;
