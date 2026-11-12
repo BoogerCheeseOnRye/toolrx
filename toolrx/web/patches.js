@@ -596,8 +596,272 @@
     };
   }
 
+  /* --------------------------------------------------- multi-file growth -- */
+  /* Step 30: grow a project with real module files instead of regenerating it.
+   * Modules are plain scripts (no import/export) so they load from file:// and
+   * the preview bundler can inline them in document order. Each file is seeded
+   * from the project spec, so growth is deterministic and additive. */
+  var MODULES = {
+    core: "core/state.js",
+    ui: "ui/render.js",
+    data: "data/seed.js",
+    content: "content/seed.js"
+  };
+  var SYSTEMS = ["inventory", "crafting", "quests", "weather", "audio",
+                 "save", "particles", "ai", "combat", "dialogue"];
+
+  function cloneSpec(spec) {
+    return JSON.parse(JSON.stringify(spec || {}));
+  }
+
+  function moduleSource(name, spec) {
+    var seed = (spec && spec.seed) || 1;
+    var kind = JSON.stringify((spec && (spec.genre || spec.kind)) || "app");
+    if (name === "core") {
+      return [
+        "/* toolrx module: core state · generated from the build spec, no model */",
+        "(function (root) {",
+        "  \"use strict\";",
+        "  var state = {}, listeners = [];",
+        "  root.toolrxCore = {",
+        "    version: 1,",
+        "    seed: " + seed + ",",
+        "    get: function (k) { return state[k]; },",
+        "    set: function (k, v) {",
+        "      state[k] = v;",
+        "      listeners.forEach(function (fn) { fn(k, v); });",
+        "      return v;",
+        "    },",
+        "    on: function (fn) {",
+        "      listeners.push(fn);",
+        "      return function () { listeners = listeners.filter(function (f) { return f !== fn; }); };",
+        "    },",
+        "    keys: function () { return Object.keys(state).sort(); }",
+        "  };",
+        "})(typeof window !== \"undefined\" ? window : this);",
+        ""
+      ].join("\n");
+    }
+    if (name === "ui") {
+      return [
+        "/* toolrx module: ui helpers · generated from the build spec, no model */",
+        "(function (root) {",
+        "  \"use strict\";",
+        "  root.toolrxUI = {",
+        "    text: function (sel, text) {",
+        "      var el = document.querySelector(sel);",
+        "      if (el) el.textContent = text;",
+        "      return !!el;",
+        "    },",
+        "    on: function (sel, ev, fn) {",
+        "      var el = document.querySelector(sel);",
+        "      if (el) el.addEventListener(ev, fn);",
+        "      return !!el;",
+        "    },",
+        "    badge: function (label) {",
+        "      var b = document.createElement(\"span\");",
+        "      b.className = \"pill\";",
+        "      b.textContent = label;",
+        "      return b;",
+        "    }",
+        "  };",
+        "})(typeof window !== \"undefined\" ? window : this);",
+        ""
+      ].join("\n");
+    }
+    if (name === "data") {
+      return [
+        "/* toolrx module: seeded data · generated from the build spec, no model */",
+        "(function (root) {",
+        "  \"use strict\";",
+        "  function rng(a) {",
+        "    return function () {",
+        "      a |= 0; a = a + 0x6D2B79F5 | 0;",
+        "      var t = Math.imul(a ^ a >>> 15, 1 | a);",
+        "      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;",
+        "      return ((t ^ t >>> 14) >>> 0) / 4294967296;",
+        "    };",
+        "  }",
+        "  var seed = " + seed + ", roll = rng(seed);",
+        "  var names = [\"ember\", \"harbor\", \"signal\", \"hollow\", \"ridge\",",
+        "    \"cinder\", \"tide\", \"vault\", \"meadow\", \"spire\"];",
+        "  root.toolrxData = {",
+        "    seed: seed,",
+        "    kind: " + kind + ",",
+        "    next: function () { return roll(); },",
+        "    pick: function (list) { return list[Math.floor(roll() * list.length)]; },",
+        "    names: names",
+        "  };",
+        "})(typeof window !== \"undefined\" ? window : this);",
+        ""
+      ].join("\n");
+    }
+    return [
+      "/* toolrx module: content index · generated from the build spec, no model */",
+      "(function (root) {",
+      "  \"use strict\";",
+      "  var c = root.toolrxContent || {};",
+      "  function count(name) { return (c[name] || []).length; }",
+      "  root.toolrxContentIndex = {",
+      "    seed: " + seed + ",",
+      "    levels: count(\"levels\"),",
+      "    quests: count(\"quests\"),",
+      "    npcs: count(\"npcs\"),",
+      "    enemies: count(\"enemies\"),",
+      "    items: count(\"items\"),",
+      "    features: (c.features || []).slice(),",
+      "    summary: function () {",
+      "      return count(\"levels\") + \" levels · \" + count(\"quests\") + \" quests · \"",
+      "        + count(\"npcs\") + \" NPCs · \" + count(\"enemies\") + \" enemies\";",
+      "    }",
+      "  };",
+      "})(typeof window !== \"undefined\" ? window : this);",
+      ""
+    ].join("\n");
+  }
+
+  function systemSource(name, spec) {
+    var seed = (spec && spec.seed) || 1;
+    return [
+      "/* toolrx system: " + name + " · generated from the build spec, no model */",
+      "(function (root) {",
+      "  \"use strict\";",
+      "  var registry = root.toolrxSystems = root.toolrxSystems || {",
+      "    items: {},",
+      "    register: function (name, def) { this.items[name] = def; return def; },",
+      "    run: function (dt) {",
+      "      Object.keys(this.items).sort().forEach(function (k) {",
+      "        var item = this.items[k];",
+      "        if (item && item.tick) item.tick(dt || 0);",
+      "      }, this);",
+      "    }",
+      "  };",
+      "  registry.register(" + JSON.stringify(name) + ", {",
+      "    name: " + JSON.stringify(name) + ",",
+      "    seed: " + seed + ",",
+      "    time: 0,",
+      "    tick: function (dt) { this.time += dt || 0; },",
+      "    state: function () { return { name: this.name, seed: this.seed, time: this.time }; }",
+      "  });",
+      "})(typeof window !== \"undefined\" ? window : this);",
+      ""
+    ].join("\n");
+  }
+
+  function grow(project, which, name) {
+    project = project || {};
+    var files = clone(project.files || {});
+    var spec = cloneSpec(project.spec || {});
+    var added = [], mode = String(which || "project").toLowerCase();
+    var wanted = String(name || "").toLowerCase();
+    if (mode === "system") {
+      if (SYSTEMS.indexOf(wanted) < 0) {
+        return { ok: false, message: "unknown system \"" + wanted
+          + "\"; try " + SYSTEMS.join(", ") };
+      }
+      added.push("systems/" + wanted + ".js");
+    } else if (mode === "module") {
+      if (!MODULES[wanted]) {
+        return { ok: false, message: "unknown module \"" + wanted
+          + "\"; try " + Object.keys(MODULES).join(", ") };
+      }
+      added.push(MODULES[wanted]);
+    } else {
+      added = Object.keys(MODULES).map(function (k) { return MODULES[k]; });
+    }
+    added = added.filter(function (p) { return !files[p]; });
+    if (!added.length) {
+      return { ok: false, message: "already grown: nothing new to add" };
+    }
+    added.forEach(function (path) {
+      if (path.indexOf("systems/") === 0) {
+        files[path] = systemSource(wanted, spec);
+      } else {
+        var id = Object.keys(MODULES).filter(function (k) { return MODULES[k] === path; })[0];
+        files[path] = moduleSource(id, spec);
+      }
+    });
+    var html = String(files["index.html"] || "");
+    var tags = added.map(function (p) {
+      return "<script src=\"" + p + "\"></script>";
+    }).join("\n");
+    if (html.indexOf('src="app.js"') >= 0) {
+      files["index.html"] = html.replace('<script src="app.js"></script>',
+        tags + "\n<script src=\"app.js\"></script>");
+    } else {
+      files["index.html"] = html.replace(/<\/body>/i, tags + "\n</body>");
+    }
+    if (files["app.js"]) {
+      var boot = ["", "/* toolrx modules: real files beside app.js */",
+        "window.toolrxProject = window.toolrxProject || { name: "
+          + JSON.stringify((spec && (spec.theme || spec.genre)) || project.kind || "app")
+          + ", modules: [] };",
+        "window.toolrxProject.modules = window.toolrxProject.modules || [];"];
+      added.forEach(function (p) {
+        boot.push("window.toolrxProject.modules.push(" + JSON.stringify(p) + ");");
+      });
+      files["app.js"] = append(files["app.js"], boot.join("\n"));
+    }
+    var modules = (spec.modules || []).slice();
+    added.forEach(function (p) { if (modules.indexOf(p) < 0) modules.push(p); });
+    spec.modules = modules.sort();
+    if (files["README.md"]) {
+      var rows = added.map(function (p) {
+        return "| `" + p + "` | generated module · plain script, no build step |";
+      }).join("\n");
+      files["README.md"] = String(files["README.md"])
+        .replace(/\n## Run\b/, "\n" + rows + "\n\n## Run");
+    }
+    if (files["ARCHITECTURE.md"]) {
+      var bullets = added.map(function (p) { return "- `" + p + "`"; }).join("\n");
+      files["ARCHITECTURE.md"] = String(files["ARCHITECTURE.md"])
+        .replace(/\n## Build order\b/, "\n" + bullets + "\n\n## Build order");
+    }
+    syncDocs(files, spec);
+    return {
+      ok: true,
+      files: files,
+      spec: spec,
+      added: added,
+      label: mode === "system" ? "add " + wanted + " system"
+        : (mode === "module" ? "expand module " + wanted : "grow project"),
+      message: "added " + added.join(", ")
+    };
+  }
+
+  /* Aliases used by the deterministic multi-patch command. Keep this table in
+   * step with build_commands.py; `resolve` returns a patch id or ""'. */
+  var ALIASES = {
+    "double jump": "double-jump",
+    "a double jump": "double-jump",
+    "double-jump": "double-jump",
+    "three enemy types": "enemy-types",
+    "3 enemy types": "enemy-types",
+    "enemy types": "enemy-types",
+    "a boss": "boss", "boss": "boss", "boss fight": "boss", "a boss fight": "boss",
+    "a quest": "quest", "quest": "quest", "quests": "quest", "a quest line": "quest",
+    "day/night": "day-night", "day night": "day-night",
+    "day and night": "day-night", "day night cycle": "day-night",
+    "sound": "sound", "sound effects": "sound", "audio": "sound",
+    "harder": "harder", "hard mode": "harder",
+    "isometric": "isometric", "isometric view": "isometric",
+    "3d": "three-d", "3-d": "three-d", "three-d": "three-d"
+  };
+
+  function resolve(text) {
+    var s = String(text || "").toLowerCase()
+      .replace(/^(?:add|give it|make it|switch to|apply)\s+/, "")
+      .replace(/\s+/g, " ").trim();
+    if (PATCHES[s]) return s;
+    return ALIASES[s] || "";
+  }
+
   root.toolrxPatches = {
     apply: apply,
+    grow: grow,
+    resolve: resolve,
+    modules: function () { return Object.keys(MODULES).sort(); },
+    systems: function () { return SYSTEMS.slice(); },
     labels: function () { var o = {}; for (var k in LABELS) o[k] = LABELS[k]; return o; },
     list: function () { return Object.keys(PATCHES); },
     has: function (id) { return !!PATCHES[id]; }

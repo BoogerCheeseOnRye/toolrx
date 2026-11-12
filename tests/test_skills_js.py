@@ -959,6 +959,97 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.patches.route = {
     edit: routeEdit[0].via, undo: routeUndo[0].via, lang: routeLang[0].via,
   };
+
+  // Step 30: a two-to-five patch bundle is atomic, growth adds real modules,
+  // and the undo depth is configurable (default 16, here 3).
+  out.growth = {};
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const bundleBase = snap();
+  const bundle = await pRun('add double jump and sound and a quest');
+  const bundleAfter = snap();
+  const bundleFail = await pRun('add double jump and a boss');
+  const bundleFailAfter = snap();
+  out.growth.bundle = {
+    via: bundle[0].via, text: bundle[0].text,
+    fns: ['doubleJump', 'soundToggle', 'questCheck']
+      .map(fn => new RegExp('function ' + fn + '\\b').test(bundleAfter.files['app.js'])),
+    files: Object.keys(bundleAfter.files).sort(),
+    preview: /function doubleJump/.test(bundleAfter.html)
+      && /function soundToggle/.test(bundleAfter.html),
+    syntax: jsCheck(bundleAfter.files['app.js']),
+    failVia: bundleFail[0].via,
+    failText: bundleFail[0].text,
+    failAtomic: sameMap(bundleAfter.files, bundleFailAfter.files),
+    failKeptBoss: !/function spawnBoss/.test(bundleFailAfter.files['app.js']),
+  };
+  await pRun('undo');
+  out.growth.bundleUndo = sameMap(bundleBase.files, snap().files);
+
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const growBase = snap();
+  const growRun = await pRun('grow project');
+  const growAfter = snap();
+  out.growth.grow = {
+    via: growRun[0].via, text: growRun[0].text,
+    files: Object.keys(growAfter.files).sort(),
+    tags: ['core/state.js', 'ui/render.js', 'data/seed.js', 'content/seed.js']
+      .every(p => growAfter.files['index.html'].indexOf('src="' + p + '"') >= 0),
+    appModules: /toolrxProject\.modules/.test(growAfter.files['app.js']),
+    coreSyntax: jsCheck(growAfter.files['core/state.js']),
+    uiSyntax: jsCheck(growAfter.files['ui/render.js']),
+    dataSyntax: jsCheck(growAfter.files['data/seed.js']),
+    previewInlined: /toolrxCore/.test(growAfter.html) && /toolrxUI/.test(growAfter.html),
+    previewExternal: /src=["'](?:core|ui|data|content)\//.test(growAfter.html),
+    cssUntouched: growBase.files['styles.css'] === growAfter.files['styles.css'],
+    tagsBeforeApp: growAfter.files['index.html'].indexOf('src="app.js"')
+      > growAfter.files['index.html'].indexOf('src="core/state.js"'),
+  };
+  await pRun('undo');
+  out.growth.growUndo = sameMap(growBase.files, snap().files);
+
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const sysRun = await pRun('add crafting system');
+  const sysAfter = snap();
+  const expandRun = await pRun('expand module content');
+  const expandAfter = snap();
+  out.growth.system = {
+    via: sysRun[0].via, text: sysRun[0].text,
+    hasFile: !!sysAfter.files['systems/crafting.js'],
+    registers: /registry\.register\("crafting"/.test(sysAfter.files['systems/crafting.js'] || ''),
+    syntax: jsCheck(sysAfter.files['systems/crafting.js'] || ''),
+    expandVia: expandRun[0].via,
+    hasContentModule: !!expandAfter.files['content/seed.js'],
+    tags: (expandAfter.files['index.html'].match(/src="(?:systems|content)\//g) || []).length,
+    preview: /toolrxSystems/.test(expandAfter.html)
+      && /toolrxContentIndex/.test(expandAfter.html),
+  };
+  try { localStorage.setItem('toolrx.undo.depth', '3'); } catch (e) { /* ignore */ }
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const depthBase = snap();
+  for (const q of ['add double jump', 'add sound', 'add a quest', 'make it harder']) {
+    await pRun(q);
+  }
+  let undos = 0;
+  for (let i = 0; i < 6; i++) {
+    const r = await pRun('undo');
+    if (/nothing to undo/.test(r[0].text)) break;
+    undos++;
+  }
+  const depthAfter = snap();
+  out.growth.undoDepth = {
+    undos,
+    notBase: !sameMap(depthBase.files, depthAfter.files),
+    hasDoubleJump: /function doubleJump/.test(depthAfter.files['app.js']),
+    hasHardMode: /HARD_MODE/.test(depthAfter.files['app.js']),
+    hasSound: /function soundToggle/.test(depthAfter.files['app.js']),
+    files: Object.keys(depthAfter.files).sort(),
+  };
+  try { localStorage.removeItem('toolrx.undo.depth'); } catch (e) { /* ignore */ }
+
   self.toolrxWeb.reset();
   out.sandbox.olympusBuild = (await self.toolrxWeb.prompt('build an rpg based on greek myth'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
@@ -2046,6 +2137,54 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(p["route"]["edit"], "edit.apply")
         self.assertEqual(p["route"]["undo"], "edit.undo")
         self.assertEqual(p["route"]["lang"], "lang.reply")
+
+    def test_patch_bundle_is_atomic_and_one_undo(self):
+        b = self.out["growth"]["bundle"]
+        self.assertEqual(b["via"], "edit.apply.many")
+        self.assertEqual(b["fns"], [True, True, True], b["text"])
+        self.assertEqual(b["syntax"], "ok")
+        self.assertTrue(b["preview"])
+        self.assertEqual(b["failVia"], "edit.apply.many")
+        self.assertIn("not edited", b["failText"])
+        self.assertTrue(b["failAtomic"], "a failed bundle must change no files")
+        self.assertTrue(b["failKeptBoss"])
+        self.assertTrue(self.out["growth"]["bundleUndo"])
+
+    def test_growth_adds_real_modules_and_inlines_them(self):
+        g = self.out["growth"]["grow"]
+        self.assertEqual(g["via"], "project.grow")
+        for name in ("core/state.js", "ui/render.js", "data/seed.js",
+                     "content/seed.js"):
+            self.assertIn(name, g["files"])
+        self.assertTrue(g["tags"])
+        self.assertTrue(g["tagsBeforeApp"])
+        self.assertTrue(g["appModules"])
+        self.assertEqual(g["coreSyntax"], "ok")
+        self.assertEqual(g["uiSyntax"], "ok")
+        self.assertEqual(g["dataSyntax"], "ok")
+        self.assertTrue(g["previewInlined"])
+        self.assertFalse(g["previewExternal"])
+        self.assertTrue(g["cssUntouched"], "growth must not regenerate unrelated files")
+        self.assertTrue(self.out["growth"]["growUndo"])
+
+    def test_module_and_system_growth(self):
+        s = self.out["growth"]["system"]
+        self.assertEqual(s["via"], "system.add")
+        self.assertTrue(s["hasFile"])
+        self.assertTrue(s["registers"])
+        self.assertEqual(s["syntax"], "ok")
+        self.assertEqual(s["expandVia"], "module.expand")
+        self.assertTrue(s["hasContentModule"])
+        self.assertEqual(s["tags"], 2)
+        self.assertTrue(s["preview"])
+
+    def test_undo_depth_is_configurable(self):
+        d = self.out["growth"]["undoDepth"]
+        self.assertEqual(d["undos"], 3)
+        self.assertTrue(d["notBase"])
+        self.assertTrue(d["hasDoubleJump"])
+        self.assertFalse(d["hasHardMode"])
+        self.assertFalse(d["hasSound"])
 
     def test_reload_resumes_the_active_project_preview(self):
         r = self.out["resume"]

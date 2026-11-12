@@ -1810,6 +1810,22 @@
       if (!ctx.edit) throw new Error("composable edits need the browser workspace");
       return ctx.edit(a.patch, a.arg || a.size);
     },
+    "edit.apply.many": function (a, ctx) {
+      if (!ctx.editMany) throw new Error("composable edits need the browser workspace");
+      return ctx.editMany(a.list);
+    },
+    "project.grow": function (a, ctx) {
+      if (!ctx.grow) throw new Error("project growth needs the browser workspace");
+      return ctx.grow("project", "");
+    },
+    "module.expand": function (a, ctx) {
+      if (!ctx.grow) throw new Error("project growth needs the browser workspace");
+      return ctx.grow("module", a.module);
+    },
+    "system.add": function (a, ctx) {
+      if (!ctx.grow) throw new Error("project growth needs the browser workspace");
+      return ctx.grow("system", a.system);
+    },
     "edit.undo": function (a, ctx) {
       if (!ctx.undo) throw new Error("undo needs the browser workspace");
       return ctx.undo();

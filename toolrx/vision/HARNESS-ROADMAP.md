@@ -315,7 +315,7 @@ Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
 `toolrx.library.status`. Catalog metadata is already in the PWA shell cache
-(now `toolrx-shell-v14`), so the panel works offline with no second fetch.
+(now `toolrx-shell-v15`), so the panel works offline with no second fetch.
 
 ## Next batch: longer input, longer output (steps 26–35)
 
@@ -337,8 +337,8 @@ never means unbounded.
 | Plan input | 8,000 chars / 40 steps | 8,000 chars / 40 steps |
 | Project files | template-sized | 32 files |
 | Project text | template-sized | 512 KB total |
-| Undo snapshots | 8 | 16, configurable |
-| Command patterns | 12,362 | 12,000 |
+| Undo snapshots | 16, configurable | 16 |
+| Command patterns | 12,425 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
 
 ### Guardrails
@@ -419,7 +419,7 @@ not from hard-coded numbers.
 routing, the catalog regenerates byte-identically, no duplicate patterns remain,
 and existing routes keep their current answers.
 
-Landed at 12,362 patterns. New families cover theme + genre, genre + feature,
+Landed at 12,425 patterns. New families cover theme + genre, genre + feature,
 scale + genre, scale + theme + genre + feature, and one generic tail pattern per
 genre that accepts any number of scale/theme modifiers plus a feature clause.
 The generator now skips whitespace-insensitive duplicate regexes (seven existing
@@ -458,7 +458,7 @@ NPCs, and quests deterministically while leaving default worlds unchanged.
 same-seed trees, the five-file shape of plain builds, count honouring, and
 preview inlining.
 
-### 30. Multi-file growth and patch composition
+### 30. Multi-file growth and patch composition — done
 
 Move from single-app skeletons plus named-function patches toward multi-module
 layouts (`core/`, `systems/`, `data/`, `ui/`, `content/`, or the engine-specific
@@ -472,6 +472,20 @@ configurable, while keeping full-file snapshots.
 **Done when** a five-patch sequence accumulates, each undo restores the exact
 prior state, a growth command adds code without touching unrelated files, and the
 preview still runs after each step.
+
+Landed with additive growth under `core/`, `ui/`, `data/`, `content/`, and
+`systems/`. Modules are plain scripts (no `import`/`export`) so they load from
+`file://`, and `bundleProject` now inlines any project-local script path, nested
+or flat. `grow project` adds the four base modules; `expand module <name>` adds
+one; `add <system> system` adds a seeded `systems/<name>.js` that registers with
+`window.toolrxSystems`. Each growth appends one bootstrap block to `app.js`,
+inserts script tags before `app.js`, records paths in `spec.modules`, and appends
+rows to README/ARCHITECTURE — no regeneration. The multi-patch command
+`add <edit> and <edit>` (two to five known patches, comma or `and`) applies to one
+working copy and writes only if every patch fits; one undo reverts the whole
+bundle. Undo depth defaults to 16 full-file snapshots and reads
+`toolrx.undo.depth` (1–64) from `localStorage`. Tests drive five-step stacks,
+atomic failure, growth/undo, nested preview inlining, and the configurable depth.
 
 ### 31. Deterministic context and working memory
 

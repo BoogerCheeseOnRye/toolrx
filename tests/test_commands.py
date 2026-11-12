@@ -92,6 +92,34 @@ class CommandLibraryTest(unittest.TestCase):
             self.assertEqual(generated["count"], self.data["count"])
             self.assertEqual(generated["commands"], self.commands)
 
+    def test_bundles_and_growth_route_with_arguments(self):
+        bundle = self.first("add double jump and sound and a quest")
+        self.assertIsNotNone(bundle)
+        self.assertEqual(bundle["op"], "edit.apply.many")
+        args = self.args_for(bundle, "add double jump and sound and a quest")
+        self.assertIn("double jump", args["list"])
+        self.assertIn("sound", args["list"])
+        self.assertIn("a quest", args["list"])
+
+        comma = self.first("add a boss, sound and a quest")
+        self.assertEqual(comma["op"], "edit.apply.many")
+        self.assertIn("a boss", self.args_for(comma, "add a boss, sound and a quest")["list"])
+
+        single = self.first("add sound")
+        self.assertEqual(single["op"], "edit.apply")
+
+        growth = {
+            "grow project": ("project.grow", {}),
+            "expand module core": ("module.expand", {"module": "core"}),
+            "add crafting system": ("system.add", {"system": "crafting"}),
+            "add a save system": ("system.add", {"system": "save"}),
+        }
+        for query, (op, expected) in growth.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+            self.assertEqual(self.args_for(hit, query), expected, query)
+
     def test_long_compositional_prompts_keep_kind_and_modifiers(self):
         cases = {
             "build a huge space rpg game with crafting":

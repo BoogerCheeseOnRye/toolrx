@@ -146,8 +146,10 @@ Step 28 widened the generated library to ~12,300 patterns with compositional
 build phrasing and duplicate detection. Step 29 expanded the build spec to
 features, counts, levels, sub-themes, and explicit world sizes: long requests
 now write a seeded `content.js` alongside `app.js`, and the RPG world honours
-requested town, enemy, NPC, and quest counts. The rest of the batch still targets
-multi-module growth, bounded context, and a long-form test suite.
+requested town, enemy, NPC, and quest counts. Step 30 adds additive
+`grow project` / `expand module` / `add <system>` commands, atomic two-to-five
+patch bundles, and configurable 16-deep undo. The rest of the batch targets
+bounded context and the long-form test suite.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and

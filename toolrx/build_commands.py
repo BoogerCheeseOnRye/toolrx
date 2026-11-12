@@ -669,6 +669,58 @@ for patch, pats in EDIT_PATTERNS:
         add(f"edit.{patch}.{len(COMMANDS)}", "edit.apply", "^" + re.escape(pat) + "$",
             {"patch": patch}, pat, "edit")
 
+# A single request may bundle two to five known edits. The bundle is applied to
+# one working copy and written only if every patch fits, so it is all-or-none.
+MANY_PATCH_ALIASES = [
+    ("double-jump", ("double jump", "a double jump", "double-jump")),
+    ("enemy-types", ("three enemy types", "3 enemy types", "enemy types")),
+    ("boss", ("a boss", "a boss fight", "boss", "boss fight")),
+    ("quest", ("a quest", "a quest line", "another quest", "quests")),
+    ("day-night", ("day/night", "day night", "day and night", "day night cycle")),
+    ("sound", ("sound", "sound effects", "audio")),
+    ("harder", ("harder", "hard mode")),
+    ("isometric", ("isometric", "isometric view")),
+    ("three-d", ("3d", "3-d", "three-d")),
+]
+
+
+def _phrase(text):
+    return r"\s+".join(re.escape(word) for word in text.split())
+
+
+def _alternation(groups):
+    words = sorted({word for _, aliases in groups for word in aliases},
+                   key=lambda w: (-len(w), w))
+    return "(?:" + "|".join(_phrase(w) for w in words) + ")"
+
+
+_MANY_ONE = _alternation(MANY_PATCH_ALIASES)
+_MANY_SEP = r"(?:\s*,\s*(?:and\s+)?|\s+and\s+)"
+_MANY_LIST = ("((?:" + _MANY_ONE + ")(?:" + _MANY_SEP + "(?:" + _MANY_ONE
+              + ")){1,4})")
+add(f"edit.many.{len(COMMANDS)}", "edit.apply.many", "^add " + _MANY_LIST + "$",
+    {"list": "$1"}, "add <edit> and <edit>", "edit")
+
+# Multi-file growth: additive module and system files, never a rebuild.
+GROWTH_MODULES = ["core", "ui", "data", "content"]
+GROWTH_SYSTEMS = ["inventory", "crafting", "quests", "weather", "audio",
+                  "save", "particles", "ai", "combat", "dialogue"]
+for pat in ("grow project", "grow the project", "split into modules",
+            "split the project into modules", "add modules",
+            "grow the codebase"):
+    add(f"grow.project.{len(COMMANDS)}", "project.grow", "^" + re.escape(pat) + "$",
+        {}, pat, "edit")
+for module in GROWTH_MODULES:
+    for pat in (f"expand module {module}", f"expand the {module} module",
+                f"add the {module} module", f"grow the {module} module"):
+        add(f"grow.module.{module}.{len(COMMANDS)}", "module.expand",
+            "^" + re.escape(pat) + "$", {"module": module}, pat, "edit")
+for system in GROWTH_SYSTEMS:
+    for pat in (f"add {system} system", f"add a {system} system",
+                f"add the {system} system", f"add {system} mechanics"):
+        add(f"grow.system.{system}.{len(COMMANDS)}", "system.add",
+            "^" + re.escape(pat) + "$", {"system": system}, pat, "edit")
+
 for pat in ("make the world {n}x{n}", "make the world {n} by {n}",
             "resize the world to {n}x{n}", "grow the world to {n}x{n}",
             "set the world size to {n}x{n}"):

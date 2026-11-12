@@ -348,14 +348,17 @@
       return "<style>\n" + css + "\n</style>";
     });
     // Inline every project-local script the page references, in place, so the
-    // preview needs no base URL and the order of shared runtimes, content, and
-    // app code is preserved. Any `<name>.js` in the project can take part.
+    // preview needs no base URL and the order of shared runtimes, modules,
+    // content, and app code is preserved. Nested module paths are allowed;
+    // absolute URLs and parent traversal are not.
     html = html.replace(
       /<script\b([^>]*)\bsrc\s*=\s*["']([^"']+\.js)["'][^>]*>\s*<\/script>/gi,
       function (tag, attrs, src) {
-        if (src.indexOf("/") >= 0 || src.indexOf("\\") >= 0) return tag;
-        const body = String(f[src] || "");
-        if (!body && src !== "app.js") return tag;
+        const clean = src.replace(/^\.\//, "");
+        if (/^(?:[a-z]+:)?\/\//i.test(clean) || clean.indexOf("..") >= 0
+            || clean.indexOf("\\") >= 0) return tag;
+        const body = String(f[clean] || f[src] || "");
+        if (!body && clean !== "app.js") return tag;
         return "<script>\n" + body + "\n</script>";
       });
     html = html.replace(/offline · (?:separate files|self-contained)/g, "offline · project preview");
@@ -578,6 +581,18 @@
     return out;
   }
 
+  /* Undo depth is configurable and defaults to 16 full-file snapshots. */
+  const UNDO_DEFAULT = 16;
+  function undoDepth() {
+    let n = UNDO_DEFAULT;
+    try {
+      const raw = root.localStorage && root.localStorage.getItem("toolrx.undo.depth");
+      const parsed = parseInt(raw, 10);
+      if (!isNaN(parsed)) n = parsed;
+    } catch (e) { /* private mode */ }
+    return Math.max(1, Math.min(64, n));
+  }
+
   function pushProjectHistory(p, label) {
     if (!p.history) p.history = [];
     p.history.push({
@@ -589,7 +604,8 @@
       desc: p.desc,
       at: Date.now(),
     });
-    if (p.history.length > 8) p.history = p.history.slice(-8);
+    const depth = undoDepth();
+    if (p.history.length > depth) p.history = p.history.slice(-depth);
   }
 
   function editReport(before, after, res) {
@@ -640,6 +656,107 @@
       name: p.name, label: res.label, spec: p.spec, fn: res.fn,
       note: res.note, slug: p.slug,
     });
+  }
+
+  /* A bundle of two to five patches applies to one working copy and is written
+   * only if every patch fits. One history entry means one undo reverts all. */
+  function applyProjectEdits(list) {
+    const p = projectForEdit();
+    const P = root.toolrxPatches;
+    if (!P || !P.resolve) throw new Error("edit patches are not loaded");
+    const parts = String(list || "").split(/\s*,\s*|\s+and\s+/)
+      .map(function (s) { return s.trim(); }).filter(Boolean);
+    const ids = parts.map(function (s) { return P.resolve(s); });
+    if (ids.length < 2 || ids.length > 5) {
+      return 'not edited · give two to five edits, e.g. "add double jump and sound"';
+    }
+    const unknown = parts.filter(function (_, i) { return !ids[i]; });
+    if (unknown.length) {
+      return "not edited · unknown edit: " + unknown.join(", ");
+    }
+    const before = copyFiles(p.files);
+    let files = before;
+    let spec = p.spec || null;
+    let edits = (p.edits || []).slice();
+    const labels = [];
+    for (let i = 0; i < ids.length; i++) {
+      const res = P.apply(ids[i], {
+        kind: p.kind, desc: p.desc, files: copyFiles(files),
+        spec: JSON.parse(JSON.stringify(spec || null)), edits: edits.slice(),
+      });
+      if (!res.ok) {
+        return "not edited · " + res.message
+          + "\nnothing changed: the bundle applies all or none.";
+      }
+      files = res.files;
+      spec = res.spec;
+      edits = res.edits;
+      labels.push(res.label);
+    }
+    pushProjectHistory(p, "bundle: " + labels.join(" + "));
+    p.files = files;
+    p.spec = spec;
+    p.edits = edits;
+    p.bundled = bundleProject(p);
+    p.updated = Date.now();
+    writeProjects();
+    writeProjectFiles(p);
+    preview = {
+      html: p.bundled, kind: p.kind, desc: p.desc,
+      title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
+    };
+    notifyPreview();
+    const changed = [];
+    const names = new Set(Object.keys(before).concat(Object.keys(p.files)));
+    names.forEach(function (n) { if (before[n] !== p.files[n]) changed.push(n); });
+    changed.sort();
+    const t = root.toolrxTemplates;
+    const lines = ['edited "' + p.name + '" · ' + labels.join(" + ")];
+    if (t && t.specLine) lines.push(t.specLine(p.spec));
+    lines.push("changed: " + (changed.length ? changed.join(", ") : "no files"));
+    lines.push("preview re-bundled · active project: " + p.slug
+      + " · one undo reverts the whole bundle");
+    return lines.join("\n");
+  }
+
+  /* Grow the active project with real module files (or one named module or
+   * system). Files are additive; app.js is only ever appended to. */
+  function growActiveProject(which, name) {
+    const p = projectForEdit();
+    const P = root.toolrxPatches;
+    if (!P || !P.grow) throw new Error("project growth is not loaded");
+    const before = copyFiles(p.files);
+    const res = P.grow({
+      kind: p.kind, desc: p.desc, files: before, spec: p.spec, edits: p.edits || [],
+    }, which, name);
+    if (!res.ok) {
+      return "not grown · " + res.message
+        + "\ntry: grow project, expand module core, or add crafting system";
+    }
+    pushProjectHistory(p, res.label);
+    p.files = res.files;
+    p.spec = res.spec;
+    p.bundled = bundleProject(p);
+    p.updated = Date.now();
+    writeProjects();
+    writeProjectFiles(p);
+    preview = {
+      html: p.bundled, kind: p.kind, desc: p.desc,
+      title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
+    };
+    notifyPreview();
+    const changed = [];
+    const names = new Set(Object.keys(before).concat(Object.keys(p.files)));
+    names.forEach(function (n) { if (before[n] !== p.files[n]) changed.push(n); });
+    changed.sort();
+    const t = root.toolrxTemplates;
+    const lines = ['grew "' + p.name + '" · ' + res.label];
+    if (t && t.specLine) lines.push(t.specLine(p.spec));
+    lines.push("added: " + res.added.join(", "));
+    lines.push("changed: " + changed.join(", "));
+    lines.push("preview re-bundled · active project: " + p.slug
+      + " · say undo to remove the growth");
+    return lines.join("\n");
   }
 
   function undoProjectEdit() {
@@ -1030,6 +1147,8 @@
       theme: function (name) { return setTheme(name); },
       build: function (kind, desc) { return buildPage(kind, desc); },
       edit: function (patch, arg) { return applyProjectEdit(patch, arg); },
+      editMany: function (list) { return applyProjectEdits(list); },
+      grow: function (which, name) { return growActiveProject(which, name); },
       undo: function () { return undoProjectEdit(); },
       llmStatus: llmStatus,
       llmEnable: llmEnable,
