@@ -208,11 +208,13 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     const rich = self.toolrxTemplates.project('rpg', prompt, {});
     const again = self.toolrxTemplates.project('rpg', prompt, {});
     const plain = self.toolrxTemplates.project('calculator', 'a tip calculator', {});
+    const tight = self.toolrxTemplates.spec('rpg', 'sub-theme nebula 96x96 world');
     const raw = rich.files['content.js'] || '';
     const content = JSON.parse(raw.replace(/^[\s\S]*?window\.toolrxContent = /, '')
       .replace(/;\s*$/, ''));
     return {
       spec: rich.spec, line: rich.specLine,
+      tightSubtheme: tight.subtheme,
       files: Object.keys(rich.files).sort(),
       hasTag: /src="content\.js"/.test(rich.html),
       tagBeforeApp: rich.html.indexOf('src="content.js"') < rich.html.indexOf('src="app.js"'),
@@ -1575,6 +1577,7 @@ class SkillsBridgeTest(unittest.TestCase):
         s = self.out["specV3"]["spec"]
         self.assertEqual(s["features"], ["crafting"])
         self.assertEqual(s["subtheme"], "nebula")
+        self.assertEqual(self.out["specV3"]["tightSubtheme"], "nebula")
         self.assertEqual(s["size"], 96)
         self.assertEqual(s["levels"], 3)
         self.assertEqual(s["counts"], {"levels": 3, "quests": 6, "npcs": 8,

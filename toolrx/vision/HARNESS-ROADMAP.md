@@ -315,7 +315,7 @@ Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
 `toolrx.library.status`. Catalog metadata is already in the PWA shell cache
-(now `toolrx-shell-v13`), so the panel works offline with no second fetch.
+(now `toolrx-shell-v14`), so the panel works offline with no second fetch.
 
 ## Next batch: longer input, longer output (steps 26–35)
 

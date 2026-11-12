@@ -3086,7 +3086,12 @@
   function subthemeFrom(text) {
     var m = /\bsub[\s-]?theme\s*(?::|=|of|is)?\s*([a-z][a-z0-9 -]{1,30})/i.exec(text)
       || /\bwith an?\s+([a-z][a-z0-9 -]{1,30})\s+sub[\s-]?theme\b/i.exec(text);
-    return m ? m[1].trim().replace(/\s+/g, " ") : "";
+    if (!m) return "";
+    var value = m[1].trim().replace(/\s+/g, " ");
+    // Stop before a count, size, or other spec clause that follows the name.
+    value = value.replace(/\s+\b(?:world|levels?|quests?|npcs?|enemies|items?|seed)\b[\s\S]*$/i, "")
+      .replace(/\s+\d[\s\S]*$/, "").trim();
+    return value;
   }
 
   function worldSize(text) {
