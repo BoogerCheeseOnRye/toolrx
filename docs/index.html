@@ -265,6 +265,10 @@
     border-radius:7px;background:#0d1220;color:var(--muted);cursor:pointer;display:grid;place-items:center;
     font-size:12px;transition:color .15s,border-color .15s}
   #pvToggle:hover{color:var(--accent);border-color:var(--accent)}
+  #buildStatus{position:absolute;left:10px;bottom:10px;z-index:11;max-width:calc(100% - 56px);
+    padding:5px 9px;border:1px solid var(--border);border-radius:7px;background:#0d1220;
+    color:var(--muted);font-size:11px;font-family:ui-monospace,monospace;display:none}
+  #buildStatus.on{display:block}
   #previewPane{position:relative}
   #previewPane.full{flex:1 0 100%}
 
@@ -677,7 +681,7 @@
     <div id="eq" aria-hidden="true"><div class="eq-track" id="eqTrack"></div></div>
     <div class="panes">
       <div class="pane on" id="chatPane"><div id="log" role="log" aria-live="polite" aria-relevant="additions text" aria-label="conversation"></div></div>
-      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><iframe id="pv" title="preview"></iframe></div>
+      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
     </div>
     <div class="composer">
       <form id="f">
@@ -914,6 +918,21 @@ async function loadConfig(){
     const hint=document.querySelector('.hint');
     if(hint) hint.textContent='runs in this tab · '+(commandCount?commandCount.toLocaleString()+' commands · ':'')+'no LLM by default, no network';
     if(window.toolrxWeb.onPreview) window.toolrxWeb.onPreview(renderPreview);
+    if(window.toolrxWeb.onProgress) window.toolrxWeb.onProgress(s=>{
+      const el=document.getElementById('buildStatus');
+      if(!el) return;
+      if(s.phase==='done' || s.phase==='spec'){ el.textContent=''; el.classList.remove('on'); return; }
+      if(s.phase==='cancelled' || s.phase==='error'){
+        el.textContent=s.phase+' · previous project kept';
+        el.classList.add('on');
+        setTimeout(()=>{el.textContent='';el.classList.remove('on');},4000);
+        return;
+      }
+      const pct=s.total?Math.round((s.done/s.total)*100):0;
+      el.textContent='building · '+s.done+'/'+s.total+' files · '+Math.round(s.bytes/1024)
+        +' KB · partial '+pct+'%';
+      el.classList.add('on');
+    });
     loadPreview();
     refreshProjectChip();
     registerOffline();

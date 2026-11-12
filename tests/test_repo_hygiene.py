@@ -191,7 +191,8 @@ class DashboardTest(unittest.TestCase):
         sandbox = open(os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
                        encoding="utf-8").read()
         for marker in ("function exportProject", "function importProject",
-                       "MAX_IMPORT_FILE", "safeImportName", "uniqueSlug(name)"):
+                       "MAX_PROJECT_FILE", "budgetCheck(out)", "safeImportName",
+                       "uniqueSlug(name)"):
             self.assertIn(marker, sandbox)
 
     def test_dialogs_are_keyboard_accessible(self):

@@ -15,8 +15,16 @@
   const PROJECTS_KEY = "toolrx.projects.v1";
   const CHAT_KEY = "toolrx.chat.v1";
   const MEMORY_KEY = "toolrx.memory.v1";
+  // Read/cat caps are for chat-sized output. Project write caps are separate
+  // and deliberately larger: step 32 targets 32 files and 512 KB per project.
   const MAX_FILE = 8000;
   const MAX_TOTAL = 24000;
+  const MAX_PROJECT_FILE = 131072;   // 128 KB per file
+  const MAX_PROJECT = 524288;        // 512 KB per project
+  const MAX_PROJECT_FILES = 32;
+  const BUILD_TIMEOUT = 4000;        // ms, configurable
+  const PROGRESS_MS = 250;
+  const PROGRESS_BYTES = 32768;
 
   const SEED = {
     "notes.txt":
@@ -60,6 +68,83 @@
     try {
       root.dispatchEvent(new CustomEvent("toolrx:preview", { detail: state }));
     } catch (e) { /* very old browsers */ }
+  }
+
+  /* ----------------------------------------------------------- progress -- */
+  /* Builds report phase boundaries and file checkpoints. A listener can show
+   * status while a large project is being written, and the final event carries
+   * characters, estimated tokens, elapsed time, and peak bytes. Events are
+   * best-effort: a bad listener never breaks a build. */
+  let progressListeners = [];
+  let lastProgress = null;
+  let buildSeq = 0;
+  let cancelPending = false;
+
+  function notifyProgress(evt) {
+    const state = Object.assign({ at: Date.now() }, evt);
+    state.partial = evt.partial !== false;
+    lastProgress = state;
+    progressListeners.forEach(function (fn) {
+      try { fn(state); } catch (e) { /* ignore */ }
+    });
+    try {
+      root.dispatchEvent(new CustomEvent("toolrx:progress", { detail: state }));
+    } catch (e) { /* very old browsers */ }
+    return state;
+  }
+
+  function bytesOf(text) {
+    const C = root.toolrxContext;
+    if (C && C.byteLength) return C.byteLength(text);
+    return String(text == null ? "" : text).length;
+  }
+
+  function projectBytes(p) {
+    const map = (p && p.files) || {};
+    return Object.keys(map).reduce(function (n, k) { return n + bytesOf(map[k]); }, 0);
+  }
+
+  function projectBudget() {
+    let n = MAX_PROJECT;
+    try {
+      const raw = root.localStorage && root.localStorage.getItem("toolrx.project.budget");
+      const parsed = parseInt(raw, 10);
+      if (!isNaN(parsed)) n = parsed;
+    } catch (e) { /* private mode */ }
+    return Math.max(16384, Math.min(2097152, n));
+  }
+
+  function buildTimeout() {
+    let n = BUILD_TIMEOUT;
+    try {
+      const raw = root.localStorage && root.localStorage.getItem("toolrx.build.timeout");
+      const parsed = parseInt(raw, 10);
+      if (!isNaN(parsed)) n = parsed;
+    } catch (e) { /* private mode */ }
+    return Math.max(250, Math.min(30000, n));
+  }
+
+  /* All-or-none size check used before a build or edit is written. */
+  function budgetCheck(map) {
+    const files = map || {};
+    const names = Object.keys(files);
+    const budget = projectBudget();
+    let total = 0, big = null;
+    names.forEach(function (name) {
+      const size = bytesOf(files[name]);
+      total += size;
+      if (!big && size > MAX_PROJECT_FILE) big = { name: name, bytes: size };
+    });
+    let why = "";
+    if (names.length > MAX_PROJECT_FILES) {
+      why = "too many files (" + names.length + ", max " + MAX_PROJECT_FILES + ")";
+    } else if (big) {
+      why = "file " + big.name + " is " + big.bytes + " bytes (max " + MAX_PROJECT_FILE + ")";
+    } else if (total > budget) {
+      why = "the project would be " + total + " bytes (budget " + budget + ")";
+    }
+    return { ok: !why, why: why, total: total, budget: budget,
+      files: names.length, peak: total };
   }
 
   /* ---------------------------------------------------------- projects ---- */
@@ -233,9 +318,8 @@
   }
 
   /* Project portability: a single project is a JSON document with its real
-   * files. Import never overwrites — it gets a unique slug. */
-  const MAX_IMPORT_FILE = 200000;
-  const MAX_IMPORT_TOTAL = 2000000;
+   * files. Import never overwrites — it gets a unique slug, and it has to fit
+   * the same file and project budget as a build. */
 
   function exportProject(ref) {
     const p = findProject(ref);
@@ -274,14 +358,15 @@
       const base = name;
       while (out[name]) name = n++ + "-" + base;
       const body = String(src.files[orig] === undefined || src.files[orig] === null ? "" : src.files[orig]);
-      if (body.length > MAX_IMPORT_FILE) {
-        throw new Error(base + " is larger than " + MAX_IMPORT_FILE + " characters");
+      if (bytesOf(body) > MAX_PROJECT_FILE) {
+        throw new Error(base + " is larger than " + MAX_PROJECT_FILE + " bytes");
       }
-      total += body.length;
+      total += bytesOf(body);
       out[name] = body;
     });
     if (!Object.keys(out).length) throw new Error("the project has no files");
-    if (total > MAX_IMPORT_TOTAL) throw new Error("that project is too large to import");
+    const budget = budgetCheck(out);
+    if (!budget.ok) throw new Error("that project is too large to import (" + budget.why + ")");
     const name = String(src.name || "Imported project").trim().slice(0, 60) || "Imported project";
     const p = {
       slug: uniqueSlug(name), name: name,
@@ -508,17 +593,77 @@
     const n = String(name || "").replace(/^\/+/, "");
     if (!(n in (p.files || {}))) throw new Error("no such file in project: " + n);
     const text = String(content === undefined || content === null ? "" : content);
-    if (text.length > MAX_FILE) {
-      throw new Error("file exceeds " + MAX_FILE + " characters — keep project files small");
+    if (bytesOf(text) > MAX_PROJECT_FILE) {
+      throw new Error("file exceeds " + MAX_PROJECT_FILE + " bytes — previous project kept");
+    }
+    const next = copyFiles(p.files);
+    next[n] = text;
+    const budget = budgetCheck(next);
+    if (!budget.ok) {
+      throw new Error("not written · " + budget.why + " — previous project kept");
     }
     p.files[n] = text;
     p.updated = Date.now();
     refreshProject(p);
-    return "wrote projects/" + p.slug + "/" + n + " (" + text.length + " chars)\n"
+    return "wrote projects/" + p.slug + "/" + n + " (" + bytesOf(text) + " bytes)\n"
       + "preview re-bundled from the project files";
   }
 
   function installBuilt(built, desc) {
+    const started = Date.now();
+    const token = ++buildSeq;
+    const names = Object.keys(built.files || {});
+    const total = projectBytes(built);
+    const budget = budgetCheck(built.files || {});
+    const timeout = buildTimeout();
+    const stats = { chars: total, tokens: Math.ceil(total / 4) };
+
+    notifyProgress({
+      phase: "spec", token: token, project: "", done: 0, total: names.length,
+      files: [], bytes: total, budget: budget.budget, chars: total,
+      tokens: stats.tokens, ms: 0, peak: total, partial: true,
+    });
+
+    if (cancelPending) {
+      cancelPending = false;
+      notifyProgress({ phase: "cancelled", token: token, project: "", done: 0,
+        total: names.length, files: [], bytes: total, budget: budget.budget,
+        chars: total, tokens: stats.tokens, ms: Date.now() - started,
+        peak: total, partial: true });
+      throw new Error("build cancelled — previous project kept");
+    }
+    if (!budget.ok) {
+      notifyProgress({ phase: "error", token: token, project: "", done: 0,
+        total: names.length, files: [], bytes: total, budget: budget.budget,
+        chars: total, tokens: stats.tokens, ms: Date.now() - started,
+        peak: total, partial: true });
+      throw new Error("not built · " + budget.why + " — previous project kept");
+    }
+
+    // File checkpoints: one per file or every ~32 KB, whichever comes first.
+    let acc = 0, lastAt = started, lastBytes = 0;
+    for (let i = 0; i < names.length; i++) {
+      if (Date.now() - started > timeout) {
+        notifyProgress({ phase: "error", token: token, project: "", done: i,
+          total: names.length, files: names.slice(0, i), bytes: acc,
+          budget: budget.budget, chars: acc, tokens: Math.ceil(acc / 4),
+          ms: Date.now() - started, peak: acc, partial: true });
+        throw new Error("build timed out after " + timeout + " ms — previous project kept");
+      }
+      acc += bytesOf(built.files[names[i]]);
+      const due = i === names.length - 1
+        || acc - lastBytes >= PROGRESS_BYTES
+        || Date.now() - lastAt >= PROGRESS_MS;
+      if (due) {
+        notifyProgress({ phase: "files", token: token, project: "", done: i + 1,
+          total: names.length, files: names.slice(0, i + 1), bytes: acc,
+          budget: budget.budget, chars: acc, tokens: Math.ceil(acc / 4),
+          ms: Date.now() - started, peak: acc, partial: true });
+        lastAt = Date.now();
+        lastBytes = acc;
+      }
+    }
+
     // Reuse a project with the same kind, description, and generated title.
     // Default RPG builds advance the seed, so a new title is a new project.
     let p = null;
@@ -543,6 +688,20 @@
     p.updated = Date.now();
     if (!p.created) p.created = p.updated;
     projects.active = p.slug;
+    notifyProgress({ phase: "bundle", token: token, project: p.slug,
+      done: names.length, total: names.length, files: names, bytes: total,
+      bundleBytes: bytesOf(p.bundled), budget: budget.budget,
+      chars: total, tokens: stats.tokens, ms: Date.now() - started,
+      peak: Math.max(total, bytesOf(p.bundled)), partial: true });
+    if (cancelPending) {
+      cancelPending = false;
+      notifyProgress({ phase: "cancelled", token: token, project: p.slug,
+        done: names.length, total: names.length, files: names, bytes: total,
+        bundleBytes: bytesOf(p.bundled), budget: budget.budget,
+        chars: total, tokens: stats.tokens, ms: Date.now() - started,
+        peak: Math.max(total, bytesOf(p.bundled)), partial: true });
+      throw new Error("build cancelled — previous project kept");
+    }
     writeProjects();
     writeProjectFiles(p);
     preview = {
@@ -554,11 +713,19 @@
       title: built.title, kind: built.kind, desc: String(desc || ""),
       slug: p.slug, theme: preview.theme, at: Date.now(),
     });
-    const names = filesForProject(p);
+    const ms = Date.now() - started;
+    const peak = Math.max(total, bytesOf(p.bundled));
+    notifyProgress({ phase: "done", token: token, project: p.slug,
+      done: names.length, total: names.length, files: names, bytes: total,
+      bundleBytes: bytesOf(p.bundled), budget: budget.budget,
+      chars: total, tokens: stats.tokens, ms: ms, peak: peak, partial: false });
+    const fileNames = filesForProject(p);
     return (built.specLine ? built.specLine + "\n" : "")
-      + 'built "' + built.title + '" → projects/' + p.slug + " (" + names.length + " files)\n"
-      + "  " + names.join(" · ") + "\n"
+      + 'built "' + built.title + '" → projects/' + p.slug + " (" + fileNames.length + " files)\n"
+      + "  " + fileNames.join(" · ") + "\n"
       + "preview updated · active project: " + p.slug + "\n"
+      + "build · " + total + " chars · ~" + stats.tokens + " tokens · "
+      + ms + " ms · peak " + peak + " bytes · budget " + budget.budget + "\n"
       + "try: show project files · read projects/" + p.slug + "/ARCHITECTURE.md";
   }
 
@@ -648,6 +815,13 @@
         error: true,
       };
     }
+    const budget = budgetCheck(res.files);
+    if (!budget.ok) {
+      return {
+        text: "not edited · " + budget.why + " — previous project kept",
+        error: true,
+      };
+    }
     pushProjectHistory(p, res.label);
     p.files = res.files;
     p.spec = res.spec;
@@ -697,6 +871,13 @@
     const spec = applied.spec;
     const edits = applied.edits;
     const labels = applied.labels;
+    const budget = budgetCheck(files);
+    if (!budget.ok) {
+      return {
+        text: "not edited · " + budget.why + " — previous project kept",
+        error: true,
+      };
+    }
     pushProjectHistory(p, "bundle: " + labels.join(" + "));
     p.files = files;
     p.spec = spec;
@@ -738,6 +919,13 @@
       return {
         text: "not grown · " + res.message
           + "\ntry: grow project, expand module core, or add crafting system",
+        error: true,
+      };
+    }
+    const budget = budgetCheck(res.files);
+    if (!budget.ok) {
+      return {
+        text: "not grown · " + budget.why + " — previous project kept",
         error: true,
       };
     }
@@ -1214,6 +1402,11 @@
       const res = applyIdsToProject(p, ids, record.arg || "");
       if (!res.ok) {
         failed.push(key + ": " + res.message);
+        return;
+      }
+      const budget = budgetCheck(res.files);
+      if (!budget.ok) {
+        failed.push(key + ": " + budget.why);
         return;
       }
       pushProjectHistory(p, "same changes: " + res.labels.join(" + "));
@@ -1886,6 +2079,8 @@
       writeProjects();
       chatLog = [];
       writeChat();
+      cancelPending = false;
+      lastProgress = null;
       try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
       memory = {};
       const C = contextModule();
@@ -1900,6 +2095,38 @@
       return function () {
         previewListeners = previewListeners.filter(function (x) { return x !== fn; });
       };
+    },
+    onProgress: function (fn) {
+      if (typeof fn === "function") progressListeners.push(fn);
+      return function () {
+        progressListeners = progressListeners.filter(function (x) { return x !== fn; });
+      };
+    },
+    progress: function () {
+      return lastProgress ? Object.assign({}, lastProgress) : null;
+    },
+    cancelBuild: function () {
+      cancelPending = true;
+      return "build cancel requested — the previous project is kept";
+    },
+    limits: function () {
+      return {
+        file: MAX_PROJECT_FILE, project: projectBudget(),
+        files: MAX_PROJECT_FILES, timeout: buildTimeout(),
+        readFile: MAX_FILE, readTotal: MAX_TOTAL,
+      };
+    },
+    projectBytes: function (slug) {
+      const p = slug === undefined ? activeProject() : findProject(slug);
+      if (!p) return 0;
+      return projectBytes(p);
+    },
+    budget: function (slug) {
+      const p = slug === undefined ? activeProject() : findProject(slug);
+      const total = p ? projectBytes(p) : 0;
+      const budget = projectBudget();
+      return { bytes: total, budget: budget, remaining: Math.max(0, budget - total),
+        pct: budget ? Math.round((total / budget) * 100) : 0 };
     },
   };
 

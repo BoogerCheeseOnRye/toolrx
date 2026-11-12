@@ -156,8 +156,13 @@ runs only pending steps, `expand the last plan with …` appends steps without
 running them, and `apply the same changes to the other files` replays the last
 edit on every other project atomically. Context stays in `localStorage`, is
 serialized with sorted keys, and never enters a network payload; its 35
-routes bring the catalog to 12,460. The rest of
-the batch targets output budgets and the long-form test suite.
+routes bring the catalog to 12,460. Step 32 raises project files to 128 KB and
+projects to 512 KB across at most 32 files, and makes long builds observable:
+phase and per-file progress events carry a partial file list, and the final
+event reports characters, estimated tokens, milliseconds, and peak bytes. A
+build that would exceed the budget is refused before writing, and cancelling or
+timing out leaves the previous project byte-for-byte intact. The rest of the
+batch targets argument capture, vocabulary scaling, and the long-form suite.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and

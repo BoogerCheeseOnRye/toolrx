@@ -335,8 +335,8 @@ never means unbounded.
 | --- | --- | --- |
 | Single-route input | 2,000 chars | 2,000 chars |
 | Plan input | 8,000 chars / 40 steps | 8,000 chars / 40 steps |
-| Project files | template-sized | 32 files |
-| Project text | template-sized | 512 KB total |
+| Project files | 32 files | 32 files |
+| Project text | 512 KB total | 512 KB total |
 | Undo snapshots | 16, configurable | 16 |
 | Command patterns | 12,460 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
@@ -517,7 +517,7 @@ with a separate undo entry for each. Context is scoped per project, survives a
 reload, is cleared by `clear context`, and is asserted absent from fetch
 payloads.
 
-### 32. Chunked output, progress, and budgets
+### 32. Chunked output, progress, and budgets — done
 
 Emit progress events at phase boundaries and at least every ~250 ms or 32 KB of
 generation, with a partial file list. Raise per-tool caps deliberately and add a
@@ -528,6 +528,21 @@ peak size, and mark partial results as partial.
 **Done when** a maximum-size build emits at least three progress events, respects
 the byte cap, is byte-identical to the non-progress build, and cancellation leaves
 the previous project valid.
+
+Landed with `onProgress`, `progress`, `cancelBuild`, `limits`, `budget`, and
+`projectBytes` on the sandbox API. Builds emit a `spec` event, per-file `files`
+checkpoints (at least every file or ~32 KB), a `bundle` event, and a final
+`done` event with `chars`, `tokens`, `ms`, `peak`, and `partial:false`; each
+intermediate event carries the partial file list. Write caps are now 128 KB per
+file, 512 KB per project, and 32 files (read/cat output stays at 8 KB/24 KB).
+`toolrx.project.budget` (16 KB–2 MB) and `toolrx.build.timeout` (250–30,000 ms)
+are configurable. A build is generated into memory first, so an over-budget,
+cancelled, or timed-out build is refused before any file is written and the
+previous project stays intact. The dashboard shows a small `building · n/m
+files · KB · partial %` status in the preview pane. Tests build a maximum RPG
+(9 files, ~169 KB) and assert six events, a partial list, byte-identical files
+with and without an observer, refusal under a 16 KB budget, cancellation, and a
+fake-clock timeout.
 
 ### 33. Argument extraction and long-form content
 

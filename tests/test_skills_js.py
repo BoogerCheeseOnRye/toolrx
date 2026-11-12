@@ -769,7 +769,11 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     catch (e) { return e.message; }
   })();
   out.edits.writeTooBig = (() => {
-    try { self.toolrxWeb.writeProjectFile(ep.slug, 'styles.css', 'x'.repeat(9000)); return 'no error'; }
+    try {
+      self.toolrxWeb.writeProjectFile(
+        ep.slug, 'styles.css', 'x'.repeat(self.toolrxWeb.limits().file + 1));
+      return 'no error';
+    }
     catch (e) { return e.message; }
   })();
   out.edits.dark = await editRun('make it dark');
@@ -1200,6 +1204,107 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.context.network = {
     calls: netCalls.length,
     leaked: netCalls.some(c => /context|query:|sha [0-9a-f]{16}/i.test(c.url + ' ' + c.body)),
+  };
+
+  // Step 32: progress events, a per-project byte budget, a raised file cap,
+  // deterministic output with and without an observer, refusal, and cancel.
+  out.budgets = {};
+  out.budgets.limits = self.toolrxWeb.limits();
+  const maxPrompt = 'build a huge rpg game with 40 levels, 400 enemies, '
+    + '80 quests, 60 npcs, 80 items and a 128x128 world seed 42';
+  const projectMap = () => {
+    const cur = self.toolrxWeb.project();
+    const map = {};
+    cur.files.forEach(f => { map[f] = self.toolrxWeb.projectFile(cur.slug, f); });
+    return map;
+  };
+  const buildWithProgress = async (observe) => {
+    self.toolrxWeb.reset();
+    const events = [];
+    const off = observe
+      ? self.toolrxWeb.onProgress(s => events.push({
+          phase: s.phase, done: s.done, total: s.total, bytes: s.bytes,
+          partial: s.partial, files: s.files.length, chars: s.chars,
+          tokens: s.tokens, ms: s.ms, peak: s.peak,
+        }))
+      : null;
+    const run = await pRun(maxPrompt);
+    if (off) off();
+    return {
+      run: run[0], events: events,
+      files: projectMap(),
+      bytes: self.toolrxWeb.projectBytes(),
+      budget: self.toolrxWeb.budget(),
+      last: self.toolrxWeb.progress(),
+    };
+  };
+  const maxObserved = await buildWithProgress(true);
+  const maxSilent = await buildWithProgress(false);
+  const maxProj = self.toolrxWeb.project();
+  out.budgets.max = {
+    via: maxObserved.run.via, error: maxObserved.run.error,
+    text: maxObserved.run.text, events: maxObserved.events,
+    bytes: maxObserved.bytes, budget: maxObserved.budget,
+    files: maxProj.files.slice().sort(),
+    sizes: Object.keys(maxObserved.files).sort().map(n => [n, maxObserved.files[n].length]),
+  };
+  out.budgets.deterministic = {
+    observed: Object.keys(maxObserved.files).sort().map(n => [n, maxObserved.files[n]]),
+    silent: Object.keys(maxSilent.files).sort().map(n => [n, maxSilent.files[n]]),
+    observedEvents: maxObserved.events.length,
+    silentEvents: maxSilent.events.length,
+    silentLast: maxSilent.last ? maxSilent.last.phase : '',
+  };
+
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const keepBudget = snap();
+  try { localStorage.setItem('toolrx.project.budget', '16384'); } catch (e) { /* ignore */ }
+  const refused = await pRun(maxPrompt);
+  const afterRefuse = snap();
+  try { localStorage.removeItem('toolrx.project.budget'); } catch (e) { /* ignore */ }
+  out.budgets.refuse = {
+    via: refused[0].via, error: refused[0].error, text: refused[0].text,
+    budget: self.toolrxWeb.budget(),
+    kept: sameMap(keepBudget.files, afterRefuse.files),
+    slug: afterRefuse.slug,
+    last: self.toolrxWeb.progress() ? self.toolrxWeb.progress().phase : '',
+  };
+
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const keepCancel = snap();
+  self.toolrxWeb.cancelBuild();
+  const cancelled = await pRun('build a maze game');
+  const afterCancel = snap();
+  out.budgets.cancel = {
+    via: cancelled[0].via, error: cancelled[0].error, text: cancelled[0].text,
+    kept: sameMap(keepCancel.files, afterCancel.files),
+    slug: afterCancel.slug,
+    last: self.toolrxWeb.progress() ? self.toolrxWeb.progress().phase : '',
+  };
+
+  // A fake clock pushes Date.now past the configured timeout after the build
+  // starts, so the timeout path runs without sleeping a real 250 ms.
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const keepTimeout = snap();
+  try { localStorage.setItem('toolrx.build.timeout', '250'); } catch (e) { /* ignore */ }
+  const realNow = Date.now;
+  let ticks = 0;
+  Date.now = () => realNow() + (ticks++ * 200);
+  let timedOut;
+  try { timedOut = await pRun('build a maze game'); }
+  finally {
+    Date.now = realNow;
+    try { localStorage.removeItem('toolrx.build.timeout'); } catch (e) { /* ignore */ }
+  }
+  const afterTimeout = snap();
+  out.budgets.timeout = {
+    via: timedOut[0].via, error: timedOut[0].error, text: timedOut[0].text,
+    kept: sameMap(keepTimeout.files, afterTimeout.files),
+    slug: afterTimeout.slug,
+    last: self.toolrxWeb.progress() ? self.toolrxWeb.progress().phase : '',
   };
 
   self.toolrxWeb.reset();
@@ -2423,6 +2528,73 @@ class SkillsBridgeTest(unittest.TestCase):
     def test_context_never_enters_a_network_payload(self):
         n = self.out["context"]["network"]
         self.assertFalse(n["leaked"], n)
+
+    def test_build_progress_reports_partial_file_lists(self):
+        b = self.out["budgets"]["max"]
+        self.assertEqual(b["via"], "build")
+        self.assertFalse(b["error"])
+        self.assertGreaterEqual(b["bytes"], 100000, "the max build must be large")
+        self.assertLessEqual(b["bytes"], b["budget"]["budget"])
+        events = b["events"]
+        self.assertGreaterEqual(len(events), 3, events)
+        phases = [e["phase"] for e in events]
+        self.assertEqual(phases[0], "spec")
+        self.assertIn("files", phases)
+        self.assertIn("bundle", phases)
+        self.assertEqual(phases[-1], "done")
+        self.assertTrue(any(e["partial"] and e["done"] < e["total"] for e in events),
+                        "at least one event must show a partial file list")
+        self.assertFalse(events[-1]["partial"])
+        self.assertEqual(events[-1]["chars"], b["bytes"])
+        self.assertEqual(events[-1]["tokens"], (b["bytes"] + 3) // 4)
+        self.assertIsInstance(events[-1]["ms"], int)
+        self.assertGreaterEqual(events[-1]["peak"], b["bytes"])
+        self.assertIn("build · ", b["text"])
+        self.assertIn("tokens", b["text"])
+        self.assertIn("peak", b["text"])
+        self.assertLessEqual(len(b["files"]), 32)
+
+    def test_project_file_and_budget_caps_are_enforced(self):
+        l = self.out["budgets"]["limits"]
+        self.assertEqual(l["file"], 131072)
+        self.assertEqual(l["project"], 524288)
+        self.assertEqual(l["files"], 32)
+        self.assertEqual(l["timeout"], 4000)
+        b = self.out["budgets"]["max"]
+        self.assertLessEqual(max(size for _, size in b["sizes"]), l["file"])
+        self.assertLessEqual(len(b["sizes"]), l["files"])
+        self.assertLessEqual(b["bytes"], l["project"])
+
+    def test_progress_events_do_not_change_project_bytes(self):
+        d = self.out["budgets"]["deterministic"]
+        self.assertEqual(d["observed"], d["silent"])
+        self.assertGreaterEqual(d["observedEvents"], 3)
+        self.assertEqual(d["silentEvents"], 0)
+        self.assertEqual(d["silentLast"], "done")
+
+    def test_over_budget_build_is_refused_and_keeps_the_previous_project(self):
+        r = self.out["budgets"]["refuse"]
+        self.assertTrue(r["error"], r["text"])
+        self.assertIn("budget", r["text"])
+        self.assertTrue(r["kept"], "a refused build must not touch the previous project")
+        self.assertEqual(r["slug"], "platformer")
+        self.assertEqual(r["last"], "error")
+
+    def test_cancelled_build_keeps_the_previous_project(self):
+        c = self.out["budgets"]["cancel"]
+        self.assertTrue(c["error"], c["text"])
+        self.assertIn("cancelled", c["text"])
+        self.assertTrue(c["kept"], "a cancelled build must leave the old files intact")
+        self.assertEqual(c["slug"], "platformer")
+        self.assertEqual(c["last"], "cancelled")
+
+    def test_timed_out_build_keeps_the_previous_project(self):
+        t = self.out["budgets"]["timeout"]
+        self.assertTrue(t["error"], t["text"])
+        self.assertIn("timed out", t["text"])
+        self.assertTrue(t["kept"], "a timed-out build must leave the old files intact")
+        self.assertEqual(t["slug"], "platformer")
+        self.assertEqual(t["last"], "error")
 
     def test_reload_resumes_the_active_project_preview(self):
         r = self.out["resume"]
