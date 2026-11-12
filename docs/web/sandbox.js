@@ -189,7 +189,7 @@
       try {
         const built = t.project("rpg", label, { theme: preview.theme });
         p.files = built.files;
-        p.bundled = built.html;
+        p.bundled = bundleProject(p);
         p.desc = label;
         themed = true;
       } catch (e) { /* keep the old files if re-theming fails */ }

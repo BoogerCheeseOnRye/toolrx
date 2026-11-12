@@ -553,6 +553,7 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     slug: p.slug, name: p.name, h1: h1(p.html), desc: p.desc,
     css: self.toolrxWeb.projectFile(p.slug, 'styles.css'),
     js: self.toolrxWeb.projectFile(p.slug, 'app.js'),
+    bundled: p.html,
   };
   out.sandbox.pronoun = (await self.toolrxWeb.prompt('rename it to camelot'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
@@ -662,6 +663,7 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.sandbox.afterOlympusRename = {
     slug: ep.slug, name: ep.name, title: h1(ep.html),
     js: self.toolrxWeb.projectFile(ep.slug, 'app.js'),
+    bundled: ep.html,
   };
   out.wiki = await run('wikipedia ada lovelace');
   out.define = await run('define serendipity');
@@ -1340,6 +1342,8 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(s["afterOlympusRename"]["title"], "Nile RPG")
         self.assertIn("the Pharaoh", s["afterOlympusRename"]["js"])
         self.assertNotIn("the Titan", s["afterOlympusRename"]["js"])
+        self.assertIn("the Pharaoh", s["afterOlympusRename"]["bundled"])
+        self.assertNotIn("the Titan", s["afterOlympusRename"]["bundled"])
 
     def test_generated_variant_scripts_are_valid_javascript(self):
         for name, status in self.out["syntax"].items():
@@ -1356,6 +1360,8 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(s["afterStale"]["name"], "India")
         self.assertEqual(s["afterStale"]["h1"], "Bharata RPG")
         self.assertIn("Asura King", s["afterStale"]["js"])
+        self.assertIn("Asura King", s["afterStale"]["bundled"])
+        self.assertNotIn("Black Knight", s["afterStale"]["bundled"])
         # "it" resolves to the active project and re-themes again
         self.assertEqual(s["pronoun"][0]["via"], "project.rename")
         self.assertEqual(s["afterPronoun"]["slug"], s["first"]["slug"])
