@@ -1174,7 +1174,8 @@
     var title = (theme && theme.title) || "Verdant RPG";
     var seed = spec.seed >>> 0;
     var big = /large|huge|epic|96|128/i.test(String(spec.scale || "") + " " + String(desc || ""));
-    var size = big ? 96 : 64;
+    var size = spec.size ? Math.max(48, Math.min(128, spec.size)) : (big ? 96 : 64);
+    var counts = spec.counts || {};
     var body = [
       '<div class="card" style="padding:12px">',
       '<div class="row" style="justify-content:space-between;gap:6px;font-size:12px;margin-bottom:8px;flex-wrap:wrap">',
@@ -1191,7 +1192,7 @@
       "var SEED=" + seed + ",SIZE=" + size + ";",
       "var cv=document.getElementById('cv');",
       "var E=toolrxEngine2d.create({canvas:cv,width:960,height:540,background:'#0b1020'});",
-      "var W=toolrxWorldgen.generate({seed:SEED,size:SIZE,theme:THEME});",
+      "var W=toolrxWorldgen.generate({seed:SEED,size:SIZE,theme:THEME,counts:" + JSON.stringify(counts) + "});",
       "var G=toolrxRpg2.create({engine:E,canvas:cv,world:W,theme:THEME,width:960,height:540});",
       "G.start();",
       "window.toolrxGame=G;"
@@ -3016,6 +3017,84 @@
     return "medium";
   }
 
+  /* Build spec v3 features. Keep the vocabulary aligned with the command
+   * library's compositional families, but parse the tail as free text too so
+   * "with crafting, quests and boss fights" works without an exact phrase. */
+  var FEATURE_NAMES = [
+    "crafting", "survival", "stealth", "puzzles", "boss fights", "quests",
+    "inventory", "day night cycle", "weather", "leaderboard", "save slots",
+    "achievements", "procedural maps", "dialogue trees", "shops", "companions",
+    "base building", "skill trees", "permadeath", "physics", "particles",
+    "sound", "mobile controls", "difficulty levels", "multiplayer", "trading",
+    "fishing", "farming", "mining", "hacking", "vehicles", "pets"
+  ];
+
+  function featureList(text) {
+    var found = [];
+    var lower = String(text || "").toLowerCase();
+    FEATURE_NAMES.forEach(function (name) {
+      var spaced = name.replace(/ /g, "[\\s-]+");
+      var rx = new RegExp("\\b" + spaced + "\\b", "i");
+      // "6 quests" is a count, not a feature; "with quests" still is one.
+      var counted = new RegExp("\\b\\d{1,3}\\s+" + spaced + "\\b", "i");
+      if (rx.test(lower) && !counted.test(lower) && found.indexOf(name) < 0) {
+        found.push(name);
+      }
+    });
+    // A free-form tail after "with" also becomes a feature if it is short.
+    var m = /\b(?:with|featuring|that has)\s+([a-z0-9][a-z0-9 ,+&-]{2,80})/.exec(lower);
+    if (m) {
+      m[1].split(/\s*(?:,|\band\b|\+)\s*/).forEach(function (part) {
+        var item = part.trim().replace(/\s+/g, " ");
+        if (!item || item.length > 40 || /^\d/.test(item)) return;
+        if (/\b(?:seed|levels?|quests?|enemies|npcs?|items?|bosses?|rooms?|waves?|towns?|world)\b/.test(item)) return;
+        if (/sub[\s-]?theme/.test(item)) return;
+        if (found.indexOf(item) < 0 && FEATURE_NAMES.indexOf(item) < 0) {
+          found.push(item);
+        }
+      });
+    }
+    return found;
+  }
+
+  function countValue(text, nouns) {
+    var rx = new RegExp("\\b(\\d{1,3})\\s+(?:" + nouns + ")\\b", "i");
+    var m = rx.exec(String(text || ""));
+    return m ? Math.max(0, parseInt(m[1], 10)) : null;
+  }
+
+  function countsFrom(text) {
+    var out = {};
+    var map = {
+      levels: "levels?|floors?|stages?",
+      quests: "quests?",
+      npcs: "npcs?|characters?",
+      enemies: "enemies|enemy types?|mobs?",
+      bosses: "bosses?",
+      items: "items?",
+      rooms: "rooms?",
+      waves: "waves?",
+      towns: "towns?|villages?",
+    };
+    Object.keys(map).forEach(function (key) {
+      var value = countValue(text, map[key]);
+      if (value != null) out[key] = value;
+    });
+    return out;
+  }
+
+  function subthemeFrom(text) {
+    var m = /\bsub[\s-]?theme\s*(?::|=|of|is)?\s*([a-z][a-z0-9 -]{1,30})/i.exec(text)
+      || /\bwith an?\s+([a-z][a-z0-9 -]{1,30})\s+sub[\s-]?theme\b/i.exec(text);
+    return m ? m[1].trim().replace(/\s+/g, " ") : "";
+  }
+
+  function worldSize(text) {
+    var m = /(\d{2,3})\s*[x×]\s*(\d{2,3})/.exec(text);
+    if (!m) return null;
+    return Math.max(48, Math.min(128, Math.max(parseInt(m[1], 10), parseInt(m[2], 10))));
+  }
+
   var WANTED = [
     [/tower[\s-]*defen[cs]e/i, "tower defense", "towerdefense"],
     [/rogue[\s-]*like|dungeon crawl/i, "roguelike", "roguelike"],
@@ -3078,6 +3157,11 @@
       view: view,
       art: artName(text, game),
       theme: themeName(raw, genre),
+      subtheme: subthemeFrom(text),
+      features: featureList(text),
+      counts: countsFrom(text),
+      levels: countValue(text, "levels?|floors?|stages?"),
+      size: worldSize(text),
       scale: scaleName(text),
       seed: seed,
       requested: wanted ? wanted.label : null,
@@ -3085,6 +3169,7 @@
       engine: !!ENGINE_GENRES[genre],
       game: game
     };
+    if (!spec.levels && /\bmulti[\s-]?level\b/i.test(text)) spec.levels = 5;
     if (opts && opts.seed != null) spec.seed = opts.seed >>> 0;
     if (!spec.theme && genre === "rpg") {
       spec.theme = rpgDefault(spec.seed).title.replace(/ RPG$/, "");
@@ -3112,7 +3197,21 @@
   function specLine(spec) {
     var bits = [spec.dim + " " + spec.view, spec.label, spec.art];
     if (spec.theme) bits.push(spec.theme);
-    bits.push(spec.scale, "seed " + spec.seed);
+    if (spec.subtheme) bits.push("sub-theme " + spec.subtheme);
+    if (spec.features && spec.features.length) {
+      bits.push("features " + spec.features.join(" + "));
+    }
+    var counts = spec.counts || {};
+    Object.keys(counts).sort().forEach(function (key) {
+      if (key === "levels") return;  // emitted once below
+      bits.push(counts[key] + " " + key);
+    });
+    if (spec.levels) bits.push(spec.levels + " levels");
+    if (spec.size) bits.push(spec.size + "×" + spec.size);
+    if (!(spec.size && spec.scale === spec.size + "×" + spec.size)) {
+      bits.push(spec.scale);
+    }
+    bits.push("seed " + spec.seed);
     if (spec.edits && spec.edits.length) {
       bits.push(spec.edits.map(function (e) { return "+" + e; }).join(" "));
     }
@@ -3298,6 +3397,128 @@
   /* Turn the bundled single-file page into a tiny real project: markup, styles,
    * script, and two documents that explain the architecture. The preview keeps
    * using the bundled page, so nothing depends on file:// fetch(). */
+  function wantsContent(spec) {
+    var counts = spec.counts || {};
+    return (spec.features && spec.features.length > 0)
+      || Object.keys(counts).length > 0
+      || !!spec.levels || !!spec.size || !!spec.subtheme;
+  }
+
+  function pickSeeded(list, seed, salt) {
+    if (!list || !list.length) return "";
+    return list[toolrxHash(String(seed) + "|" + salt) % list.length];
+  }
+
+  function contentFor(spec, seed) {
+    var counts = spec.counts || {};
+    var features = (spec.features || []).slice();
+    var levels = [];
+    var levelCount = Math.min(40, spec.levels || counts.levels || 0);
+    var levelNames = ["Hollow", "The Long Road", "Old Stones", "The Crossing",
+      "Understory", "Ember Reach", "The Pale Gate", "Deepwater", "Ash Fields",
+      "The Last Light"];
+    for (var l = 0; l < levelCount; l++) {
+      levels.push({
+        n: l + 1,
+        name: levelNames[l % levelNames.length],
+        seed: (seed + Math.imul(l + 1, 0x9E3779B1)) >>> 0
+      });
+    }
+
+    var npcs = [];
+    var npcNames = ["Mira", "Bram", "Sable", "Oren", "Pella", "Rook", "Wren",
+      "Ivo", "Tala", "Finn", "Isla", "Koa"];
+    var roles = ["elder", "merchant", "healer", "smith", "guard", "scholar",
+      "farmer", "bard"];
+    var npcCount = Math.min(60, counts.npcs || 0);
+    for (var n = 0; n < npcCount; n++) {
+      npcs.push({
+        id: "n" + n,
+        name: pickSeeded(npcNames, seed, "npc" + n),
+        role: roles[n % roles.length],
+      });
+    }
+
+    var enemies = [];
+    var enemyTypes = ["slime", "thornling", "bog bat", "cinder hound",
+      "glass wraith", "tide crawler", "clockwork beetle", "star mote"];
+    var enemyCount = Math.min(400, counts.enemies || 0);
+    for (var e = 0; e < enemyCount; e++) {
+      enemies.push({
+        id: "e" + e,
+        type: pickSeeded(enemyTypes, seed, "enemy" + e),
+        level: 1 + (e % Math.max(1, levelCount || 5)),
+      });
+    }
+
+    var quests = [];
+    var questVerbs = ["Recover", "Escort", "Clear", "Find", "Deliver", "Defend",
+      "Repair", "Explore"];
+    var questNouns = ["the relic", "the missing scout", "the old road",
+      "the sealed well", "the night market", "the drowned shrine",
+      "the broken bridge", "the star map"];
+    var questCount = Math.min(80, counts.quests || 0);
+    for (var q = 0; q < questCount; q++) {
+      quests.push({
+        id: "q" + (q + 1),
+        kind: ["collect", "kill", "deliver", "explore", "boss"][q % 5],
+        title: pickSeeded(questVerbs, seed, "qv" + q) + " "
+          + pickSeeded(questNouns, seed, "qn" + q),
+        giver: npcs.length ? npcs[q % npcs.length].id : null,
+        need: 1 + (q % 9),
+        reward: { gold: 20 + (q % 7) * 10, xp: 10 + (q % 5) * 5 }
+      });
+    }
+
+    var items = [];
+    var itemNames = ["moon herb", "river stone", "old key", "signal lens",
+      "salt iron", "storm glass", "wax seal", "copper ring"];
+    var itemCount = Math.min(80, counts.items || 0);
+    for (var i = 0; i < itemCount; i++) {
+      items.push({
+        id: "i" + i,
+        name: pickSeeded(itemNames, seed, "item" + i),
+        level: 1 + (i % Math.max(1, levelCount || 5))
+      });
+    }
+
+    return {
+      version: 3,
+      seed: seed,
+      title: spec.theme || spec.label,
+      subtheme: spec.subtheme || "",
+      scale: spec.scale,
+      size: spec.size || null,
+      features: features,
+      counts: counts,
+      levels: levels,
+      quests: quests,
+      npcs: npcs,
+      enemies: enemies,
+      items: items,
+      systems: features.slice()
+    };
+  }
+
+  function contentSummary(content) {
+    var bits = [];
+    if (content.features.length) bits.push(content.features.join(" · "));
+    Object.keys(content.counts).sort().forEach(function (k) {
+      bits.push(content.counts[k] + " " + k);
+    });
+    if (content.size) bits.push(content.size + "×" + content.size + " world");
+    if (content.subtheme) bits.push("sub-theme " + content.subtheme);
+    return '<section class="card toolrx-content"><span class="badge">long spec</span>'
+      + '<h2>Content module</h2><p class="muted small">Seeded extras from the request: '
+      + esc(bits.join(" · ") || "the core loop") + '.</p><ul>'
+      + '<li>' + content.levels.length + ' levels</li>'
+      + '<li>' + content.quests.length + ' quests</li>'
+      + '<li>' + content.npcs.length + ' NPCs</li>'
+      + '<li>' + content.enemies.length + ' enemies</li>'
+      + '<li>' + content.items.length + ' items</li>'
+      + '</ul></section>';
+  }
+
   function project(kind, desc, opts) {
     opts = opts || {};
     var spec = opts.spec || buildSpec(opts.real || kind, desc);
@@ -3329,6 +3550,19 @@
       html = html.replace('<script src="app.js"></script>',
         sharedTags(shared) + '\n<script src="app.js"></script>');
     }
+    // Build spec v3: a long request with features, counts, levels, or a world
+    // size gets a real content module next to app.js. It is seeded data, not
+    // prose, so the same request still produces byte-identical files.
+    var content = null, contentJs = "";
+    if (wantsContent(spec)) {
+      content = contentFor(spec, spec.seed);
+      contentJs = "/* toolrx content v" + content.version + " · seed " + content.seed
+        + " · generated from the build spec, no model */\n"
+        + "window.toolrxContent = " + JSON.stringify(content, null, 2) + ";\n";
+      html = html.replace('<script src="app.js"></script>',
+        '<script src="content.js"></script>\n<script src="app.js"></script>');
+      html = html.replace("<footer>", contentSummary(content) + "\n<footer>");
+    }
     html = html.replace(/offline · self-contained/, "offline · separate files");
     var a = archFor(tpl) || archFor(real);
     var slug = opts.slug || (real === "playground" ? "app" : real);
@@ -3342,7 +3576,32 @@
     }
     var docFiles = a.files.slice();
     shared.forEach(function (f) { if (docFiles.indexOf(f) < 0) docFiles.push(f); });
+    if (content && docFiles.indexOf("content.js") < 0) docFiles.push("content.js");
     var specTxt = specLine(spec);
+    var contentReadme = "";
+    if (content) {
+      var contentBits = [];
+      if (content.features.length) contentBits.push("features: " + content.features.join(", "));
+      Object.keys(content.counts).sort().forEach(function (k) {
+        contentBits.push(content.counts[k] + " " + k);
+      });
+      if (content.size) contentBits.push(content.size + "×" + content.size + " world");
+      if (content.subtheme) contentBits.push("sub-theme: " + content.subtheme);
+      contentReadme = [
+        "## Content module",
+        "",
+        "`content.js` holds the seeded extras requested in the prompt. Edit it",
+        "freely; `app.js` reads it from `window.toolrxContent`.",
+        "",
+        "- " + contentBits.join("\n- "),
+        "- " + content.levels.length + " levels",
+        "- " + content.quests.length + " quests",
+        "- " + content.npcs.length + " NPCs",
+        "- " + content.enemies.length + " enemies",
+        "- " + content.items.length + " items",
+        "",
+      ].join("\n");
+    }
     var readme = [
       "# " + name,
       "",
@@ -3353,6 +3612,7 @@
       "",
       specTxt,
       "",
+      contentReadme,
       "## Files",
       "",
       "| file | role |",
@@ -3360,6 +3620,7 @@
       "| `index.html` | markup and the page shell |",
       "| `styles.css` | all presentation, including the responsive rules |",
       "| `app.js` | state, render, and event handlers |"
+        + (content ? "\n| `content.js` | seeded levels, quests, NPCs, enemies, and items |" : "")
         + shared.map(function (f) {
           return "\n| `" + f + "` | " + (SHARED_ROLE[f] || "shared runtime") + " |";
         }).join(""),
@@ -3438,6 +3699,7 @@
         outFiles[f] = sharedSource(f) || "/* " + f + " source unavailable */\n";
       });
     }
+    if (content) outFiles["content.js"] = contentJs;
     return {
       kind: real,
       slug: slug,

@@ -315,7 +315,7 @@ Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
 `toolrx.library.status`. Catalog metadata is already in the PWA shell cache
-(now `toolrx-shell-v12`), so the panel works offline with no second fetch.
+(now `toolrx-shell-v13`), so the panel works offline with no second fetch.
 
 ## Next batch: longer input, longer output (steps 26–35)
 
@@ -430,7 +430,7 @@ long-prompt fixture set that checks both the captured genre and modifier text.
 Existing routes are unchanged; the dashboard count still comes from
 `toolrxSkills.count()`.
 
-### 29. Build spec v3 and compositional generators
+### 29. Build spec v3 and compositional generators — done
 
 Extend `buildSpec` to accept multiple mechanics, nested counts, multi-level
 structure, long modifier tails, explicit feature lists, and theme plus sub-theme.
@@ -443,6 +443,20 @@ budgets.
 **Done when** three reference long specs produce the expected file counts,
 feature markers, and structural checks; the same seed reproduces the tree
 byte-for-byte; and the spec line names every parsed feature.
+
+Landed as `buildSpec` v3: features, per-noun counts (`levels`, `quests`, `npcs`,
+`enemies`, `bosses`, `items`, `rooms`, `waves`, `towns`), multi-level defaults,
+explicit `N×N` world size, and an optional sub-theme. A request with any of those
+gains a real `content.js` module (levels, quests, NPCs, enemies, items) seeded
+from the same spec seed, linked before `app.js`, summarised before the footer,
+and documented in both README files. `bundleProject` now inlines every
+project-local script in document order, so previews need no base URL and new
+modules need no bundler change. The RPG template forwards `spec.size` (48–128)
+and counts into `toolrxWorldgen.generate`, which trims or grows towns, enemies,
+NPCs, and quests deterministically while leaving default worlds unchanged.
+`tests/test_skills_js.py` pins the parsed spec, content markers, byte-identical
+same-seed trees, the five-file shape of plain builds, count honouring, and
+preview inlining.
 
 ### 30. Multi-file growth and patch composition
 

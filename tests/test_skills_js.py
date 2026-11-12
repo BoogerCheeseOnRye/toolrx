@@ -202,6 +202,50 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       resolve(calls);
     }, 160);
   });
+  out.specV3 = (() => {
+    const prompt = 'a huge space rpg with crafting and 6 quests, 3 levels, '
+      + '12 enemies, 8 npcs, 4 items, sub-theme nebula, 96x96 world';
+    const rich = self.toolrxTemplates.project('rpg', prompt, {});
+    const again = self.toolrxTemplates.project('rpg', prompt, {});
+    const plain = self.toolrxTemplates.project('calculator', 'a tip calculator', {});
+    const raw = rich.files['content.js'] || '';
+    const content = JSON.parse(raw.replace(/^[\s\S]*?window\.toolrxContent = /, '')
+      .replace(/;\s*$/, ''));
+    return {
+      spec: rich.spec, line: rich.specLine,
+      files: Object.keys(rich.files).sort(),
+      hasTag: /src="content\.js"/.test(rich.html),
+      tagBeforeApp: rich.html.indexOf('src="content.js"') < rich.html.indexOf('src="app.js"'),
+      summary: /toolrx-content/.test(rich.html)
+        && rich.html.indexOf('toolrx-content') < rich.html.indexOf('<footer>'),
+      readme: rich.files['README.md'], arch: rich.files['ARCHITECTURE.md'],
+      worldTag: /SIZE=96\b/.test(rich.files['app.js'] || '')
+        && /"quests":6/.test(rich.files['app.js'] || '')
+        && /counts:/.test(rich.files['app.js'] || ''),
+      content,
+      same: JSON.stringify(rich.files) === JSON.stringify(again.files)
+        && rich.html === again.html,
+      plainFiles: Object.keys(plain.files).sort(),
+      plainHasContent: /content\.js/.test(plain.html) || !!plain.files['content.js'],
+    };
+  })();
+  out.contentWorld = (() => {
+    const make = counts => self.toolrxWorldgen.generate({
+      seed: 4242, size: 96, theme: self.toolrxWorldgen.defaultTheme, counts,
+    });
+    const counts = { towns: 4, enemies: 9, npcs: 5, quests: 7 };
+    const a = make(counts), b = make(counts), base = make(null);
+    return {
+      towns: a.towns.length, enemies: a.enemies.length,
+      npcs: a.npcs.length, quests: a.quests.length,
+      baseTowns: base.towns.length, baseEnemies: base.enemies.length,
+      same: JSON.stringify(a.tiles) === JSON.stringify(b.tiles)
+        && JSON.stringify(a.npcs) === JSON.stringify(b.npcs)
+        && JSON.stringify(a.quests) === JSON.stringify(b.quests),
+      npcIdsUnique: new Set(a.npcs.map(n => n.id)).size === a.npcs.length,
+      questGivers: a.quests.filter(q => q.giver).length,
+    };
+  })();
   out.rpgWorld = (() => {
     const make = seed => self.toolrxWorldgen.generate({
       seed, size: 64, theme: self.toolrxWorldgen.defaultTheme,
@@ -620,6 +664,18 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     previewHasCreate: /toolrxEngine3d\.create/.test(self.toolrxWeb.preview().html),
   };
   const h1 = html => ((String(html).match(/<h1>([^<]*)<\/h1>/) || [])[1] || '');
+  out.sandbox.content = {};
+  out.sandbox.content.build = (await self.toolrxWeb.prompt(
+    'build a huge space rpg game with crafting'))
+    .map(r => ({ via: r.via || '', text: r.text || '' }));
+  const cp = self.toolrxWeb.project();
+  out.sandbox.content.project = {
+    slug: cp.slug,
+    files: cp.files.slice().sort(),
+    hasContent: cp.files.indexOf('content.js') >= 0,
+    previewHasData: /toolrxContent/.test(self.toolrxWeb.preview().html),
+    previewExternal: /src=["']content\.js/.test(self.toolrxWeb.preview().html),
+  };
   out.sandbox.build = (await self.toolrxWeb.prompt('build an rpg based on king arthur'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
   let p = self.toolrxWeb.project();
@@ -1514,6 +1570,73 @@ class SkillsBridgeTest(unittest.TestCase):
                 self.assertIn(word, desc, f"{query}: {desc!r}")
         self.assertFalse(self.out["composeBuild"][0]["error"])
         self.assertEqual(self.out["composeKind"], "rpg")
+
+    def test_build_spec_v3_parses_features_counts_subtheme_and_size(self):
+        s = self.out["specV3"]["spec"]
+        self.assertEqual(s["features"], ["crafting"])
+        self.assertEqual(s["subtheme"], "nebula")
+        self.assertEqual(s["size"], 96)
+        self.assertEqual(s["levels"], 3)
+        self.assertEqual(s["counts"], {"levels": 3, "quests": 6, "npcs": 8,
+                                       "enemies": 12, "items": 4})
+        line = self.out["specV3"]["line"]
+        for bit in ("features crafting", "6 quests", "8 npcs", "12 enemies",
+                    "4 items", "3 levels", "96×96", "sub-theme nebula"):
+            self.assertIn(bit, line)
+
+    def test_content_module_is_real_seeded_and_deterministic(self):
+        r = self.out["specV3"]
+        self.assertEqual(r["files"], ["ARCHITECTURE.md", "README.md", "app.js",
+                                      "content.js", "engine2d.js", "index.html",
+                                      "rpg2.js", "styles.css", "worldgen.js"])
+        self.assertTrue(r["hasTag"])
+        self.assertTrue(r["tagBeforeApp"])
+        self.assertTrue(r["summary"])
+        c = r["content"]
+        self.assertEqual(c["version"], 3)
+        self.assertEqual(c["seed"], r["spec"]["seed"])
+        self.assertEqual(c["features"], ["crafting"])
+        self.assertEqual(c["subtheme"], "nebula")
+        self.assertEqual(c["size"], 96)
+        self.assertEqual(len(c["levels"]), 3)
+        self.assertEqual(len(c["quests"]), 6)
+        self.assertEqual(len(c["npcs"]), 8)
+        self.assertEqual(len(c["enemies"]), 12)
+        self.assertEqual(len(c["items"]), 4)
+        self.assertTrue(r["same"], "same request must produce the same content tree")
+        self.assertIn("## Content module", r["readme"])
+        self.assertIn("content.js", r["readme"])
+        self.assertIn("content.js", r["arch"])
+
+    def test_plain_builds_stay_five_files_without_content(self):
+        r = self.out["specV3"]
+        self.assertEqual(r["plainFiles"],
+                         ["ARCHITECTURE.md", "README.md", "app.js", "index.html",
+                          "styles.css"])
+        self.assertFalse(r["plainHasContent"])
+
+    def test_rpg_passes_world_size_and_counts_to_worldgen(self):
+        self.assertTrue(self.out["specV3"]["worldTag"])
+
+    def test_worldgen_honours_explicit_counts(self):
+        w = self.out["contentWorld"]
+        self.assertEqual(w["towns"], 4)
+        self.assertGreater(w["enemies"], 0)
+        self.assertLessEqual(w["enemies"], 9)
+        self.assertEqual(w["npcs"], 5)
+        self.assertEqual(w["quests"], 7)
+        self.assertTrue(w["same"], "counts must replay exactly for one seed")
+        self.assertTrue(w["npcIdsUnique"])
+        self.assertEqual(w["baseTowns"], 5, "no counts keeps the size default")
+        self.assertGreaterEqual(w["baseEnemies"], 18)
+
+    def test_sandbox_preview_inlines_content_js(self):
+        c = self.out["sandbox"]["content"]
+        self.assertTrue(c["build"][0].get("text"))
+        self.assertTrue(c["project"]["hasContent"], c["project"]["files"])
+        self.assertTrue(c["project"]["previewHasData"])
+        self.assertFalse(c["project"]["previewExternal"],
+                         "previews cannot fetch content.js")
 
     def test_build_produces_a_real_page(self):
         self.assertTrue(self.out["buildHtml"].startswith("<!doctype html>"))

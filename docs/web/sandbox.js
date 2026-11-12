@@ -344,24 +344,20 @@
     let html = String(f["index.html"] || "");
     if (!html) return "";
     const css = String(f["styles.css"] || "");
-    const js = String(f["app.js"] || "");
     html = html.replace(/<link\b[^>]*href\s*=\s*["']styles\.css["'][^>]*>/i, function () {
       return "<style>\n" + css + "\n</style>";
     });
-    // Inline every shared runtime the page references, in place, so previews
-    // need no base URL and the order of engine/world/game files is preserved.
-    ["engine2d.js", "engine3d.js", "worldgen.js", "rpg2.js"].forEach(function (name) {
-      const body = String(f[name] || "");
-      if (!body) return;
-      const tag = new RegExp("<script\\b[^>]*src\\s*=\\s*[\"']"
-        + name.replace(/\./g, "\\.") + "[\"'][^>]*>\\s*<\\/script>", "gi");
-      html = html.replace(tag, function () {
+    // Inline every project-local script the page references, in place, so the
+    // preview needs no base URL and the order of shared runtimes, content, and
+    // app code is preserved. Any `<name>.js` in the project can take part.
+    html = html.replace(
+      /<script\b([^>]*)\bsrc\s*=\s*["']([^"']+\.js)["'][^>]*>\s*<\/script>/gi,
+      function (tag, attrs, src) {
+        if (src.indexOf("/") >= 0 || src.indexOf("\\") >= 0) return tag;
+        const body = String(f[src] || "");
+        if (!body && src !== "app.js") return tag;
         return "<script>\n" + body + "\n</script>";
       });
-    });
-    html = html.replace(/<script\b[^>]*src\s*=\s*["']app\.js["'][^>]*>\s*<\/script>/i, function () {
-      return "<script>\n" + js + "\n</script>";
-    });
     html = html.replace(/offline · (?:separate files|self-contained)/g, "offline · project preview");
     return html;
   }

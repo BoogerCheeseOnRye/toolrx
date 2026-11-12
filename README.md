@@ -143,9 +143,11 @@ adapter lives in `toolrx/vision/HARNESS-ROADMAP.md`. Steps 26–27 now accept a
 2,000-character single route and plans up to 8,000 characters or 40 steps,
 preview the ordered plan before running it, and stop at the first failed step.
 Step 28 widened the generated library to ~12,300 patterns with compositional
-build phrasing and duplicate detection. The rest of the batch still targets
-longer output without an LLM: richer build specs, multi-module growth, bounded
-context, and a long-form test suite.
+build phrasing and duplicate detection. Step 29 expanded the build spec to
+features, counts, levels, sub-themes, and explicit world sizes: long requests
+now write a seeded `content.js` alongside `app.js`, and the RPG world honours
+requested town, enemy, NPC, and quest counts. The rest of the batch still targets
+multi-module growth, bounded context, and a long-form test suite.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and

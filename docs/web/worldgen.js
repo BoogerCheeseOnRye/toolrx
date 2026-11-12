@@ -144,6 +144,7 @@
     var theme = themeOf(opts.theme);
     var pal = palette(theme);
     var size = clamp(Math.round(opts.size || (opts.large ? 96 : 64)), 48, 128);
+    var counts = opts.counts || {};
     var r = rng(seed);
     var x, y, i, j;
 
@@ -223,7 +224,9 @@
 
     /* Towns: spaced-out land sites, flattened into a plaza with houses. */
     var towns = [];
-    var townCount = size >= 88 ? 5 : (size >= 72 ? 4 : 3);
+    var townCount = counts.towns != null
+      ? clamp(Math.round(counts.towns), 1, 8)
+      : (size >= 88 ? 5 : (size >= 72 ? 4 : 3));
     var tries = 0;
     while (towns.length < townCount && tries++ < 900) {
       var tx = 6 + Math.floor(r() * (size - 12));
@@ -350,7 +353,9 @@
     /* Enemies: seeded spawns, mostly away from town centres. */
     var enemies = [];
     var types = (theme.enemies || DEFAULT_THEME.enemies).slice(0, 3);
-    var ecount = Math.max(18, Math.round(size * 0.42));
+    var ecount = counts.enemies != null
+      ? clamp(Math.round(counts.enemies), 0, 400)
+      : Math.max(18, Math.round(size * 0.42));
     for (i = 0; i < ecount; i++) {
       var spot = freeSpot([TILE.GRASS, TILE.FOREST, TILE.HILL, TILE.SAND, TILE.SNOW]);
       if (!spot) continue;
@@ -375,60 +380,76 @@
     var roles = ["elder", "merchant", "healer", "smith", "guard", "scholar", "farmer", "bard"];
     var npcs = [];
     var npcIndex = 0;
+    function addNpc(town, ti, role) {
+      var name = theme.npcs[(npcIndex + ti) % theme.npcs.length];
+      npcIndex++;
+      var spot = null;
+      for (var k3 = 0; k3 < towns.length * 30 && !spot; k3++) {
+        var nx2 = town.x + Math.floor(r() * 7) - 3;
+        var ny2 = town.y + Math.floor(r() * 7) - 3;
+        if (at(nx2, ny2) === TILE.TOWN || at(nx2, ny2) === TILE.ROAD) {
+          if (!npcs.some(function (n) { return n.x === nx2 && n.y === ny2; })) {
+            spot = { x: nx2, y: ny2 };
+          }
+        }
+      }
+      if (!spot) spot = { x: town.x, y: town.y + 1 };
+      var npc = {
+        id: "n" + npcs.length,
+        name: name,
+        role: role,
+        town: town.id,
+        x: spot.x, y: spot.y,
+        color: role === "merchant" ? "#f59e0b"
+          : role === "healer" ? "#34d399"
+            : role === "elder" ? "#e2e8f0" : "#93c5fd",
+        lines: [],
+        quest: null
+      };
+      if (role === "elder") {
+        npc.lines = ["The " + theme.boss.replace(/^the /, "") + " stirs in " + dungeon.name + ".",
+          "Take the road, gather your strength, and end it."];
+      } else if (role === "merchant") {
+        npc.lines = ["Weapons, potions, and rumours. Which will it be?"];
+        npc.shop = true;
+      } else if (role === "healer") {
+        npc.lines = ["The marsh herbs mend what steel cannot.",
+          "Bring me three and I will make it worth your while."];
+      } else if (role === "smith") {
+        npc.lines = ["A blade is only as good as the arm that holds it."];
+      } else if (role === "guard") {
+        npc.lines = ["Something has been raiding the roads at night.",
+          "Thin their numbers and I will pay."];
+      } else if (role === "scholar") {
+        npc.lines = ["The barrow predates the town. Its door is older than the stones."];
+      } else {
+        npc.lines = ["The land remembers more than we do."];
+      }
+      npcs.push(npc);
+      town.npcs.push(npc.id);
+    }
     towns.forEach(function (town, ti) {
       var wanted = ["elder", "merchant"];
       if (ti === 1) wanted = ["healer", "guard"];
       if (ti === 2) wanted = ["scholar", "smith"];
       if (ti >= 3) wanted = [roles[(ti * 2 + 3) % roles.length], "merchant"];
-      wanted.forEach(function (role) {
-        var name = theme.npcs[(npcIndex + ti) % theme.npcs.length];
-        npcIndex++;
-        var spot = null;
-        for (var k3 = 0; k3 < towns.length * 30 && !spot; k3++) {
-          var nx2 = town.x + Math.floor(r() * 7) - 3;
-          var ny2 = town.y + Math.floor(r() * 7) - 3;
-          if (at(nx2, ny2) === TILE.TOWN || at(nx2, ny2) === TILE.ROAD) {
-            if (!npcs.some(function (n) { return n.x === nx2 && n.y === ny2; })) {
-              spot = { x: nx2, y: ny2 };
-            }
-          }
-        }
-        if (!spot) spot = { x: town.x, y: town.y + 1 };
-        var npc = {
-          id: "n" + npcs.length,
-          name: name,
-          role: role,
-          town: town.id,
-          x: spot.x, y: spot.y,
-          color: role === "merchant" ? "#f59e0b"
-            : role === "healer" ? "#34d399"
-              : role === "elder" ? "#e2e8f0" : "#93c5fd",
-          lines: [],
-          quest: null
-        };
-        if (role === "elder") {
-          npc.lines = ["The " + theme.boss.replace(/^the /, "") + " stirs in " + dungeon.name + ".",
-            "Take the road, gather your strength, and end it."];
-        } else if (role === "merchant") {
-          npc.lines = ["Weapons, potions, and rumours. Which will it be?"];
-          npc.shop = true;
-        } else if (role === "healer") {
-          npc.lines = ["The marsh herbs mend what steel cannot.",
-            "Bring me three and I will make it worth your while."];
-        } else if (role === "smith") {
-          npc.lines = ["A blade is only as good as the arm that holds it."];
-        } else if (role === "guard") {
-          npc.lines = ["Something has been raiding the roads at night.",
-            "Thin their numbers and I will pay."];
-        } else if (role === "scholar") {
-          npc.lines = ["The barrow predates the town. Its door is older than the stones."];
-        } else {
-          npc.lines = ["The land remembers more than we do."];
-        }
-        npcs.push(npc);
-        town.npcs.push(npc.id);
-      });
+      wanted.forEach(function (role) { addNpc(town, ti, role); });
     });
+    // An explicit NPC count can grow or trim the population; the default is
+    // exactly two per town, which keeps every existing seeded world identical.
+    if (counts.npcs != null) {
+      var npcTarget = clamp(Math.round(counts.npcs), 0, 60);
+      while (npcs.length > npcTarget) {
+        var dropped = npcs.pop();
+        var owner = towns.filter(function (t) { return t.id === dropped.town; })[0];
+        if (owner) owner.npcs = owner.npcs.filter(function (id) { return id !== dropped.id; });
+      }
+      while (npcs.length < npcTarget && towns.length) {
+        var extraTown = towns[npcs.length % towns.length];
+        addNpc(extraTown, npcs.length % towns.length,
+          roles[npcs.length % roles.length]);
+      }
+    }
 
     /* Quest chain. Every quest is deterministic and tied to real people/places. */
     var quests = [];
@@ -440,7 +461,7 @@
     var guard = npcByRole("guard", 0);
     var healer = npcByRole("healer", 0);
     var scholar = npcByRole("scholar", 0);
-    var courier = npcs[Math.min(npcs.length - 1, 3)];
+    var courier = npcs[Math.min(npcs.length - 1, 3)] || { id: null, name: "a traveller" };
 
     quests.push({
       id: "q-boss", kind: "boss", title: "The " + theme.boss.replace(/^the /, ""),
@@ -460,7 +481,8 @@
       giver: healer ? healer.id : (elder ? elder.id : null), target: "herb",
       need: 3, progress: 0, state: "offered", reward: { gold: 35, xp: 20 }
     });
-    var farNpc = npcs.filter(function (n) { return n.id !== courier.id; })[0] || npcs[0];
+    var farNpc = npcs.filter(function (n) { return n.id !== courier.id; })[0]
+      || npcs[0] || { id: null, name: "a traveller" };
     quests.push({
       id: "q-letter", kind: "deliver", title: "A sealed letter",
       desc: "Deliver a letter to " + farNpc.name + " in " + (towns[1] ? towns[1].name : "the next town") + ".",
@@ -474,6 +496,30 @@
         giver: scholar.id, target: "dungeon", need: 1, progress: 0,
         state: "offered", reward: { gold: 25, xp: 15 }
       });
+    }
+    // An explicit quest count trims or extends the chain. Extra quests are
+    // generated from the same seed and NPC roster, so they replay exactly.
+    if (counts.quests != null) {
+      var questTarget = clamp(Math.round(counts.quests), 0, 80);
+      if (questTarget < quests.length) quests = quests.slice(0, questTarget);
+      var extraKinds = ["collect", "kill", "deliver", "explore"];
+      while (quests.length < questTarget) {
+        var qn = quests.length;
+        var kind = extraKinds[qn % extraKinds.length];
+        var giver = npcs.length ? npcs[qn % npcs.length] : null;
+        quests.push({
+          id: "q-extra-" + qn, kind: kind,
+          title: "Errand " + (qn + 1),
+          desc: "A seeded side quest: " + kind + " for "
+            + (giver ? giver.name : "the town") + ".",
+          giver: giver ? giver.id : null,
+          target: kind === "collect" ? "herb"
+            : kind === "kill" ? (types[qn % types.length] || "creature")
+              : kind === "explore" ? "dungeon" : (giver ? giver.id : "town"),
+          need: 1 + (qn % 5), progress: 0, state: "offered",
+          reward: { gold: 15 + (qn % 6) * 10, xp: 10 + (qn % 4) * 5 }
+        });
+      }
     }
     quests.forEach(function (q) {
       npcs.forEach(function (n) { if (n.id === q.giver) n.quest = q.id; });
