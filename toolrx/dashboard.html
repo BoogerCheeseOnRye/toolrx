@@ -2568,9 +2568,23 @@ async function submit(txt){
   if(clientMode && window.toolrxWeb && window.toolrxWeb.ready){
     q.value='';
     entry('> '+txt,'','q');
+    // Preview the plan before running it, so a long prompt is inspectable
+    // first and the steps are printed exactly once.
+    let previewed=false;
+    const preview=(window.toolrxSkills&&window.toolrxSkills.planPreview)
+      ?window.toolrxSkills.planPreview(txt):null;
+    if(preview){
+      if(preview.blocked){ entry('plan · blocked',preview.reason,'err'); return; }
+      if(preview.plan){
+        entry('plan · '+preview.steps.length+' steps',
+          preview.steps.map((s,i)=>(i+1)+'. '+s.text+(s.exact?'  →  '+s.via:'')).join('\n'),
+          'stat');
+        previewed=true;
+      }
+    }
     const results=await window.toolrxWeb.prompt(txt);
     if(!results || !results.length){ entry('toolrx','nothing to do there','stat'); return; }
-    if(results.length>1){
+    if(results.length>1 && !previewed){
       entry('plan · '+results.length+' steps', results.map((r,i)=>(i+1)+'. '+r.step).join('\n'),'stat');
     }
     let built=false;

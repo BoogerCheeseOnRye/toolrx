@@ -314,8 +314,8 @@ non-redistributable text never leaves the machine.
 Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
-`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v9`
-cache, so the panel works offline with no second fetch.
+`toolrx.library.status`. Catalog metadata is already in the PWA shell cache
+(now `toolrx-shell-v11`), so the panel works offline with no second fetch.
 
 ## Next batch: longer input, longer output (steps 26–35)
 
@@ -333,8 +333,8 @@ never means unbounded.
 
 | Dimension | Today | v1 target |
 | --- | --- | --- |
-| Single-route input | 300 chars | 2,000 chars |
-| Plan input | ~300 chars | 8,000 chars / 40 steps |
+| Single-route input | 2,000 chars | 2,000 chars |
+| Plan input | 8,000 chars / 40 steps | 8,000 chars / 40 steps |
 | Project files | template-sized | 32 files |
 | Project text | template-sized | 512 KB total |
 | Undo snapshots | 8 | 16, configurable |
@@ -351,7 +351,7 @@ never means unbounded.
 6. Caps live in `policy.json` or one constants module, not scattered magic numbers.
 7. Each step ships with Python and browser tests plus a docs update.
 
-### 26. Adaptive input ceiling
+### 26. Adaptive input ceiling — done
 
 Raise the default `max_len` from 300 to 2,000 for a single route, and accept up to
 8,000 characters only through the plan path (step 27). Before embedding, split at
@@ -367,6 +367,18 @@ short form, an 8,001-character request refuses with a clear message, a
 chunk-boundary injection fixture is rejected, and 300-character behavior is
 unchanged.
 
+Landed with `max_len` 2,000, `max_plan_len` 8,000, and `max_plan_steps` 40 in
+`policy.json`, mirrored in `toolrx/longform.py` and `toolrx/web/skills.js`, and
+pinned by `tests/test_longform.py` and `tests/test_skills_js.py`. `sanitize()`
+takes an explicit cap and `sanitize_plan()` preserves newlines under the 8,000
+cap. The full prompt is checked for blocked words, injection phrases,
+metacharacters, and the positive word allowlist before splitting, and every
+unit is checked again after splitting, so a payload cannot straddle a boundary.
+Punctuation separators (`;`, `->`, `→`) are rewritten to newlines before the
+metacharacter layer; `|`, `&`, `$`, backticks, and the rest remain refused.
+Short single-intent prompts keep the old one-tool shape. Over-cap prompts name
+the cap and suggest splitting; truncation is never silent.
+
 ### 27. Hierarchical routing for long prompts
 
 Detect plan mode from length, three or more sentences, numbered or bulleted
@@ -381,6 +393,18 @@ optional, and name the step that failed.
 **Done when** 500-, 1,500-, and 3,000-character plans execute in order, every step
 shows a score, a low-confidence step halts with a named failure, and no step is
 silently skipped.
+
+Landed with a shared plan gate: length, explicit connectors, numbered or
+multi-line input, or three sentences at 240+ characters. Steps are extracted
+from numbered lines, sentence boundaries, `then`, `and then`, `after that`,
+`followed by`, `;`, and `->`, then chunked to 2,000 characters. The browser
+dashboard previews the ordered steps before running anything, prints them once,
+and `runPrompt` stops at the first failed step. The Python pipeline executes
+plans in order, records a per-step decision (tool, confidence, margin) and result,
+stops at the first blocked or failed step, and names it (`step 2: ...`). Exact
+command matches in the browser show their operation; router fallbacks show
+confidence and margin on the result line. Plans over 40 steps or 8,000 characters
+refuse before any step runs.
 
 ### 28. Expand the command surface systematically
 

@@ -2056,17 +2056,104 @@
   }
 
   /* ------------------------------------------------------------- planner -- */
-  function splitPrompt(q) {
-    let text = String(q).replace(/\r/g, "").trim();
-    if (!text) return [];
-    const lines = text.split(/\n+/).map(s => s.replace(/^\s*(?:\d+[.)]|[-*])\s*/, "").trim()).filter(Boolean);
-    let parts;
-    if (lines.length > 1) parts = lines;
-    else {
-      parts = text.split(/\s*(?:;|->|→|\bthen\b|\bafter that\b|\band then\b|\bfollowed by\b)\s*/i)
-        .map(s => s.trim()).filter(Boolean);
+  /* Keep these limits in sync with toolrx/longform.py and policy.json. */
+  const LIMITS = Object.freeze({ single: 2000, plan: 8000, steps: 40 });
+  const CONNECTOR_RE = /\s*(?:;|->|→|\bthen\b|\bafter that\b|\band then\b|\bfollowed by\b)\s*/i;
+  const SENTENCE_RE = /(?<=[.!?])\s+(?=[a-z0-9"'(\[])/i;
+
+  function chunkStep(text, limit) {
+    let rest = String(text || "").trim();
+    if (!rest) return [];
+    if (rest.length <= limit) return [rest];
+    const out = [];
+    while (rest.length > limit) {
+      let cut = rest.lastIndexOf(" ", limit);
+      if (cut < limit / 2) cut = limit;
+      const piece = rest.slice(0, cut).trim();
+      if (piece) out.push(piece);
+      rest = rest.slice(cut).trim();
     }
-    return parts.slice(0, 10);
+    if (rest) out.push(rest);
+    return out;
+  }
+
+  function sentenceCount(text) {
+    return String(text || "").split(SENTENCE_RE).filter(function (s) { return s.trim(); }).length;
+  }
+
+  function hasNumberedLines(text) {
+    return String(text || "").split(/\n+/).filter(function (line) {
+      return /^\s*(?:\d+[.)]|[-*•])\s*/.test(line);
+    }).length >= 2;
+  }
+
+  function isPlan(text) {
+    const raw = String(text == null ? "" : text).trim();
+    if (!raw) return false;
+    return raw.length > LIMITS.single
+      || CONNECTOR_RE.test(raw)
+      || hasNumberedLines(raw)
+      || raw.split(/\n+/).filter(Boolean).length > 1
+      || (sentenceCount(raw) >= 3 && raw.length >= 240);
+  }
+
+  function splitPromptInfo(q) {
+    const raw = String(q == null ? "" : q).replace(/\r/g, "").trim();
+    if (!raw) return { steps: [], total: 0, truncated: false, overLimit: false, plan: false };
+    const lines = raw.split(/\n+/).map(function (line) {
+      return line.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").trim();
+    }).filter(Boolean);
+    const source = lines.length > 1 ? lines : [raw];
+    const plan = isPlan(raw);
+    const parts = [];
+    for (const piece of source) {
+      const sentences = plan ? piece.split(SENTENCE_RE) : [piece];
+      for (const sentence of sentences) {
+        for (const step of sentence.split(CONNECTOR_RE)) {
+          const clean = step.trim();
+          if (clean) parts.push(clean);
+        }
+      }
+    }
+    const steps = [];
+    for (const part of parts) {
+      for (const chunk of chunkStep(part, LIMITS.single)) steps.push(chunk);
+    }
+    const total = steps.length;
+    return {
+      steps: steps.slice(0, LIMITS.steps),
+      total: total,
+      truncated: total > LIMITS.steps,
+      overLimit: total > LIMITS.steps,
+      plan: plan,
+    };
+  }
+
+  function splitPrompt(q) {
+    return splitPromptInfo(q).steps;
+  }
+
+  /* Preview a plan without executing anything. Exact command matches are
+   * labelled with their operation; the rest will use the hashed router. */
+  function planPreview(q) {
+    const text = String(q == null ? "" : q);
+    if (text.length > LIMITS.plan) {
+      return { blocked: true, reason: "query too long (" + text.length + " > "
+        + LIMITS.plan + "); split it into fewer steps", steps: [], total: 0,
+        truncated: false, overLimit: false, plan: false };
+    }
+    const info = splitPromptInfo(text);
+    if (info.overLimit) {
+      return { blocked: true, reason: "plan too long (" + info.total + " > "
+        + LIMITS.steps + " steps)", steps: [], total: info.total,
+        truncated: true, overLimit: true, plan: true };
+    }
+    const steps = info.steps.map(function (step) {
+      const hit = match(step);
+      return { text: step, via: hit ? hit.op : "router", exact: !!hit };
+    });
+    return { blocked: false, reason: null, steps: steps, total: info.total,
+             truncated: false, overLimit: false, plan: steps.length > 1 };
   }
 
   async function exec(skill, ctx) {
@@ -2078,7 +2165,11 @@
   }
 
   async function runPrompt(query, ctx) {
-    const steps = splitPrompt(query);
+    const preview = planPreview(query);
+    if (preview.blocked) {
+      return [{ step: String(query), text: preview.reason, error: true, via: "limit" }];
+    }
+    const steps = preview.steps.map(function (s) { return s.text; });
     const results = [];
     let prev = "";
     let prevResult = null;
@@ -2126,6 +2217,8 @@
       result.ms = Math.max(0, Math.round(clock() - started));
       if (result && result.text) { prev = result.text; prevResult = result; }
       results.push(result);
+      // A failed step stops the plan; later steps may depend on its result.
+      if (result && result.error) break;
     }
     return results;
   }
@@ -2145,7 +2238,10 @@
     match: match,
     search: search,
     catalog: catalog,
+    limits: LIMITS,
     splitPrompt: splitPrompt,
+    splitPromptInfo: splitPromptInfo,
+    planPreview: planPreview,
     exec: exec,
     runPrompt: runPrompt,
     chat: chatReply,

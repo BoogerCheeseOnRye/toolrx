@@ -324,6 +324,30 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.read = await run('read notes.txt then count the words');
   out.pronoun = await run('capital of france then uppercase it');
   out.steps = self.toolrxSkills.splitPrompt('one then two; three -> four');
+  out.limits = self.toolrxSkills.limits;
+  out.splitInfo = {
+    connector: self.toolrxSkills.splitPromptInfo('one then two; three -> four'),
+    numbered: self.toolrxSkills.splitPromptInfo('1. read notes.txt\n2. count the words'),
+    multi: self.toolrxSkills.splitPromptInfo('read notes.txt\ncount the words'),
+    sentences: self.toolrxSkills.splitPromptInfo(
+      ('list the files in the current directory and show the uptime for this machine right now. ')
+        .repeat(3).trim()),
+    long: self.toolrxSkills.splitPromptInfo('word '.repeat(600)),
+  };
+  out.planPreview = {
+    multi: self.toolrxSkills.planPreview('read notes.txt then count the words'),
+    single: self.toolrxSkills.planPreview('read notes.txt'),
+    tooLong: self.toolrxSkills.planPreview('word '.repeat(1700)),
+    tooMany: self.toolrxSkills.planPreview(
+      Array.from({ length: 41 }, (_, i) => (i + 1) + '. read notes.txt').join('\n')),
+  };
+  out.limitRun = await run('word '.repeat(1700));
+  {
+    const fallback = ctx.fallback;
+    ctx.fallback = async () => ({ text: 'boom', error: true, via: 'test.fail' });
+    out.planStop = await run('multiply 6 and 7 then zzzznotacommand then multiply 2 and 3');
+    ctx.fallback = fallback;
+  }
   out.build = await run('build a calculator app');
   out.buildHtml = state.html;
   out.calcFiles = Object.keys(state.files).sort();
@@ -1400,6 +1424,50 @@ class SkillsBridgeTest(unittest.TestCase):
 
     def test_planner_splits_on_semicolon_and_arrow(self):
         self.assertEqual(self.out["steps"], ["one", "two", "three", "four"])
+
+    def test_limits_match_the_shared_contract(self):
+        self.assertEqual(self.out["limits"], {"single": 2000, "plan": 8000, "steps": 40})
+
+    def test_split_info_handles_connectors_lines_and_sentences(self):
+        info = self.out["splitInfo"]
+        self.assertEqual(info["connector"]["steps"],
+                         ["one", "two", "three", "four"])
+        self.assertEqual(info["numbered"]["steps"],
+                         ["read notes.txt", "count the words"])
+        self.assertEqual(info["multi"]["steps"],
+                         ["read notes.txt", "count the words"])
+        sentence = ("list the files in the current directory and show the uptime "
+                    "for this machine right now.")
+        self.assertEqual(info["sentences"]["steps"], [sentence] * 3)
+        self.assertTrue(info["long"]["plan"])
+        self.assertGreater(info["long"]["total"], 1)
+        self.assertTrue(all(len(s) <= 2000 for s in info["long"]["steps"]))
+
+    def test_plan_preview_lists_steps_before_running(self):
+        preview = self.out["planPreview"]
+        self.assertTrue(preview["multi"]["plan"])
+        self.assertFalse(preview["multi"]["blocked"])
+        self.assertEqual([s["text"] for s in preview["multi"]["steps"]],
+                         ["read notes.txt", "count the words"])
+        self.assertEqual([s["exact"] for s in preview["multi"]["steps"]], [False, True])
+        self.assertFalse(preview["single"]["plan"])
+        self.assertTrue(preview["tooLong"]["blocked"])
+        self.assertIn("8000", preview["tooLong"]["reason"])
+        self.assertTrue(preview["tooMany"]["blocked"])
+        self.assertIn("40", preview["tooMany"]["reason"])
+
+    def test_over_cap_prompt_returns_one_limit_error(self):
+        self.assertEqual(len(self.out["limitRun"]), 1)
+        self.assertEqual(self.out["limitRun"][0]["via"], "limit")
+        self.assertTrue(self.out["limitRun"][0]["error"])
+        self.assertIn("8000", self.out["limitRun"][0]["text"])
+
+    def test_plan_stops_at_the_first_failed_step(self):
+        steps = self.out["planStop"]
+        self.assertEqual(len(steps), 2, steps)
+        self.assertFalse(steps[0]["error"])
+        self.assertEqual(steps[0]["text"], "42")
+        self.assertTrue(steps[1]["error"])
 
     def test_build_produces_a_real_page(self):
         self.assertTrue(self.out["buildHtml"].startswith("<!doctype html>"))

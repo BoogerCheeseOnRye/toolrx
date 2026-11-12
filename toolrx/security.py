@@ -53,7 +53,9 @@ class SecurityPolicy:
         self.allowed_extensions = set(policy.get("allowed_extensions", []))
         self.allowed_hosts = set(policy.get("allowed_hosts", []))
         self.denied_path_substrings = policy.get("denied_path_substrings", [])
-        self.max_len = int(policy.get("max_len", 300))
+        self.max_len = int(policy.get("max_len", 2000))
+        self.max_plan_len = max(self.max_len, int(policy.get("max_plan_len", 8000)))
+        self.max_plan_steps = int(policy.get("max_plan_steps", 40))
         # Sandbox root: env override wins; otherwise a relative/empty config
         # value means "the directory this package lives in". This keeps the
         # shipped policy.json free of machine-specific absolute paths.
@@ -71,22 +73,37 @@ class SecurityPolicy:
 
     # -- L0 normalize -----------------------------------------------------
     @staticmethod
-    def normalize(text):
+    def normalize(text, keep_lines=False):
         t = unicodedata.normalize("NFKC", text or "")
         t = t.lower()
-        t = "".join(ch for ch in t if not (unicodedata.category(ch) == "Cc"))
+        # Control characters become spaces instead of being deleted, so two
+        # words cannot fuse into one allowed token (e.g. "files\nshow").
+        t = "".join(ch if ch == "\n" and keep_lines else
+                    (" " if unicodedata.category(ch) == "Cc" else ch) for ch in t)
         t = t.replace("'", "").replace('"', "")
+        if keep_lines:
+            t = re.sub(r"[^\S\n]+", " ", t)
+            t = re.sub(r" *\n *", "\n", t)
+            return re.sub(r"\n{2,}", "\n", t).strip()
         return re.sub(r"\s+", " ", t).strip()
 
     # -- main check --------------------------------------------------------
-    def sanitize(self, raw):
-        """Return (ok, clean_text, reason). Raises nothing; ok=False on deny."""
-        text = self.normalize(raw)
+    def sanitize(self, raw, limit=None, keep_lines=False):
+        """Return (ok, clean_text, reason). Raises nothing; ok=False on deny.
+
+        `limit` overrides the single-route cap for a plan-sized request. The
+        plan path passes `max_plan_len`; every split step is then checked again
+        against the ordinary single-route cap. `keep_lines` preserves newlines
+        so the splitter can see numbered and multi-line plans.
+        """
+        text = self.normalize(raw, keep_lines=keep_lines)
         if not text:
             return False, text, "empty query"
 
-        if len(text) > self.max_len:
-            return False, text, f"query too long ({len(text)} > {self.max_len})"
+        cap = self.max_len if limit is None else int(limit)
+        if len(text) > cap:
+            extra = " (split it into steps)" if cap == self.max_len else ""
+            return False, text, f"query too long ({len(text)} > {cap}){extra}"
 
         if not _SAFE_RE.match(text):
             bad = sorted({c for c in text if not _SAFE_RE.match(c)})
@@ -114,6 +131,10 @@ class SecurityPolicy:
             return False, text, f"word not allowed: {sorted(unknown)[:5]}"
 
         return True, text, "ok"
+
+    def sanitize_plan(self, raw):
+        """Sanitize a prompt that may be longer than one route but not a plan."""
+        return self.sanitize(raw, limit=self.max_plan_len, keep_lines=True)
 
     def _unknown_words(self, text):
         unknown = []
@@ -188,7 +209,9 @@ linux unix shell command exec
 """
 
 _DEFAULT_POLICY = {
-    "max_len": 300,
+    "max_len": 2000,
+    "max_plan_len": 8000,
+    "max_plan_steps": 40,
     "sandbox_root": "",
     "allowed_extensions": [".txt", ".md", ".json", ".yaml", ".yml", ".log", ".csv", ".toml", ".ini", ".cfg", ".html", ".htm", ".py", ".pyc", ".c", ".h", ".sh", ".bash", ".js", ".jsx", ".ts", ".tsx", ".css", ".scss", ".java", ".go", ".rs", ".rb", ".php", ".env", ".sql", ".conf", ".example", ".bak", ".orig", ".out"],
     "denied_path_substrings": [

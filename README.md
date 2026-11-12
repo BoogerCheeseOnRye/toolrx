@@ -139,10 +139,11 @@ tokens = characters ÷ 4 over wall-clock time, with the step's token count and
 milliseconds). It is a real measurement of the deterministic step, not model
 inference, and the generated files are unchanged. The roadmap for build specs,
 shared 2D/3D engines, a larger RPG world, sprite packs, and an optional LLM
-adapter lives in `toolrx/vision/HARNESS-ROADMAP.md`. The next batch (steps 26–35)
-targets longer input and longer output without an LLM: adaptive length limits,
-hierarchical plans, richer build specs, multi-module growth, bounded context,
-and a long-form test suite.
+adapter lives in `toolrx/vision/HARNESS-ROADMAP.md`. Steps 26–27 now accept a
+2,000-character single route and plans up to 8,000 characters or 40 steps,
+preview the ordered plan before running it, and stop at the first failed step.
+The rest of the batch still targets longer output without an LLM: richer build
+specs, multi-module growth, bounded context, and a long-form test suite.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
