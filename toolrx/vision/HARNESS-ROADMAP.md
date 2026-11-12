@@ -1,9 +1,13 @@
-# Harness roadmap 2 — build spec, engines, worlds, and an optional LLM
+# Harness roadmap 2 — specs, engines, worlds, and long-form work
 
 This plan moves toolrx from "a template per command" toward the output shape of a
 general LLM coding harness, while keeping the deterministic core. The rule is
 simple: **the deterministic path stays first, complete, and offline**. An LLM may
 later fill a validated spec or propose a patch, but it never becomes required.
+
+Steps 26–35 extend the same rules to longer input and longer output. They add no
+model: longer prompts become verified multi-step plans, and larger builds become
+seeded, composable projects.
 
 ## Where this plan started
 
@@ -313,21 +317,209 @@ shows up to three “next up” books, and saves reading-status overrides under
 `toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v9`
 cache, so the panel works offline with no second fetch.
 
+## Next batch: longer input, longer output (steps 26–35)
+
+Steps 11–25 expanded what toolrx can understand and build. Two limits remain:
+the 300-character input ceiling, and the small, fixed shape of generated output.
+This batch attacks both by growing the deterministic surface rather than adding
+a generative model. The LLM adapter stays optional, off by default, and is never
+on the critical path for a normal route, plan, build, edit, or undo.
+
+### Target envelope (v1)
+
+These are starting commitments, to be tuned with the step-35 measurements. Every
+limit is a hard cap with an explicit refusal or truncation message. "Longer"
+never means unbounded.
+
+| Dimension | Today | v1 target |
+| --- | --- | --- |
+| Single-route input | 300 chars | 2,000 chars |
+| Plan input | ~300 chars | 8,000 chars / 40 steps |
+| Project files | template-sized | 32 files |
+| Project text | template-sized | 512 KB total |
+| Undo snapshots | 8 | 16, configurable |
+| Command patterns | 7,569 | 12,000 |
+| Context store | remember/forget notes | 8 KB serialized, inspectable |
+
+### Guardrails
+
+1. Deterministic path first; no network and no LLM requirement.
+2. Length increases are policy changes, tested like security changes.
+3. Every new generator is seeded; same prompt plus seed produces the same tree.
+4. Plans print before execution, with per-step confidence and margin.
+5. Partial output is labelled partial; a failure never leaves a silent half-project.
+6. Caps live in `policy.json` or one constants module, not scattered magic numbers.
+7. Each step ships with Python and browser tests plus a docs update.
+
+### 26. Adaptive input ceiling
+
+Raise the default `max_len` from 300 to 2,000 for a single route, and accept up to
+8,000 characters only through the plan path (step 27). Before embedding, split at
+sentence, paragraph, and newline boundaries into units of at most 2,000
+characters; more than one unit forces plan mode. Truncation is the last resort and
+must say `query truncated at N chars`, showing what was dropped or offering a
+deterministic split. Run the banned-word, metacharacter, charset, and positive
+allowlist checks on the full input and on every unit, so a payload cannot straddle
+a chunk boundary. Generate the policy constants; do not hand-edit copies.
+
+**Done when** a 2,000-character single-intent fixture routes identically to its
+short form, an 8,001-character request refuses with a clear message, a
+chunk-boundary injection fixture is rejected, and 300-character behavior is
+unchanged.
+
+### 27. Hierarchical routing for long prompts
+
+Detect plan mode from length, three or more sentences, numbered or bulleted
+lines, a `plan:` / `steps:` prefix, or two or more explicit connectors. Extract
+ordered sub-queries with the existing splitter, strengthened for numbered lines,
+`then`, `and then`, `after that`, `;`, and `->`. Route each sub-query
+independently and thread the previous result as `prev`. Print the full plan with
+per-step confidence and margin before executing; add a preview form (`plan …`)
+that runs no tools. Stop at the first refused step unless the plan marks it
+optional, and name the step that failed.
+
+**Done when** 500-, 1,500-, and 3,000-character plans execute in order, every step
+shows a score, a low-confidence step halts with a named failure, and no step is
+silently skipped.
+
+### 28. Expand the command surface systematically
+
+Grow the catalog from 7,569 toward 12,000 patterns. Prioritize higher-coverage
+families for long modifier tails, multi-clause requests, build compositions, and
+hierarchical build phrasing (kind → sub-genre → modifiers → scale → theme). Keep
+generation in `build_commands.py`; add duplicate and near-duplicate detection and
+stable ordering. Counts in the dashboard and tests must derive from the catalog,
+not from hard-coded numbers.
+
+**Done when** a long-prompt fixture set reaches at least 90% exact or near-exact
+routing, the catalog regenerates byte-identically, no duplicate patterns remain,
+and existing routes keep their current answers.
+
+### 29. Build spec v3 and compositional generators
+
+Extend `buildSpec` to accept multiple mechanics, nested counts, multi-level
+structure, long modifier tails, explicit feature lists, and theme plus sub-theme.
+Make the generators consume the expanded spec and emit proportionally larger
+artifacts: more files and systems, maps larger than 96×96 when requested, more
+quests, NPCs, and enemies, and richer `README.md` / `ARCHITECTURE.md`. Everything
+stays seeded and deterministic, and respects the step-26 input and step-32 output
+budgets.
+
+**Done when** three reference long specs produce the expected file counts,
+feature markers, and structural checks; the same seed reproduces the tree
+byte-for-byte; and the spec line names every parsed feature.
+
+### 30. Multi-file growth and patch composition
+
+Move from single-app skeletons plus named-function patches toward multi-module
+layouts (`core/`, `systems/`, `data/`, `ui/`, `content/`, or the engine-specific
+equivalent) whose imports work from `file://` and through the preview bundler.
+Accept two to five composable patches in one request; each patch sees the previous
+file state and the set installs atomically or not at all. Add deterministic
+`grow project`, `expand module <name>`, and `add <system>` commands that append
+real code and files instead of regenerating. Raise undo depth from 8 to 16,
+configurable, while keeping full-file snapshots.
+
+**Done when** a five-patch sequence accumulates, each undo restores the exact
+prior state, a growth command adds code without touching unrelated files, and the
+preview still runs after each step.
+
+### 31. Deterministic context and working memory
+
+Add an explicit, size-capped context store beyond remember/forget notes: last
+result, last plan, active build spec, per-file summary and hash, and a rolling
+session plan. Persist it in `localStorage`, serialize it stably, scope it per
+project, and expose `what is in context` plus a clear command. Add exact routes
+for `continue from previous`, `apply the same changes to the other files`, and
+`expand the last plan with …`. Keep it inspectable and printable; context never
+enters a network payload.
+
+**Done when** context survives reload, `what is in context` matches the stored
+bytes, the cap evicts the oldest entry with a visible note, clearing works, and
+cross-project isolation is tested.
+
+### 32. Chunked output, progress, and budgets
+
+Emit progress events at phase boundaries and at least every ~250 ms or 32 KB of
+generation, with a partial file list. Raise per-tool caps deliberately and add a
+per-project total byte budget. Support cancellation and timeout that leave the
+last good project intact. Report characters, estimated tokens, milliseconds, and
+peak size, and mark partial results as partial.
+
+**Done when** a maximum-size build emits at least three progress events, respects
+the byte cap, is byte-identical to the non-progress build, and cancellation leaves
+the previous project valid.
+
+### 33. Argument extraction and long-form content
+
+Improve `extractArgs` for multi-sentence content, fenced blocks, indented lists,
+quoted blocks, and multiple paths. Support `write the following into <file>:` by
+capturing until the end of input or an explicit terminator, sanitized and capped,
+with an exact round-trip inside the cap. Add deterministic summarizers and
+extractors (`summarize text`, `extract headings`, `first N lines`, `outline`,
+`table from …`) that can feed a next step through `prev`. Keep traversal and
+injection fixtures for block capture.
+
+**Done when** a long block round-trips byte-exact under the cap, an over-cap block
+is refused rather than silently cut, traversal and injection fixtures are
+rejected, and summarizers are reproducible.
+
+### 34. Vocabulary, knowledge, and centroid scaling
+
+Expand `knowledge/*.md` and the derived vocabulary and centroids so longer, more
+varied phrasings keep high-confidence routes and healthy margins. Add
+multi-centroid or hierarchical tool families (coarse family → fine command) only
+where measurements justify the extra complexity. Keep rebuilds pure Python and
+fast, and keep the model within a defined size budget.
+
+**Done when** a rebuild stays under 2 seconds on the reference machine, the model
+stays within 1.5× its current size, long-prompt accuracy meets the step-35
+threshold, and margins are reported and non-degenerate.
+
+### 35. Long-input / long-output test suite and observability
+
+Create a dedicated fixture suite: at least 20 prompts of 500–2,000+ characters,
+multi-step plans, complex build specs, and five-patch sequences, each with
+expected structural output. Measure routing confidence and margin, plan
+completion, refusal correctness, generation time, bytes and file counts, and undo
+fidelity. Surface the last run in the dashboard next to the existing `tok/s`, and
+gate every earlier step's **Done when** criteria in CI. Document the real envelope
+in the README and in the dashboard's honest-limits copy.
+
+**Done when** the suite runs in `python3 -m unittest discover -s tests` plus the
+Node harness, fails on regressions, the dashboard shows the last-run metrics, and
+the README lists the actual limits.
+
+Start the fixture harness with step 26 so every step lands with measurements, even
+though step 35 closes the batch.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
-2. 16 (RPG world) — done → 17 (themes/titles) — done → 18 (library) → 19 (patches)
+2. 16 (RPG world) → 17 (themes/titles) → 18 (library) → 19 (patches) — done
 3. 21 (archive catalog) → 22 (language recognition) → 23 (archive search) →
    24 (localized intents) → 25 (Library panel) — done
-4. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
+4. 20 (LLM adapter) — done; 14 (sprites) deferred until a licence-compatible
+   subset is pinned
+5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
+   30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
+   capture) → 34 (vocab/centroids) → 35 (gate) — planned
+6. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 
 ## Open questions
 
 - Step 14 source is known: `huggingface.co/datasets/Angais/pixel-art-atlas-1.4m`,
   CC0-1.0, native 16×16 RGBA. Vendoring a pinned subset with a manifest and
-  checksums is deferred until after the 3D and RPG work; procedural sprites
-  remain the fallback.
+  checksums is deferred; procedural sprites remain the fallback.
+- Are the v1 envelope numbers right? Decide from step-35 measurements, not from
+  optimism; adjust the table and the tests together.
+- Should caps be editable in Command Center, or stay in `policy.json` only?
+- How is plan quality scored: completion rate, confidence floor, refusal
+  correctness, or a weighted mix? Pick one formula before step 27 ships.
+- Should context be per project (default) or global, and should it survive a
+  project switch?
+- Do multi-file patches install atomically only, or may they stage a pending
+  multi-file diff like the LLM path? Atomic is the default.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–17, and 21–25 are complete. 18 (the game library) and 19
-  (patches) remain open; 20 (optional LLM adapter) follows. 14 lands when the
-  sprite subset is vendored.
+- Steps 11–13 and 15–25 are complete. 14 remains deferred. Steps 26–35 are
+  planned; none is started.

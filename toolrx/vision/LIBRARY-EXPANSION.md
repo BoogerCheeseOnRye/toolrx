@@ -1,7 +1,7 @@
 # Library expansion — the archive and the command library, wired together
 
-Status: PLAN (next roadmap batch)
-Companion to: `HARNESS-ROADMAP.md` steps 21–25
+Status: COMPLETE (steps 21–25 landed)
+Companion to: `HARNESS-ROADMAP.md` steps 21–25; next batch is steps 26–35
 Scope owner: toolrx
 
 ---
@@ -508,8 +508,9 @@ preference; step 25 added the Library panel and moved the PWA cache forward; ste
 moved it to `toolrx-shell-v9` for the composable-edit module, and step 20 moved it
 to `toolrx-shell-v10` for the optional LLM adapter.
 
-Steps 18, 19, and 20 are complete. The remaining roadmap work is step 14
-(vendored sprite subset, blocked on a licence-compatible sprite repository).
+Steps 18, 19, and 20 are complete. Step 14 remains deferred until a
+licence-compatible sprite subset is vendored. The next planned batch is steps
+26–35 in `HARNESS-ROADMAP.md`: longer input and longer output without an LLM.
 Steps 17 and 18 added ten more theme packs, generated
 `<adjective> <place> RPG` titles, and sixteen intro-to-medium game starters;
 step 20 added an optional, off-by-default LLM adapter that never runs for a
