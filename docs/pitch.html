@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>toolrx · pitch deck</title>
+<meta name="description" content="toolrx is a deterministic tool router and offline builder that ships working files without a transformer, GPU, or API key.">
+<meta name="theme-color" content="#070a12">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --bg:#070a12; --panel:#0d1220; --panel2:#111827; --border:#1e293b;
+    --text:#e2e8f0; --soft:#a9b6c9; --muted:#64748b;
+    --accent:#22d3ee; --accent2:#a78bfa; --green:#34d399;
+    --amber:#fbbf24; --red:#f87171;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --max:1120px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--sans);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 600px at 85% -10%, rgba(167,139,250,.16), transparent 60%),
+      radial-gradient(800px 560px at 8% 108%, rgba(34,211,238,.12), transparent 60%),
+      linear-gradient(rgba(148,163,184,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,.045) 1px, transparent 1px);
+    background-size:auto,auto,44px 44px,44px 44px;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  .chrome{position:fixed;z-index:20;left:0;right:0;display:flex;align-items:center;
+    gap:12px;padding:14px clamp(16px,3.5vw,40px);font-family:var(--mono);
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .chrome.top{top:0;justify-content:space-between;
+    background:linear-gradient(180deg,rgba(7,10,18,.92),rgba(7,10,18,0))}
+  .chrome.bottom{bottom:0;justify-content:center;
+    background:linear-gradient(0deg,rgba(7,10,18,.94),rgba(7,10,18,0));padding-block:18px}
+  .brand{display:flex;align-items:center;gap:9px;color:var(--text);
+    font-family:var(--sans);font-weight:800;letter-spacing:-.02em;font-size:15px;text-transform:none}
+  .brand:hover{text-decoration:none}
+  .mark{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+    background:radial-gradient(circle at 30% 30%,var(--accent2),var(--accent));
+    color:#04121a;font-size:12px;font-weight:900}
+  .meta{display:flex;align-items:center;gap:14px}
+  .meta .dotsep{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+
+  .deck{position:fixed;inset:0}
+  .slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    padding:clamp(64px,9vh,92px) clamp(18px,5vw,64px);opacity:0;visibility:hidden;
+    transform:translateY(14px);transition:opacity .38s ease,transform .38s ease,visibility .38s;
+    overflow-y:auto}
+  .slide.active{opacity:1;visibility:visible;transform:none}
+  .inner{width:100%;max-width:var(--max);margin:auto}
+
+  .kicker{font-family:var(--mono);font-size:clamp(10px,1.1vw,12px);letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);margin-bottom:clamp(12px,2vh,22px);
+    display:flex;align-items:center;gap:10px}
+  .kicker::before{content:"";width:26px;height:1px;background:var(--accent);opacity:.7}
+  h1{font-size:clamp(64px,12vw,150px);line-height:.86;letter-spacing:-.055em;font-weight:850;
+    background:linear-gradient(100deg,var(--text) 8%,var(--accent) 52%,var(--accent2) 96%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  h2{font-size:clamp(30px,4.5vw,58px);line-height:1.04;letter-spacing:-.035em;font-weight:780;
+    max-width:20ch}
+  h2 .quiet{color:var(--muted)}
+  h3{font-size:clamp(16px,1.6vw,20px);line-height:1.25;letter-spacing:-.01em;font-weight:650}
+  p{line-height:1.55}
+  .lede{font-size:clamp(18px,2.1vw,27px);line-height:1.32;color:var(--soft);
+    max-width:34ch;letter-spacing:-.015em;margin-top:clamp(14px,2.4vh,26px)}
+  .lede strong{color:var(--text);font-weight:650}
+  .sub{font-size:clamp(13px,1.3vw,16px);color:var(--muted);max-width:62ch;
+    margin-top:clamp(10px,1.7vh,16px)}
+  .sub b{color:var(--soft);font-weight:600}
+
+  .hero-foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:clamp(26px,4vh,44px)}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:11px 17px;border-radius:10px;
+    border:1px solid var(--border);background:var(--panel);color:var(--text);
+    font-size:13px;font-weight:600;transition:border-color .18s,transform .18s,background .18s}
+  .btn:hover{text-decoration:none;border-color:var(--accent);transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(120deg,var(--accent),#38bdf8);color:#04121a;
+    border-color:transparent;font-weight:750}
+  .btn.primary:hover{background:linear-gradient(120deg,#67e8f9,#7dd3fc)}
+  .hero-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:clamp(20px,3.5vh,34px);
+    font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .pill{border:1px solid var(--border);border-radius:999px;padding:5px 10px;background:rgba(13,18,32,.7)}
+  .pill b{color:var(--accent);font-weight:600}
+
+  .cols{display:grid;gap:clamp(12px,1.6vw,20px);margin-top:clamp(22px,4vh,38px)}
+  .cols.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cols.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cols.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .card{border:1px solid var(--border);border-radius:14px;padding:clamp(15px,1.8vw,22px);
+    background:linear-gradient(180deg,rgba(17,24,39,.82),rgba(13,18,32,.78));
+    position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(34,211,238,.35),transparent)}
+  .card .n{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.14em;
+    text-transform:uppercase;margin-bottom:10px}
+  .card p{font-size:clamp(12px,1.15vw,14px);color:var(--soft);margin-top:8px}
+  .card .cmd{font-family:var(--mono);font-size:11.5px;color:var(--accent);
+    background:#080d18;border:1px solid var(--border);border-radius:7px;
+    padding:8px 10px;margin-top:12px;overflow-wrap:anywhere}
+  .card .out{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:7px}
+  .card .out b{color:var(--green);font-weight:600}
+
+  .quote{margin-top:clamp(24px,4vh,40px);padding-left:clamp(14px,2vw,22px);
+    border-left:2px solid var(--accent);font-size:clamp(17px,2vw,24px);line-height:1.35;
+    letter-spacing:-.02em;color:var(--text);max-width:38ch}
+  .quote span{color:var(--muted);display:block;font-size:.62em;letter-spacing:0;
+    margin-top:10px;font-family:var(--mono);text-transform:uppercase}
+
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:clamp(24px,4vh,38px)}
+  .node{font-family:var(--mono);font-size:clamp(10px,1.15vw,12.5px);padding:9px 12px;
+    border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--soft)}
+  .node.hot{border-color:rgba(34,211,238,.55);color:var(--accent);
+    box-shadow:0 0 18px rgba(34,211,238,.09)}
+  .node.end{border-color:rgba(52,211,153,.45);color:var(--green)}
+  .arrow{color:var(--muted);font-family:var(--mono);font-size:12px}
+
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;
+    overflow:hidden;margin-top:clamp(24px,4vh,40px)}
+  .stat{background:linear-gradient(180deg,var(--panel2),var(--panel));padding:clamp(16px,2.4vw,28px)}
+  .stat .v{font-size:clamp(28px,4.2vw,52px);line-height:1;letter-spacing:-.045em;
+    font-weight:800;font-variant-numeric:tabular-nums}
+  .stat .v em{font-style:normal;color:var(--accent);font-size:.46em;letter-spacing:.01em;
+    margin-left:7px;font-weight:650}
+  .stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--muted);
+    text-transform:uppercase;margin-top:9px}
+  .stat .d{font-size:12px;color:var(--soft);margin-top:7px;line-height:1.45}
+
+  .split{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(18px,3vw,40px);
+    align-items:center;margin-top:clamp(20px,3.5vh,34px)}
+  .code{font-family:var(--mono);font-size:clamp(10.5px,1.1vw,13px);line-height:1.65;
+    background:#080d18;border:1px solid var(--border);border-left:2px solid var(--accent);
+    border-radius:10px;padding:clamp(13px,1.7vw,20px);overflow-x:auto;color:var(--soft);
+    white-space:pre;tab-size:2}
+  .code .c{color:var(--muted)}
+  .code .k{color:var(--accent2)}
+  .code .s{color:var(--green)}
+  .code .a{color:var(--accent)}
+  .code .w{color:var(--amber)}
+
+  .stack{display:flex;flex-direction:column;gap:12px;margin-top:clamp(20px,3.5vh,32px)}
+  .row{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+    padding:12px 0;border-bottom:1px solid rgba(30,41,59,.7)}
+  .row:last-child{border-bottom:0}
+  .row .tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:5px 8px;
+    background:var(--panel);white-space:nowrap}
+  .row .tag.done{color:var(--green);border-color:rgba(52,211,153,.35)}
+  .row .tag.next{color:var(--amber);border-color:rgba(251,191,36,.35)}
+  .row .tag.block{color:var(--red);border-color:rgba(248,113,113,.35)}
+  .row p{font-size:13px;color:var(--soft)}
+  .row p b{color:var(--text);font-weight:600}
+
+  .note{margin-top:clamp(18px,3vh,28px);font-family:var(--mono);font-size:10.5px;
+    line-height:1.6;color:var(--muted);letter-spacing:.02em}
+  .note b{color:var(--soft);font-weight:600}
+
+  .controls{display:flex;align-items:center;gap:14px}
+  .dots{display:flex;align-items:center;gap:7px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#243147;padding:0;
+    transition:background .2s,transform .2s}
+  .dot:hover{background:var(--muted)}
+  .dot.on{background:var(--accent);transform:scale(1.35);box-shadow:0 0 10px rgba(34,211,238,.5)}
+  .count{font-variant-numeric:tabular-nums;color:var(--soft);min-width:54px;text-align:center}
+  .nav{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;
+    border:1px solid var(--border);background:rgba(13,18,32,.8);color:var(--soft);
+    font-size:13px;transition:border-color .18s,color .18s}
+  .nav:hover{border-color:var(--accent);color:var(--accent)}
+  .hint{position:fixed;right:clamp(16px,3.5vw,40px);bottom:clamp(16px,3.2vh,28px);
+    z-index:19;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);pointer-events:none}
+  .hint kbd{border:1px solid var(--border);border-radius:5px;padding:2px 6px;
+    background:rgba(13,18,32,.8);color:var(--soft);font-family:var(--mono);font-size:10px}
+
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+  @media(max-width:820px){
+    .cols.three,.cols.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .split{grid-template-columns:1fr}
+    .hint{display:none}
+    h1{font-size:clamp(58px,20vw,110px)}
+    .slide{align-items:flex-start;padding-block:60px}
+  }
+  @media(max-width:560px){
+    .cols.two,.cols.three,.cols.four{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr 1fr}
+    .chrome.top .meta span:first-child{display:none}
+    .card p{font-size:13px}
+    .row{grid-template-columns:1fr}
+    .row .tag{justify-self:start}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+  @media print{
+    @page{size:A4 landscape;margin:10mm}
+    html,body{height:auto;overflow:visible;background:#070a12}
+    .chrome,.hint{display:none}
+    .deck{position:static}
+    .slide{position:relative;inset:auto;opacity:1;visibility:visible;transform:none;
+      min-height:180mm;page-break-after:always;padding:8mm;overflow:visible}
+    .slide:last-child{page-break-after:auto}
+  }
+</style>
+</head>
+<body>
+
+<header class="chrome top">
+  <a class="brand" href="./" aria-label="toolrx app"><span class="mark">◈</span> toolrx</a>
+  <div class="meta">
+    <span>pitch deck · 2026</span>
+    <span class="dotsep" aria-hidden="true"></span>
+    <a href="https://github.com/BoogerCheeseOnRye/toolrx">source</a>
+  </div>
+</header>
+
+<main class="deck" id="deck" aria-roledescription="slide deck" aria-label="toolrx pitch deck">
+
+  <section class="slide active" data-title="title" aria-label="Title">
+    <div class="inner">
+      <div class="kicker">offline-first · deterministic · MIT</div>
+      <h1>toolrx</h1>
+      <p class="lede">A tool router that doesn’t guess, and a builder that ships <strong>real files</strong>.</p>
+      <p class="sub">Plain English in. Deterministic commands, real tools, and working mini-projects out —
+        no transformer, no GPU, no API key.</p>
+      <div class="hero-foot">
+        <a class="btn primary" href="./">Open the live app <span aria-hidden="true">→</span></a>
+        <a class="btn" href="https://github.com/BoogerCheeseOnRye/toolrx">Read the source</a>
+      </div>
+      <div class="hero-stats" aria-label="Highlights">
+        <span class="pill"><b>27</b> tools</span>
+        <span class="pill"><b>7,569</b> commands</span>
+        <span class="pill"><b>1</b> browser tab</span>
+        <span class="pill"><b>0</b> network calls by default</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="the problem" aria-label="The problem">
+    <div class="inner">
+      <div class="kicker">the problem</div>
+      <h2>Not every task deserves a frontier model.</h2>
+      <div class="cols three">
+        <article class="card">
+          <div class="n">01 · cost</div>
+          <h3>Round trip for a one-liner</h3>
+          <p>Asking a large model to add two numbers adds latency, money, and a failure mode where there was none.</p>
+        </article>
+        <article class="card">
+          <div class="n">02 · correctness</div>
+          <h3>Confident, not correct</h3>
+          <p>General models produce plausible text. For a file listing or a unit conversion, plausible is not a spec.</p>
+        </article>
+        <article class="card">
+          <div class="n">03 · context</div>
+          <h3>The network is in the loop</h3>
+          <p>Offline labs, air-gapped machines, and privacy-sensitive work can’t depend on a remote endpoint.</p>
+        </article>
+      </div>
+      <p class="quote">Use the biggest hammer for the job. Just don’t use it for a nail you can measure.
+        <span>the toolrx thesis</span></p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="the idea" aria-label="The idea">
+    <div class="inner">
+      <div class="kicker">the idea</div>
+      <h2>Deterministic first. Generative only when asked.</h2>
+      <div class="flow" aria-label="Request pipeline">
+        <span class="node">prompt</span><span class="arrow">→</span>
+        <span class="node hot">normalize</span><span class="arrow">→</span>
+        <span class="node hot">7,569 exact commands</span><span class="arrow">→</span>
+        <span class="node">hashed n-gram router</span><span class="arrow">→</span>
+        <span class="node">allow-listed tool</span><span class="arrow">→</span>
+        <span class="node end">real result</span>
+      </div>
+      <div class="cols three">
+        <article class="card">
+          <div class="n">allow-listed</div>
+          <h3>27 tools, default deny</h3>
+          <p>Arguments are checked against a policy before anything runs. Unknown intent becomes a refusal, not an improvisation.</p>
+        </article>
+        <article class="card">
+          <div class="n">measured</div>
+          <h3>Confidence and margin</h3>
+          <p>Every route prints a score and the gap to the runner-up, so a weak match is visible instead of hidden.</p>
+        </article>
+        <article class="card">
+          <div class="n">optional</div>
+          <h3>An LLM you have to ask for</h3>
+          <p>The adapter is off by default. Only an explicit plan or patch request can reach it — never a normal build.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="what it does" aria-label="What it does">
+    <div class="inner">
+      <div class="kicker">what it does</div>
+      <h2>Four things, done for real.</h2>
+      <div class="cols four">
+        <article class="card">
+          <div class="n">route</div>
+          <h3>Pick a tool</h3>
+          <div class="cmd">list contents of all files</div>
+          <div class="out"><b>fs.list_dir</b> · inside a realpath sandbox</div>
+        </article>
+        <article class="card">
+          <div class="n">compute</div>
+          <h3>Chain exact steps</h3>
+          <div class="cmd">convert 5 km to miles then square the result</div>
+          <div class="out"><b>units.convert</b> → <b>math.pow</b> · prev threaded</div>
+        </article>
+        <article class="card">
+          <div class="n">build</div>
+          <h3>Write a project</h3>
+          <div class="cmd">build a tower defense game</div>
+          <div class="out"><b>index.html</b> · styles.css · app.js · README · ARCHITECTURE</div>
+        </article>
+        <article class="card">
+          <div class="n">edit</div>
+          <h3>Patch the result</h3>
+          <div class="cmd">add a boss</div>
+          <div class="out"><b>spawnBoss()</b> in app.js · spec updated · lossless undo</div>
+        </article>
+      </div>
+      <p class="note">One prompt can be a plan: <b>then</b>, <b>;</b>, <b>-&gt;</b>, or numbered lines split into steps, and each step sees the previous result.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="by the numbers" aria-label="By the numbers">
+    <div class="inner">
+      <div class="kicker">by the numbers</div>
+      <h2>Small enough to inspect. <span class="quiet">Useful enough to keep.</span></h2>
+      <div class="stats">
+        <div class="stat"><div class="v">7,569</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
+        <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
+        <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
+        <div class="stat"><div class="v">170</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code.</div></div>
+        <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
+        <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
+      </div>
+      <p class="note"><b>Honest numbers:</b> these are counts from this repository at this commit. The test suite is the source of truth, not a benchmark against other products.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="under the hood" aria-label="Under the hood">
+    <div class="inner">
+      <div class="kicker">under the hood</div>
+      <h2>A small, inspectable stack.</h2>
+      <div class="stack">
+        <div class="row"><span class="tag">tokhash.py</span><p><b>Hashed character n-grams.</b> Text statistics, not neural weights. No GPU, no tokenizer dependency.</p></div>
+        <div class="row"><span class="tag">builder.py</span><p><b>One centroid per tool.</b> Derived from the markdown in <b>knowledge/</b>, rebuildable at any time with <b>--rebuild</b>.</p></div>
+        <div class="row"><span class="tag">router.py</span><p><b>Cosine score plus margin.</b> Best tool above threshold, otherwise an honest low-confidence refusal.</p></div>
+        <div class="row"><span class="tag">security.py</span><p><b>Default deny.</b> Argument validation, realpath sandbox, output caps, and no shell interpolation.</p></div>
+        <div class="row"><span class="tag">web/router.js</span><p><b>Same model in the tab.</b> The Pages build ships a JavaScript port and the command catalog, so static hosting behaves like localhost.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="real files" aria-label="Real files">
+    <div class="inner">
+      <div class="kicker">real files</div>
+      <h2>A build is a project, not a chat bubble.</h2>
+      <div class="split">
+        <div class="code" aria-label="Generated project tree"><span class="c">projects/platformer/</span>
+  index.html
+  styles.css
+  app.js
+  README.md
+  ARCHITECTURE.md
+  engine2d.js
+
+<span class="c">// every file is editable, exportable,</span>
+<span class="c">// and re-bundled into the preview</span></div>
+        <div>
+          <div class="code" aria-label="Patch example"><span class="a">add double jump</span> →
+  <span class="k">function</span> <span class="s">doubleJump</span>(){ … }
+
+<span class="a">spec</span> · 2D side-scroller · platformer
+       · pixel · medium · <span class="w">+double jump</span>
+
+<span class="a">changed:</span> app.js,
+         ARCHITECTURE.md, README.md</div>
+          <p class="sub"><b>Eight full-file snapshots per project.</b> <b>undo</b> restores the exact
+            strings that existed before the edit — including removing a 3D engine after a rebuild.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="offline" aria-label="Offline">
+    <div class="inner">
+      <div class="kicker">offline by construction</div>
+      <h2>The network is an optional dependency.</h2>
+      <div class="cols two">
+        <article class="card">
+          <div class="n">installable</div>
+          <h3>One tab, no backend</h3>
+          <p>An installable PWA with a service worker (<b>toolrx-shell-v10</b>). The router, commands, engines, and demos are cached on first visit.</p>
+        </article>
+        <article class="card">
+          <div class="n">local state</div>
+          <h3>Projects live in the browser</h3>
+          <p>Files, settings, memory, and reading status persist in <b>localStorage</b>. No account, no sync, no analytics.</p>
+        </article>
+        <article class="card">
+          <div class="n">optional server</div>
+          <h3>Python for the machine parts</h3>
+          <p>The local server adds sockets, <b>/proc</b>, training, and WireGuard. The browser app does not need it.</p>
+        </article>
+        <article class="card">
+          <div class="n">deliberate exception</div>
+          <h3>One opt-in network path</h3>
+          <p>The LLM adapter is the only feature that can call out. It stays off until you save an endpoint and enable it.</p>
+        </article>
+      </div>
+      <p class="quote">Airplane mode is a supported configuration.
+        <span>not a degraded mode</span></p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="optional llm" aria-label="Optional LLM">
+    <div class="inner">
+      <div class="kicker">optional LLM</div>
+      <h2>Generative when it helps. <span class="quiet">Deterministic when it counts.</span></h2>
+      <div class="cols four">
+        <article class="card">
+          <div class="n">01</div>
+          <h3>Off by default</h3>
+          <p>No endpoint and no enabled flag means no request. Normal builds never touch it.</p>
+        </article>
+        <article class="card">
+          <div class="n">02</div>
+          <h3>Strict schema</h3>
+          <p>One JSON object, an allow-listed genre, and no extra keys. A malformed answer is rejected.</p>
+        </article>
+        <article class="card">
+          <div class="n">03</div>
+          <h3>Pending diffs</h3>
+          <p>One unified diff, validated hunk-by-hunk. Apply it through the undo snapshot, or discard it untouched.</p>
+        </article>
+        <article class="card">
+          <div class="n">04</div>
+          <h3>Bounded</h3>
+          <p>HTTPS only (localhost excepted), 8 calls a session, timeout, size cap, and a local key that never enters the cache.</p>
+        </article>
+      </div>
+      <p class="quote">The model can propose. The validator decides.
+        <span>the adapter contract</span></p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="who it's for" aria-label="Who it's for">
+    <div class="inner">
+      <div class="kicker">who it’s for</div>
+      <h2>Built for the tasks that should be boring.</h2>
+      <div class="cols four">
+        <article class="card"><div class="n">learners</div><h3>See the route</h3><p>Confidence, margin, arguments, and the file that changed. No account, no black box.</p></article>
+        <article class="card"><div class="n">offline labs</div><h3>Work disconnected</h3><p>Planes, trains, air-gapped rooms, and locked-down machines with a browser.</p></article>
+        <article class="card"><div class="n">privacy</div><h3>Keep the text local</h3><p>The deterministic path never leaves the tab. Shared machines stay shared, not synced.</p></article>
+        <article class="card"><div class="n">low-spec</div><h3>Skip the GPU</h3><p>A hashed n-gram model and a pattern library run where a model server would not.</p></article>
+      </div>
+      <p class="note"><b>Not for:</b> open-ended research, long-form writing, or anything that genuinely needs a general model. Use the right tool.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="roadmap" aria-label="Roadmap">
+    <div class="inner">
+      <div class="kicker">roadmap</div>
+      <h2>Ship the next useful thing.</h2>
+      <div class="stack">
+        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, 7,569 patterns, chained steps, confidence and margin.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Builds and composable edits.</b> 16 genre starters, 20 RPG packs, named-function patches, lossless undo.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Optional LLM adapter.</b> Off by default, strict JSON, pending diffs, budgets, cache, local key.</p></div>
+        <div class="row"><span class="tag next">next</span><p><b>More patch families and app templates.</b> Keep expanding the deterministic surface before reaching for a model.</p></div>
+        <div class="row"><span class="tag next">next</span><p><b>Project import/export.</b> Move a workspace between browsers without an account.</p></div>
+        <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
+      </div>
+      <p class="note">Roadmap, not promises. Every item has to stay testable offline and honest about failure.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="try it" aria-label="Try it">
+    <div class="inner">
+      <div class="kicker">try it</div>
+      <h2>Ask it something boring.</h2>
+      <p class="lede">Then watch it route, measure, build, and undo — <strong>in the tab</strong>.</p>
+      <div class="hero-foot">
+        <a class="btn primary" href="./">Open the live app <span aria-hidden="true">→</span></a>
+        <a class="btn" href="https://github.com/BoogerCheeseOnRye/toolrx">Source on GitHub</a>
+      </div>
+      <div class="code" style="margin-top:clamp(20px,3.5vh,32px);max-width:640px" aria-label="Run locally"><span class="c"># run the full harness locally</span>
+TOOLRX_SANDBOX_ROOT=<span class="s">"$PWD"</span> PORT=<span class="w">8080</span> \
+  python3 toolrx/server.py</div>
+      <p class="sub"><b>What would help most:</b> feedback from people with real offline workflows,
+        beta testers for the build/edit loop, and a licence-compatible pixel-art sprite pack.
+        If you have a task that should be a command, not a conversation — I want to hear it.</p>
+      <p class="note">MIT licensed · no analytics · no tracking · <a href="https://github.com/BoogerCheeseOnRye/toolrx">github.com/BoogerCheeseOnRye/toolrx</a></p>
+    </div>
+  </section>
+
+</main>
+
+<div class="hint" aria-hidden="true"><kbd>←</kbd> <kbd>→</kbd> to move · <kbd>P</kbd> to print</div>
+
+<footer class="chrome bottom">
+  <div class="controls">
+    <button class="nav" id="prev" type="button" aria-label="Previous slide">←</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+    <span class="count" id="count">01 / 12</span>
+    <button class="nav" id="next" type="button" aria-label="Next slide">→</button>
+  </div>
+</footer>
+
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var dots = document.getElementById("dots");
+  var count = document.getElementById("count");
+  var live = document.getElementById("live");
+  var current = 0;
+  var total = slides.length;
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  slides.forEach(function (slide, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "dot" + (i === 0 ? " on" : "");
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-label", "Slide " + (i + 1) + " · " + (slide.getAttribute("data-title") || ""));
+    b.setAttribute("aria-selected", i === 0 ? "true" : "false");
+    b.addEventListener("click", function () { show(i, true); });
+    dots.appendChild(b);
+  });
+
+  function show(n, push) {
+    n = Math.max(0, Math.min(total - 1, n));
+    current = n;
+    slides.forEach(function (slide, i) {
+      var on = i === n;
+      slide.classList.toggle("active", on);
+      slide.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    Array.prototype.forEach.call(dots.children, function (d, i) {
+      d.classList.toggle("on", i === n);
+      d.setAttribute("aria-selected", i === n ? "true" : "false");
+    });
+    count.textContent = pad(n + 1) + " / " + pad(total);
+    live.textContent = "Slide " + (n + 1) + " of " + total + ": "
+      + (slides[n].getAttribute("data-title") || "");
+    if (push !== false) {
+      var base = location.pathname + location.search;
+      try { history.replaceState(null, "", base + "#" + (n + 1)); }
+      catch (e) { /* file:// */ }
+    }
+  }
+
+  document.getElementById("prev").addEventListener("click", function () { show(current - 1); });
+  document.getElementById("next").addEventListener("click", function () { show(current + 1); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "ArrowDown" || k === "PageDown" || k === " " || k === "Enter") {
+      e.preventDefault(); show(current + 1);
+    } else if (k === "ArrowLeft" || k === "ArrowUp" || k === "PageUp") {
+      e.preventDefault(); show(current - 1);
+    } else if (k === "Home") {
+      e.preventDefault(); show(0);
+    } else if (k === "End") {
+      e.preventDefault(); show(total - 1);
+    } else if (k === "p" || k === "P") {
+      window.print();
+    } else if (k === "f" || k === "F") {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    }
+  });
+
+  var touchX = null, touchY = null;
+  document.getElementById("deck").addEventListener("touchstart", function (e) {
+    if (!e.touches || e.touches.length !== 1) return;
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, { passive: true });
+  document.getElementById("deck").addEventListener("touchend", function (e) {
+    if (touchX == null || !e.changedTouches || !e.changedTouches.length) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    var dy = e.changedTouches[0].clientY - touchY;
+    touchX = touchY = null;
+    if (Math.abs(dx) < 46 || Math.abs(dx) < Math.abs(dy)) return;
+    show(dx < 0 ? current + 1 : current - 1);
+  }, { passive: true });
+
+  var initial = parseInt((location.hash || "").replace("#", ""), 10);
+  show(isFinite(initial) && initial > 0 ? initial - 1 : 0, false);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt((location.hash || "").replace("#", ""), 10);
+    if (isFinite(n) && n > 0 && n - 1 !== current) show(n - 1, false);
+  });
+})();
+</script>
+</body>
+</html>

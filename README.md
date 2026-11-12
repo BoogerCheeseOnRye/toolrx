@@ -15,6 +15,9 @@ RAM, load, uptime and disk are read from `/proc`. No device config is required.
 
 ![stack](https://img.shields.io/badge/python-3.10+-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
+- Live app: <https://boogercheeseonrye.github.io/toolrx/>
+- Pitch deck: <https://boogercheeseonrye.github.io/toolrx/pitch.html> (`docs/pitch.html`)
+
 ## How it works
 
 1. `tokhash.py` turns the request into hashed character n-grams (pure Python).
