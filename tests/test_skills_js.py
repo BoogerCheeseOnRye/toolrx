@@ -45,6 +45,7 @@ eval(fs.readFileSync(require('path').join(WEB, 'worldgen.embed.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'rpg2.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'rpg2.embed.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'patches.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'context.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'lang.js'), 'utf8'));
 self.toolrxLang.configure(JSON.parse(fs.readFileSync(process.argv[5], 'utf8')));
 eval(fs.readFileSync(process.argv[4], 'utf8'));
@@ -1050,6 +1051,157 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   };
   try { localStorage.removeItem('toolrx.undo.depth'); } catch (e) { /* ignore */ }
 
+  // Step 31: deterministic per-project context. Show, continue, expand, cap,
+  // reload, cross-project isolation, and replay are all exercised through the
+  // real sandbox and the real command library.
+  out.context = {};
+  const netCalls = [];
+  const baseFetch = global.fetch;
+  global.fetch = function (url, opts) {
+    netCalls.push({ url: String(url), body: opts && opts.body ? String(opts.body) : '' });
+    return baseFetch(url, opts);
+  };
+  const contextState = () => {
+    try { return JSON.parse(self.toolrxWeb.contextRaw() || '{}'); }
+    catch (e) { return { entries: [] }; }
+  };
+  const contextEntry = (kind, key) => (contextState().entries || [])
+    .filter(e => e.kind === kind && (!key || e.key === key))[0] || null;
+
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  await pRun('add double jump');
+  const ctxPlanRun = await pRun('add sound; add a boss; add a quest');
+  const ctxShowOne = await pRun('what is in context');
+  const ctxRawOne = self.toolrxWeb.contextRaw();
+  const ctxReportOne = self.toolrxWeb.context();
+  const ctxBytesOne = self.toolrxContext.byteLength(ctxRawOne);
+  const ctxShaOne = self.toolrxContext.fingerprint(ctxRawOne);
+  const ctxApp = contextEntry('file', 'app.js');
+  const ctxSpec = contextEntry('spec', 'active');
+  const ctxResult = contextEntry('result', 'last');
+  const ctxSession = contextEntry('session', 'rolling');
+  const ctxPlan = contextEntry('plan', 'last');
+  const ctxPlanParsed = ctxPlan ? JSON.parse(ctxPlan.text) : null;
+  const ctxFileNames = (contextState().entries || [])
+    .filter(e => e.kind === 'file').map(e => e.key).sort();
+  const ctxActive = self.toolrxWeb.project();
+  out.context.show = {
+    via: ctxShowOne[0].via,
+    text: ctxShowOne[0].text,
+    bytes: ctxBytesOne,
+    sha: ctxShaOne,
+    stored: ctxReportOne.stored,
+    matches: ctxShowOne[0].text.indexOf('stored: ' + ctxBytesOne + ' bytes · sha '
+      + ctxShaOne) >= 0,
+    project: ctxReportOne.project,
+    entries: ctxReportOne.entries,
+    fileNames: ctxFileNames,
+    projectFiles: ctxActive.files.slice().sort(),
+    appHasHash: !!ctxApp && ctxApp.text.indexOf('app.js · ') === 0
+      && ctxApp.text.indexOf('sha ' + self.toolrxContext.fingerprint(
+        self.toolrxWeb.projectFile(ctxActive.slug, 'app.js'))) >= 0,
+    specLine: ctxSpec ? ctxSpec.text : '',
+    resultText: ctxResult ? ctxResult.text : '',
+    sessionText: ctxSession ? ctxSession.text : '',
+    plan: ctxPlanParsed,
+    capLine: /cap \d+ bytes/.test(ctxShowOne[0].text),
+    planRun: ctxPlanRun.map(r => ({ via: r.via, error: r.error,
+      first: String(r.text).split('\n')[0] })),
+  };
+
+  const ctxNothing = await pRun('continue from previous');
+  const ctxExpand = await pRun('expand the last plan with add day/night');
+  const ctxPlanExpanded = contextEntry('plan', 'last');
+  const ctxExpandedParsed = ctxPlanExpanded ? JSON.parse(ctxPlanExpanded.text) : null;
+  const ctxContinue = await pRun('continue from previous');
+  const ctxPlanDone = contextEntry('plan', 'last');
+  const ctxDoneParsed = ctxPlanDone ? JSON.parse(ctxPlanDone.text) : null;
+  out.context.flow = {
+    nothing: ctxNothing[0].text,
+    nothingVia: ctxNothing[0].via,
+    expandText: ctxExpand[0].text,
+    expandVia: ctxExpand[0].via,
+    expandedSteps: ctxExpandedParsed ? ctxExpandedParsed.steps : [],
+    expandedStatus: ctxExpandedParsed ? ctxExpandedParsed.status : [],
+    continueText: ctxContinue[0].text,
+    continueVia: ctxContinue[0].via,
+    finalStatus: ctxDoneParsed ? ctxDoneParsed.status : [],
+    questFn: /function questCheck/.test(
+      self.toolrxWeb.projectFile(self.toolrxWeb.project().slug, 'app.js')),
+    dayNightFn: /function dayNight/.test(
+      self.toolrxWeb.projectFile(self.toolrxWeb.project().slug, 'app.js')),
+  };
+
+  // Cross-project isolation and replaying the last edit on the other project.
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  await pRun('rename it to alpha runner');
+  await pRun('build a platformer game with coins');
+  const ctxSecond = self.toolrxWeb.project();
+  const ctxSecondShow = await pRun('what is in context');
+  const ctxScopes = self.toolrxContext.scopes();
+  const ctxFirstRaw = self.toolrxContext.raw('platformer');
+  await pRun('add double jump');
+  const applyOther = await pRun('apply the same changes to the other files');
+  const firstHasFn = /function doubleJump/.test(
+    self.toolrxWeb.projectFile('platformer', 'app.js'));
+  const secondHasFn = /function doubleJump/.test(
+    self.toolrxWeb.projectFile(ctxSecond.slug, 'app.js'));
+  self.toolrxWeb.openProject('platformer');
+  const firstUndo = await pRun('undo');
+  const firstUndoHasFn = /function doubleJump/.test(
+    self.toolrxWeb.projectFile('platformer', 'app.js'));
+  out.context.isolation = {
+    scopes: ctxScopes,
+    secondSlug: ctxSecond.slug,
+    secondText: ctxSecondShow[0].text,
+    secondMentionsFirst: /alpha runner/.test(ctxSecondShow[0].text),
+    firstRawMentionsSecond: /with coins|platformer-2/.test(ctxFirstRaw || ''),
+    applyVia: applyOther[0].via,
+    applyText: applyOther[0].text,
+    firstHasFn: firstHasFn,
+    secondHasFn: secondHasFn,
+    undoTail: firstUndo[0].text,
+    firstUndoHasFn: firstUndoHasFn,
+  };
+
+  const clearCtx = await pRun('clear context');
+  const afterClear = await pRun('what is in context');
+  out.context.clear = {
+    text: clearCtx[0].text,
+    via: clearCtx[0].via,
+    empty: /\(empty/.test(afterClear[0].text),
+    raw: self.toolrxWeb.contextRaw(),
+    entries: self.toolrxWeb.context().entries,
+  };
+
+  // A deliberately small cap forces oldest-first eviction with a visible note.
+  try { localStorage.setItem('toolrx.context.cap', '400'); } catch (e) { /* ignore */ }
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  await pRun('add double jump');
+  await pRun('add sound');
+  await pRun('add a quest');
+  const capShow = await pRun('what is in context');
+  const capReport = self.toolrxWeb.context();
+  const capRaw = self.toolrxWeb.contextRaw();
+  out.context.cap = {
+    text: capShow[0].text,
+    stored: capReport.stored,
+    rawBytes: self.toolrxContext.byteLength(capRaw),
+    cap: self.toolrxContext.cap(),
+    evicted: capReport.evicted,
+    visible: /evicted \(oldest first\):/.test(capShow[0].text),
+    hasTrimmed: /trimmed/.test(capShow[0].text),
+  };
+  try { localStorage.removeItem('toolrx.context.cap'); } catch (e) { /* ignore */ }
+
+  out.context.network = {
+    calls: netCalls.length,
+    leaked: netCalls.some(c => /context|query:|sha [0-9a-f]{16}/i.test(c.url + ' ' + c.body)),
+  };
+
   self.toolrxWeb.reset();
   out.sandbox.olympusBuild = (await self.toolrxWeb.prompt('build an rpg based on greek myth'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
@@ -1077,6 +1229,22 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     active: self.toolrxWeb.project() ? self.toolrxWeb.project().slug : '',
     html: self.toolrxWeb.defaultPreview(),
     title: self.toolrxWeb.preview().title,
+  };
+  await self.toolrxWeb.init('model.json');
+  const resumeShow = await self.toolrxWeb.prompt('what is in context');
+  const resumeRaw = self.toolrxWeb.contextRaw();
+  const resumeReport = self.toolrxWeb.context();
+  out.resume.context = {
+    text: resumeShow[0].text,
+    raw: resumeRaw,
+    project: resumeReport.project,
+    entries: resumeReport.entries,
+    stored: resumeReport.stored,
+    bytes: self.toolrxContext.byteLength(resumeRaw),
+    sha: self.toolrxContext.fingerprint(resumeRaw),
+    matches: resumeShow[0].text.indexOf('stored: '
+      + self.toolrxContext.byteLength(resumeRaw) + ' bytes · sha '
+      + self.toolrxContext.fingerprint(resumeRaw)) >= 0,
   };
   // Two identical default RPG prompts in one session must create two projects
   // with different names; the previous install would have collapsed them.
@@ -2186,6 +2354,76 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertFalse(d["hasHardMode"])
         self.assertFalse(d["hasSound"])
 
+    def test_context_show_lists_result_plan_spec_and_file_hashes(self):
+        c = self.out["context"]["show"]
+        self.assertEqual(c["via"], "context.show")
+        self.assertEqual(c["project"], "platformer")
+        self.assertTrue(c["matches"], "the shown bytes and sha must be the stored bytes")
+        self.assertEqual(c["stored"], c["bytes"])
+        self.assertGreater(c["entries"], 5)
+        for name in ("app.js", "index.html", "styles.css", "README.md",
+                     "ARCHITECTURE.md"):
+            self.assertIn(name, c["fileNames"])
+        self.assertTrue(c["appHasHash"], "each file carries a real content hash")
+        self.assertIn("spec · 2D side-scroller", c["specLine"])
+        self.assertIn("query: add sound; add a boss; add a quest", c["resultText"])
+        self.assertIn("✓ build a platformer game", c["sessionText"])
+        self.assertIn("✗ add a boss", c["sessionText"])
+        self.assertTrue(c["capLine"])
+        self.assertEqual(c["plan"]["status"], ["done", "error", "pending"])
+        self.assertEqual(len(c["planRun"]), 2)
+        self.assertTrue(c["planRun"][1]["error"])
+        self.assertEqual(c["planRun"][0]["via"], "edit.apply")
+
+    def test_context_continue_and_expand_use_the_last_plan(self):
+        f = self.out["context"]["flow"]
+        self.assertEqual(f["nothingVia"], "context.continue")
+        self.assertIn("continued the last plan", f["nothing"])
+        self.assertEqual(f["expandVia"], "context.expand")
+        self.assertIn("expanded the last plan", f["expandText"])
+        self.assertIn("add day/night", f["expandedSteps"])
+        self.assertEqual(f["expandedStatus"], ["done", "error", "done", "pending"])
+        self.assertIn("· add day/night", f["expandText"])
+        self.assertEqual(f["continueVia"], "context.continue")
+        self.assertIn("continued the last plan", f["continueText"])
+        self.assertEqual(f["finalStatus"], ["done", "error", "done", "done"])
+        self.assertTrue(f["questFn"], "continued work must edit the real app.js")
+        self.assertTrue(f["dayNightFn"], "expanded work must edit the real app.js")
+
+    def test_context_is_isolated_per_project_and_replays_edits(self):
+        i = self.out["context"]["isolation"]
+        self.assertEqual(i["scopes"], ["platformer", "platformer-2"])
+        self.assertEqual(i["secondSlug"], "platformer-2")
+        self.assertFalse(i["secondMentionsFirst"], i["secondText"])
+        self.assertFalse(i["firstRawMentionsSecond"])
+        self.assertEqual(i["applyVia"], "context.apply_others")
+        self.assertIn("applied the last edit", i["applyText"])
+        self.assertTrue(i["firstHasFn"])
+        self.assertTrue(i["secondHasFn"])
+        self.assertIn("undid", i["undoTail"])
+        self.assertFalse(i["firstUndoHasFn"], "undo must revert the replayed edit")
+
+    def test_context_clear_removes_only_this_projects_context(self):
+        c = self.out["context"]["clear"]
+        self.assertEqual(c["via"], "context.clear")
+        self.assertIn("context cleared", c["text"])
+        self.assertTrue(c["empty"])
+        self.assertEqual(c["raw"], "")
+        self.assertEqual(c["entries"], 0)
+
+    def test_context_cap_evicts_oldest_with_a_visible_note(self):
+        c = self.out["context"]["cap"]
+        self.assertEqual(c["cap"], 400)
+        self.assertLessEqual(c["stored"], 400, c["text"])
+        self.assertEqual(c["stored"], c["rawBytes"])
+        self.assertGreater(c["evicted"], 0)
+        self.assertTrue(c["visible"])
+        self.assertIn("evicted (oldest first):", c["text"])
+
+    def test_context_never_enters_a_network_payload(self):
+        n = self.out["context"]["network"]
+        self.assertFalse(n["leaked"], n)
+
     def test_reload_resumes_the_active_project_preview(self):
         r = self.out["resume"]
         self.assertEqual(r["active"], "olympus-rpg")
@@ -2193,6 +2431,12 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("<title>Nile RPG · toolrx</title>", r["html"])
         self.assertIn("the Pharaoh", r["html"])
         self.assertIn("offline · project preview", r["html"])
+        c = r["context"]
+        self.assertEqual(c["project"], "olympus-rpg")
+        self.assertGreater(c["entries"], 3)
+        self.assertTrue(c["matches"], "context must survive reload byte-for-byte")
+        self.assertIn("context · project: olympus-rpg", c["text"])
+        self.assertIn("file app.js", c["text"])
 
     def test_site_templates_build(self):
         for name in ("social", "blog", "forum", "chat"):

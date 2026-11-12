@@ -1826,6 +1826,30 @@
       if (!ctx.grow) throw new Error("project growth needs the browser workspace");
       return ctx.grow("system", a.system);
     },
+    "context.show": function (a, ctx) {
+      if (!ctx.contextShow) throw new Error("context needs the browser workspace");
+      return ctx.contextShow();
+    },
+    "context.clear": function (a, ctx) {
+      if (!ctx.contextClear) throw new Error("context needs the browser workspace");
+      return ctx.contextClear(false);
+    },
+    "context.clear.all": function (a, ctx) {
+      if (!ctx.contextClear) throw new Error("context needs the browser workspace");
+      return ctx.contextClear(true);
+    },
+    "context.continue": function (a, ctx) {
+      if (!ctx.contextContinue) throw new Error("context needs the browser workspace");
+      return ctx.contextContinue();
+    },
+    "context.expand": function (a, ctx) {
+      if (!ctx.contextExpand) throw new Error("context needs the browser workspace");
+      return ctx.contextExpand(a.more);
+    },
+    "context.apply_others": function (a, ctx) {
+      if (!ctx.contextApplyOthers) throw new Error("context needs the browser workspace");
+      return ctx.contextApplyOthers();
+    },
     "edit.undo": function (a, ctx) {
       if (!ctx.undo) throw new Error("undo needs the browser workspace");
       return ctx.undo();

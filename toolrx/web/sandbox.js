@@ -84,6 +84,10 @@
     try {
       root.localStorage.setItem(PROJECTS_KEY, JSON.stringify({ active: projects.active, items: projects.items }));
     } catch (e) { /* storage full or disabled */ }
+    // Keep the active project's context in step with its real files. This is
+    // the single capture point for builds, edits, growth, undo, themes, and
+    // imports; context is per project and never leaves the tab.
+    captureProjectContext(projects.active ? projects.items[projects.active] : null);
   }
 
   let projects = readProjects();
@@ -223,6 +227,8 @@
     if (projects.active === s) projects.active = Object.keys(projects.items)[0] || "";
     writeProjects();
     writeFS(files);
+    const C = contextModule();
+    if (C) C.clear(s);
     return "deleted " + p.name + " · " + (projects.active ? "active is now " + projects.active : "no projects left");
   }
 
@@ -636,8 +642,11 @@
       kind: p.kind, desc: p.desc, files: before, spec: spec, edits: p.edits || [],
     }, { arg: arg });
     if (!res.ok) {
-      return 'not edited · ' + res.message
-        + "\ntry: build a compatible starter first, or say undo";
+      return {
+        text: 'not edited · ' + res.message
+          + "\ntry: build a compatible starter first, or say undo",
+        error: true,
+      };
     }
     pushProjectHistory(p, res.label);
     p.files = res.files;
@@ -652,6 +661,7 @@
       title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
     };
     notifyPreview();
+    setEditContext(p.slug, { ids: [patch], labels: [res.label], arg: arg || "" });
     return editReport(before, p.files, {
       name: p.name, label: res.label, spec: p.spec, fn: res.fn,
       note: res.note, slug: p.slug,
@@ -675,24 +685,18 @@
       return "not edited · unknown edit: " + unknown.join(", ");
     }
     const before = copyFiles(p.files);
-    let files = before;
-    let spec = p.spec || null;
-    let edits = (p.edits || []).slice();
-    const labels = [];
-    for (let i = 0; i < ids.length; i++) {
-      const res = P.apply(ids[i], {
-        kind: p.kind, desc: p.desc, files: copyFiles(files),
-        spec: JSON.parse(JSON.stringify(spec || null)), edits: edits.slice(),
-      });
-      if (!res.ok) {
-        return "not edited · " + res.message
-          + "\nnothing changed: the bundle applies all or none.";
-      }
-      files = res.files;
-      spec = res.spec;
-      edits = res.edits;
-      labels.push(res.label);
+    const applied = applyIdsToProject(p, ids, "");
+    if (!applied.ok) {
+      return {
+        text: "not edited · " + applied.message
+          + "\nnothing changed: the bundle applies all or none.",
+        error: true,
+      };
     }
+    const files = applied.files;
+    const spec = applied.spec;
+    const edits = applied.edits;
+    const labels = applied.labels;
     pushProjectHistory(p, "bundle: " + labels.join(" + "));
     p.files = files;
     p.spec = spec;
@@ -706,6 +710,7 @@
       title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
     };
     notifyPreview();
+    setEditContext(p.slug, { ids: ids, labels: labels, arg: "" });
     const changed = [];
     const names = new Set(Object.keys(before).concat(Object.keys(p.files)));
     names.forEach(function (n) { if (before[n] !== p.files[n]) changed.push(n); });
@@ -730,8 +735,11 @@
       kind: p.kind, desc: p.desc, files: before, spec: p.spec, edits: p.edits || [],
     }, which, name);
     if (!res.ok) {
-      return "not grown · " + res.message
-        + "\ntry: grow project, expand module core, or add crafting system";
+      return {
+        text: "not grown · " + res.message
+          + "\ntry: grow project, expand module core, or add crafting system",
+        error: true,
+      };
     }
     pushProjectHistory(p, res.label);
     p.files = res.files;
@@ -933,6 +941,297 @@
   function clearMemory() {
     memory = {};
     try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
+  }
+
+  /* ------------------------------------------------------------- context -- */
+  /* Working memory is deliberately small and printable: the last result, the
+   * last plan, the active spec, one summary + hash per file, and a rolling
+   * session list. Every entry is scoped by project slug in localStorage and is
+   * never included in a network request. */
+  function contextModule() { return root.toolrxContext || null; }
+
+  function contextScope() { return projects.active || "scratch"; }
+
+  function firstMeaningfulLine(text) {
+    const lines = String(text == null ? "" : text).split(/\n/);
+    for (const raw of lines) {
+      let line = raw.trim();
+      if (!line) continue;
+      line = line.replace(/^\/\*+\s*/, "").replace(/\s*\*\/\s*$/, "")
+        .replace(/^#+\s*/, "").replace(/^\/\/\s*/, "").trim();
+      if (line) return line.length > 80 ? line.slice(0, 77) + "…" : line;
+    }
+    return "empty";
+  }
+
+  function fileSummary(name, text) {
+    const C = contextModule();
+    const body = String(text == null ? "" : text);
+    const bytes = C ? C.byteLength(body) : body.length;
+    const lines = body ? body.split("\n").length : 0;
+    const hash = root.blake2bHex
+      ? root.blake2bHex(body, null, 8)
+      : (C ? C.fingerprint(body) : String(bytes));
+    return name + " · " + bytes + " bytes · " + lines + " lines · sha " + hash
+      + " · " + firstMeaningfulLine(body);
+  }
+
+  function captureProjectContext(p, force) {
+    const C = contextModule();
+    if (!C || !p) return;
+    if (!force && p.slug !== projects.active) return;
+    const t = root.toolrxTemplates;
+    if (p.spec) {
+      const line = t && t.specLine ? t.specLine(p.spec) : C.stable(p.spec);
+      C.set(p.slug, "spec", "active", line);
+    } else {
+      C.remove(p.slug, "spec", "active");
+    }
+    const fileMap = p.files || {};
+    const items = Object.keys(fileMap).sort().map(function (name) {
+      return { kind: "file", key: name, text: fileSummary(name, fileMap[name]) };
+    });
+    C.setMany(p.slug, items, { kind: "file" });
+  }
+
+  function setEditContext(slug, record) {
+    const C = contextModule();
+    if (!C) return;
+    C.set(slug, "edit", "last", C.stable(record || {}));
+  }
+
+  function isContextMeta(via) {
+    return /^context\.(?:show|clear|clear\.all|expand|continue)$/.test(String(via || ""));
+  }
+
+  function notePromptContext(query, results) {
+    const C = contextModule();
+    if (!C) return;
+    const slug = contextScope();
+    const list = Array.isArray(results) ? results : [];
+    const last = list.filter(function (r) { return r && r.text; }).slice(-1)[0] || null;
+    const via = last ? String(last.via || "") : "";
+    const quiet = /^context\.(?:show|clear|clear\.all)$/.test(via);
+
+    if (last && !quiet) {
+      const head = "query: " + String(query).replace(/\s+/g, " ").slice(0, 240)
+        + "\nvia: " + (last.via || "router");
+      C.set(slug, "result", "last", head + "\n" + last.text);
+      // The rolling session keeps the last dozen steps, newest at the bottom.
+      if (!isContextMeta(via)) {
+        const previous = C.get(slug, "session", "rolling");
+        const rows = previous ? previous.split("\n").filter(Boolean) : [];
+        list.forEach(function (r) {
+          const mark = r.error ? "✗" : "✓";
+          rows.push(mark + " " + String(r.step || "").replace(/\s+/g, " ").slice(0, 160));
+        });
+        C.set(slug, "session", "rolling", rows.slice(-12).join("\n"));
+      }
+    }
+
+    const skills = root.toolrxSkills;
+    const preview = skills && skills.planPreview ? skills.planPreview(query) : null;
+    if (preview && !preview.blocked && preview.plan && !isContextMeta(via)) {
+      const plan = {
+        version: 1,
+        steps: preview.steps.map(function (s) { return s.text; }),
+        status: preview.steps.map(function (_, i) {
+          const r = list[i];
+          return r ? (r.error ? "error" : "done") : "pending";
+        }),
+      };
+      C.set(slug, "plan", "last", C.stable(plan));
+    }
+  }
+
+  function readLastPlan(slug) {
+    const C = contextModule();
+    if (!C) return null;
+    const raw = C.get(slug, "plan", "last");
+    if (!raw) return null;
+    try {
+      const plan = JSON.parse(raw);
+      if (!plan || !Array.isArray(plan.steps)) return null;
+      plan.status = Array.isArray(plan.status) ? plan.status : [];
+      plan.steps.forEach(function (_, i) {
+        if (plan.status[i] !== "done" && plan.status[i] !== "error"
+            && plan.status[i] !== "pending") plan.status[i] = "pending";
+      });
+      return plan;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function planLines(plan) {
+    return plan.steps.map(function (step, i) {
+      const status = plan.status[i] || "pending";
+      const mark = status === "done" ? "✓" : (status === "error" ? "✗" : "·");
+      return (i + 1) + ". " + mark + " " + step;
+    });
+  }
+
+  function contextShow() {
+    const C = contextModule();
+    if (!C) return "context is unavailable in this browser";
+    return C.report(contextScope()).text;
+  }
+
+  function contextRaw() {
+    const C = contextModule();
+    return C ? C.raw(contextScope()) : "";
+  }
+
+  function contextClear(all) {
+    const C = contextModule();
+    if (!C) return "context is unavailable in this browser";
+    if (all) {
+      const n = C.clearAll();
+      return "cleared context for " + n + " project" + (n === 1 ? "" : "s")
+        + "\nmemory notes and chat history are separate";
+    }
+    const slug = contextScope();
+    C.clear(slug);
+    return "context cleared · project: " + slug
+      + "\nmemory notes and chat history are separate";
+  }
+
+  async function contextContinue() {
+    const C = contextModule();
+    const slug = contextScope();
+    const skills = root.toolrxSkills;
+    if (!C || !skills) return "context is unavailable in this browser";
+    const plan = readLastPlan(slug);
+    if (!plan) {
+      return "no previous plan in context · build a multi-step plan first, "
+        + "then say what is in context";
+    }
+    const indexes = plan.status.map(function (status, i) {
+      return status === "pending" ? i : -1;
+    }).filter(function (i) { return i >= 0; });
+    if (!indexes.length) {
+      const errors = plan.status.filter(function (s) { return s === "error"; }).length;
+      return "nothing left to continue · " + plan.steps.length + "/"
+        + plan.steps.length + " steps resolved"
+        + (errors ? " (" + errors + " error" + (errors === 1 ? "" : "s") + ")" : "");
+    }
+    const steps = indexes.map(function (i) { return plan.steps[i]; });
+    const results = await skills.runPrompt(steps.join("\n"), promptContext());
+    results.forEach(function (r, i) {
+      plan.status[indexes[i]] = r.error ? "error" : "done";
+    });
+    C.set(slug, "plan", "last", C.stable(plan));
+    const prior = C.get(slug, "session", "rolling");
+    const rows = prior ? prior.split("\n").filter(Boolean) : [];
+    results.forEach(function (r) {
+      rows.push((r.error ? "✗ " : "✓ ") + String(r.step || "").slice(0, 160));
+    });
+    C.set(slug, "session", "rolling", rows.slice(-12).join("\n"));
+    const remaining = plan.status.filter(function (s) { return s !== "done"; }).length;
+    const lines = ["continued the last plan · " + results.length + " step"
+      + (results.length === 1 ? "" : "s") + " run · " + remaining + " still pending"];
+    results.forEach(function (r) {
+      lines.push("", r.step, r.text || "");
+    });
+    return lines.join("\n").trim();
+  }
+
+  function contextExpand(more) {
+    const C = contextModule();
+    const slug = contextScope();
+    const skills = root.toolrxSkills;
+    if (!C || !skills) return "context is unavailable in this browser";
+    const plan = readLastPlan(slug);
+    if (!plan) {
+      return "no last plan to expand · build a multi-step plan first, "
+        + "then say expand the last plan with …";
+    }
+    const text = String(more || "").trim();
+    if (!text) return "nothing to add · say expand the last plan with <steps>";
+    const info = skills.splitPromptInfo(text);
+    if (info.overLimit || plan.steps.length + info.steps.length > 40) {
+      return "not expanded · the plan would exceed 40 steps";
+    }
+    info.steps.forEach(function (step) {
+      plan.steps.push(step);
+      plan.status.push("pending");
+    });
+    C.set(slug, "plan", "last", C.stable(plan));
+    return ["expanded the last plan · " + info.steps.length + " new step"
+      + (info.steps.length === 1 ? "" : "s") + " · " + plan.steps.length + " total"]
+      .concat(planLines(plan))
+      .concat(["", "say continue from previous to run the pending steps"])
+      .join("\n");
+  }
+
+  /* Apply the last recorded patch or bundle to every other project. Each
+   * project is all-or-none and gets its own undo entry; incompatible projects
+   * are reported instead of being rewritten. */
+  function applyIdsToProject(p, ids, arg) {
+    const P = root.toolrxPatches;
+    if (!P) return { ok: false, message: "edit patches are not loaded" };
+    let files = copyFiles(p.files);
+    let spec = p.spec ? JSON.parse(JSON.stringify(p.spec)) : null;
+    let edits = (p.edits || []).slice();
+    const labels = [];
+    for (const id of ids) {
+      const res = P.apply(id, {
+        kind: p.kind, desc: p.desc, files: copyFiles(files),
+        spec: JSON.parse(JSON.stringify(spec || null)), edits: edits.slice(),
+      }, { arg: arg });
+      if (!res.ok) {
+        return { ok: false, message: res.message, id: id, labels: labels };
+      }
+      files = res.files;
+      spec = res.spec;
+      edits = res.edits;
+      labels.push(res.label);
+    }
+    return { ok: true, files: files, spec: spec, edits: edits, labels: labels };
+  }
+
+  function contextApplyOthers() {
+    const C = contextModule();
+    const slug = contextScope();
+    if (!C) return "context is unavailable in this browser";
+    const raw = C.get(slug, "edit", "last");
+    if (!raw) {
+      return "no recent edit in this project's context · apply an edit first";
+    }
+    let record;
+    try { record = JSON.parse(raw); } catch (e) { record = null; }
+    const ids = record && Array.isArray(record.ids) ? record.ids : [];
+    if (!ids.length) return "the last edit is not replayable";
+    const others = Object.keys(projects.items).sort().filter(function (k) {
+      return k !== slug;
+    });
+    if (!others.length) {
+      return "no other projects to apply the changes to · build a second project first";
+    }
+    const done = [], failed = [];
+    others.forEach(function (key) {
+      const p = projects.items[key];
+      const res = applyIdsToProject(p, ids, record.arg || "");
+      if (!res.ok) {
+        failed.push(key + ": " + res.message);
+        return;
+      }
+      pushProjectHistory(p, "same changes: " + res.labels.join(" + "));
+      p.files = res.files;
+      p.spec = res.spec;
+      p.edits = res.edits;
+      p.bundled = bundleProject(p);
+      p.updated = Date.now();
+      writeProjectFiles(p);
+      captureProjectContext(p, true);
+      done.push(key + " (" + res.labels.join(" + ") + ")");
+    });
+    writeProjects();
+    const lines = ["applied the last edit to " + done.length + " other project"
+      + (done.length === 1 ? "" : "s") + " · " + (record.labels || ids).join(" + ")];
+    if (done.length) lines.push("changed: " + done.join(" · "));
+    if (failed.length) lines.push("not changed: " + failed.join(" · "));
+    return lines.join("\n");
   }
 
 
@@ -1149,6 +1448,12 @@
       edit: function (patch, arg) { return applyProjectEdit(patch, arg); },
       editMany: function (list) { return applyProjectEdits(list); },
       grow: function (which, name) { return growActiveProject(which, name); },
+      contextShow: contextShow,
+      contextRaw: contextRaw,
+      contextClear: contextClear,
+      contextContinue: contextContinue,
+      contextExpand: contextExpand,
+      contextApplyOthers: contextApplyOthers,
       undo: function () { return undoProjectEdit(); },
       llmStatus: llmStatus,
       llmEnable: llmEnable,
@@ -1531,6 +1836,7 @@
         }];
       }
       const results = await skills.runPrompt(String(query), promptContext());
+      notePromptContext(String(query), results);
       // Keep a lightweight transcript for the chat side of the harness.
       chatAppend("you", String(query));
       const said = results.map(function (r) { return r.text; }).filter(Boolean).join("\n");
@@ -1567,6 +1873,12 @@
     renameProject: function (slug, name) { return renameProject(slug, name); },
     chatHistory: chatHistory,
     memory: function (k, v) { return remember(k, v); },
+    context: function () {
+      const C = contextModule();
+      return C ? C.report(contextScope()) : null;
+    },
+    contextRaw: contextRaw,
+    contextClear: contextClear,
     reset: function () {
       files = Object.assign({}, SEED);
       writeFS(files);
@@ -1576,6 +1888,8 @@
       writeChat();
       try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
       memory = {};
+      const C = contextModule();
+      if (C) C.clearAll();
     },
     loadedAt: function () { return loadedAt; },
     preview: snapshotPreview,

@@ -120,6 +120,28 @@ class CommandLibraryTest(unittest.TestCase):
             self.assertEqual(hit["op"], op, query)
             self.assertEqual(self.args_for(hit, query), expected, query)
 
+    def test_context_commands_route_with_exact_arguments(self):
+        exact = {
+            "what is in context": "context.show",
+            "show context": "context.show",
+            "context": "context.show",
+            "clear context": "context.clear",
+            "clear all context": "context.clear.all",
+            "continue from previous": "context.continue",
+            "resume the last plan": "context.continue",
+            "apply the same changes to the other files": "context.apply_others",
+        }
+        for query, op in exact.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+
+        expand = self.first("expand the last plan with add day/night")
+        self.assertIsNotNone(expand)
+        self.assertEqual(expand["op"], "context.expand")
+        self.assertEqual(self.args_for(expand, "expand the last plan with add day/night"),
+                         {"more": "add day/night"})
+
     def test_long_compositional_prompts_keep_kind_and_modifiers(self):
         cases = {
             "build a huge space rpg game with crafting":

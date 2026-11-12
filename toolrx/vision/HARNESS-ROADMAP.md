@@ -338,7 +338,7 @@ never means unbounded.
 | Project files | template-sized | 32 files |
 | Project text | template-sized | 512 KB total |
 | Undo snapshots | 16, configurable | 16 |
-| Command patterns | 12,425 | 12,000 |
+| Command patterns | 12,460 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
 
 ### Guardrails
@@ -419,7 +419,7 @@ not from hard-coded numbers.
 routing, the catalog regenerates byte-identically, no duplicate patterns remain,
 and existing routes keep their current answers.
 
-Landed at 12,425 patterns. New families cover theme + genre, genre + feature,
+Landed at 12,425 patterns (12,460 after step 31 added 35 context routes). New families cover theme + genre, genre + feature,
 scale + genre, scale + theme + genre + feature, and one generic tail pattern per
 genre that accepts any number of scale/theme modifiers plus a feature clause.
 The generator now skips whitespace-insensitive duplicate regexes (seven existing
@@ -487,7 +487,7 @@ bundle. Undo depth defaults to 16 full-file snapshots and reads
 `toolrx.undo.depth` (1–64) from `localStorage`. Tests drive five-step stacks,
 atomic failure, growth/undo, nested preview inlining, and the configurable depth.
 
-### 31. Deterministic context and working memory
+### 31. Deterministic context and working memory — done
 
 Add an explicit, size-capped context store beyond remember/forget notes: last
 result, last plan, active build spec, per-file summary and hash, and a rolling
@@ -500,6 +500,22 @@ enters a network payload.
 **Done when** context survives reload, `what is in context` matches the stored
 bytes, the cap evicts the oldest entry with a visible note, clearing works, and
 cross-project isolation is tested.
+
+Landed as `toolrx/web/context.js`: one `localStorage` key per project plus a
+sorted index, entries for `result`, `plan`, `spec`, `edit`, `file`, and
+`session`, serialized with sorted keys and a monotonic sequence number rather
+than timestamps. The default cap is 8,192 serialized bytes, configurable through
+`toolrx.context.cap` (256–65,536); eviction and trimming notes are stored beside
+the capped state so the context itself never exceeds the cap. `what is in
+context` prints entry bytes and the real stored byte count plus a BLAKE2b hash,
+and the Node harness compares that hash against the raw `localStorage` string.
+`continue from previous` runs only steps still marked pending and stops at the
+first failed step without marking later steps done; `expand the last plan with …`
+appends pending steps without executing them; `apply the same changes to the
+other files` replays the last recorded patch or bundle per project, all-or-none,
+with a separate undo entry for each. Context is scoped per project, survives a
+reload, is cleared by `clear context`, and is asserted absent from fetch
+payloads.
 
 ### 32. Chunked output, progress, and budgets
 

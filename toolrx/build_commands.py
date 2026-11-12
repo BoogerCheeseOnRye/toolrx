@@ -734,6 +734,45 @@ for pat in ("undo", "undo that", "undo the last edit", "undo last edit",
     add(f"edit.undo.{len(COMMANDS)}", "edit.undo", "^" + re.escape(pat) + "$",
         {}, pat, "edit")
 
+# -------------------------------------------------------------- context ---
+# Step 31: inspect, clear, continue, expand, and replay the small per-project
+# working memory. These routes are exact so they never fall into a build.
+for pat in ("what is in context", "what's in context", "whats in context",
+            "show context", "show the context", "show my context",
+            "what is the context", "what is in my context", "context"):
+    add(f"context.show.{len(COMMANDS)}", "context.show", "^" + re.escape(pat) + "$",
+        {}, pat, "context")
+
+for pat in ("clear context", "clear the context", "clear my context",
+            "forget context", "reset context", "wipe the context"):
+    add(f"context.clear.{len(COMMANDS)}", "context.clear", "^" + re.escape(pat) + "$",
+        {}, pat, "context")
+
+for pat in ("clear all context", "clear context for all projects",
+            "forget all context", "reset all context", "clear every context"):
+    add(f"context.clear.all.{len(COMMANDS)}", "context.clear.all",
+        "^" + re.escape(pat) + "$", {}, pat, "context")
+
+for pat in ("continue from previous", "continue from the previous",
+            "continue from where you left off", "continue where you left off",
+            "continue the last plan", "continue the previous plan",
+            "resume the last plan", "continue previous"):
+    add(f"context.continue.{len(COMMANDS)}", "context.continue",
+        "^" + re.escape(pat) + "$", {}, pat, "context")
+
+for pat in ("apply the same changes to the other files",
+            "apply the same changes to other files",
+            "apply the same changes to the other projects",
+            "apply the same changes to other projects",
+            "apply the last changes to the other files",
+            "apply the last changes to other projects"):
+    add(f"context.apply_others.{len(COMMANDS)}", "context.apply_others",
+        "^" + re.escape(pat) + "$", {}, pat, "context")
+
+add(f"context.expand.{len(COMMANDS)}", "context.expand",
+    r"^(?:expand|extend|add to) (?:the )?(?:last|previous) plan with (.+)$",
+    {"more": "$1"}, "expand the last plan with <steps>", "context")
+
 # ----------------------------------------------------------- optional llm --
 # Off by default. These commands only reach the network when the user has saved
 # an OpenAI-compatible endpoint and enabled the adapter in Command Center.

@@ -136,7 +136,11 @@ class DashboardTest(unittest.TestCase):
     def test_in_browser_router_is_wired_up(self):
         # Pages must run the router, not show a dead demo
         self.assertIn('src="web/router.js"', self.html)
+        self.assertIn('src="web/context.js"', self.html)
         self.assertIn('src="web/sandbox.js"', self.html)
+        # context.js must load before sandbox.js, which calls into it.
+        self.assertLess(self.html.index('src="web/context.js"'),
+                        self.html.index('src="web/sandbox.js"'))
         self.assertIn('src="web/skills.js"', self.html)
         self.assertIn('src="web/templates.js"', self.html)
         self.assertIn("toolrxWeb", self.html)
@@ -244,7 +248,7 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("env(safe-area-inset-bottom)", self.html)
 
     def test_pages_web_assets_match(self):
-        for name in ("blake2b.js", "router.js", "sandbox.js", "skills.js",
+        for name in ("blake2b.js", "router.js", "context.js", "sandbox.js", "skills.js",
                      "templates.js", "patches.js", "llm.js", "lang.js", "i18n.json",
                      "engine2d.js", "engine2d.embed.js",
                      "engine3d.js", "engine3d.embed.js", "worldgen.js",
@@ -292,7 +296,8 @@ class DashboardTest(unittest.TestCase):
     def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v15", sw)
+        self.assertIn("toolrx-shell-v16", sw)
+        self.assertIn("./web/context.js", sw)
         self.assertIn("./web/patches.js", sw)
         self.assertIn("./web/llm.js", sw)
         self.assertIn("./web/templates.js", sw)
