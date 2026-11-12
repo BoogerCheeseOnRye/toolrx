@@ -281,7 +281,7 @@
   .composer button:disabled{opacity:.5;cursor:not-allowed}
   .composer button.stop{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
   .composer .hint{color:var(--muted);font-size:10px;margin-top:4px}
-  .hintrow{display:flex;align-items:center;gap:12px;margin-top:4px}
+  .hintrow{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
   .hintrow .hint{flex:1;min-width:0;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #pvMobile{display:none}
   .ctxbar{display:none;align-items:center;gap:8px;font-size:11px;color:var(--muted);flex:0 0 auto}
@@ -391,6 +391,7 @@
     .composer textarea{font-size:16px;max-height:96px;padding:10px 12px}
     .composer button{padding:11px 16px;font-size:14px;min-width:64px}
     .hintrow .hint{display:none}
+    .hintrow{gap:8px}
     .ctxprog{width:84px;flex-basis:84px}
     /* command center: full-screen sheet */
     #cmdModal{inset:0;border-radius:0;border:none;padding:12px;padding-top:54px;overflow-y:auto}
@@ -479,12 +480,12 @@
   .cm-ghinfo{font-size:11px;color:var(--muted);margin-top:8px}
 
   /* projects */
-  #projBtn,#cmdBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;max-width:230px;
+  #projBtn,#cmdBtn,#libBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;max-width:230px;
     background:var(--panel2);border:1px solid var(--border);border-radius:999px;
     color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #projBtn b,#cmdBtn b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
-  #projBtn:hover,#cmdBtn:hover{border-color:var(--accent);color:var(--text)}
+  #projBtn b,#cmdBtn b,#libBtn b{color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+  #projBtn:hover,#cmdBtn:hover,#libBtn:hover{border-color:var(--accent);color:var(--text)}
   #cmdPalette{position:fixed;inset:0;z-index:115;display:none;flex-direction:column;
     background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
   #cmdPalette.open{display:flex}
@@ -500,6 +501,42 @@
   .cp-item .d{font-size:12.5px}
   .cp-item .m{display:block;color:var(--muted);font-size:10.5px;margin-top:2px;font-family:ui-monospace,monospace}
   @media(max-width:900px){#cmdPalette{border-radius:0;padding:14px}}
+  /* personal library */
+  #libModal{position:fixed;inset:0;z-index:116;display:none;flex-direction:column;
+    background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
+  #libModal.open{display:flex}
+  .lib-controls{display:flex;gap:8px;margin:12px 0 8px;flex-wrap:wrap}
+  .lib-controls input{flex:1;min-width:200px;background:var(--panel2);border:1px solid var(--border);
+    border-radius:8px;color:var(--text);padding:8px 10px;font:inherit;font-size:12.5px}
+  .lib-controls select{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);padding:8px 10px;font:inherit;font-size:12px}
+  .lib-next{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:11px;color:var(--muted)}
+  .lib-next b{color:var(--accent);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
+  .lib-next button{background:transparent;border:1px solid transparent;border-radius:7px;
+    color:var(--text);font:inherit;font-size:11px;padding:3px 6px;cursor:pointer;text-align:left}
+  .lib-next button:hover{border-color:var(--accent);background:rgba(34,211,238,.06)}
+  .lib-summary{color:var(--muted);font-size:11px;padding:8px 2px}
+  .lib-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px}
+  .lib-item{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px}
+  .lib-item:hover{border-color:var(--accent)}
+  .lib-item .lib-top{display:flex;gap:10px;align-items:flex-start}
+  .lib-item .lib-title{flex:1;font-size:13px;font-weight:600;line-height:1.35}
+  .lib-item .lib-meta{color:var(--muted);font-size:10.5px;margin-top:3px;font-family:ui-monospace,monospace}
+  .lib-item .lib-note{font-size:11.5px;color:var(--text);opacity:.86;margin-top:6px;line-height:1.45}
+  .lib-item .lib-why{font-size:10.5px;color:var(--accent);margin-top:4px;font-family:ui-monospace,monospace}
+  .lib-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+  .lib-tag{font-size:10px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:1px 7px}
+  .lib-foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .lib-status,.lib-act{background:var(--panel2);border:1px solid var(--border);border-radius:999px;
+    color:var(--muted);font:inherit;font-size:10.5px;padding:3px 9px;cursor:pointer}
+  .lib-status:hover,.lib-act:hover{border-color:var(--accent);color:var(--text)}
+  .lib-status[data-s="reading"]{border-color:var(--accent);color:var(--accent)}
+  .lib-status[data-s="done"]{color:#34d399;border-color:rgba(52,211,153,.4)}
+  .lib-status[data-s="paused"]{color:#fbbf24;border-color:rgba(251,191,36,.4)}
+  .lib-empty{color:var(--muted);font-size:12px;padding:16px 4px;line-height:1.5}
+  .lib-empty b{color:var(--text)}
+  @media(max-width:900px){#libModal{border-radius:0;padding:14px}}
   #projModal{position:fixed;inset:0;z-index:110;display:none;flex-direction:column;
     background:#0a0f1c;border:1px solid var(--border);border-radius:18px;padding:18px}
   #projModal.open{display:flex}
@@ -648,6 +685,7 @@
       <div class="hintrow">
         <span class="hint">tool calls resolve instantly · build tasks run in the background & render in Preview</span>
         <button type="button" id="projBtn" title="projects: new, open, delete">◫ <b>no project</b></button>
+        <button type="button" id="libBtn" title="browse the personal book archive" style="display:none">▥ <b>library</b></button>
         <button type="button" id="cmdBtn" title="browse the command catalog" style="display:none">▤ <b>commands</b></button>
         <button type="button" id="pvMobile" title="show the preview pane">▣ preview</button>
         <div class="ctxbar" id="ctxbar">
@@ -766,6 +804,30 @@
   <div class="cp-list" id="cpList"></div>
 </div>
 
+<!-- personal library -->
+<div id="libModal" role="dialog" aria-modal="true" aria-labelledby="libTitle" aria-hidden="true">
+  <div class="pj-head">
+    <h3 id="libTitle">Library</h3>
+    <div class="sub" id="libSub">personal archive · metadata only</div>
+    <button class="cm-close" id="libClose" type="button" aria-label="close library">✕</button>
+  </div>
+  <div class="lib-controls">
+    <input id="libInput" placeholder="search the archive… (shaders, game loops, c++)" autocomplete="off" aria-label="search the archive">
+    <select id="libLevel" aria-label="filter by level"><option value="">all levels</option></select>
+    <select id="libLang" aria-label="filter by language"><option value="">all languages</option></select>
+    <select id="libStatus" aria-label="filter by reading status">
+      <option value="">any status</option>
+      <option value="unread">unread</option>
+      <option value="reading">reading</option>
+      <option value="done">done</option>
+      <option value="paused">paused</option>
+    </select>
+  </div>
+  <div class="lib-next" id="libNext"></div>
+  <div class="lib-summary" id="libSummary"></div>
+  <div class="lib-list" id="libList"></div>
+</div>
+
 <!-- in-browser router: used when the page is served statically (GitHub Pages) -->
 <script src="web/blake2b.js"></script>
 <script src="web/router.js"></script>
@@ -843,6 +905,8 @@ async function loadConfig(){
     registerOffline();
     const cmdBtn=document.getElementById('cmdBtn');
     if(cmdBtn) cmdBtn.style.display='inline-flex';
+    const libBtn=document.getElementById('libBtn');
+    if(libBtn && window.toolrxSkills.library && window.toolrxSkills.library()) libBtn.style.display='inline-flex';
     entry('toolrx ready',
       'in-browser router · 27 tools · '+(commandCount?commandCount.toLocaleString()+' deterministic commands':'pattern library')+'\n\n'
       +'try:  multiply 67 and 420\n'
@@ -1215,7 +1279,7 @@ function closeDialog(modal){
   if(back && typeof back.focus==='function') setTimeout(()=>{ try{back.focus();}catch(e){} },0);
 }
 document.addEventListener('keydown',e=>{
-  const modal=document.querySelector('#projModal.open,#fileModal.open,#cmdModal.open,#cmdPalette.open');
+  const modal=document.querySelector('#projModal.open,#fileModal.open,#cmdModal.open,#cmdPalette.open,#libModal.open');
   if(!modal) return;
   if(e.key==='Escape'){
     e.preventDefault();
@@ -1224,6 +1288,7 @@ document.addEventListener('keydown',e=>{
     else if(modal.id==='fileModal') closeFileEditor();
     else if(modal.id==='cmdModal') closeCmdCenter();
     else if(modal.id==='cmdPalette') closeCmdPalette();
+    else if(modal.id==='libModal') closeLibrary();
     return;
   }
   if(e.key!=='Tab') return;
@@ -1342,6 +1407,276 @@ function closeCmdPalette(){ closeDialog(document.getElementById('cmdPalette')); 
     });
   }
   if(cat) cat.addEventListener('change',renderCatalog);
+})();
+
+/* ---- personal library --------------------------------------------------- */
+const LIB_STATUS_KEY='toolrx.library.status';
+const LIB_CYCLE=['unread','reading','done','paused'];
+let libOverrides={};
+function libRecords(){
+  const lib=window.toolrxSkills&&window.toolrxSkills.library?window.toolrxSkills.library():null;
+  return (lib&&lib.records)||[];
+}
+function libLoadStatus(){
+  try{
+    const raw=localStorage.getItem(LIB_STATUS_KEY);
+    const parsed=raw?JSON.parse(raw):{};
+    libOverrides=(parsed&&typeof parsed==='object')?parsed:{};
+  }catch(e){ libOverrides={}; }
+}
+function libStatusOf(rec){
+  const id=rec&&rec.id;
+  if(id&&Object.prototype.hasOwnProperty.call(libOverrides,id)) return libOverrides[id];
+  return (rec&&rec.reading&&rec.reading.status)||'unread';
+}
+function libStatusById(id,fallback){
+  if(Object.prototype.hasOwnProperty.call(libOverrides,id)) return libOverrides[id];
+  return fallback||'unread';
+}
+function libSaveStatus(id,status){
+  libOverrides[id]=status;
+  try{ localStorage.setItem(LIB_STATUS_KEY,JSON.stringify(libOverrides)); }catch(e){}
+}
+function libCycleStatus(id){
+  const rec=libRecords().filter(r=>r.id===id)[0];
+  if(!rec) return;
+  const cur=libStatusOf(rec);
+  const at=LIB_CYCLE.indexOf(cur);
+  const next=LIB_CYCLE[(at<0?0:at+1)%LIB_CYCLE.length]||'unread';
+  libSaveStatus(id,next);
+  libRender();
+}
+function libFillFilters(){
+  const recs=libRecords();
+  const level=document.getElementById('libLevel');
+  if(level&&level.options.length<=1){
+    const counts={};
+    recs.forEach(r=>{ const l=(r.classification||{}).level||'unrated'; counts[l]=(counts[l]||0)+1; });
+    Object.keys(counts).sort().forEach(l=>{
+      const o=document.createElement('option'); o.value=l; o.textContent=l+' ('+counts[l]+')';
+      level.appendChild(o);
+    });
+  }
+  const lang=document.getElementById('libLang');
+  if(lang&&lang.options.length<=1){
+    const counts={};
+    recs.forEach(r=>{
+      const cls=r.classification||{};
+      (cls.programming_languages||[]).concat(cls.natural_languages||[]).forEach(x=>{
+        counts[x]=(counts[x]||0)+1;
+      });
+    });
+    Object.keys(counts).sort().forEach(x=>{
+      const o=document.createElement('option'); o.value=x; o.textContent=x+' ('+counts[x]+')';
+      lang.appendChild(o);
+    });
+  }
+}
+function libPriority(rec){
+  const p=rec&&rec.reading&&rec.reading.priority;
+  return typeof p==='number'?p:9;
+}
+function libTitleMap(){
+  const map=Object.create(null);
+  libRecords().forEach(r=>{ map[r.id]=r.title; });
+  return map;
+}
+function libRenderNext(){
+  const box=document.getElementById('libNext');
+  if(!box) return;
+  const open=libRecords().filter(r=>libStatusOf(r)!=='done');
+  open.sort((a,b)=>libPriority(a)-libPriority(b)||(a.title<b.title?-1:1));
+  box.innerHTML='';
+  const label=document.createElement('b');
+  label.textContent='next up';
+  box.appendChild(label);
+  if(!open.length){
+    const done=document.createElement('span');
+    done.textContent='everything in the archive is marked done';
+    box.appendChild(done);
+    return;
+  }
+  open.slice(0,3).forEach((rec,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent=(i+1)+'. '+rec.title;
+    b.title='show this record';
+    b.addEventListener('click',()=>{
+      const input=document.getElementById('libInput');
+      if(input) input.value=rec.title;
+      ['libLevel','libLang','libStatus'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value='';
+      });
+      libRender();
+    });
+    box.appendChild(b);
+  });
+}
+function libCard(row, titles){
+  const card=document.createElement('div');
+  card.className='lib-item';
+  const top=document.createElement('div');
+  top.className='lib-top';
+  const title=document.createElement('div');
+  title.className='lib-title';
+  title.textContent=row.title;
+  top.appendChild(title);
+  card.appendChild(top);
+
+  const bits=[];
+  if(row.authors&&row.authors.length) bits.push(row.authors.join(', '));
+  if(row.year) bits.push(String(row.year));
+  bits.push(row.level);
+  if(row.programming&&row.programming.length) bits.push(row.programming.join(', '));
+  if(row.parts) bits.push(row.parts+' parts');
+  bits.push('id: '+row.id);
+  const meta=document.createElement('div');
+  meta.className='lib-meta';
+  meta.textContent=bits.join(' · ');
+  card.appendChild(meta);
+
+  if(row.summary){
+    const note=document.createElement('div');
+    note.className='lib-note';
+    note.textContent=row.summary;
+    card.appendChild(note);
+  }
+  if(row.reason&&row.reason.length){
+    const why=document.createElement('div');
+    why.className='lib-why';
+    why.textContent='why: '+row.reason.join(', ');
+    card.appendChild(why);
+  }
+  if(row.topics&&row.topics.length){
+    const tags=document.createElement('div');
+    tags.className='lib-tags';
+    row.topics.forEach(t=>{
+      const tag=document.createElement('span');
+      tag.className='lib-tag'; tag.textContent=t;
+      tags.appendChild(tag);
+    });
+    card.appendChild(tags);
+  }
+
+  const foot=document.createElement('div');
+  foot.className='lib-foot';
+  const status=document.createElement('button');
+  status.type='button';
+  const cur=libStatusById(row.id,row.status);
+  status.className='lib-status';
+  status.dataset.s=cur;
+  status.textContent='status: '+cur;
+  status.title='click to cycle unread → reading → done → paused (saved in this browser)';
+  status.addEventListener('click',e=>{ e.stopPropagation(); libCycleStatus(row.id); });
+  foot.appendChild(status);
+
+  if(row.next&&row.next.length){
+    const nb=document.createElement('button');
+    nb.type='button'; nb.className='lib-act';
+    nb.textContent='next →';
+    nb.title='ask what to read after this book';
+    nb.addEventListener('click',()=>libInsert('what should i read after '+row.id));
+    foot.appendChild(nb);
+  }
+  if(row.topics&&row.topics.length){
+    const ab=document.createElement('button');
+    ab.type='button'; ab.className='lib-act';
+    ab.textContent='ask about '+row.topics[0];
+    ab.title='search the archive command for this topic';
+    ab.addEventListener('click',()=>libInsert('find a book about '+row.topics[0]));
+    foot.appendChild(ab);
+  }
+  const following=(row.next||[]).map(id=>titles[id]).filter(Boolean);
+  if(following.length){
+    const nxt=document.createElement('span');
+    nxt.className='lib-meta';
+    nxt.textContent='next: '+following.join(', ');
+    foot.appendChild(nxt);
+  }
+  card.appendChild(foot);
+  return card;
+}
+function libRender(){
+  const box=document.getElementById('libList');
+  if(!box) return;
+  const input=document.getElementById('libInput');
+  const level=document.getElementById('libLevel');
+  const lang=document.getElementById('libLang');
+  const statusSel=document.getElementById('libStatus');
+  const term=(input&&input.value||'').trim();
+  const wantLevel=(level&&level.value)||'';
+  const wantLang=(lang&&lang.value)||'';
+  const wantStatus=(statusSel&&statusSel.value)||'';
+  const keep=rec=>{
+    const cls=rec.classification||{};
+    if(wantLevel&&(cls.level||'')!==wantLevel) return false;
+    if(wantLang){
+      const langs=(cls.programming_languages||[]).concat(cls.natural_languages||[]);
+      if(langs.indexOf(wantLang)<0) return false;
+    }
+    if(wantStatus&&libStatusOf(rec)!==wantStatus) return false;
+    return true;
+  };
+  let res;
+  try{
+    res=window.toolrxSkills.libraryPanel(term,{limit:120,keep:keep});
+  }catch(e){
+    box.innerHTML='';
+    box.textContent=e.message||String(e);
+    return;
+  }
+  const lib=window.toolrxSkills.library?window.toolrxSkills.library():null;
+  const stats=(lib&&lib.stats)||{};
+  const sub=document.getElementById('libSub');
+  if(sub){
+    sub.textContent=(stats.records||0)+' records · '+(stats.parts||0)+' parts · '
+      +(stats.files||0)+' source files · metadata only';
+  }
+  const summary=document.getElementById('libSummary');
+  if(summary){
+    summary.textContent=term
+      ? res.total+' match'+(res.total===1?'':'es')+' for "'+term+'"'
+      : res.total+' record'+(res.total===1?'':'s')
+        +(wantLevel?' · '+wantLevel:'')
+        +(wantLang?' · '+wantLang:'')
+        +(wantStatus?' · '+wantStatus:'');
+  }
+  libRenderNext();
+  box.innerHTML='';
+  if(!res.rows.length){
+    const empty=document.createElement('div');
+    empty.className='lib-empty';
+    empty.innerHTML='<b>no records matched.</b><br>Try a topic from the archive: cpp, shaders, game loop, procedural generation. '
+      +'Clear the filters or ask <code>library stats</code> for coverage.';
+    box.appendChild(empty);
+    return;
+  }
+  const titles=libTitleMap();
+  res.rows.forEach(row=>box.appendChild(libCard(row,titles)));
+}
+function openLibrary(){
+  if(!window.toolrxSkills||!window.toolrxSkills.library||!window.toolrxSkills.library()) return;
+  libLoadStatus();
+  libFillFilters();
+  libRender();
+  openDialog(document.getElementById('libModal'),'#libInput');
+}
+function closeLibrary(){ closeDialog(document.getElementById('libModal')); }
+function libInsert(text){
+  closeLibrary();
+  insertCommand(text);
+}
+(function(){
+  const btn=document.getElementById('libBtn');
+  if(btn) btn.addEventListener('click',openLibrary);
+  const close=document.getElementById('libClose');
+  if(close) close.addEventListener('click',closeLibrary);
+  const input=document.getElementById('libInput');
+  if(input) input.addEventListener('input',libRender);
+  ['libLevel','libLang','libStatus'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change',libRender);
+  });
 })();
 
 /* ---- project file editor ----------------------------------------------- */

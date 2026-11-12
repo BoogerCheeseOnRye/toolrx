@@ -263,7 +263,7 @@ current preference, and `back to english` / `stop replying` clears it. The
 preference lives under `toolrx.reply.lang`; shell messages are localized while
 command output and user data are left untouched.
 
-### 25. Library surface and offline packaging
+### 25. Library surface and offline packaging — done
 
 Add a Library panel to the dashboard (search, topic/level/language filters,
 reading status, next up), cache catalog metadata in the PWA, and keep keyboard
@@ -272,12 +272,18 @@ and dialog behavior consistent with the rest of the tool.
 **Done when** the panel works offline, the Pages build ships metadata only, and
 non-redistributable text never leaves the machine.
 
+Landed as a full-screen `Library` dialog opened from the composer bar. It reads
+the catalog embedded in `web/commands.json`, adds level/language/status filters,
+shows up to three “next up” books, and saves reading-status overrides under
+`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v6`
+cache, so the panel works offline with no second fetch.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
 2. 16 (RPG world) — done → 17 (themes/titles) → 18 (library) → 19 (patches)
-3. 21 (archive catalog), 22 (language recognition), and 23 (archive search) —
-   done. 24 (localized intents) and 25 (Library panel) follow.
+3. 21 (archive catalog) → 22 (language recognition) → 23 (archive search) →
+   24 (localized intents) → 25 (Library panel) — done
 4. 20 (LLM adapter), with 14 (sprites) as soon as the subset is vendored
 
 ## Open questions

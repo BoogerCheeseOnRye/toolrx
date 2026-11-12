@@ -205,6 +205,14 @@ class DashboardTest(unittest.TestCase):
                        "function openCmdPalette", "toolrxSkills.catalog"):
             self.assertIn(marker, self.html)
 
+    def test_library_panel_ui(self):
+        for marker in ('id="libBtn"', 'id="libModal"', 'id="libInput"',
+                       'id="libLevel"', 'id="libLang"', 'id="libStatus"',
+                       "function libRender", "function openLibrary",
+                       "toolrxSkills.libraryPanel", "toolrx.library.status",
+                       "next up", "status: "):
+            self.assertIn(marker, self.html)
+
     def test_chat_messages_show_measured_throughput(self):
         for marker in ("function tokenMeta", "tok/s", "characters ÷ 4",
                        "not model inference", "r.ms"):
@@ -280,7 +288,7 @@ class DashboardTest(unittest.TestCase):
     def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v5", sw)
+        self.assertIn("toolrx-shell-v6", sw)
         self.assertIn("./web/engine2d.js", sw)
         self.assertIn("./web/engine2d.embed.js", sw)
         self.assertIn("./web/engine3d.js", sw)

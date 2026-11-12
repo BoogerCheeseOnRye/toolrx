@@ -5,7 +5,7 @@
  * while online) with a cached shell fallback. Assets are cache-first with a
  * background refresh. Bump CACHE when the shipped asset list changes.
  */
-const CACHE = "toolrx-shell-v5";
+const CACHE = "toolrx-shell-v6";
 const CORE = [
   "./",
   "./index.html",
@@ -26,6 +26,8 @@ const CORE = [
   "./web/worldgen.embed.js",
   "./web/rpg2.js",
   "./web/rpg2.embed.js",
+  // Library catalog metadata is embedded in commands.json, so the Library
+  // panel works offline without a second fetch.
   "./web/commands.json",
   "./web/model.json",
 ];

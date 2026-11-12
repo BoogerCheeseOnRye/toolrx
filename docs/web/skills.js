@@ -990,11 +990,10 @@
     return null;
   }
 
-  function libSearch(query, limit) {
-    if (!LIBRARY) throw new Error("library catalog is not loaded");
+  function libRank(query, limit, keep) {
     const tokens = libTokens(query);
-    if (!tokens.length) return libStats();
     const top = [];
+    if (!tokens.length) return { tokens: tokens, top: top };
     const max = limit || 5;
     const index = libIndex();
     const recs = LIBRARY.records || [];
@@ -1038,6 +1037,7 @@
       const score = buf[ri];
       buf[ri] = 0;
       const rec = recs[ri];
+      if (keep && !keep(rec)) continue;
       if (libTopQualifies(score, rec.title, top, max)) {
         libPushTop(top, { rec: rec, score: score, reasons: null }, max);
       }
@@ -1049,6 +1049,15 @@
         if (hit) item.reasons.push(hit.name + ": " + tokens[ti]);
       }
     });
+    return { tokens: tokens, top: top };
+  }
+
+  function libSearch(query, limit) {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    const ranked = libRank(query, limit);
+    const tokens = ranked.tokens;
+    const top = ranked.top;
+    if (!tokens.length) return libStats();
     if (!top.length) {
       const topics = Object.keys((LIBRARY.stats && LIBRARY.stats.topics) || {}).slice(0, 10);
       return "not in the archive for \"" + query + "\".\n\n"
@@ -1060,6 +1069,53 @@
         return (i + 1) + ". " + libLabel(h.rec) + "\n   why: "
           + h.reasons.slice(0, 4).join(", ");
       }).join("\n");
+  }
+
+  /* Structured view for the dashboard Library panel. The panel does its own
+   * presentation and keeps local reading-status overrides; this only ranks and
+   * shapes records so search stays identical to the command path. */
+  function libRow(rec, reasons) {
+    const cls = rec.classification || {};
+    const reading = rec.reading || {};
+    return {
+      id: rec.id,
+      title: rec.title,
+      authors: rec.authors || [],
+      year: rec.year || null,
+      level: cls.level || "unrated",
+      topics: (cls.topics || []).slice(0, 6),
+      programming: (cls.programming_languages || []).slice(),
+      natural: (cls.natural_languages || []).slice(),
+      status: reading.status || "unread",
+      priority: reading.priority || 0,
+      next: (reading.next || []).slice(),
+      parts: (rec.parts || []).length,
+      summary: (rec.search && rec.search.summary) || "",
+      reason: (reasons || []).slice(0, 4)
+    };
+  }
+
+  function libPanel(query, opts) {
+    if (!LIBRARY) throw new Error("library catalog is not loaded");
+    opts = opts || {};
+    const limit = Math.max(1, Math.min(200, opts.limit || 60));
+    const keep = typeof opts.keep === "function" ? opts.keep : null;
+    const ranked = libRank(query, limit, keep);
+    if (!ranked.tokens.length) {
+      const recs = (LIBRARY.records || []).filter(function (rec) {
+        return !keep || keep(rec);
+      });
+      return {
+        query: String(query || ""),
+        total: recs.length,
+        rows: recs.slice(0, limit).map(function (rec) { return libRow(rec, []); })
+      };
+    }
+    return {
+      query: String(query || ""),
+      total: ranked.top.length,
+      rows: ranked.top.map(function (h) { return libRow(h.rec, h.reasons); })
+    };
   }
 
   function libStats() {
@@ -2039,6 +2095,7 @@
     categories: function () { return meta.categories; },
     library: function () { return LIBRARY; },
     librarySearch: function (q, n) { return libSearch(q, n); },
+    libraryPanel: function (q, opts) { return libPanel(q, opts); },
     match: match,
     search: search,
     catalog: catalog,

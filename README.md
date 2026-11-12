@@ -167,7 +167,9 @@ browser; missing packs fall back to English. The catalog, acquisition gaps,
 schema, offline constraints, and phased acceptance tests are in
 `toolrx/vision/LIBRARY-EXPANSION.md`; roadmap steps 21–25 track the build-out,
 with 21–24 (catalog, language recognition, archive search, localized replies)
-landed.
+landed. The dashboard **Library** panel (▥) reads that same embedded catalog
+offline: search, level/language/status filters, a next-up strip, and reading
+status that is saved in the browser without touching the catalog file.
 
 The Pages build is installable and works offline after the first visit: the
 dashboard links `manifest.webmanifest`, and `sw.js` caches the shell, model,

@@ -666,6 +666,24 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     natural: (await run('what natural language is this: Hola, ¿puedes crear un juego de naves?'))[0],
     chain: await run('library stats then find a book about pcg'),
   };
+  out.libraryPanel = (() => {
+    const all = self.toolrxSkills.libraryPanel('', { limit: 20 });
+    const hit = self.toolrxSkills.libraryPanel('shaders', { limit: 5 });
+    const beginner = self.toolrxSkills.libraryPanel('', {
+      limit: 20,
+      keep: r => ((r.classification || {}).level === 'beginner'),
+    });
+    const one = self.toolrxSkills.libraryPanel('', {
+      limit: 20,
+      keep: r => r.id !== 'cpp-complete-guide',
+    });
+    return {
+      total: all.total, rows: all.rows.length,
+      first: all.rows[0],
+      hitTotal: hit.total, hit: hit.rows[0],
+      beginner: beginner.total, filtered: one.total,
+    };
+  })();
   out.langIntents = FIXTURES.intents.map(f => {
     const n = self.toolrxLang.normalize(f.text);
     return {
@@ -752,8 +770,18 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     const missMs = timed('zzzznot');
     const found = /Benchmark Book 9999/.test(
       self.toolrxSkills.librarySearch('synthetic 9999', 5));
+    let panelMs = Infinity, panelRows = 0;
+    for (let i = 0; i < 10; i++) {
+      const t0 = performance.now();
+      const panel = self.toolrxSkills.libraryPanel('synthetic', { limit: 60 });
+      panelMs = Math.min(panelMs, performance.now() - t0);
+      panelRows = panel.rows.length;
+    }
     lib.records = original;
-    return { records: many.length, allMs: allMs, missMs: missMs, found: found };
+    return {
+      records: many.length, allMs: allMs, missMs: missMs, found: found,
+      panelMs: +panelMs.toFixed(3), panelRows: panelRows,
+    };
   })();
   console.log(JSON.stringify(out));
 })();
@@ -919,12 +947,26 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("Procedural Content Generation", lib["chain"][1]["text"])
         self.assertFalse(lib["find"]["error"])
 
+    def test_library_panel_rows_and_filters(self):
+        p = self.out["libraryPanel"]
+        self.assertEqual(p["total"], 10)
+        self.assertEqual(p["rows"], 10)
+        self.assertEqual(p["first"]["level"], "beginner")
+        self.assertIn("cpp", p["first"]["programming"])
+        self.assertEqual(p["hitTotal"], 1)
+        self.assertIn("shaders", p["hit"]["topics"])
+        self.assertTrue(p["hit"]["reason"])
+        self.assertGreaterEqual(p["beginner"], 7)
+        self.assertEqual(p["filtered"], 9)
+
     def test_archive_search_scales_to_ten_thousand_records(self):
         scale = self.out["libraryScale"]
         self.assertEqual(scale["records"], 10000)
         self.assertTrue(scale["found"])
         self.assertLess(scale["missMs"], 5, scale)
         self.assertLess(scale["allMs"], 10, scale)
+        self.assertEqual(scale["panelRows"], 60, scale)
+        self.assertLess(scale["panelMs"], 10, scale)
 
     def test_build_spec_parses_dimension_view_art_scale_seed(self):
         s = self.out["spec"]
