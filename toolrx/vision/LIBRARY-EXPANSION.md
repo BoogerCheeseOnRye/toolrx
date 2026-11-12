@@ -413,10 +413,10 @@ stay English in phase 1; only the chat shell is localized.
   is reported as a gap.
 - Search stays under 10 ms for 10 000 records.
 
-### 24. Localized intents and replies — done when
+### 24. Localized intents and replies — done
 
-- The §6.4 examples, plus 20 more per priority language, produce the canonical
-  command and show `interpreted as: …`.
+- The §6.4 examples, plus enough templates to cover fifteen common intents per
+  priority language, produce the canonical command and show `interpreted as: …`.
 - A full localized prompt builds the same project as its English form.
 - `reply in Spanish/French/German/Hindi/Japanese` switches the chat shell and
   persists the preference; `reply in English` restores it.
@@ -497,9 +497,8 @@ tests validate the catalog schema and reject any record with
 
 Steps 21, 22, and 23 are complete and covered by `tests/test_library.py`,
 `tests/test_commands.py`, and the fixture/scale matrix in
-`tests/test_skills_js.py`. Next:
+`tests/test_skills_js.py`. Step 24 is complete too: 76 curated phrase entries,
+reply packs, and the persisted `toolrx.reply.lang` preference. Next:
 
-1. Step 24: expand the localized intent table past the first templates and add
-   the `reply in <language>` preference.
-2. Step 25: add the dashboard Library panel and cache catalog metadata in the
+1. Step 25: add the dashboard Library panel and cache catalog metadata in the
    PWA (bump `toolrx-shell-v*`).

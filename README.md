@@ -159,10 +159,15 @@ JS/TS, Lua, shaders) and natural languages in prompts (Spanish, French, German,
 Hindi, Japanese, and more), so `find a book about shaders`,
 `list books by language c++`, and `what language is this: …` become ordinary
 commands. Localized prompts are normalized to canonical English intents and
-say so: `interpreted as: build a shooter game`. The catalog, acquisition gaps,
+say so: `interpreted as: build a shooter game`. Spanish, French, German, Hindi,
+and Japanese each cover fifteen common intents (builds, conversions, help,
+archive search, language detection, jokes, and names), and `reply in Spanish`
+switches the chat shell's own short messages with the preference saved in the
+browser; missing packs fall back to English. The catalog, acquisition gaps,
 schema, offline constraints, and phased acceptance tests are in
 `toolrx/vision/LIBRARY-EXPANSION.md`; roadmap steps 21–25 track the build-out,
-with 21–23 (catalog, language recognition, archive search) landed.
+with 21–24 (catalog, language recognition, archive search, localized replies)
+landed.
 
 The Pages build is installable and works offline after the first visit: the
 dashboard links `manifest.webmanifest`, and `sw.js` caches the shell, model,

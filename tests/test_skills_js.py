@@ -666,6 +666,31 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     natural: (await run('what natural language is this: Hola, ¿puedes crear un juego de naves?'))[0],
     chain: await run('library stats then find a book about pcg'),
   };
+  out.langIntents = FIXTURES.intents.map(f => {
+    const n = self.toolrxLang.normalize(f.text);
+    return {
+      lang: f.lang, text: f.text, want: f.want,
+      got: n.text, hit: n.lang, interpreted: !!n.interpreted,
+    };
+  });
+  out.reply = {};
+  out.reply.set = (await run('reply in spanish'))[0];
+  out.reply.stored = global.localStorage.getItem('toolrx.reply.lang');
+  out.reply.greeting = self.toolrxSkills.chat('hola', ctx);
+  out.reply.localized = (await run('Hola, ¿puedes crear un juego de naves?'))[0];
+  out.reply.status = (await run('what language are you replying in'))[0];
+  out.reply.noCommand = (await self.toolrxSkills.runPrompt(
+    'zzzznotacommand', Object.assign({}, ctx, { fallback: null })))[0];
+  out.reply.bad = (await run('reply in klingon'))[0];
+  out.reply.off = (await run('reply in english'))[0];
+  out.reply.after = global.localStorage.getItem('toolrx.reply.lang');
+  out.reply.alias = self.toolrxLang.replyLang('Español');
+  out.reply.fallback = self.toolrxLang.say('xx', 'greeting');
+  out.reply.packs = ['en', 'es', 'fr', 'de', 'hi', 'ja'].map(c => ({
+    code: c, name: self.toolrxLang.replyName(c),
+    greeting: self.toolrxLang.say(c, 'greeting'),
+    replyIn: self.toolrxLang.say(c, 'reply_in'),
+  }));
   out.langFixtures = {
     programming: FIXTURES.programming.map(f => ({
       text: f.text, lang: f.lang, hit: dp(f.text),
@@ -841,6 +866,37 @@ class SkillsBridgeTest(unittest.TestCase):
             self.assertTrue(hit["interpreted"], hit)
             self.assertEqual(hit["text"], text, hit)
             self.assertEqual(hit["lang"], code, hit)
+
+    def test_localized_intents_cover_priority_languages(self):
+        rows = self.out["langIntents"]
+        counts = {}
+        for row in rows:
+            self.assertTrue(row["interpreted"], row)
+            self.assertEqual(row["got"], row["want"], row)
+            self.assertEqual(row["hit"], row["lang"], row)
+            counts[row["lang"]] = counts.get(row["lang"], 0) + 1
+        self.assertGreaterEqual(len(rows), 75)
+        for code in ("es", "fr", "de", "hi", "ja"):
+            self.assertGreaterEqual(counts.get(code, 0), 15, code)
+
+    def test_reply_language_preference_persists(self):
+        r = self.out["reply"]
+        self.assertEqual(r["stored"], "es")
+        self.assertEqual(r["alias"], "es")
+        self.assertIn("respondiendo en Spanish", r["set"]["text"])
+        self.assertIn("Hola", r["greeting"])
+        self.assertIn("interpretado como", r["localized"]["text"])
+        self.assertIn("build a shooter game", r["localized"]["text"])
+        self.assertIn("respondiendo en", r["status"]["text"])
+        self.assertIn("ningún comando", r["noCommand"]["text"])
+        self.assertTrue(r["bad"]["error"])
+        self.assertIn("desconocido", r["bad"]["text"])
+        self.assertEqual(r["after"], "en")
+        en = next(p for p in r["packs"] if p["code"] == "en")
+        self.assertEqual(r["fallback"], en["greeting"])
+        for pack in r["packs"]:
+            self.assertTrue(pack["greeting"], pack)
+            self.assertIn("{lang}", pack["replyIn"], pack)
 
     def test_archive_catalog_commands(self):
         lib = self.out["library"]

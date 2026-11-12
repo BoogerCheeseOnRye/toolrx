@@ -244,7 +244,7 @@ level/language filters, result reasons, and reading paths from `reading.next`.
 **Done when** results name why they matched, alias queries behave, and 10 000
 records search in under 10 ms.
 
-### 24. Localized intents and replies
+### 24. Localized intents and replies — done
 
 A curated phrase table maps known imperative templates (`crea un juego de
 naves`, `baue ein 3d-rpg`, `5 किमी को मील में बदलो`) to canonical English
@@ -255,6 +255,13 @@ shell for Spanish, French, German, Hindi, and Japanese; preferences persist in
 **Done when** localized prompts build the same project as their English form,
 `reply in <language>` switches and persists, and a missing pack falls back to
 English cleanly.
+
+Landed as 76 phrase entries (15 intents for each priority language) plus the
+bare Japanese “make a game” template. `reply in`, `respond in`, `answer in`,
+`switch to`, and `speak` resolve through aliases; `reply language` reports the
+current preference, and `back to english` / `stop replying` clears it. The
+preference lives under `toolrx.reply.lang`; shell messages are localized while
+command output and user data are left untouched.
 
 ### 25. Library surface and offline packaging
 

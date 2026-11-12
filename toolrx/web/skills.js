@@ -19,6 +19,46 @@
   let LIBRARY = null;
   let meta = { count: 0, categories: {} };
 
+  /* Reply-language preference. Packs localize the shell's own short messages
+   * only; command output and user data are never translated. Unknown packs
+   * fall back to English, and the preference survives a page reload. */
+  const REPLY_KEY = "toolrx.reply.lang";
+  let replyPref = null;
+
+  function replyLang() {
+    if (replyPref) return replyPref;
+    try {
+      const stored = root.localStorage && root.localStorage.getItem(REPLY_KEY);
+      const L = root.toolrxLang;
+      const code = stored && L && L.replyLang ? L.replyLang(stored) : null;
+      if (code) { replyPref = code; return code; }
+    } catch (e) { /* storage disabled */ }
+    replyPref = "en";
+    return replyPref;
+  }
+
+  function setReplyLang(code) {
+    const L = root.toolrxLang;
+    const next = (L && L.replyLang && L.replyLang(code)) || "en";
+    replyPref = next;
+    try {
+      if (root.localStorage) root.localStorage.setItem(REPLY_KEY, next);
+    } catch (e) { /* storage disabled */ }
+    return next;
+  }
+
+  function shellSay(key, code) {
+    const L = root.toolrxLang;
+    if (!L || !L.say) return "";
+    return L.say(code || replyLang(), key);
+  }
+
+  function fillLang(template, code) {
+    const L = root.toolrxLang;
+    const name = L && L.replyName ? L.replyName(code) : String(code || "").toUpperCase();
+    return String(template == null ? "" : template).replace(/\{lang\}/g, name);
+  }
+
   /* ---------------------------------------------------------- numbers --- */
   const WORDS = {
     zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7,
@@ -498,7 +538,12 @@
       return name ? "You told me your name is " + name + "." : "You haven't told me a name yet. Say: remember my name is …";
     }
 
-    if (/^(?:hi|hello|hey|yo|hiya|good (?:morning|afternoon|evening))\b/.test(q)) {
+    if (/^(?:hi|hello|hey|yo|hiya|hola|salut|bonjour|hallo|namaste|नमस्ते|नमस्कार|こんにちは|こんばんは|good (?:morning|afternoon|evening))(?=$|\s|[,.!?])/.test(q)) {
+      const code = replyLang();
+      if (code !== "en") {
+        const greeting = shellSay("greeting", code);
+        if (greeting) return greeting;
+      }
       return pick([
         "Hey" + (name ? ", " + name : "") + ". What are we building?",
         "Hi. Want to build something, run a tool, or look something up?",
@@ -1210,6 +1255,23 @@
         + "Paste a code sample, or ask \"what programming language is …\" / "
         + "\"what natural language is …\".";
     },
+    "lang.reply": function (a) {
+      const L = root.toolrxLang;
+      if (!L || !L.ready || !L.ready()) {
+        throw new Error("language module is not loaded");
+      }
+      const raw = String((a && a.lang) || "").trim();
+      if (a && a.show) return fillLang(shellSay("reply_in"), replyLang());
+      if (!raw) return fillLang(shellSay("reply_in"), replyLang());
+      if (/^(?:off|stop|none|default|normal)$/i.test(raw)) {
+        setReplyLang("en");
+        return shellSay("reply_off", "en");
+      }
+      const code = L.replyLang(raw);
+      if (!code) throw new Error(shellSay("unknown_lang"));
+      setReplyLang(code);
+      return fillLang(L.say(code, "reply_in"), code);
+    },
     "math.binary": function (a) {
       const x = numOrThrow(a.a), y = numOrThrow(a.b);
       switch (a.op) {
@@ -1918,13 +1980,26 @@
     const results = [];
     let prev = "";
     let prevResult = null;
+    const L = root.toolrxLang;
     const clock = () => (typeof performance !== "undefined" && performance.now)
       ? performance.now() : Date.now();
     for (const step of steps) {
       const started = clock();
-      const local = Object.assign({}, ctx, { prev, prevResult, step });
+      // Known localized intents normalize to their canonical English command.
+      // The original text stays on `result.step`; `working` drives matching and
+      // is forwarded to handlers so chat-style ops see the canonical sentence.
+      let working = step;
+      let interpreted = null;
+      if (L && L.normalize) {
+        const norm = L.normalize(step);
+        if (norm && norm.interpreted && norm.text) {
+          working = norm.text;
+          interpreted = norm;
+        }
+      }
+      const local = Object.assign({}, ctx, { prev, prevResult, step: working });
       let result;
-      const skill = match(step);
+      const skill = match(working);
       if (skill) {
         try {
           result = await exec(skill, local);
@@ -1934,11 +2009,18 @@
           result = { text: String(e.message || e), error: true, via: skill.op, desc: skill.desc };
         }
       } else if (ctx.fallback) {
-        result = await ctx.fallback(step, local);
+        result = await ctx.fallback(working, local);
       } else {
-        result = { text: "no command matched that step", error: true };
+        result = { text: shellSay("no_command") || "no command matched that step", error: true };
       }
       result.step = step;
+      if (interpreted) {
+        const label = L && L.say ? L.say(interpreted.lang, "interpreted") : "interpreted as";
+        result.lang = interpreted.lang;
+        result.interpreted = { lang: interpreted.lang, text: working };
+        result.text = (label || "interpreted as") + ": " + working
+          + (result.text ? "\n\n" + result.text : "");
+      }
       result.ms = Math.max(0, Math.round(clock() - started));
       if (result && result.text) { prev = result.text; prevResult = result; }
       results.push(result);
@@ -1965,6 +2047,8 @@
     runPrompt: runPrompt,
     chat: chatReply,
     summarize: summarizeText,
+    reply: function () { return replyLang(); },
+    setReply: function (code) { return setReplyLang(code); },
     help: function () { return helpText("", null); },
   };
 })(typeof self !== "undefined" ? self : this);

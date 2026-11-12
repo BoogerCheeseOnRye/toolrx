@@ -140,6 +140,10 @@ class CommandLibraryTest(unittest.TestCase):
             "what language is this": ("lang.detect", None),
             "what programming language is this: int main(){}": ("lang.detect", "$1"),
             "what natural language is this: hola amigos": ("lang.detect", "$1"),
+            "reply in spanish": ("lang.reply", "$1"),
+            "switch to japanese": ("lang.reply", "$1"),
+            "reply language": ("lang.reply", None),
+            "back to english": ("lang.reply", "en"),
         }
         for query, (op, arg) in cases.items():
             hit = self.first(query)

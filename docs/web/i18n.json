@@ -1641,28 +1641,378 @@
   "phrases": [
     {
       "lang": "es",
-      "re": "^(?:hola[, ]*)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye)\\s+un\\s+(?:juego\\s+de\\s+naves|juego\\s+de\\s+disparos|shooter)$",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+un\\s+(?:juego\\s+de\\s+(?:naves|disparos)|shooter)(?:\\s+por\\s+favor)?$",
       "to": "build a shooter game"
     },
     {
       "lang": "es",
-      "re": "^(?:convierte|convertir|pasa)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:km|kilometros)\\s+(?:a|en)\\s+(?:millas|mi)$",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+un\\s+(?:juego\\s+de\\s+plataformas?|plataformero|platformer)(?:\\s+por\\s+favor)?$",
+      "to": "build a platformer game"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+un\\s+(?:juego\\s+de\\s+rol|rpg)(?:\\s+por\\s+favor)?$",
+      "to": "build an rpg"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+un\\s+(?:(?:juego\\s+de\\s+rol|rpg)\\s+(?:en\\s+)?3d|3d\\s+(?:juego\\s+de\\s+rol|rpg))$",
+      "to": "build a 3d rpg"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+un\\s+(?:juego\\s+de\\s+laberinto|laberinto)$",
+      "to": "build a maze game"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+un\\s+(?:juego\\s+de\\s+carreras|juego\\s+de\\s+coches|carreras)$",
+      "to": "build a racer"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:hola[, ]+)?(?:por\\s+favor[, ]+)?(?:puedes\\s+)?(?:crear|crea|hacer|haz|construir|construye|programar|programa)\\s+una\\s+(?:calculadora|aplicacion\\s+calculadora|app\\s+calculadora)$",
+      "to": "build a calculator app"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:convierte|convertir|pasa|transforma)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:km|kilometros)\\s+(?:a|en)\\s+(?:millas|mi)$",
+      "to": "convert {1} km to miles"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:convierte|convertir|pasa|transforma)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:kg|kilos?|kilogramos)\\s+(?:a|en)\\s+(?:libras?|lb)$",
+      "to": "convert {1} kg to lb"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:ayuda|necesito\\s+ayuda|me\\s+ayudas|puedes\\s+ayudarme|ayudame)$",
+      "to": "help"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:(?:estadisticas|resumen|informacion|info)\\s+de\\s+(?:mi\\s+)?biblioteca|mi\\s+biblioteca)$",
+      "to": "library stats"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:busca|buscar|encuentra|encontrar|hay)\\s+(?:un\\s+|alguna\\s+)?(?:libros?|textos?)\\s+(?:sobre|de|acerca\\s+de)\\s+(.+)$",
+      "to": "find a book about {1}"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:que|en\\s+que)\\s+idioma\\s+(?:es|esta|habla)\\s+(?:esto|este\\s+(?:texto|codigo))?\\s*:?\\s*(.+)$",
+      "to": "what language is this: {1}"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:cuentame|cuenta|dime|di|tienes|sabes)\\s+(?:un\\s+|algun\\s+)?chiste$",
+      "to": "tell me a joke"
+    },
+    {
+      "lang": "es",
+      "re": "^(?:(?:recuerda|memoriza|apunta)\\s+(?:que\\s+)?(?:mi\\s+nombre\\s+es|me\\s+llamo)|mi\\s+nombre\\s+es|me\\s+llamo)\\s+([a-z][a-z\\'\\-]{1,24})$",
+      "to": "remember my name is {1}"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+un\\s+(?:jeu\\s+de\\s+tir|shooter)(?:\\s+s\\'il\\s+te\\s+plait)?$",
+      "to": "build a shooter game"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+un\\s+jeu\\s+de\\s+plates?[- ]?formes?(?:\\s+s\\'il\\s+te\\s+plait)?$",
+      "to": "build a platformer game"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+un\\s+(?:jeu\\s+de\\s+role|rpg)(?:\\s+s\\'il\\s+te\\s+plait)?$",
+      "to": "build an rpg"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+un\\s+(?:(?:jeu\\s+de\\s+role|rpg)\\s+(?:en\\s+)?3d|3d\\s+(?:jeu\\s+de\\s+role|rpg))$",
+      "to": "build a 3d rpg"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+un\\s+(?:jeu\\s+de\\s+labyrinthe|labyrinthe)$",
+      "to": "build a maze game"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+un\\s+(?:jeu\\s+de\\s+course|jeu\\s+de\\s+voitures|course)$",
+      "to": "build a racer"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:salut[, ]+)?(?:peux[- ]tu\\s+|pourrais[- ]tu\\s+)?(?:construire|construis|creer|cree|faire|fais|developper|developpe)\\s+une\\s+(?:calculatrice|application\\s+calculatrice|appli\\s+calculatrice)$",
+      "to": "build a calculator app"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:convertis|convertir|converti|transforme|passe)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:km|kilometres)\\s+en\\s+(?:miles?|milles?)$",
       "to": "convert {1} km to miles"
     },
     {
       "lang": "fr",
-      "re": "^(?:peux[- ]tu\\s+)?(?:construire|construis|creer|crée|faire|fais)\\s+un\\s+jeu\\s+de\\s+plates?[- ]formes$",
+      "re": "^(?:convertis|convertir|converti|transforme|passe)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:kg|kilos?|kilogrammes)\\s+en\\s+(?:livres?|lb)$",
+      "to": "convert {1} kg to lb"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:aide|aidez[- ]moi|aide[- ]moi|j\\'ai\\s+besoin\\s+d\\'aide|besoin\\s+d\\'aide)$",
+      "to": "help"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:(?:statistiques|stats|resume|infos?|informations?)\\s+de\\s+(?:ma\\s+)?bibliotheque|ma\\s+bibliotheque)$",
+      "to": "library stats"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:cherche|chercher|trouve|trouver)\\s+(?:un\\s+|des\\s+)?livres?\\s+(?:sur|a\\s+propos\\s+de|au\\s+sujet\\s+de)\\s+(.+)$",
+      "to": "find a book about {1}"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:(?:quelle|quel)\\s+langue\\s+(?:est|parle)\\s+(?:ceci|ce\\s+texte|ce\\s+code)?|en\\s+quelle\\s+langue\\s+est\\s+(?:ceci|ce\\s+texte)?)\\s*:?\\s*(.+)$",
+      "to": "what language is this: {1}"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:(?:raconte|dis|fais)[- ]moi\\s+une\\s+blague|tu\\s+connais\\s+une\\s+blague|une\\s+blague)$",
+      "to": "tell me a joke"
+    },
+    {
+      "lang": "fr",
+      "re": "^(?:(?:souviens[- ]toi|rappelle[- ]toi)\\s+que\\s+je\\s+m\\'appelle|je\\s+m\\'appelle)\\s+([a-z][a-z\\'\\-]{1,24})$",
+      "to": "remember my name is {1}"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:shooter|schie(?:ss|ß)spiel)(?:\\s+bitte)?$",
+      "to": "build a shooter game"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:plattformspiel|plattformer|jump[- ]?and[- ]?run)(?:\\s+bitte)?$",
       "to": "build a platformer game"
     },
     {
       "lang": "de",
-      "re": "^(?:baue|bau|erstelle)\\s+ein\\s+3d[- ]rpg(?:\\s+mit\\s+\\d+\\s+quests)?$",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:rollenspiel|rpg)(?:\\s+bitte)?$",
+      "to": "build an rpg"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:(?:rollenspiel|rpg)\\s+(?:in\\s+)?3d|3d[- ]?(?:rollenspiel|rpg))(?:\\s+mit\\s+\\d+\\s+quests)?$",
+      "to": "build a 3d rpg"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:labyrinthspiel|labyrinth|irrgarten)$",
+      "to": "build a maze game"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:rennspiel|rennen|racer|rennwagen)$",
+      "to": "build a racer"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hallo[, ]+)?(?:baue|bau|erstelle|erstell|mach|mache|entwickle|entwickeln)\\s+ein(?:en)?\\s+(?:taschenrechner|rechner|rechner[- ]?app)$",
+      "to": "build a calculator app"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:rechne|konvertiere|wandele|umrechnen)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:km|kilometer)\\s+in\\s+(?:meilen|mi)(?:\\s+um)?$",
+      "to": "convert {1} km to miles"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:rechne|konvertiere|wandle|wandle|umrechnen)\\s+(\\d+(?:[.,]\\d+)?)\\s*(?:kg|kilos?|kilogramm)\\s+in\\s+(?:pfund|lb)(?:\\s+um)?$",
+      "to": "convert {1} kg to lb"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:hilfe|ich\\s+brauche\\s+hilfe|hilf\\s+mir|kannst\\s+du\\s+mir\\s+helfen)$",
+      "to": "help"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:(?:statistik|statistiken|ubersicht|info|infos)\\s+(?:uber\\s+)?(?:meine\\s+)?bibliothek|meine\\s+bibliothek)$",
+      "to": "library stats"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:suche|such|finde)\\s+(?:ein\\s+|nach\\s+einem\\s+)?buch\\s+(?:uber|zu|zum\\s+thema)\\s+(.+)$",
+      "to": "find a book about {1}"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:welche|was\\s+fur\\s+eine)\\s+sprache\\s+ist\\s+(?:das|dieser\\s+text|dieser\\s+code)?\\s*:?\\s*(.+)$",
+      "to": "what language is this: {1}"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:erzahl|erzahle|sag)\\s+(?:mir\\s+)?einen\\s+witz$",
+      "to": "tell me a joke"
+    },
+    {
+      "lang": "de",
+      "re": "^(?:(?:merke\\s+dir|denk\\s+dran|notiere)\\s*,?\\s*(?:dass\\s+)?ich\\s+hei(?:ss|ß)e|ich\\s+hei(?:ss|ß)e)\\s+([a-z][a-z\\'\\-]{1,24})$",
+      "to": "remember my name is {1}"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:एक\\s+)?(?:शूटर|शूटिंग)\\s+गेम\\s+(?:बनाओ|बनाएं|बनाइए|बना\\s+दो|बना\\s+दें)$",
+      "to": "build a shooter game"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:एक\\s+)?(?:प्लेटफ़ॉर्मर|प्लेटफॉर्मर|प्लेटफ़ॉर्म|प्लेटफॉर्म)\\s+गेम\\s+(?:बनाओ|बनाएं|बनाइए|बना\\s+दो|बना\\s+दें)$",
+      "to": "build a platformer game"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:एक\\s+)?(?:आरपीजी|रोल\\s*प्लेइंग)\\s+गेम\\s+(?:बनाओ|बनाएं|बनाइए|बना\\s+दो|बना\\s+दें)$",
+      "to": "build an rpg"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:एक\\s+)?(?:3\\s*डी|3d)\\s+(?:आरपीजी|रोल\\s*प्लेइंग)\\s+गेम\\s+(?:बनाओ|बनाएं|बनाइए|बना\\s+दो|बना\\s+दें)$",
       "to": "build a 3d rpg"
     },
     {
       "lang": "hi",
-      "re": "^(\\d+)\\s*किमी\\s*को\\s*मील\\s*में\\s*बदलो$",
+      "re": "^(?:एक\\s+)?(?:भूलभुलैया|मेज़|मेज)\\s+गेम\\s+(?:बनाओ|बनाएं|बनाइए|बना\\s+दो|बना\\s+दें)$",
+      "to": "build a maze game"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:एक\\s+)?(?:रेसिंग|रेसर|कार\\s+रेस)\\s+गेम\\s+(?:बनाओ|बनाएं|बनाइए|बना\\s+दो|बना\\s+दें)$",
+      "to": "build a racer"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:एक\\s+)?(?:कैलकुलेटर|गणक)\\s+(?:ऐप\\s+)?(?:बनाओ|बनाएं|बनाइए|बना\\s+दो)$",
+      "to": "build a calculator app"
+    },
+    {
+      "lang": "hi",
+      "re": "^(\\d+(?:\\.\\d+)?)\\s*किमी\\s*(?:को)?\\s*मील\\s*में\\s*(?:बदलो|बदलें|बदल\\s+दो|बदल\\s+दें)$",
       "to": "convert {1} km to miles"
+    },
+    {
+      "lang": "hi",
+      "re": "^(\\d+(?:\\.\\d+)?)\\s*(?:किलो|किलोग्राम)\\s*(?:को)?\\s*(?:पाउंड|एलबी)\\s*में\\s*(?:बदलो|बदलें|बदल\\s+दो)$",
+      "to": "convert {1} kg to lb"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:मदद|सहायता|मेरी\\s+मदद\\s+करो|मदद\\s+करो|कृपया\\s+मदद\\s+करें)$",
+      "to": "help"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:(?:मेरी\\s+)?(?:लाइब्रेरी|पुस्तकालय)\\s+(?:के\\s+)?(?:आंकड़े|आँकड़े|जानकारी|सारांश)|(?:लाइब्रेरी|पुस्तकालय)\\s+(?:आंकड़े|जानकारी))$",
+      "to": "library stats"
+    },
+    {
+      "lang": "hi",
+      "re": "^(.+?)\\s+(?:पर|के\\s+बारे\\s+में|के\\s+बारे)\\s+(?:एक\\s+)?(?:किताब|पुस्तक)\\s+(?:खोजो|ढूंढो|खोजें|ढूंढें|खोजिए)$",
+      "to": "find a book about {1}"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:(?:यह|ये|इस)\\s*(?:कौन\\s*सी|कौनसी|कौन)\\s*(?:भाषा|प्रोग्रामिंग\\s+भाषा)\\s*(?:है)?|(?:इस\\s+)?(?:कोड|पाठ|टेक्स्ट)\\s+की\\s+भाषा\\s+(?:बताओ|पहचानो|क्या\\s+है))\\s*:?\\s*(.+)$",
+      "to": "what language is this: {1}"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:मुझे\\s+)?(?:एक\\s+)?चुटकुला\\s+(?:सुनाओ|सुनाएं|सुनाइए|बताओ|बताएं)$",
+      "to": "tell me a joke"
+    },
+    {
+      "lang": "hi",
+      "re": "^(?:(?:याद\\s+रखो|याद\\s+रखें|याद\\s+रखिए)\\s+कि\\s+)?(?:मेरा\\s+नाम|मैं)\\s+([^\\s]+)\\s+(?:है|हूं|हूँ)$",
+      "to": "remember my name is {1}"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:シューティング|シューター)ゲームを(?:作って|作成して)(?:ください)?$",
+      "to": "build a shooter game"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:プラットフォーマー|プラットフォーム)ゲームを(?:作って|作成して)(?:ください)?$",
+      "to": "build a platformer game"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:rpg|アールピージー)(?:ゲーム)?を(?:作って|作成して)(?:ください)?$",
+      "to": "build an rpg"
+    },
+    {
+      "lang": "ja",
+      "re": "^3d\\s*(?:rpg|アールピージー)(?:ゲーム)?を(?:作って|作成して)(?:ください)?$",
+      "to": "build a 3d rpg"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:迷路|メイズ)ゲームを(?:作って|作成して)(?:ください)?$",
+      "to": "build a maze game"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:レーシング|レース|カーレース)ゲームを(?:作って|作成して)(?:ください)?$",
+      "to": "build a racer"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:電卓|計算機)(?:アプリ)?を(?:作って|作成して)(?:ください)?$",
+      "to": "build a calculator app"
+    },
+    {
+      "lang": "ja",
+      "re": "^(\\d+(?:\\.\\d+)?)\\s*(?:km|キロメートル|キロ)を(?:マイル|mi)に(?:変換|換算)(?:して|してください)$",
+      "to": "convert {1} km to miles"
+    },
+    {
+      "lang": "ja",
+      "re": "^(\\d+(?:\\.\\d+)?)\\s*(?:kg|キログラム|キロ)を(?:ポンド|lb)に(?:変換|換算)(?:して|してください)$",
+      "to": "convert {1} kg to lb"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:ヘルプ|助けて|手伝って|助けが必要)$",
+      "to": "help"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:(?:私の)?(?:ライブラリ|本棚)(?:の)?(?:統計|状況|情報)|(?:ライブラリ|本棚)の統計)$",
+      "to": "library stats"
+    },
+    {
+      "lang": "ja",
+      "re": "^(.+?)についての(?:本|書籍)を(?:探して|検索して|探してください|検索してください)$",
+      "to": "find a book about {1}"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:(?:これは|この(?:文章|コード|テキスト)は)\\s*)?(?:何語|どの言語)(?:ですか)?\\s*[:：]?\\s*(.+)$",
+      "to": "what language is this: {1}"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:ジョーク|冗談)を(?:言って|聞かせて|言ってください|聞かせてください)$",
+      "to": "tell me a joke"
+    },
+    {
+      "lang": "ja",
+      "re": "^(?:(?:私|僕|わたし)の名前は|(?:私|僕|わたし)の名前を覚えて[、,]?)\\s*([^\\s、。]+?)\\s*(?:です)?$",
+      "to": "remember my name is {1}"
     },
     {
       "lang": "ja",
@@ -1672,58 +2022,137 @@
   ],
   "reply": {
     "en": {
-      "building": "building",
-      "done": "done",
-      "no_match": "no match",
-      "ambiguous": "ambiguous language",
-      "found": "found",
-      "not_in_archive": "not in the archive",
-      "next_up": "next up"
+      "interpreted": "interpreted as",
+      "reply_in": "replying in {lang}",
+      "reply_off": "back to English",
+      "no_command": "no command matched that step",
+      "greeting": "Hey. What are we building?",
+      "unknown_lang": "unknown reply language — try English, Spanish, French, German, Hindi, or Japanese"
     },
     "es": {
-      "building": "construyendo",
-      "done": "hecho",
-      "no_match": "sin coincidencia",
-      "ambiguous": "idioma ambiguo",
-      "found": "encontrado",
-      "not_in_archive": "no está en el archivo",
-      "next_up": "siguiente"
+      "interpreted": "interpretado como",
+      "reply_in": "respondiendo en {lang}",
+      "reply_off": "de vuelta al inglés",
+      "no_command": "ningún comando coincidió con ese paso",
+      "greeting": "Hola. ¿Qué construimos?",
+      "unknown_lang": "idioma de respuesta desconocido — prueba inglés, español, francés, alemán, hindi o japonés"
     },
     "fr": {
-      "building": "construction",
-      "done": "terminé",
-      "no_match": "aucune correspondance",
-      "ambiguous": "langue ambiguë",
-      "found": "trouvé",
-      "not_in_archive": "absent de l'archive",
-      "next_up": "à suivre"
+      "interpreted": "interprété comme",
+      "reply_in": "réponse en {lang}",
+      "reply_off": "retour à l’anglais",
+      "no_command": "aucune commande ne correspond à cette étape",
+      "greeting": "Salut. On construit quoi ?",
+      "unknown_lang": "langue de réponse inconnue — essaie anglais, espagnol, français, allemand, hindi ou japonais"
     },
     "de": {
-      "building": "wird gebaut",
-      "done": "fertig",
-      "no_match": "keine Übereinstimmung",
-      "ambiguous": "mehrdeutige Sprache",
-      "found": "gefunden",
-      "not_in_archive": "nicht im Archiv",
-      "next_up": "als Nächstes"
+      "interpreted": "interpretiert als",
+      "reply_in": "ich antworte auf {lang}",
+      "reply_off": "zurück zu Englisch",
+      "no_command": "kein Befehl passt zu diesem Schritt",
+      "greeting": "Hallo. Was bauen wir?",
+      "unknown_lang": "unbekannte Antwortsprache — versuche Englisch, Spanisch, Französisch, Deutsch, Hindi oder Japanisch"
     },
     "hi": {
-      "building": "बना रहे हैं",
-      "done": "पूरा",
-      "no_match": "कोई मेल नहीं",
-      "ambiguous": "अस्पष्ट भाषा",
-      "found": "मिला",
-      "not_in_archive": "संग्रह में नहीं",
-      "next_up": "अगला"
+      "interpreted": "इस रूप में समझा",
+      "reply_in": "{lang} में जवाब दे रहे हैं",
+      "reply_off": "अंग्रेज़ी पर वापस",
+      "no_command": "इस चरण से कोई कमांड मेल नहीं खाया",
+      "greeting": "नमस्ते। हम क्या बना रहे हैं?",
+      "unknown_lang": "अज्ञात उत्तर भाषा — अंग्रेज़ी, स्पेनिश, फ़्रेंच, जर्मन, हिंदी या जापानी आज़माएं"
     },
     "ja": {
-      "building": "作成中",
-      "done": "完了",
-      "no_match": "一致なし",
-      "ambiguous": "曖昧な言語",
-      "found": "見つかりました",
-      "not_in_archive": "アーカイブにありません",
-      "next_up": "次"
+      "interpreted": "次のように解釈",
+      "reply_in": "{lang} で返答します",
+      "reply_off": "英語に戻す",
+      "no_command": "この手順に一致するコマンドはありません",
+      "greeting": "こんにちは。何を作りますか？",
+      "unknown_lang": "不明な返答言語 — 英語、スペイン語、フランス語、ドイツ語、ヒンディー語、日本語を試してください"
+    }
+  },
+  "reply_meta": {
+    "en": {
+      "name": "English",
+      "aliases": [
+        "english",
+        "en",
+        "ingles",
+        "inglés",
+        "anglais",
+        "englisch",
+        "अंग्रेज़ी",
+        "अंग्रेजी",
+        "英語"
+      ]
+    },
+    "es": {
+      "name": "Spanish",
+      "aliases": [
+        "spanish",
+        "es",
+        "espanol",
+        "español",
+        "castellano",
+        "espagnol",
+        "spanisch",
+        "स्पेनिश",
+        "スペイン語"
+      ]
+    },
+    "fr": {
+      "name": "French",
+      "aliases": [
+        "french",
+        "fr",
+        "francais",
+        "français",
+        "francés",
+        "frances",
+        "franzosisch",
+        "französisch",
+        "फ़्रेंच",
+        "फ्रेंच",
+        "フランス語"
+      ]
+    },
+    "de": {
+      "name": "German",
+      "aliases": [
+        "german",
+        "de",
+        "deutsch",
+        "aleman",
+        "alemán",
+        "allemand",
+        "जर्मन",
+        "ドイツ語"
+      ]
+    },
+    "hi": {
+      "name": "Hindi",
+      "aliases": [
+        "hindi",
+        "hi",
+        "हिंदी",
+        "हिन्दी",
+        "हिंदि",
+        "ヒンディー語"
+      ]
+    },
+    "ja": {
+      "name": "Japanese",
+      "aliases": [
+        "japanese",
+        "ja",
+        "nihongo",
+        "日本語",
+        "japonais",
+        "japones",
+        "japonés",
+        "japanisch",
+        "जापानी",
+        "जापानीज़"
+      ]
     }
   }
 }

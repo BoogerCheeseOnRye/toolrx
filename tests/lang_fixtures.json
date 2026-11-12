@@ -382,5 +382,382 @@
       "text": "blorp wobble zzz",
       "lang": null
     }
+  ],
+  "intents": [
+    {
+      "lang": "es",
+      "text": "Hola, ¿puedes crear un juego de naves?",
+      "want": "build a shooter game"
+    },
+    {
+      "lang": "es",
+      "text": "Crea un juego de plataformas por favor",
+      "want": "build a platformer game"
+    },
+    {
+      "lang": "es",
+      "text": "Construye un juego de rol",
+      "want": "build an rpg"
+    },
+    {
+      "lang": "es",
+      "text": "Haz un rpg en 3d",
+      "want": "build a 3d rpg"
+    },
+    {
+      "lang": "es",
+      "text": "Crea un laberinto",
+      "want": "build a maze game"
+    },
+    {
+      "lang": "es",
+      "text": "Haz un juego de carreras",
+      "want": "build a racer"
+    },
+    {
+      "lang": "es",
+      "text": "Crea una calculadora",
+      "want": "build a calculator app"
+    },
+    {
+      "lang": "es",
+      "text": "Convierte 5 km a millas",
+      "want": "convert 5 km to miles"
+    },
+    {
+      "lang": "es",
+      "text": "Pasa 3 kg a libras",
+      "want": "convert 3 kg to lb"
+    },
+    {
+      "lang": "es",
+      "text": "Necesito ayuda",
+      "want": "help"
+    },
+    {
+      "lang": "es",
+      "text": "Estadísticas de mi biblioteca",
+      "want": "library stats"
+    },
+    {
+      "lang": "es",
+      "text": "Busca un libro sobre shaders",
+      "want": "find a book about shaders"
+    },
+    {
+      "lang": "es",
+      "text": "¿Qué idioma es esto: bonjour?",
+      "want": "what language is this: bonjour"
+    },
+    {
+      "lang": "es",
+      "text": "Cuéntame un chiste",
+      "want": "tell me a joke"
+    },
+    {
+      "lang": "es",
+      "text": "Recuerda que me llamo ada",
+      "want": "remember my name is ada"
+    },
+    {
+      "lang": "fr",
+      "text": "Peux-tu construire un jeu de tir ?",
+      "want": "build a shooter game"
+    },
+    {
+      "lang": "fr",
+      "text": "Construis un jeu de plates-formes",
+      "want": "build a platformer game"
+    },
+    {
+      "lang": "fr",
+      "text": "Crée un jeu de rôle",
+      "want": "build an rpg"
+    },
+    {
+      "lang": "fr",
+      "text": "Fais un rpg en 3d",
+      "want": "build a 3d rpg"
+    },
+    {
+      "lang": "fr",
+      "text": "Construis un labyrinthe",
+      "want": "build a maze game"
+    },
+    {
+      "lang": "fr",
+      "text": "Fais un jeu de course",
+      "want": "build a racer"
+    },
+    {
+      "lang": "fr",
+      "text": "Crée une calculatrice",
+      "want": "build a calculator app"
+    },
+    {
+      "lang": "fr",
+      "text": "Convertis 5 km en miles",
+      "want": "convert 5 km to miles"
+    },
+    {
+      "lang": "fr",
+      "text": "Convertis 3 kg en livres",
+      "want": "convert 3 kg to lb"
+    },
+    {
+      "lang": "fr",
+      "text": "J'ai besoin d'aide",
+      "want": "help"
+    },
+    {
+      "lang": "fr",
+      "text": "Statistiques de ma bibliothèque",
+      "want": "library stats"
+    },
+    {
+      "lang": "fr",
+      "text": "Cherche un livre sur shaders",
+      "want": "find a book about shaders"
+    },
+    {
+      "lang": "fr",
+      "text": "Quelle langue est ceci : bonjour",
+      "want": "what language is this: bonjour"
+    },
+    {
+      "lang": "fr",
+      "text": "Raconte-moi une blague",
+      "want": "tell me a joke"
+    },
+    {
+      "lang": "fr",
+      "text": "Je m'appelle ada",
+      "want": "remember my name is ada"
+    },
+    {
+      "lang": "de",
+      "text": "Baue ein 3D-RPG mit 5 Quests.",
+      "want": "build a 3d rpg"
+    },
+    {
+      "lang": "de",
+      "text": "Baue einen Shooter",
+      "want": "build a shooter game"
+    },
+    {
+      "lang": "de",
+      "text": "Erstelle ein Plattformspiel",
+      "want": "build a platformer game"
+    },
+    {
+      "lang": "de",
+      "text": "Baue ein Rollenspiel",
+      "want": "build an rpg"
+    },
+    {
+      "lang": "de",
+      "text": "Baue ein Labyrinth",
+      "want": "build a maze game"
+    },
+    {
+      "lang": "de",
+      "text": "Baue ein Rennspiel",
+      "want": "build a racer"
+    },
+    {
+      "lang": "de",
+      "text": "Erstelle einen Taschenrechner",
+      "want": "build a calculator app"
+    },
+    {
+      "lang": "de",
+      "text": "Rechne 5 km in Meilen um",
+      "want": "convert 5 km to miles"
+    },
+    {
+      "lang": "de",
+      "text": "Wandle 3 kg in Pfund um",
+      "want": "convert 3 kg to lb"
+    },
+    {
+      "lang": "de",
+      "text": "Ich brauche Hilfe",
+      "want": "help"
+    },
+    {
+      "lang": "de",
+      "text": "Statistik über meine Bibliothek",
+      "want": "library stats"
+    },
+    {
+      "lang": "de",
+      "text": "Suche ein Buch über shaders",
+      "want": "find a book about shaders"
+    },
+    {
+      "lang": "de",
+      "text": "Welche Sprache ist das: bonjour",
+      "want": "what language is this: bonjour"
+    },
+    {
+      "lang": "de",
+      "text": "Erzähl mir einen Witz",
+      "want": "tell me a joke"
+    },
+    {
+      "lang": "de",
+      "text": "Ich heiße ada",
+      "want": "remember my name is ada"
+    },
+    {
+      "lang": "hi",
+      "text": "एक शूटर गेम बनाओ",
+      "want": "build a shooter game"
+    },
+    {
+      "lang": "hi",
+      "text": "प्लेटफॉर्मर गेम बनाओ",
+      "want": "build a platformer game"
+    },
+    {
+      "lang": "hi",
+      "text": "एक आरपीजी गेम बनाओ",
+      "want": "build an rpg"
+    },
+    {
+      "lang": "hi",
+      "text": "3डी आरपीजी गेम बनाओ",
+      "want": "build a 3d rpg"
+    },
+    {
+      "lang": "hi",
+      "text": "भूलभुलैया गेम बनाओ",
+      "want": "build a maze game"
+    },
+    {
+      "lang": "hi",
+      "text": "रेसिंग गेम बनाओ",
+      "want": "build a racer"
+    },
+    {
+      "lang": "hi",
+      "text": "कैलकुलेटर ऐप बनाओ",
+      "want": "build a calculator app"
+    },
+    {
+      "lang": "hi",
+      "text": "5 किमी को मील में बदलो",
+      "want": "convert 5 km to miles"
+    },
+    {
+      "lang": "hi",
+      "text": "3 किलो को पाउंड में बदलो",
+      "want": "convert 3 kg to lb"
+    },
+    {
+      "lang": "hi",
+      "text": "मेरी मदद करो",
+      "want": "help"
+    },
+    {
+      "lang": "hi",
+      "text": "मेरी लाइब्रेरी के आंकड़े",
+      "want": "library stats"
+    },
+    {
+      "lang": "hi",
+      "text": "शेडर्स पर एक किताब खोजो",
+      "want": "find a book about शेडर्स"
+    },
+    {
+      "lang": "hi",
+      "text": "यह कौन सी भाषा है: bonjour",
+      "want": "what language is this: bonjour"
+    },
+    {
+      "lang": "hi",
+      "text": "मुझे एक चुटकुला सुनाओ",
+      "want": "tell me a joke"
+    },
+    {
+      "lang": "hi",
+      "text": "मेरा नाम ada है",
+      "want": "remember my name is ada"
+    },
+    {
+      "lang": "ja",
+      "text": "シューティングゲームを作って",
+      "want": "build a shooter game"
+    },
+    {
+      "lang": "ja",
+      "text": "プラットフォーマーゲームを作って",
+      "want": "build a platformer game"
+    },
+    {
+      "lang": "ja",
+      "text": "RPGゲームを作って",
+      "want": "build an rpg"
+    },
+    {
+      "lang": "ja",
+      "text": "3D RPGを作って",
+      "want": "build a 3d rpg"
+    },
+    {
+      "lang": "ja",
+      "text": "迷路ゲームを作って",
+      "want": "build a maze game"
+    },
+    {
+      "lang": "ja",
+      "text": "レーシングゲームを作って",
+      "want": "build a racer"
+    },
+    {
+      "lang": "ja",
+      "text": "電卓アプリを作って",
+      "want": "build a calculator app"
+    },
+    {
+      "lang": "ja",
+      "text": "5kmをマイルに変換して",
+      "want": "convert 5 km to miles"
+    },
+    {
+      "lang": "ja",
+      "text": "3kgをポンドに変換して",
+      "want": "convert 3 kg to lb"
+    },
+    {
+      "lang": "ja",
+      "text": "助けて",
+      "want": "help"
+    },
+    {
+      "lang": "ja",
+      "text": "ライブラリの統計",
+      "want": "library stats"
+    },
+    {
+      "lang": "ja",
+      "text": "シェーダーについての本を探して",
+      "want": "find a book about シェーダー"
+    },
+    {
+      "lang": "ja",
+      "text": "これは何語ですか：こんにちは",
+      "want": "what language is this: こんにちは"
+    },
+    {
+      "lang": "ja",
+      "text": "ジョークを言って",
+      "want": "tell me a joke"
+    },
+    {
+      "lang": "ja",
+      "text": "私の名前はadaです",
+      "want": "remember my name is ada"
+    }
   ]
 }

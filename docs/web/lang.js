@@ -15,6 +15,8 @@
   let NAT = [];
   let SCRIPTS = [];
   let PHRASES = [];
+  let PACKS = {};
+  let META = {};
   let ALIAS = Object.create(null);
 
   const SCRIPT_NAMES = {
@@ -29,13 +31,18 @@
   };
 
   function fold(s) {
-    return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    // Strip Latin diacritics for forgiving matching, then recompose so scripts
+    // such as Japanese keep their precomposed kana (で, が) intact.
+    return String(s || "").normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .normalize("NFC")
+      .toLowerCase();
   }
 
   function clean(s) {
     return String(s || "").trim()
       .replace(/[¿¡]/g, "")
-      .replace(/[?!.,;:\s]+$/, "")
+      .replace(/[?!.,;:\s\u3002\uff01\uff1f\u0964]+$/, "")
       .replace(/\s+/g, " ");
   }
 
@@ -81,6 +88,8 @@
     PHRASES = (DATA.phrases || []).map(function (p) {
       return Object.assign({}, p, { rx: new RegExp(p.re, "i") });
     });
+    PACKS = DATA.reply || {};
+    META = DATA.reply_meta || {};
     return true;
   }
 
@@ -294,6 +303,40 @@
     return { text: raw, lang: null, interpreted: false, changed: false, original: raw };
   }
 
+  /* --------------------------------------------------------- replies ----- */
+  /* Reply packs are presentation only: they localize the shell's own short
+   * messages (greetings, "interpreted as", preference changes). They never
+   * translate command output or user data. Missing packs fall back to English
+   * instead of inventing text. */
+  function replyLang(value) {
+    const v = fold(value).trim();
+    if (!v) return null;
+    if (PACKS[v]) return v;
+    for (const code in META) {
+      const m = META[code] || {};
+      const names = [code, m.name].concat(m.aliases || []).map(fold);
+      if (names.indexOf(v) >= 0) return code;
+    }
+    return null;
+  }
+
+  function replyName(code) {
+    const c = replyLang(code) || "en";
+    return (META[c] && META[c].name) || String(c).toUpperCase();
+  }
+
+  function replyCodes() {
+    return Object.keys(PACKS);
+  }
+
+  function say(code, key) {
+    const c = replyLang(code) || "en";
+    const pack = PACKS[c] || {};
+    const fallback = PACKS.en || {};
+    const value = pack[key] == null ? fallback[key] : pack[key];
+    return value == null ? "" : String(value);
+  }
+
   root.toolrxLang = {
     configure: configure,
     ready: ready,
@@ -301,6 +344,10 @@
     detect: detect,
     detectProgramming: detectProgramming,
     detectNatural: detectNatural,
-    normalize: normalize
+    normalize: normalize,
+    replyLang: replyLang,
+    replyName: replyName,
+    replyCodes: replyCodes,
+    say: say
   };
 })(typeof self !== "undefined" ? self : this);

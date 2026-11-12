@@ -659,6 +659,27 @@ for pat in ("what natural language is this: {text}",
         "^" + pat.replace("{text}", REST) + "$",
         {"mode": "natural", "text": "$1"}, pat, "lang")
 
+# Reply-language preference. The shell localizes only its own short messages;
+# the preference is stored in the browser and survives a reload.
+for pat in ("reply in english", "respond in english", "answer in english",
+            "stop replying in spanish", "stop replying", "back to english",
+            "reply normally", "reply in en"):
+    add(f"lang.reply.off.{len(COMMANDS)}", "lang.reply",
+        "^" + re.escape(pat) + "$", {"lang": "en"}, pat, "lang")
+
+for pat in ("what language are you replying in", "which language are you replying in",
+            "reply language", "what is your reply language"):
+    add(f"lang.reply.show.{len(COMMANDS)}", "lang.reply",
+        "^" + re.escape(pat) + "$", {"show": "1"}, pat, "lang")
+
+REPLY_LANG = r"([A-Za-z\u00c0-\u024f\u0400-\u04ff\u0900-\u097f\u3040-\u30ff\u4e00-\u9fff]+)"
+for pat in ("reply in {lang}", "respond in {lang}", "answer in {lang}",
+            "speak {lang}", "talk to me in {lang}", "switch to {lang}",
+            "use {lang} for replies", "reply language: {lang}"):
+    add(f"lang.reply.set.{len(COMMANDS)}", "lang.reply",
+        "^" + pat.replace("{lang}", REPLY_LANG) + "$",
+        {"lang": "$1"}, pat, "lang")
+
 # ---------------------------------------------------------------- build ---
 BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdown",
                "pomodoro", "stopwatch", "notes", "note pad", "notepad", "tic tac toe",
