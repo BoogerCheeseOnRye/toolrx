@@ -44,6 +44,7 @@ eval(fs.readFileSync(require('path').join(WEB, 'worldgen.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'worldgen.embed.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'rpg2.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'rpg2.embed.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'patches.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'lang.js'), 'utf8'));
 self.toolrxLang.configure(JSON.parse(fs.readFileSync(process.argv[5], 'utf8')));
 eval(fs.readFileSync(process.argv[4], 'utf8'));
@@ -692,6 +693,174 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   out.edits.open = await editRun('open project camelot-rpg');
   ep = self.toolrxWeb.project();
   out.edits.afterOpen = { slug: ep.slug, title: h1(ep.html), theme: self.toolrxWeb.preview().theme };
+
+  // Step 19: composable edits run through the real sandbox, so this covers
+  // command routing, the patch engine, project persistence, and undo.
+  out.patches = {};
+  const pRun = async q => (await self.toolrxWeb.prompt(q))
+    .map(r => ({ via: r.via || '', text: r.text || '', error: !!r.error }));
+  const snap = () => {
+    const cur = self.toolrxWeb.project();
+    const map = {};
+    cur.files.forEach(f => { map[f] = self.toolrxWeb.projectFile(cur.slug, f); });
+    return { slug: cur.slug, files: map, html: cur.html };
+  };
+  const sameMap = (a, b) => {
+    const ka = Object.keys(a).sort(), kb = Object.keys(b).sort();
+    if (ka.join(',') !== kb.join(',')) return false;
+    return ka.every(k => a[k] === b[k]);
+  };
+  const jsCheck = text => {
+    try { new Function(text); return 'ok'; } catch (e) { return e.message; }
+  };
+  const specLineOf = text => ((String(text).match(/^spec · .*$/m) || [''])[0]);
+
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const platBase = snap();
+  out.patches.base = {
+    slug: platBase.slug, files: Object.keys(platBase.files).sort(),
+    engine3d: 'engine3d.js' in platBase.files,
+    spec: specLineOf(platBase.files['ARCHITECTURE.md']),
+  };
+
+  const stack = ['add double jump', 'add three enemy types', 'add a quest',
+                 'add day/night', 'add sound', 'make it harder'];
+  out.patches.steps = [];
+  for (const q of stack) {
+    const before = snap();
+    const r = await pRun(q);
+    const after = snap();
+    const changed = Object.keys(before.files)
+      .filter(f => after.files[f] !== before.files[f])
+      .concat(Object.keys(after.files).filter(f => !(f in before.files)))
+      .sort();
+    out.patches.steps.push({
+      q, via: r[0].via, text: r[0].text, error: !!r[0].error,
+      changed, files: Object.keys(after.files).sort(),
+      syntax: jsCheck(after.files['app.js']),
+      arch: after.files['ARCHITECTURE.md'],
+      spec: specLineOf(after.files['ARCHITECTURE.md']),
+      preview: after.html,
+    });
+  }
+  const stacked = snap();
+  out.patches.stacked = {
+    files: Object.keys(stacked.files).sort(),
+    syntax: jsCheck(stacked.files['app.js']),
+    arch: stacked.files['ARCHITECTURE.md'],
+    spec: specLineOf(stacked.files['ARCHITECTURE.md']),
+    previewHasDoubleJump: /function doubleJump/.test(stacked.html),
+    previewHasQuest: /function questCheck/.test(stacked.html),
+    previewHasMute: /id="muteBtn"/.test(stacked.html),
+    previewHasDayNight: /id="daynight"/.test(stacked.html),
+  };
+  out.patches.undo = [];
+  for (let i = stack.length - 1; i >= 0; i--) {
+    const r = await pRun('undo');
+    out.patches.undo.push({ text: r[0].text, error: !!r[0].error });
+  }
+  const afterUndo = snap();
+  out.patches.restored = {
+    lossless: sameMap(platBase.files, afterUndo.files),
+    htmlSame: platBase.html === afterUndo.html,
+    files: Object.keys(afterUndo.files).sort(),
+    spec: specLineOf(afterUndo.files['ARCHITECTURE.md']),
+  };
+  out.patches.undoEmpty = (await pRun('undo'))[0].text;
+
+  // World size on the seeded RPG, with undo restoring the exact constant.
+  self.toolrxWeb.reset();
+  await pRun('build an rpg seed 7');
+  const rpgBase = snap();
+  const worldBefore = (/var SEED=\d+,SIZE=(\d+);/.exec(rpgBase.files['app.js']) || [])[1];
+  const worldEdit = await pRun('make the world 120x120');
+  const rpgAfter = snap();
+  const worldAfter = (/var SEED=\d+,SIZE=(\d+);/.exec(rpgAfter.files['app.js']) || [])[1];
+  await pRun('undo');
+  const rpgBack = snap();
+  out.patches.world = {
+    via: worldEdit[0].via, text: worldEdit[0].text, before: worldBefore, after: worldAfter,
+    spec: specLineOf(rpgAfter.files['ARCHITECTURE.md']),
+    htmlMentions: rpgAfter.html.indexOf('120×120') !== -1,
+    restored: (/var SEED=\d+,SIZE=(\d+);/.exec(rpgBack.files['app.js']) || [])[1],
+    lossless: sameMap(rpgBase.files, rpgBack.files),
+  };
+  out.patches.worldReject = (await pRun('make the world 900x900'))[0].text;
+
+  // Isometric camera on a 3D exploration build.
+  self.toolrxWeb.reset();
+  await pRun('build a low-poly exploration game');
+  const isoBase = snap();
+  const isoRun = await pRun('switch to isometric');
+  const isoAfter = snap();
+  out.patches.isometric = {
+    via: isoRun[0].via, text: isoRun[0].text,
+    fn: /function isometricCamera/.test(isoAfter.files['app.js']),
+    syntax: jsCheck(isoAfter.files['app.js']),
+    preview: /function isometricCamera/.test(isoAfter.html),
+  };
+  await pRun('undo');
+  out.patches.isometricRestore = {
+    fn: /function isometricCamera/.test(snap().files['app.js']),
+    lossless: sameMap(isoBase.files, snap().files),
+  };
+
+  // make it 3d rebuilds through the templates and undo removes the engine.
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  const tdBase = snap();
+  const tdRun = await pRun('make it 3d');
+  const tdAfter = snap();
+  out.patches.threeD = {
+    via: tdRun[0].via, text: tdRun[0].text,
+    files: Object.keys(tdAfter.files).sort(),
+    hasEngine3d: 'engine3d.js' in tdAfter.files,
+    hasEngine2d: 'engine2d.js' in tdAfter.files,
+    spec: specLineOf(tdAfter.files['ARCHITECTURE.md']),
+    preview: /toolrxEngine3d/.test(tdAfter.html),
+    syntax: jsCheck(tdAfter.files['app.js']),
+  };
+  await pRun('undo');
+  const tdBack = snap();
+  out.patches.threeDUndo = {
+    files: Object.keys(tdBack.files).sort(),
+    hasEngine3d: 'engine3d.js' in tdBack.files,
+    lossless: sameMap(tdBase.files, tdBack.files),
+  };
+
+  // Honest rejections for edits that do not fit the project.
+  self.toolrxWeb.reset();
+  await pRun('build a tower defense game');
+  const tdTower = snap();
+  const rejectDouble = await pRun('add double jump');
+  out.patches.reject = {
+    doubleJump: rejectDouble[0].text,
+    unchanged: sameMap(tdTower.files, snap().files),
+  };
+  const bossRun = await pRun('add a boss');
+  const bossAfter = snap();
+  out.patches.boss = {
+    via: bossRun[0].via, text: bossRun[0].text,
+    fn: /function spawnBoss/.test(bossAfter.files['app.js']),
+    syntax: jsCheck(bossAfter.files['app.js']),
+    preview: /function spawnBoss/.test(bossAfter.html),
+    spec: specLineOf(bossAfter.files['ARCHITECTURE.md']),
+  };
+  await pRun('undo');
+  out.patches.bossUndo = sameMap(tdTower.files, snap().files);
+  self.toolrxWeb.reset();
+  await pRun('build a calculator app');
+  out.patches.reject.calculator = (await pRun('add sound'))[0].text;
+  self.toolrxWeb.reset();
+  await pRun('build a top-down shooter game');
+  out.patches.reject.shooterIso = (await pRun('switch to isometric'))[0].text;
+  const routeEdit = await pRun('add a quest');
+  const routeUndo = await pRun('undo');
+  const routeLang = await self.toolrxSkills.runPrompt('switch to spanish', ctx);
+  out.patches.route = {
+    edit: routeEdit[0].via, undo: routeUndo[0].via, lang: routeLang[0].via,
+  };
   self.toolrxWeb.reset();
   out.sandbox.olympusBuild = (await self.toolrxWeb.prompt('build an rpg based on greek myth'))
     .map(r => ({ via: r.via || '', text: r.text || '' }));
@@ -1535,6 +1704,108 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(o["slug"], "camelot-rpg")
         self.assertEqual(o["title"], "camelot field notes")
         self.assertEqual(o["theme"], "dark")
+
+    def test_composable_edits_change_real_files_and_spec(self):
+        p = self.out["patches"]
+        self.assertEqual(p["base"]["files"],
+                         ["ARCHITECTURE.md", "README.md", "app.js",
+                          "engine2d.js", "index.html", "styles.css"])
+        self.assertFalse(p["base"]["engine3d"])
+        self.assertIn("2D side-scroller", p["base"]["spec"])
+        expected = {
+            "add double jump": "double jump",
+            "add three enemy types": "three enemy types",
+            "add a quest": "quest",
+            "add day/night": "day/night",
+            "add sound": "sound",
+            "make it harder": "harder",
+        }
+        for step in p["steps"]:
+            q = step["q"]
+            self.assertFalse(step["error"], q)
+            self.assertEqual(step["via"], "edit.apply", q)
+            self.assertEqual(step["syntax"], "ok", q)
+            self.assertIn("app.js", step["changed"], q)
+            self.assertIn("ARCHITECTURE.md", step["changed"], q)
+            self.assertIn("## Applied edits", step["arch"], q)
+            self.assertIn("+" + expected[q], step["spec"], q)
+            self.assertGreater(len(step["preview"]), 1000, q)
+
+    def test_composable_edits_stack_without_conflict(self):
+        s = self.out["patches"]["stacked"]
+        self.assertEqual(s["syntax"], "ok")
+        for label in ("double jump", "three enemy types", "quest",
+                      "day/night", "sound", "harder"):
+            self.assertIn("+" + label, s["spec"])
+        self.assertTrue(s["previewHasDoubleJump"])
+        self.assertTrue(s["previewHasQuest"])
+        self.assertTrue(s["previewHasMute"])
+        self.assertTrue(s["previewHasDayNight"])
+
+    def test_undo_restores_every_file_exactly(self):
+        p = self.out["patches"]
+        self.assertEqual(len(p["undo"]), 6)
+        for u in p["undo"]:
+            self.assertFalse(u["error"], u["text"])
+            self.assertIn("undid", u["text"])
+        self.assertTrue(p["restored"]["lossless"], p["restored"])
+        self.assertTrue(p["restored"]["htmlSame"], p["restored"])
+        self.assertNotIn("+", p["restored"]["spec"])
+        self.assertEqual(p["restored"]["files"][-1], "styles.css")
+        self.assertNotIn("engine3d.js", p["restored"]["files"])
+        self.assertIn("nothing to undo", p["undoEmpty"])
+
+    def test_world_size_patch_resizes_and_undoes(self):
+        w = self.out["patches"]["world"]
+        self.assertEqual(w["via"], "edit.apply")
+        self.assertEqual(w["before"], "64")
+        self.assertEqual(w["after"], "120")
+        self.assertIn("120×120", w["spec"])
+        self.assertTrue(w["htmlMentions"])
+        self.assertEqual(w["restored"], "64")
+        self.assertTrue(w["lossless"])
+        self.assertIn("32 and 256", self.out["patches"]["worldReject"])
+
+    def test_isometric_patch_drives_the_camera(self):
+        i = self.out["patches"]["isometric"]
+        self.assertEqual(i["via"], "edit.apply")
+        self.assertTrue(i["fn"], i["text"])
+        self.assertEqual(i["syntax"], "ok")
+        self.assertTrue(i["preview"])
+        self.assertFalse(self.out["patches"]["isometricRestore"]["fn"])
+        self.assertTrue(self.out["patches"]["isometricRestore"]["lossless"])
+
+    def test_make_it_3d_rebuilds_and_undo_removes_the_engine(self):
+        d = self.out["patches"]["threeD"]
+        self.assertEqual(d["via"], "edit.apply")
+        self.assertTrue(d["hasEngine3d"], d["files"])
+        self.assertFalse(d["hasEngine2d"], d["files"])
+        self.assertTrue(d["spec"].startswith("spec · 3D"), d["spec"])
+        self.assertTrue(d["preview"])
+        self.assertEqual(d["syntax"], "ok")
+        u = self.out["patches"]["threeDUndo"]
+        self.assertFalse(u["hasEngine3d"], u["files"])
+        self.assertTrue(u["lossless"], u["files"])
+
+    def test_patch_rejections_stay_honest(self):
+        r = self.out["patches"]["reject"]
+        self.assertIn("no jump", r["doubleJump"])
+        self.assertTrue(r["unchanged"], "a rejected edit must not touch files")
+        self.assertIn("no audio", r["calculator"])
+        self.assertIn("3D", r["shooterIso"])
+
+    def test_boss_patch_and_edit_routing(self):
+        p = self.out["patches"]
+        b = p["boss"]
+        self.assertEqual(b["via"], "edit.apply")
+        self.assertTrue(b["fn"], b["text"])
+        self.assertEqual(b["syntax"], "ok")
+        self.assertTrue(b["preview"])
+        self.assertIn("+boss", b["spec"])
+        self.assertTrue(p["bossUndo"])
+        self.assertEqual(p["route"]["edit"], "edit.apply")
+        self.assertEqual(p["route"]["undo"], "edit.undo")
+        self.assertEqual(p["route"]["lang"], "lang.reply")
 
     def test_reload_resumes_the_active_project_preview(self):
         r = self.out["resume"]

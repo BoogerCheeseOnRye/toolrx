@@ -185,7 +185,7 @@ where it matters, and an architecture entry rather than a closest-match
 fallback. Explicit `2d` requests keep the 2D runtime; `2d`/`3d` routing is part
 of the spec.
 
-### 19. Composable edits
+### 19. Composable edits — done
 
 Treat common follow-ups as deterministic patches against the active project:
 
@@ -207,6 +207,14 @@ preview, and reports which files changed. `undo` restores the previous files.
 This is the feature that makes the harness feel conversational without an LLM.
 
 **Done when** every example edits real files and `undo` is lossless.
+
+Landed in `web/patches.js`. `edit.apply` patches a named function or constant in
+`app.js` (or markup and CSS in `index.html` / `styles.css`), updates the build
+spec, appends an `## Applied edits` block to the project docs, and re-bundles the
+preview. Each project keeps up to eight full-file snapshots, so `undo` restores
+the exact strings that existed before the edit, including files added or removed
+by `make it 3d`. Patches that do not fit the genre answer with a short reason
+instead of changing something unrelated.
 
 ### 20. Optional LLM adapter and budgets
 
@@ -288,7 +296,7 @@ non-redistributable text never leaves the machine.
 Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
-`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v8`
+`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v9`
 cache, so the panel works offline with no second fetch.
 
 ## Order

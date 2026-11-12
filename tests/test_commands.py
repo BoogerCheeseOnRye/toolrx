@@ -165,6 +165,47 @@ class CommandLibraryTest(unittest.TestCase):
         self.assertIn("library", self.data)
         self.assertEqual(self.data["library"]["stats"]["records"], 10)
 
+    def test_composable_edit_commands(self):
+        cases = {
+            "add double jump": "double-jump",
+            "give it a double jump": "double-jump",
+            "add three enemy types": "enemy-types",
+            "add a boss": "boss",
+            "add a quest": "quest",
+            "add day/night": "day-night",
+            "add sound": "sound",
+            "make it harder": "harder",
+            "switch to isometric": "isometric",
+            "make it 3d": "three-d",
+        }
+        for query, patch in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "edit.apply", query)
+            self.assertEqual(hit["args"].get("patch"), patch, query)
+
+        for query, size in (("make the world 96x96", "96"),
+                            ("make the world 120 by 120", "120"),
+                            ("grow the world to 64x64", "64")):
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "edit.apply", query)
+            self.assertEqual(hit["args"].get("patch"), "world", query)
+            self.assertEqual(hit["args"].get("arg"), "$1", query)
+            m = re.match(hit["re"], query, re.I)
+            self.assertIsNotNone(m, query)
+            self.assertEqual(m.group(1), size, query)
+
+        for query in ("undo", "undo that", "undo the last edit", "revert"):
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "edit.undo", query)
+
+        # `switch to {lang}` is intentionally broad, so edits must stay ahead
+        # of it in the catalog or "switch to isometric" would set a language.
+        self.assertEqual(self.first("switch to spanish")["op"], "lang.reply")
+        self.assertGreaterEqual(self.data["categories"].get("edit", 0), 40)
+
     def test_build_variants_capture_the_modifier(self):
         cases = {
             "build a tetris game with 3d elements": ("tetris", "3d elements"),

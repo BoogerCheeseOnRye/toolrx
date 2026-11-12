@@ -619,6 +619,50 @@ for pat in ("list {level} books", "show {level} books", "which books are {level}
         "^" + pat.replace("{level}", "(beginner|intermediate|advanced|reference|all)")
         + "$", {"level": "$1"}, pat, "library")
 
+# ------------------------------------------------------- composable edits ---
+# Follow-ups patch the active project: a named function or constant in a real
+# file, plus the build spec. Unsupported combinations answer honestly instead
+# of rebuilding something unrelated.
+EDIT_PATTERNS = [
+    ("double-jump", ("add double jump", "add a double jump",
+                     "give it a double jump", "give it double jump",
+                     "double jump")),
+    ("enemy-types", ("add three enemy types", "add 3 enemy types",
+                     "add enemy types", "add three types of enemy",
+                     "add 3 types of enemies", "add different enemy types")),
+    ("boss", ("add a boss", "add a boss fight", "add boss", "add a final boss")),
+    ("quest", ("add a quest", "add a quest line", "add a questline",
+               "add another quest", "add quests")),
+    ("day-night", ("add day/night", "add a day night cycle", "add day and night",
+                   "add a day/night cycle", "add day night")),
+    ("sound", ("add sound", "add sound effects", "add audio",
+               "add sound to it")),
+    ("harder", ("make it harder", "increase the difficulty", "raise the difficulty",
+                "make it more difficult", "hard mode", "make the game harder")),
+    ("isometric", ("switch to isometric", "make it isometric",
+                   "use an isometric view", "switch to an isometric view",
+                   "change the view to isometric")),
+    ("three-d", ("make it 3d", "make it 3-d", "make this 3d", "convert it to 3d",
+                 "turn it into 3d", "give it 3d graphics", "make the game 3d")),
+]
+for patch, pats in EDIT_PATTERNS:
+    for pat in pats:
+        add(f"edit.{patch}.{len(COMMANDS)}", "edit.apply", "^" + re.escape(pat) + "$",
+            {"patch": patch}, pat, "edit")
+
+for pat in ("make the world {n}x{n}", "make the world {n} by {n}",
+            "resize the world to {n}x{n}", "grow the world to {n}x{n}",
+            "set the world size to {n}x{n}"):
+    rx = re.escape(pat).replace(r"\{n\}", r"(\d{2,3})", 1).replace(r"\{n\}", r"\1")
+    add(f"edit.world.{len(COMMANDS)}", "edit.apply", "^" + rx + "$",
+        {"patch": "world", "arg": "$1"}, pat, "edit")
+
+for pat in ("undo", "undo that", "undo the last edit", "undo last edit",
+            "revert", "revert that", "revert the last change",
+            "undo the last change"):
+    add(f"edit.undo.{len(COMMANDS)}", "edit.undo", "^" + re.escape(pat) + "$",
+        {}, pat, "edit")
+
 # ------------------------------------------------------------- language ---
 # Exact forms first: a bare "what language is this" inspects the previous step.
 for pat in ("what language is this", "what language is that",

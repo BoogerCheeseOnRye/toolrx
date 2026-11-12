@@ -436,7 +436,7 @@ stay English in phase 1; only the chat shell is localized.
 Shipped as the `▥ library` dialog. Search and filters use the same ranked
 catalog as the command path; reading status is a browser-local override under
 `toolrx.library.status`, and metadata travels in `web/commands.json` inside
-`toolrx-shell-v8`.
+`toolrx-shell-v9`.
 
 ---
 
@@ -504,9 +504,10 @@ Steps 21–25 are complete and covered by `tests/test_library.py`,
 `tests/test_commands.py`, the fixture/scale matrix in `tests/test_skills_js.py`,
 and the dashboard checks in `tests/test_repo_hygiene.py`. Step 24 added 76
 curated phrase entries, reply packs, and the persisted `toolrx.reply.lang`
-preference; step 25 added the Library panel and moved the PWA cache to
-`toolrx-shell-v8`.
+preference; step 25 added the Library panel and moved the PWA cache forward; step 19
+moved it again to `toolrx-shell-v9` for the composable-edit module.
 
-The remaining roadmap work is step 18 (library growth), step 19 (patches), step
-20 (optional LLM adapter), and step 14 (vendored sprite subset). Step 17 added
-ten more theme packs and generated default RPG titles.
+Steps 18 and 19 are complete. The remaining roadmap work is step 20 (optional
+LLM adapter) and step 14 (vendored sprite subset, blocked on a licence-compatible
+sprite repository). Steps 17 and 18 added ten more theme packs, generated
+`<adjective> <place> RPG` titles, and sixteen intro-to-medium game starters.

@@ -119,9 +119,9 @@ RPG builds ship two more real files: `worldgen.js` (seeded biomes, rivers, roads
 3–5 towns with houses, a multi-room dungeon, NPCs, enemies, pickups, and 4–5
 quests) and `rpg2.js` (isometric explorer with camera follow, fogged minimap,
 dialogue, shops, action combat, XP/levels, quest log, and three save slots).
-Small worlds are 64×64 and `large` / `huge` requests reach 96×96. The optional
-sprite-pack pipeline (step 14) is pinned to a CC0 pixel-art atlas and remains a
-fallback to the procedural sprites.
+Small worlds are 64×64 and `large` / `huge` requests reach 96×96. Sprites stay
+procedural; the optional sprite-pack pipeline (step 14) is still blocked on a
+licence-compatible atlas and is not shipped yet.
 
 `build an rpg` picks its starting pack from the seed (twenty packs, from
 Camelot, Bharata, Derelict, Neon, Rain City, Olympus, Sakura, Nile, Abyss, and
@@ -144,6 +144,17 @@ The active project is editable from chat: `change the page title to …`,
 The preview is re-bundled from those files, so a title, switch, or note
 survives later theme changes and reopening the project. Project edits never
 regenerate the page from its template.
+
+Common game follow-ups are deterministic patches rather than new builds:
+`add double jump`, `add three enemy types`, `add a boss`, `add a quest`,
+`add day/night`, `add sound`, `make it harder`, `make the world 96x96`,
+`switch to isometric`, and `make it 3d`. A patch updates the build spec, edits a
+named function or constant in a real file (`doubleJump()`, `makeEnemy()`,
+`spawnBoss()`, `questCheck()`, `SIZE`, the camera), appends an `## Applied edits`
+block to `README.md` and `ARCHITECTURE.md`, and re-bundles the preview with the
+list of changed files. `undo` restores the exact previous file map — including
+removing `engine3d.js` after a 3D rebuild. Patches that do not fit the genre say
+so plainly instead of changing something unrelated.
 
 Builds cover calculators, notes, dashboards, landing pages, a social feed,
 blog, forum, chat, arcade games (snake, breakout, pong, 2048, minesweeper,

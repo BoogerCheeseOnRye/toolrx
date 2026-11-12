@@ -3113,6 +3113,9 @@
     var bits = [spec.dim + " " + spec.view, spec.label, spec.art];
     if (spec.theme) bits.push(spec.theme);
     bits.push(spec.scale, "seed " + spec.seed);
+    if (spec.edits && spec.edits.length) {
+      bits.push(spec.edits.map(function (e) { return "+" + e; }).join(" "));
+    }
     return "spec · " + bits.join(" · ")
       + (spec.note ? "\nspec note · " + spec.note : "");
   }

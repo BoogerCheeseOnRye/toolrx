@@ -531,6 +531,9 @@
     p.name = built.title;
     p.kind = built.kind;
     p.files = built.files;
+    p.spec = built.spec || null;
+    p.edits = [];
+    p.history = [];
     p.bundled = bundleProject(p);
     p.updated = Date.now();
     if (!p.created) p.created = p.updated;
@@ -568,6 +571,108 @@
     const built = t.webPage(Object.assign({}, info, { theme: theme }));
     const desc = "web page: " + built.title;
     return installBuilt(built, desc);
+  }
+
+  /* ---------------------------------------------------- composable edits -- */
+  /* Every patch snapshots the project first, so undo restores the exact files
+   * that existed before it — including files added or removed by a rebuild. */
+  function copyFiles(files) {
+    const out = {};
+    for (const k in (files || {})) out[k] = files[k];
+    return out;
+  }
+
+  function pushProjectHistory(p, label) {
+    if (!p.history) p.history = [];
+    p.history.push({
+      label: String(label || "edit"),
+      files: copyFiles(p.files),
+      spec: JSON.parse(JSON.stringify(p.spec || null)),
+      edits: (p.edits || []).slice(),
+      name: p.name,
+      desc: p.desc,
+      at: Date.now(),
+    });
+    if (p.history.length > 8) p.history = p.history.slice(-8);
+  }
+
+  function editReport(before, after, res) {
+    const changed = [];
+    const names = new Set(Object.keys(before).concat(Object.keys(after)));
+    names.forEach(function (n) {
+      if (before[n] !== after[n]) changed.push(n);
+    });
+    changed.sort();
+    const t = root.toolrxTemplates;
+    const lines = ['edited "' + res.name + '" · ' + res.label];
+    if (t && t.specLine) lines.push(t.specLine(res.spec));
+    if (res.fn) lines.push(res.fn + " now carries the change");
+    lines.push("changed: " + (changed.length ? changed.join(", ") : "no files"));
+    if (res.note) lines.push(res.note);
+    lines.push("preview re-bundled · active project: " + res.slug + " · say undo to revert");
+    return lines.join("\n");
+  }
+
+  function applyProjectEdit(patch, arg) {
+    const p = projectForEdit();
+    const P = root.toolrxPatches;
+    if (!P) throw new Error("edit patches are not loaded");
+    const t = root.toolrxTemplates;
+    const spec = p.spec || (t && t.spec ? t.spec(p.kind, p.desc) : null);
+    const before = copyFiles(p.files);
+    const res = P.apply(patch, {
+      kind: p.kind, desc: p.desc, files: before, spec: spec, edits: p.edits || [],
+    }, { arg: arg });
+    if (!res.ok) {
+      return 'not edited · ' + res.message
+        + "\ntry: build a compatible starter first, or say undo";
+    }
+    pushProjectHistory(p, res.label);
+    p.files = res.files;
+    p.spec = res.spec;
+    p.edits = res.edits;
+    p.bundled = bundleProject(p);
+    p.updated = Date.now();
+    writeProjects();
+    writeProjectFiles(p);
+    preview = {
+      html: p.bundled, kind: p.kind, desc: p.desc,
+      title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
+    };
+    notifyPreview();
+    return editReport(before, p.files, {
+      name: p.name, label: res.label, spec: p.spec, fn: res.fn,
+      note: res.note, slug: p.slug,
+    });
+  }
+
+  function undoProjectEdit() {
+    const p = projectForEdit("this project");
+    if (!p.history || !p.history.length) {
+      return "nothing to undo — this project has no recorded edits";
+    }
+    const snap = p.history.pop();
+    const before = copyFiles(p.files);
+    p.files = snap.files;
+    p.spec = snap.spec;
+    p.edits = snap.edits;
+    if (snap.name) p.name = snap.name;
+    if (snap.desc !== undefined) p.desc = snap.desc;
+    p.bundled = bundleProject(p);
+    p.updated = Date.now();
+    writeProjects();
+    writeProjectFiles(p);
+    preview = {
+      html: p.bundled, kind: p.kind, desc: p.desc,
+      title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
+    };
+    notifyPreview();
+    const changed = [];
+    const names = new Set(Object.keys(before).concat(Object.keys(p.files)));
+    names.forEach(function (n) { if (before[n] !== p.files[n]) changed.push(n); });
+    return 'undid "' + snap.label + '" · restored ' + changed.length + " files"
+      + (changed.length ? " (" + changed.sort().join(", ") + ")" : "")
+      + "\npreview re-bundled · active project: " + p.slug;
   }
 
   /* ------------------------------------------------------------- chat ----- */
@@ -835,6 +940,8 @@
       preview: function () { return defaultPreview(); },
       theme: function (name) { return setTheme(name); },
       build: function (kind, desc) { return buildPage(kind, desc); },
+      edit: function (patch, arg) { return applyProjectEdit(patch, arg); },
+      undo: function () { return undoProjectEdit(); },
       webPage: function (info) { return buildWebPage(info); },
       architecture: function (kind, desc) {
         const t = root.toolrxTemplates;

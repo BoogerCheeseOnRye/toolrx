@@ -279,16 +279,20 @@ class DashboardTest(unittest.TestCase):
                  'src="web/engine3d.js"', 'src="web/engine3d.embed.js"',
                  'src="web/worldgen.js"', 'src="web/worldgen.embed.js"',
                  'src="web/rpg2.js"', 'src="web/rpg2.embed.js"',
-                 'src="web/templates.js"']
+                 'src="web/templates.js"', 'src="web/patches.js"']
         for mark in marks:
             self.assertIn(mark, self.html)
         order = [self.html.index(m) for m in marks]
         self.assertEqual(order, sorted(order))
+        self.assertLess(self.html.index('src="web/patches.js"'),
+                        self.html.index('src="web/sandbox.js"'))
 
     def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v8", sw)
+        self.assertIn("toolrx-shell-v9", sw)
+        self.assertIn("./web/patches.js", sw)
+        self.assertIn("./web/templates.js", sw)
         self.assertIn("./web/engine2d.js", sw)
         self.assertIn("./web/engine2d.embed.js", sw)
         self.assertIn("./web/engine3d.js", sw)

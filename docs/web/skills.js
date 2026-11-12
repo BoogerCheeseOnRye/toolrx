@@ -1802,6 +1802,14 @@
       }
       return ctx.webPage(prevWebInfo(ctx));
     },
+    "edit.apply": function (a, ctx) {
+      if (!ctx.edit) throw new Error("composable edits need the browser workspace");
+      return ctx.edit(a.patch, a.arg || a.size);
+    },
+    "edit.undo": function (a, ctx) {
+      if (!ctx.undo) throw new Error("undo needs the browser workspace");
+      return ctx.undo();
+    },
     "plan": function (a, ctx) {
       if (!ctx.architecture) throw new Error("architecture briefs need the browser workspace");
       return ctx.architecture(a.kind || a.desc || "app", a.desc || a.kind || "");
