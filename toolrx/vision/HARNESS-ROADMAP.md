@@ -216,7 +216,7 @@ the exact strings that existed before the edit, including files added or removed
 by `make it 3d`. Patches that do not fit the genre answer with a short reason
 instead of changing something unrelated.
 
-### 20. Optional LLM adapter and budgets
+### 20. Optional LLM adapter and budgets — done
 
 - `plan(prompt)`: deterministic parser first. Only if it cannot produce a spec,
   an optional LLM returns strict JSON, validated against the schema.
@@ -230,6 +230,20 @@ instead of changing something unrelated.
 
 **Done when** with the LLM off every command still works, and with it on the same
 prompt produces the same spec and files as the deterministic path.
+
+Landed in `web/llm.js`. Settings live under `toolrx.llm.config` and stay off
+until the user saves an OpenAI-compatible endpoint and model in Command Center.
+`llm plan` returns a deterministic answer without any request when the parser
+already knows the genre (only `playground` falls through); otherwise the reply
+must be one JSON object with an allow-listed genre, an optional `2D`/`3D` dim,
+and a short `why`. `llm patch` accepts only `{file, diff}`, rejects any other
+key, keeps the file inside the active project, and applies hunks exactly or not
+at all. A pending patch is stored in `toolrx.llm.pending` and is not written
+until `apply the llm patch`, which pushes the normal undo snapshot; `discard the
+llm patch` writes nothing. Requests are HTTPS-only (plain HTTP for localhost),
+capped at 8 calls per session by default with a timeout, response-size cap, and
+a 50-entry cache keyed by normalized prompt plus file hash. The API key stays in
+`localStorage`, never in the cache or status text.
 
 ### 21. Archive catalog — done
 

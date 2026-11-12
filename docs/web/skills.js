@@ -1780,8 +1780,12 @@
     },
     "system": function (a, ctx) {
       if (a.op === "who") {
+        const st = root.toolrxLlm && root.toolrxLlm.status ? root.toolrxLlm.status() : null;
         return "toolrx — a deterministic micro tool router. In this tab it runs a hashed n-gram model plus a "
-          + meta.count + "-command pattern library. No LLM, no API key, no signal leaving the page.";
+          + meta.count + "-command pattern library. No LLM by default, no API key, no signal leaving the page"
+          + (st && st.enabled
+            ? " — the optional LLM adapter is enabled in this browser and only runs on llm plan / llm patch."
+            : " unless you explicitly enable the optional LLM adapter in Command Center.");
       }
       const topic = (a.topic || "").toLowerCase();
       if (a.op === "help" || a.op === "help") {
@@ -1809,6 +1813,40 @@
     "edit.undo": function (a, ctx) {
       if (!ctx.undo) throw new Error("undo needs the browser workspace");
       return ctx.undo();
+    },
+    "llm.status": function (a, ctx) {
+      if (!ctx.llmStatus) throw new Error("the optional LLM adapter is not loaded");
+      return ctx.llmStatus();
+    },
+    "llm.on": function (a, ctx) {
+      if (!ctx.llmEnable) throw new Error("the optional LLM adapter is not loaded");
+      return ctx.llmEnable(true);
+    },
+    "llm.off": function (a, ctx) {
+      if (!ctx.llmEnable) throw new Error("the optional LLM adapter is not loaded");
+      return ctx.llmEnable(false);
+    },
+    "llm.cache": function (a, ctx) {
+      if (!ctx.llmCacheClear) throw new Error("the optional LLM adapter is not loaded");
+      return ctx.llmCacheClear();
+    },
+    "llm.plan": function (a, ctx) {
+      if (!ctx.llmPlan) throw new Error("LLM plans need the browser workspace");
+      const prompt = String(a.prompt || "").trim();
+      if (!prompt) throw new Error("say what to plan, e.g. llm plan a cozy mail route");
+      return ctx.llmPlan(prompt);
+    },
+    "llm.patch": function (a, ctx) {
+      if (!ctx.llmPatch) throw new Error("LLM patches need the browser workspace");
+      return ctx.llmPatch(a.file, a.instruction);
+    },
+    "llm.apply": function (a, ctx) {
+      if (!ctx.llmApply) throw new Error("applying an LLM patch needs the browser workspace");
+      return ctx.llmApply();
+    },
+    "llm.discard": function (a, ctx) {
+      if (!ctx.llmDiscard) throw new Error("discarding an LLM patch needs the browser workspace");
+      return ctx.llmDiscard();
     },
     "plan": function (a, ctx) {
       if (!ctx.architecture) throw new Error("architecture briefs need the browser workspace");

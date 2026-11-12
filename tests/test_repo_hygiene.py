@@ -245,7 +245,7 @@ class DashboardTest(unittest.TestCase):
 
     def test_pages_web_assets_match(self):
         for name in ("blake2b.js", "router.js", "sandbox.js", "skills.js",
-                     "templates.js", "lang.js", "i18n.json",
+                     "templates.js", "patches.js", "llm.js", "lang.js", "i18n.json",
                      "engine2d.js", "engine2d.embed.js",
                      "engine3d.js", "engine3d.embed.js", "worldgen.js",
                      "worldgen.embed.js", "rpg2.js", "rpg2.embed.js",
@@ -279,19 +279,22 @@ class DashboardTest(unittest.TestCase):
                  'src="web/engine3d.js"', 'src="web/engine3d.embed.js"',
                  'src="web/worldgen.js"', 'src="web/worldgen.embed.js"',
                  'src="web/rpg2.js"', 'src="web/rpg2.embed.js"',
-                 'src="web/templates.js"', 'src="web/patches.js"']
+                 'src="web/templates.js"', 'src="web/patches.js"', 'src="web/llm.js"']
         for mark in marks:
             self.assertIn(mark, self.html)
         order = [self.html.index(m) for m in marks]
         self.assertEqual(order, sorted(order))
         self.assertLess(self.html.index('src="web/patches.js"'),
-                        self.html.index('src="web/sandbox.js"'))
+                        self.html.index('src="web/llm.js"'))
+        self.assertLess(self.html.index('src="web/llm.js"'),
+                        self.html.index('src="web/skills.js"'))
 
     def test_offline_cache_includes_the_engines(self):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"),
                   encoding="utf-8").read()
-        self.assertIn("toolrx-shell-v9", sw)
+        self.assertIn("toolrx-shell-v10", sw)
         self.assertIn("./web/patches.js", sw)
+        self.assertIn("./web/llm.js", sw)
         self.assertIn("./web/templates.js", sw)
         self.assertIn("./web/engine2d.js", sw)
         self.assertIn("./web/engine2d.embed.js", sw)

@@ -3512,6 +3512,29 @@
     rpgDefault: rpgDefault,
     rpgGrammarTitle: rpgGrammarTitle,
     themePacks: function () { return RPG_DEFAULT_PACKS.slice(); },
-    kinds: Object.keys(BUILDERS)
+    kinds: Object.keys(BUILDERS),
+    genres: function () {
+      var out = [];
+      Object.keys(BUILDERS).forEach(function (k) {
+        if (k === "playground" || k === "welcome") return;
+        var name = k.replace(/3d$/, "");
+        if (/3d$/.test(k) && BUILDERS[name]) return;
+        if (out.indexOf(name) < 0) out.push(name);
+      });
+      if (out.indexOf("explore") < 0) out.push("explore");
+      if (out.indexOf("waveshooter") < 0) out.push("waveshooter");
+      if (out.indexOf("builder") < 0) out.push("builder");
+      return out.sort();
+    },
+    threeD: function () { return Object.keys(THREE_D_ROUTE); },
+    gameGenres: function () {
+      var out = [];
+      Object.keys(GAME_GENRES).forEach(function (k) {
+        // `game` is the generic guessing-game fallback, not a genre choice.
+        if (k === "game" || out.indexOf(k) >= 0) return;
+        out.push(k);
+      });
+      return out.sort();
+    }
   };
 })(typeof self !== "undefined" ? self : this);

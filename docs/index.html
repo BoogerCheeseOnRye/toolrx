@@ -354,6 +354,8 @@
   .cm-client{display:none}
   body.client-demo .cm-client{display:flex}
   body.client-demo .cm-github,body.client-demo .cm-cloud{display:none}
+  .cm-llm{display:none}
+  body.client-demo .cm-llm{display:block}
   .cm-btn:disabled{opacity:.7;cursor:not-allowed}
   @media(max-width:900px){
     body.drawer-open #drawerBackdrop{display:block}
@@ -736,6 +738,15 @@
       <div class="cm-row cm-cloud"><span>default model</span><input type="text" id="cmModel" list="cmModelList" placeholder="model id"><datalist id="cmModelList"></datalist></div>
       <div class="cm-row cm-cloud"><span>connect</span><button class="cm-btn" id="cmConnect">Save provider</button></div>
     </section>
+    <section class="cm-llm">
+      <h4>LLM (optional)</h4>
+      <div class="cm-row"><span>enabled</span><label class="cm-sw"><input type="checkbox" id="cmLlmOn"><i></i></label></div>
+      <div class="cm-row"><span>endpoint</span><input type="text" id="cmLlmEndpoint" placeholder="https://api.example.com/v1/chat/completions" autocomplete="off"></div>
+      <div class="cm-row"><span>model</span><input type="text" id="cmLlmModel" placeholder="model id" autocomplete="off"></div>
+      <div class="cm-row"><span>api key</span><input type="password" id="cmLlmKey" placeholder="stored in this browser only" autocomplete="off"></div>
+      <div class="cm-row"><span>cache</span><button class="cm-btn" id="cmLlmClear">Clear LLM cache</button></div>
+      <div class="cm-ghinfo" id="cmLlmInfo">off by default · deterministic parser always runs first</div>
+    </section>
     <section>
       <h4>Network</h4>
       <div class="cm-row"><span>WireGuard</span><button class="cm-btn" id="cmWg">…</button></div>
@@ -841,6 +852,7 @@
 <script src="web/rpg2.embed.js"></script>
 <script src="web/templates.js"></script>
 <script src="web/patches.js"></script>
+<script src="web/llm.js"></script>
 <script src="web/lang.js"></script>
 <script src="web/skills.js"></script>
 <script src="web/sandbox.js"></script>
@@ -892,14 +904,14 @@ async function loadConfig(){
   const note=document.getElementById('staticNote');
   if(note){
     note.innerHTML = clientMode
-      ? '<b>in-browser router</b> — '+(commandCount?commandCount.toLocaleString():'2,700+')+' commands · 27 tools · nothing leaves this tab'
+      ? '<b>in-browser router</b> — '+(commandCount?commandCount.toLocaleString():'2,700+')+' commands · 27 tools · nothing leaves this tab unless you enable the optional LLM'
       : '<b>static preview</b> — open <code>toolrx/server.py</code> for the full dashboard API';
   }
   wgPoll();
   if(clientMode){
     if(q && window.matchMedia('(max-width:900px)').matches) q.placeholder='ask toolrx…';
     const hint=document.querySelector('.hint');
-    if(hint) hint.textContent='runs in this tab · '+(commandCount?commandCount.toLocaleString()+' commands · ':'')+'no LLM, no network';
+    if(hint) hint.textContent='runs in this tab · '+(commandCount?commandCount.toLocaleString()+' commands · ':'')+'no LLM by default, no network';
     if(window.toolrxWeb.onPreview) window.toolrxWeb.onPreview(renderPreview);
     loadPreview();
     refreshProjectChip();
@@ -1037,6 +1049,7 @@ function openCmdCenter(){
   cmBot.style.transform='scale(0.6)';
   openDialog(modal, '#cmClose');
   loadLocalModels();
+  if(window.__cmLlmRefresh) window.__cmLlmRefresh();
   wgPoll();
   requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
     cmBot.style.opacity='1';
@@ -1161,6 +1174,54 @@ async function loadLocalModels(){
       save();
     }catch(e){ alert('provider failed: '+e); }
   });
+  // Optional LLM: browser-local settings, off unless the user enables them.
+  // The key is only written to localStorage and the Authorization header.
+  if(window.toolrxLlm){
+    const L=window.toolrxLlm;
+    const llmOn=document.getElementById('cmLlmOn');
+    const llmEp=document.getElementById('cmLlmEndpoint');
+    const llmModel=document.getElementById('cmLlmModel');
+    const llmKey=document.getElementById('cmLlmKey');
+    const llmInfo=document.getElementById('cmLlmInfo');
+    const llmShow=()=>{
+      const s=L.status(), c=L.config();
+      llmOn.checked=s.enabled;
+      llmEp.value=c.endpoint||'';
+      llmModel.value=s.model||'';
+      llmKey.value='';
+      llmKey.placeholder=s.hasKey?'key saved in this browser (type to replace)':'optional · stored in this browser only';
+      llmInfo.textContent='calls '+s.calls+'/'+s.maxCalls+' · cache '+s.cache+'/'+s.maxCache
+        +(s.pending?' · pending '+s.pending.file:'')
+        +' · deterministic parser always runs first';
+    };
+    window.__cmLlmRefresh=llmShow;
+    llmShow();
+    llmOn.addEventListener('change',()=>{
+      try{ L.enable(llmOn.checked); }
+      catch(e){ llmOn.checked=false; alert(String(e.message||e)); }
+      llmShow();
+    });
+    llmEp.addEventListener('change',()=>{
+      try{ L.configure({endpoint:llmEp.value}); }
+      catch(e){ alert(String(e.message||e)); }
+      llmShow();
+    });
+    llmModel.addEventListener('change',()=>{
+      try{ L.configure({model:llmModel.value}); }
+      catch(e){ alert(String(e.message||e)); }
+      llmShow();
+    });
+    llmKey.addEventListener('change',()=>{
+      if(!llmKey.value) return;
+      try{ L.configure({key:llmKey.value}); }
+      catch(e){ alert(String(e.message||e)); }
+      llmShow();
+    });
+    document.getElementById('cmLlmClear').addEventListener('click',()=>{
+      L.clearCache();
+      llmShow();
+    });
+  }
   document.getElementById('cmGh').addEventListener('click',async()=>{
     const repo=document.getElementById('cmRepo').value.trim();
     if(!repo){ alert('enter owner/repo first'); return; }

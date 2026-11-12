@@ -31,7 +31,7 @@ def main():
     (DOCS / "index.html").write_text(SRC.read_text(encoding="utf-8"), encoding="utf-8")
     shutil.copyfile(MODEL, WEB_OUT / "model.json")
     names = ("blake2b.js", "router.js", "sandbox.js", "skills.js",
-             "templates.js", "patches.js", "lang.js", "i18n.json",
+             "templates.js", "patches.js", "llm.js", "lang.js", "i18n.json",
              "engine2d.js", "engine2d.embed.js",
              "engine3d.js", "engine3d.embed.js", "worldgen.js",
              "worldgen.embed.js", "rpg2.js", "rpg2.embed.js", "commands.json")

@@ -156,6 +156,22 @@ list of changed files. `undo` restores the exact previous file map — including
 removing `engine3d.js` after a 3D rebuild. Patches that do not fit the genre say
 so plainly instead of changing something unrelated.
 
+An optional LLM adapter exists for prompts the deterministic parser cannot
+place. It is **off by default** and never runs as part of a normal build. You
+configure an OpenAI-compatible endpoint, model, and key in Command Center →
+LLM; the key stays in this browser's `localStorage` and is never logged, shown
+in status, or written to the response cache. `llm status` reports the state,
+`llm on` / `llm off` toggles it, and `llm cache clear` empties the cache. When
+enabled, `llm plan a cozy mail route` only calls the model if the deterministic
+parser returned `playground`; the answer must be strict JSON with an
+allow-listed genre, and a miss falls back to an honest refusal. `llm patch
+app.js with …` asks for a single unified diff, validates the file name and
+every hunk against the current content, and stores it as a pending patch:
+`apply the llm patch` writes it (and `undo` reverts it), while `discard the llm
+patch` leaves the project untouched. Requests are HTTPS-only except for
+localhost, with a call budget, timeout, response-size cap, and a 50-entry cache
+keyed by the normalized prompt and file hash.
+
 Builds cover calculators, notes, dashboards, landing pages, a social feed,
 blog, forum, chat, arcade games (snake, breakout, pong, 2048, minesweeper,
 tetris, maze, platformer, typing), the sixteen step-18 2D and 3D starters, and

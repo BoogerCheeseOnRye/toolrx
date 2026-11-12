@@ -505,9 +505,12 @@ Steps 21–25 are complete and covered by `tests/test_library.py`,
 and the dashboard checks in `tests/test_repo_hygiene.py`. Step 24 added 76
 curated phrase entries, reply packs, and the persisted `toolrx.reply.lang`
 preference; step 25 added the Library panel and moved the PWA cache forward; step 19
-moved it again to `toolrx-shell-v9` for the composable-edit module.
+moved it to `toolrx-shell-v9` for the composable-edit module, and step 20 moved it
+to `toolrx-shell-v10` for the optional LLM adapter.
 
-Steps 18 and 19 are complete. The remaining roadmap work is step 20 (optional
-LLM adapter) and step 14 (vendored sprite subset, blocked on a licence-compatible
-sprite repository). Steps 17 and 18 added ten more theme packs, generated
-`<adjective> <place> RPG` titles, and sixteen intro-to-medium game starters.
+Steps 18, 19, and 20 are complete. The remaining roadmap work is step 14
+(vendored sprite subset, blocked on a licence-compatible sprite repository).
+Steps 17 and 18 added ten more theme packs, generated
+`<adjective> <place> RPG` titles, and sixteen intro-to-medium game starters;
+step 20 added an optional, off-by-default LLM adapter that never runs for a
+normal build.

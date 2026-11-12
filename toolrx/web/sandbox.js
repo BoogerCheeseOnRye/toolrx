@@ -675,6 +675,99 @@
       + "\npreview re-bundled · active project: " + p.slug;
   }
 
+  /* ------------------------------------------------------ optional llm --- */
+  /* The adapter is never required: these helpers only run when the user asks
+   * for an LLM plan/patch, and the module itself refuses unless it is enabled.
+   * A pending patch is stored in localStorage, never written to a file until
+   * `apply the llm patch` is called, and installing it pushes the same
+   * full-file history snapshot that `undo` already understands. */
+  function llmModule() {
+    const L = root.toolrxLlm;
+    if (!L) throw new Error("the optional LLM adapter is not loaded");
+    return L;
+  }
+
+  function llmStatus() {
+    return llmModule().statusText();
+  }
+
+  function llmEnable(on) {
+    return llmModule().enable(!!on);
+  }
+
+  function llmCacheClear() {
+    return llmModule().clearCache();
+  }
+
+  async function llmPlan(prompt) {
+    const L = llmModule();
+    const r = await L.plan(prompt);
+    return r.text;
+  }
+
+  async function llmPatch(file, instruction) {
+    const L = llmModule();
+    const p = projectForEdit();
+    const name = L.safeFileName(file);
+    if (!Object.prototype.hasOwnProperty.call(p.files, name)) {
+      throw new Error("no " + name + " in " + p.slug
+        + " — files: " + Object.keys(p.files).sort().join(", "));
+    }
+    const content = p.files[name];
+    const r = await L.patch(name, instruction, { content: content, kind: p.kind });
+    L.setPending({
+      file: name, diff: r.diff, instruction: String(instruction || ""),
+      beforeHash: L.hash(content), slug: p.slug, at: Date.now(),
+    });
+    return r.text + "\nnothing written yet — the pending patch is stored in this browser";
+  }
+
+  function llmApply() {
+    const L = llmModule();
+    const pending = L.pending();
+    if (!pending) {
+      return "there is no llm patch to apply — say llm patch app.js with <instruction> first";
+    }
+    const p = projectForEdit();
+    if (pending.slug && pending.slug !== p.slug) {
+      throw new Error("the pending patch was generated for project " + pending.slug
+        + ", not " + p.slug + " — discard it and generate another");
+    }
+    const before = p.files[pending.file];
+    if (before == null) {
+      throw new Error(pending.file + " is no longer in " + p.slug + " — regenerate the patch");
+    }
+    if (L.hash(before) !== pending.beforeHash) {
+      throw new Error(pending.file + " changed since the patch was generated — regenerate it");
+    }
+    const next = L.applyDiff(before, pending.diff, pending.file);
+    if (next === before) throw new Error("the patch would not change " + pending.file);
+    pushProjectHistory(p, "llm patch " + pending.file);
+    p.files[pending.file] = next;
+    p.bundled = bundleProject(p);
+    p.updated = Date.now();
+    writeProjects();
+    writeProjectFiles(p);
+    preview = {
+      html: p.bundled, kind: p.kind, desc: p.desc,
+      title: p.name, theme: preview.theme === "light" ? "light" : "dark", at: Date.now(),
+    };
+    notifyPreview();
+    L.clearPending();
+    return 'applied the llm patch · ' + pending.file
+      + "\ninstruction: " + (pending.instruction || "(none)")
+      + "\nchanged: " + pending.file + " (the model does not edit the build spec)"
+      + "\npreview re-bundled · active project: " + p.slug + " · say undo to revert";
+  }
+
+  function llmDiscard() {
+    const L = llmModule();
+    const pending = L.pending();
+    if (!pending) return "there is no llm patch to discard";
+    L.clearPending();
+    return "discarded the llm patch for " + pending.file + " — no files were written";
+  }
+
   /* ------------------------------------------------------------- chat ----- */
   let chatLog = (function () {
     try {
@@ -942,6 +1035,13 @@
       build: function (kind, desc) { return buildPage(kind, desc); },
       edit: function (patch, arg) { return applyProjectEdit(patch, arg); },
       undo: function () { return undoProjectEdit(); },
+      llmStatus: llmStatus,
+      llmEnable: llmEnable,
+      llmCacheClear: llmCacheClear,
+      llmPlan: llmPlan,
+      llmPatch: llmPatch,
+      llmApply: llmApply,
+      llmDiscard: llmDiscard,
       webPage: function (info) { return buildWebPage(info); },
       architecture: function (kind, desc) {
         const t = root.toolrxTemplates;

@@ -206,6 +206,39 @@ class CommandLibraryTest(unittest.TestCase):
         self.assertEqual(self.first("switch to spanish")["op"], "lang.reply")
         self.assertGreaterEqual(self.data["categories"].get("edit", 0), 40)
 
+    def test_optional_llm_commands(self):
+        cases = {
+            "llm status": ("llm.status", None),
+            "llm settings": ("llm.status", None),
+            "llm on": ("llm.on", None),
+            "turn off the llm": ("llm.off", None),
+            "clear the llm cache": ("llm.cache", None),
+            "apply the llm patch": ("llm.apply", None),
+            "install the llm patch": ("llm.apply", None),
+            "discard the llm patch": ("llm.discard", None),
+            "reject the llm patch": ("llm.discard", None),
+        }
+        for query, (op, arg) in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+
+        hit = self.first("llm plan a cozy mail route")
+        self.assertEqual(hit["op"], "llm.plan")
+        m = re.match(hit["re"], "llm plan a cozy mail route", re.I)
+        self.assertEqual(m.group(1), "a cozy mail route")
+
+        hit = self.first("llm patch app.js with make the player faster")
+        self.assertEqual(hit["op"], "llm.patch")
+        m = re.match(hit["re"], "llm patch app.js with make the player faster", re.I)
+        self.assertEqual(m.group(1), "app.js")
+        self.assertEqual(m.group(2), "make the player faster")
+
+        # The generative commands must not shadow deterministic builds/edits.
+        self.assertEqual(self.first("build a platformer game")["op"], "build")
+        self.assertEqual(self.first("add double jump")["op"], "edit.apply")
+        self.assertGreaterEqual(self.data["categories"].get("llm", 0), 25)
+
     def test_build_variants_capture_the_modifier(self):
         cases = {
             "build a tetris game with 3d elements": ("tetris", "3d elements"),

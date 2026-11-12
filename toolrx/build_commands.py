@@ -663,6 +663,53 @@ for pat in ("undo", "undo that", "undo the last edit", "undo last edit",
     add(f"edit.undo.{len(COMMANDS)}", "edit.undo", "^" + re.escape(pat) + "$",
         {}, pat, "edit")
 
+# ----------------------------------------------------------- optional llm --
+# Off by default. These commands only reach the network when the user has saved
+# an OpenAI-compatible endpoint and enabled the adapter in Command Center.
+# Deterministic build/edit commands always win; `llm plan` is the explicit
+# request for a speculative choice when no known genre matches.
+for pat in ("llm status", "llm settings", "is the llm on", "is the llm enabled",
+            "llm info"):
+    add(f"llm.status.{len(COMMANDS)}", "llm.status", "^" + re.escape(pat) + "$",
+        {}, pat, "llm")
+
+for pat in ("llm on", "turn on the llm", "enable the llm", "switch the llm on"):
+    add(f"llm.on.{len(COMMANDS)}", "llm.on", "^" + re.escape(pat) + "$",
+        {}, pat, "llm")
+
+for pat in ("llm off", "turn off the llm", "disable the llm", "switch the llm off"):
+    add(f"llm.off.{len(COMMANDS)}", "llm.off", "^" + re.escape(pat) + "$",
+        {}, pat, "llm")
+
+for pat in ("llm cache clear", "clear the llm cache", "clear llm cache",
+            "llm cache reset"):
+    add(f"llm.cache.{len(COMMANDS)}", "llm.cache", "^" + re.escape(pat) + "$",
+        {}, pat, "llm")
+
+for pat in ("llm plan {prompt}", "ask the llm to plan {prompt}",
+            "have the llm plan {prompt}", "let the llm plan {prompt}"):
+    add(f"llm.plan.{len(COMMANDS)}", "llm.plan",
+        "^" + pat.replace("{prompt}", REST), {"prompt": "$1"}, pat, "llm")
+
+for pat in ("llm patch {file} with {instruction}", "llm patch {file} to {instruction}",
+            "let the llm patch {file} with {instruction}",
+            "have the llm patch {file} with {instruction}"):
+    rx = (re.escape(pat).replace(r"\{file\}",
+                                 r"([A-Za-z0-9][A-Za-z0-9._-]*)", 1)
+          .replace(r"\{instruction\}", REST))
+    add(f"llm.patch.{len(COMMANDS)}", "llm.patch", "^" + rx + "$",
+        {"file": "$1", "instruction": "$2"}, pat, "llm")
+
+for pat in ("apply the llm patch", "apply llm patch", "install the llm patch",
+            "use the llm patch"):
+    add(f"llm.apply.{len(COMMANDS)}", "llm.apply", "^" + re.escape(pat) + "$",
+        {}, pat, "llm")
+
+for pat in ("discard the llm patch", "discard llm patch", "reject the llm patch",
+            "drop the llm patch"):
+    add(f"llm.discard.{len(COMMANDS)}", "llm.discard", "^" + re.escape(pat) + "$",
+        {}, pat, "llm")
+
 # ------------------------------------------------------------- language ---
 # Exact forms first: a bare "what language is this" inspects the previous step.
 for pat in ("what language is this", "what language is that",
