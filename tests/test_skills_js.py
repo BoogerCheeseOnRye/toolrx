@@ -339,6 +339,49 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     out.games[kind] = { kind: state.kind, files: Object.keys(state.files).sort(),
                         html: state.html.length, ok: !r[0].error };
   }
+  out.genres = {};
+  {
+    const prompts = {
+      twinstick: 'build a twin-stick shooter game',
+      roguelike: 'build a roguelike game',
+      towerdefense: 'build a tower defense game',
+      merges: 'build a match-3 puzzle game',
+      farmingsim: 'build a farming sim game',
+      cardbattler: 'build a card battler game',
+      rhythm: 'build a rhythm game',
+      explore: 'build a low-poly exploration game',
+      waveshooter: 'build a wave shooter game',
+      builder: 'build a block builder game'
+    };
+    for (const [name, q] of Object.entries(prompts)) {
+      const r = await run(q);
+      const js = state.files['app.js'] || '';
+      let syntax = 'ok';
+      try { new Function(js); } catch (e) { syntax = e.message; }
+      out.genres[name] = {
+        ok: !r.some(x => x.error), via: r[0] ? r[0].via : '',
+        kind: state.kind,
+        title: ((state.html.match(/<h1>([^<]*)<\/h1>/) || [])[1] || ''),
+        files: Object.keys(state.files).sort(),
+        js: js,
+        arch: state.files['ARCHITECTURE.md'] || '',
+        html: state.html.length,
+        syntax: syntax,
+      };
+    }
+  }
+  out.genrePlans = {};
+  for (const q of ['plan a twin-stick shooter', 'plan a roguelike',
+                   'plan a tower defense', 'plan a match-3 puzzle',
+                   'plan a farming sim', 'plan a card battler',
+                   'plan a rhythm game', 'plan a low-poly exploration',
+                   'plan a wave shooter', 'plan a block builder']) {
+    const r = await run(q);
+    out.genrePlans[q] = {
+      ok: !r.some(x => x.error), via: r[0] ? r[0].via : '',
+      text: r[0] ? String(r[0].text || '') : '',
+    };
+  }
   out.sites = {};
   for (const [q, kind] of [['build a social media website', 'social'],
                            ['build a blog', 'blog'],
@@ -1052,7 +1095,8 @@ class SkillsBridgeTest(unittest.TestCase):
     def test_spec_is_deterministic_and_explains_closest_match(self):
         self.assertEqual(self.out["spec"]["shooter"]["spec"],
                          self.out["spec"]["repeat"]["spec"])
-        self.assertIn("closest supported: shooter", self.out["spec"]["tower"]["line"])
+        self.assertEqual(self.out["spec"]["tower"]["spec"]["genre"], "towerdefense")
+        self.assertNotIn("requested", self.out["spec"]["tower"]["line"])
         self.assertIn("seed", self.out["spec"]["rpg"]["line"])
 
     def test_engine_3d_projects_ship_the_shared_runtime(self):
@@ -1217,6 +1261,62 @@ class SkillsBridgeTest(unittest.TestCase):
             self.assertIn("index.html", g["files"], name)
             self.assertIn("app.js", g["files"], name)
             self.assertGreater(g["html"], 1000, name)
+
+    def test_step_18_genres_build_real_offline_projects(self):
+        expected = {
+            "twinstick": ("Twin-stick arena", "engine2d.js"),
+            "roguelike": ("Roguelike dungeon", "engine2d.js"),
+            "towerdefense": ("Tower defense", "engine2d.js"),
+            "merges": ("Merge garden", "engine2d.js"),
+            "farmingsim": ("Harvest days", "engine2d.js"),
+            "cardbattler": ("Card battler", None),
+            "rhythm": ("Rhythm lanes", "engine2d.js"),
+            "explore": ("Low-poly island", "engine3d.js"),
+            "waveshooter": ("Wave shooter", "engine3d.js"),
+            "builder": ("Block builder", "engine3d.js"),
+        }
+        titles = set()
+        for name, (title, engine) in expected.items():
+            g = self.out["genres"][name]
+            self.assertTrue(g["ok"], name)
+            self.assertEqual(g["via"], "build", name)
+            self.assertEqual(g["kind"], name, name)
+            self.assertEqual(g["title"], title, name)
+            self.assertEqual(g["syntax"], "ok", name)
+            self.assertGreater(g["html"], 1000, name)
+            for f in ("index.html", "styles.css", "app.js", "README.md", "ARCHITECTURE.md"):
+                self.assertIn(f, g["files"], name)
+            if engine:
+                self.assertIn(engine, g["files"], name)
+            else:
+                self.assertNotIn("engine2d.js", g["files"], name)
+                self.assertNotIn("engine3d.js", g["files"], name)
+            self.assertIn("## State", g["arch"], name)
+            self.assertIn("## Extension points", g["arch"], name)
+            titles.add(g["title"])
+        self.assertEqual(len(titles), len(expected))
+
+    def test_step_18_genre_plans_print_the_brief(self):
+        expected = {
+            'plan a twin-stick shooter': 'twin-stick arena',
+            'plan a roguelike': 'roguelike dungeon',
+            'plan a tower defense': 'tower defense',
+            'plan a match-3 puzzle': 'merge garden',
+            'plan a farming sim': 'harvest days',
+            'plan a card battler': 'card battler',
+            'plan a rhythm game': 'rhythm lanes',
+            'plan a low-poly exploration': 'low-poly island',
+            'plan a wave shooter': 'wave shooter',
+            'plan a block builder': 'block builder',
+        }
+        for q, name in expected.items():
+            p = self.out["genrePlans"][q]
+            self.assertTrue(p["ok"], q)
+            self.assertEqual(p["via"], "plan", q)
+            low = p["text"].lower()
+            self.assertIn(name, low, q)
+            self.assertIn("state", low, q)
+            self.assertIn("build order", low, q)
 
     def test_3d_build_variant_has_real_3d_markers(self):
         v = self.out["variants"]["build a tetris game with 3d elements"]

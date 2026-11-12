@@ -695,6 +695,10 @@ BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdo
                "kart racer", "kart game", "roguelike", "roguelike game",
                "dungeon crawler", "tower defense", "tower defense game",
                "farming sim", "farming game", "exploration game",
+               "twin-stick", "merge puzzle", "merge game", "match-3 puzzle",
+               "match 3 puzzle", "card battler", "deck builder", "rhythm game",
+               "rhythm", "low-poly exploration", "low poly exploration",
+               "block builder", "voxel builder",
                "3d platformer", "3d rpg", "3d maze", "3d snake", "3d breakout",
                "isometric rpg", "isometric platformer", "top-down rpg",
                "first-person maze", "third-person platformer",
@@ -741,7 +745,9 @@ for kind in BUILD_KINDS:
 # Dimension prefixes: `build a 3d platformer`, `build an isometric rpg`.
 for dim in ("2d", "3d", "isometric", "top-down", "first-person", "third-person"):
     for kind in ("rpg", "platformer", "shooter", "maze", "racer", "snake",
-                 "breakout", "pong", "tetris"):
+                 "breakout", "pong", "tetris", "roguelike", "tower defense",
+                 "wave shooter", "merge puzzle", "farming sim", "card battler",
+                 "rhythm", "low-poly exploration", "block builder"):
         for pat in ("build a {dim} {k} game", "build an {dim} {k} game",
                     "make a {dim} {k} game", "build a {dim} {k}"):
             add(f"build.dim.{dim}.{kind}.{len(COMMANDS)}", "build",

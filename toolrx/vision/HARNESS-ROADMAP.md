@@ -50,8 +50,9 @@ later fill a validated spec or propose a patch, but it never becomes required.
 the one-line plan shown in chat. Dimensions, views, art directions, scale
 (`64x64`, `3 levels`, `5 quests`), and explicit `seed N` are parsed; the default
 seed is a hash of the normalized prompt. Genre aliases map to real starters
-(`tower defense` → shooter, `roguelike` → RPG, `racing`/`kart` → racer) and the
-reply names the closest supported option when the request is approximate.
+(`tower defense` → tower defense, `roguelike` → roguelike,
+`racing`/`kart` → racer) and the reply names the closest supported option when
+the request is approximate.
 `build a 3d platformer`, `build an isometric rpg in a desert with 3 quests`,
 `build a top-down shooter with pixel art, 3 levels`, `build a first-person maze,
 low-poly`, and `build a 2d racing game at night, seed 42` all produce inspectable
@@ -165,7 +166,7 @@ the seed hash, so consecutive prompts choose different packs, and the printed
 seed reproduces the exact world with `seed N`. Renaming to any pack keyword
 rebuilds the same project in place.
 
-### 18. Intro-to-medium game library
+### 18. Intro-to-medium game library — done
 
 Two-dimensional: platformer, top-down shooter, twin-stick, roguelike, tower
 defense, top-down racing, merge/match puzzle, farming sim, card battler, rhythm.
@@ -177,8 +178,12 @@ Each template ships the same project skeleton and an `ARCHITECTURE.md` describin
 state, entities, systems, balance knobs, and extension points. `plan a <genre>`
 prints the brief; `build a <genre>` writes the working starter.
 
-**Done when** every listed genre builds real files, runs offline, and appears in
-the command catalog.
+Landed with all sixteen starters wired into the command catalog. The 2D
+templates share `engine2d.js` (the card battler is plain DOM); the 3D templates
+route through `engine3d.js`. Each genre has a distinct title, seeded gameplay
+where it matters, and an architecture entry rather than a closest-match
+fallback. Explicit `2d` requests keep the 2D runtime; `2d`/`3d` routing is part
+of the spec.
 
 ### 19. Composable edits
 
@@ -283,7 +288,7 @@ non-redistributable text never leaves the machine.
 Landed as a full-screen `Library` dialog opened from the composer bar. It reads
 the catalog embedded in `web/commands.json`, adds level/language/status filters,
 shows up to three “next up” books, and saves reading-status overrides under
-`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v7`
+`toolrx.library.status`. Catalog metadata is already in the `toolrx-shell-v8`
 cache, so the panel works offline with no second fetch.
 
 ## Order
