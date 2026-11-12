@@ -9,6 +9,9 @@ library must stay large, and the first matching entry must be the intended one.
 import json
 import os
 import re
+import subprocess
+import sys
+import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -39,9 +42,84 @@ class CommandLibraryTest(unittest.TestCase):
                 return c
         return None
 
+    def args_for(self, command, query):
+        """Expand $n placeholders exactly like web/skills.js applyArgs()."""
+        m = re.match(command["re"], _normalize(query), re.I)
+        self.assertIsNotNone(m, query)
+
+        def fill(value):
+            if not isinstance(value, str):
+                return value
+            if re.fullmatch(r"\$\d+", value):
+                return m.group(int(value[1:])) or ""
+            return re.sub(r"\$(\d+)",
+                          lambda hit: m.group(int(hit.group(1))) or "", value)
+        return {k: fill(v) for k, v in command["args"].items()}
+
     def test_library_is_large(self):
-        self.assertGreaterEqual(self.data["count"], 2500)
-        self.assertGreaterEqual(len(self.commands), 2500)
+        self.assertGreaterEqual(self.data["count"], 12000)
+        self.assertGreaterEqual(len(self.commands), 12000)
+        self.assertEqual(self.data["count"], len(self.commands))
+
+    def test_patterns_are_unique(self):
+        seen, duplicates = set(), set()
+        for c in self.commands:
+            key = re.sub(r"\s+", "", c["re"].lower())
+            if key in seen:
+                duplicates.add(key)
+            seen.add(key)
+        self.assertFalse(duplicates, sorted(duplicates)[:5])
+
+    def test_category_counts_match_the_catalog(self):
+        counts = {}
+        for c in self.commands:
+            counts[c["c"]] = counts.get(c["c"], 0) + 1
+        self.assertEqual(self.data["categories"], counts)
+
+    def test_catalog_regenerates_byte_identically(self):
+        script = os.path.join(ROOT, "toolrx", "build_commands.py")
+        with tempfile.TemporaryDirectory() as tmp:
+            blobs = []
+            for i in range(2):
+                out = os.path.join(tmp, f"commands{i}.json")
+                env = dict(os.environ, TOOLRX_COMMANDS_OUT=out)
+                subprocess.run([sys.executable, script], env=env, check=True,
+                               capture_output=True, timeout=120)
+                with open(out, "rb") as fh:
+                    blobs.append(fh.read())
+            self.assertEqual(blobs[0], blobs[1], "generator is not deterministic")
+            generated = json.loads(blobs[0])
+            self.assertEqual(generated["count"], self.data["count"])
+            self.assertEqual(generated["commands"], self.commands)
+
+    def test_long_compositional_prompts_keep_kind_and_modifiers(self):
+        cases = {
+            "build a huge space rpg game with crafting":
+                ("rpg", ["huge space", "crafting"]),
+            "build a small cyberpunk platformer game":
+                ("platformer", ["small cyberpunk"]),
+            "build a medieval roguelike game with quests":
+                ("roguelike", ["medieval", "quests"]),
+            "build an epic underwater farming sim with weather":
+                ("farming sim", ["epic underwater", "weather"]),
+            "build a sprawling astral exploration game with dialogue trees":
+                ("exploration", ["sprawling astral", "dialogue trees"]),
+            "build a pirate tower defense game":
+                ("tower defense", ["pirate"]),
+            "build a pixel art tetris game":
+                ("tetris", ["pixel art"]),
+            "build a large maze game":
+                ("maze", ["large"]),
+        }
+        for query, (kind, words) in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "build", query)
+            args = self.args_for(hit, query)
+            self.assertEqual(args.get("kind"), kind, query)
+            desc = args.get("desc", "")
+            for word in words:
+                self.assertIn(word, desc, f"{query}: {desc!r}")
 
     def test_every_pattern_compiles(self):
         for c in self.commands:

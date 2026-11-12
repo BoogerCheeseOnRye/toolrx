@@ -348,6 +348,22 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     out.planStop = await run('multiply 6 and 7 then zzzznotacommand then multiply 2 and 3');
     ctx.fallback = fallback;
   }
+  out.compose = {};
+  for (const q of [
+    'build a huge space rpg game with crafting',
+    'build a small cyberpunk platformer game',
+    'build a medieval roguelike game with quests',
+    'build an epic underwater farming sim with weather',
+    'build a sprawling astral exploration game with dialogue trees',
+    'build a pirate tower defense game',
+    'build a pixel art tetris game',
+    'build a large maze game',
+  ]) {
+    const m = self.toolrxSkills.match(q);
+    out.compose[q] = m && { op: m.op, args: m.args };
+  }
+  out.composeBuild = await run('build a huge space rpg game with crafting');
+  out.composeKind = state.kind;
   out.build = await run('build a calculator app');
   out.buildHtml = state.html;
   out.calcFiles = Object.keys(state.files).sort();
@@ -1468,6 +1484,36 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertFalse(steps[0]["error"])
         self.assertEqual(steps[0]["text"], "42")
         self.assertTrue(steps[1]["error"])
+
+    def test_long_compositions_keep_kind_and_modifiers(self):
+        cases = {
+            "build a huge space rpg game with crafting":
+                ("rpg", ["huge space", "crafting"]),
+            "build a small cyberpunk platformer game":
+                ("platformer", ["small cyberpunk"]),
+            "build a medieval roguelike game with quests":
+                ("roguelike", ["medieval", "quests"]),
+            "build an epic underwater farming sim with weather":
+                ("farming sim", ["epic underwater", "weather"]),
+            "build a sprawling astral exploration game with dialogue trees":
+                ("exploration", ["sprawling astral", "dialogue trees"]),
+            "build a pirate tower defense game":
+                ("tower defense", ["pirate"]),
+            "build a pixel art tetris game":
+                ("tetris", ["pixel art"]),
+            "build a large maze game":
+                ("maze", ["large"]),
+        }
+        for query, (kind, words) in cases.items():
+            hit = self.out["compose"][query]
+            self.assertTrue(hit, query)
+            self.assertEqual(hit["op"], "build", query)
+            self.assertEqual(hit["args"].get("kind"), kind, query)
+            desc = hit["args"].get("desc", "")
+            for word in words:
+                self.assertIn(word, desc, f"{query}: {desc!r}")
+        self.assertFalse(self.out["composeBuild"][0]["error"])
+        self.assertEqual(self.out["composeKind"], "rpg")
 
     def test_build_produces_a_real_page(self):
         self.assertTrue(self.out["buildHtml"].startswith("<!doctype html>"))

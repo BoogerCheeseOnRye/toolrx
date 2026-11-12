@@ -904,7 +904,7 @@ async function loadConfig(){
   const note=document.getElementById('staticNote');
   if(note){
     note.innerHTML = clientMode
-      ? '<b>in-browser router</b> — '+(commandCount?commandCount.toLocaleString():'2,700+')+' commands · 27 tools · nothing leaves this tab unless you enable the optional LLM'
+      ? '<b>in-browser router</b> — '+(commandCount?commandCount.toLocaleString():'deterministic')+' commands · 27 tools · nothing leaves this tab unless you enable the optional LLM'
       : '<b>static preview</b> — open <code>toolrx/server.py</code> for the full dashboard API';
   }
   wgPoll();

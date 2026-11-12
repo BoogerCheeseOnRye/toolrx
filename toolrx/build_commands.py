@@ -8,22 +8,41 @@ are expanded here because that is where most of the breadth comes from.
     python3 toolrx/build_commands.py
 """
 import json
+import os
 import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parent
-OUT = ROOT / "web" / "commands.json"
+OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
+                   or (ROOT / "web" / "commands.json"))
 
 N = r"(-?(?:\d[\d,]*(?:\.\d+)?|\d*\.\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty))"
 TXT = r"(.+?)"
 REST = r"(.+)"
 
 COMMANDS = []
+_SEEN = {}
+_DUPLICATES = []
+
+
+def _pattern_key(pattern):
+    """Whitespace-insensitive key for duplicate detection.
+
+    `upper case {text}` and `uppercase {text}` compile to the same regex, so the
+    first one wins and the second is dropped instead of shipping a dead entry.
+    """
+    return re.sub(r"\s+", "", pattern.lower())
 
 
 def add(cid, op, pattern, args=None, desc="", cat="misc"):
+    key = _pattern_key(pattern)
+    if key in _SEEN:
+        _DUPLICATES.append((cid, _SEEN[key], pattern))
+        return False
+    _SEEN[key] = cid
     COMMANDS.append({"id": cid, "op": op, "re": pattern,
                      "args": args or {}, "d": desc, "c": cat})
+    return True
 
 
 # ---------------------------------------------------------------- math ----
@@ -845,6 +864,94 @@ for dim in ("2d", "3d", "isometric", "top-down", "first-person", "third-person")
                 "^" + pat.replace("{dim}", re.escape(dim)).replace("{k}", re.escape(kind)) + "$",
                 {"kind": kind, "desc": dim}, pat, "build")
 
+# --------------------------------------- compositional build phrasing ---
+# Step 28: keep kind, sub-genre, scale, theme, and feature separate so a long
+# request lands on a specific build instead of the free-form fallback. These
+# patterns are literal (not `(.+)`) because the vocabulary is finite; that is
+# what makes the expansion predictable and cheap to match.
+BUILD_GENRES = [
+    "rpg", "platformer", "shooter", "maze", "racer", "snake", "breakout",
+    "pong", "tetris", "roguelike", "tower defense", "wave shooter",
+    "merge puzzle", "farming sim", "card battler", "rhythm", "block builder",
+    "adventure", "dungeon crawler", "kart racer", "typing", "exploration",
+    "match-3 puzzle", "2048",
+]
+BUILD_THEMES = [
+    "space", "pirate", "cyberpunk", "medieval", "noir", "underwater", "desert",
+    "arctic", "jungle", "haunted", "steampunk", "solarpunk", "post-apocalyptic",
+    "cozy", "dark fantasy", "neon", "pixel art", "ancient egypt", "greek myth",
+    "wild west", "feudal japan", "ocean", "volcanic", "fungal", "sky islands",
+    "clockwork", "dream", "plague", "archipelago", "verdant", "astral",
+]
+BUILD_FEATURES = [
+    "crafting", "survival", "stealth", "puzzles", "boss fights", "quests",
+    "inventory", "day night cycle", "weather", "leaderboard", "save slots",
+    "achievements", "procedural maps", "dialogue trees", "shops", "companions",
+    "base building", "skill trees", "permadeath", "physics", "particles",
+    "sound", "mobile controls", "difficulty levels",
+]
+BUILD_SCALES = [
+    "small", "tiny", "big", "large", "huge", "epic", "minimal", "full",
+    "compact", "sprawling", "multi-level", "three-level", "five-level", "endless",
+]
+
+# Most specific first: scale + theme + kind + feature.
+for scale in ("small", "epic"):
+    for theme in ("space", "cyberpunk", "medieval"):
+        for feature in ("crafting", "survival", "quests", "boss fights",
+                        "day night cycle"):
+            for kind in BUILD_GENRES:
+                pat = ("build a {s} {t} {k} game with {f}"
+                       .replace("{s}", scale).replace("{t}", theme)
+                       .replace("{k}", kind).replace("{f}", feature))
+                add(f"build.compose.full.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
+                    "build", "^" + re.escape(pat) + "$",
+                    {"kind": kind, "desc": f"{scale} {theme} with {feature}"},
+                    pat, "build")
+
+# Theme + kind.
+for theme in BUILD_THEMES:
+    for kind in BUILD_GENRES:
+        for pat in ("build a {t} {k} game", "make a {t} {k} game",
+                    "build a {t} {k}"):
+            text = (pat.replace("{t}", theme).replace("{k}", kind))
+            add(f"build.compose.theme.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
+                "build", "^" + re.escape(text) + "$",
+                {"kind": kind, "desc": theme}, text, "build")
+
+# Kind + feature.
+for feature in BUILD_FEATURES:
+    for kind in BUILD_GENRES:
+        for pat in ("build a {k} game with {f}", "build a {k} with {f}"):
+            text = pat.replace("{k}", kind).replace("{f}", feature)
+            add(f"build.compose.feature.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
+                "build", "^" + re.escape(text) + "$",
+                {"kind": kind, "desc": feature}, text, "build")
+
+# Scale + kind.
+for scale in BUILD_SCALES:
+    for kind in BUILD_GENRES:
+        for pat in ("build a {s} {k} game", "build a {s} {k}"):
+            text = pat.replace("{s}", scale).replace("{k}", kind)
+            add(f"build.compose.scale.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
+                "build", "^" + re.escape(text) + "$",
+                {"kind": kind, "desc": scale}, text, "build")
+
+# Long modifier tails: any number of scale/theme words before the genre plus a
+# feature after it. This is one pattern per genre instead of the full cross
+# product, so the tail can grow without multiplying the library.
+_MODS = "|".join(re.escape(x) for x in
+                 sorted(set(BUILD_SCALES + BUILD_THEMES),
+                        key=lambda word: (-len(word), word)))
+_CONNECTORS = r"(?:with|that has|based on|set in|featuring)"
+for kind in BUILD_GENRES:
+    rx = (r"^build an? ((?:(?:" + _MODS + r") )*)" + re.escape(kind)
+          + r"(?= game\b| " + _CONNECTORS + r"\b|$)(?: game)?"
+          + r"(?: " + _CONNECTORS + r" (.+))?$")
+    add(f"build.compose.tail.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
+        "build", rx, {"kind": kind, "desc": "$1$2"},
+        "build a <modifiers> " + kind + " game with <feature>", "build")
+
 # --------------------------------------------------------- web → build ---
 # A web lookup feeds `prev`; these patterns turn that text into a real
 # research page project. Pronoun forms must come before the {topic} forms.
@@ -1124,7 +1231,7 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
     print(f"wrote {OUT} ({OUT.stat().st_size // 1024} KB)")
-    print(f"{len(COMMANDS)} commands")
+    print(f"{len(COMMANDS)} commands, {len(_DUPLICATES)} duplicate pattern(s) skipped")
     for k, v in sorted(cats.items(), key=lambda kv: -kv[1]):
         print(f"  {k:10} {v}")
 
