@@ -340,7 +340,7 @@ never means unbounded.
 | Project files | 32 files | 32 files |
 | Project text | 512 KB total | 512 KB total |
 | Undo snapshots | 16, configurable | 16 |
-| Command patterns | 12,504 | 12,000 |
+| Command patterns | 12,516 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
 
 ### Guardrails
@@ -421,7 +421,7 @@ not from hard-coded numbers.
 routing, the catalog regenerates byte-identically, no duplicate patterns remain,
 and existing routes keep their current answers.
 
-Landed at 12,425 patterns (12,504 after step 31 added 35 context routes). New families cover theme + genre, genre + feature,
+Landed at 12,425 patterns (12,502 after step 31 added 35 context routes). New families cover theme + genre, genre + feature,
 scale + genre, scale + theme + genre + feature, and one generic tail pattern per
 genre that accepts any number of scale/theme modifiers plus a feature clause.
 The generator now skips whitespace-insensitive duplicate regexes (seven existing
@@ -571,7 +571,7 @@ triple-quoted, and multi-sentence arguments are extracted verbatim, and the
 multi-path assignment order is fixed so `path_a`/`path_b` match the query order.
 `text.headings`, `text.outline`, `text.firstlines`, and `text.table` read a
 file or the previous step and are deterministic. The command catalog is now
-12,504 routes.
+12,502 routes.
 
 ### 34. Vocabulary, knowledge, and centroid scaling — done
 
@@ -751,7 +751,7 @@ and `context.js` read `root.toolrxLimits` and refuse to load without it.
 patterns). One honest behaviour change: Python `fs.cat_all` now uses the same
 24,000-character total cap as the browser instead of its old private 120,000.
 
-### 39. Context and plan continuation hardening
+### 39. Context and plan continuation hardening — done
 
 Make `continue from previous`, `expand the last plan with …`, and cross-file
 replay safe under truncation, partial failure, plan editing, and project
@@ -766,6 +766,21 @@ bytes, continuation after a failed middle step runs only the pending suffix,
 switching away and back restores the same pending plan without duplication,
 truncated and evicted plans report it explicitly, and context payloads never
 enter a network request.
+
+Landed with `context snapshot` and `diff against previous context` (12,516
+catalog patterns). A snapshot is stored per project beside the context under
+`toolrx.context.v1.<slug>.snapshot` and records sorted entry shapes (kind, key,
+seq, bytes, sha), stored bytes and sha, pending plan steps, and eviction notes;
+it is not a context entry and never touches the network. The diff lists added,
+removed, and changed entries in kind/key order, the entry and stored byte
+deltas, and the pending step delta. A dedicated `.plan-note` marker keeps the
+last trim or eviction of `plan/last` after the general three-note ring has moved
+on, so continuation and expansion say `the stored plan was trimmed/evicted …
+rebuild the plan, then continue` instead of claiming there is no plan. Expansion
+now uses the active `planSteps` envelope instead of a literal 40. Tests cover a
+stable snapshot, a no-change diff, a pending-step diff, a project switch with no
+duplicated steps, an evicted plan, and a trimmed plan; the network guard still
+shows no context payload in any request.
 
 ### 40. Richer multi-module skeletons and system libraries
 
@@ -872,7 +887,7 @@ GitHub Pages smoke of the same path passes with no severe console errors.
 5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
    capture) → 34 (vocab/centroids) → 35 (gate) — done
-6. 36 (budgets) → 37 (suite) → 38 (limit source) — done; 39 (continuation) →
+6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) — done;
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — planned
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
@@ -899,7 +914,7 @@ justifies it; step 45 is last.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–38 are complete. 14 remains deferred. Steps 39–45 are
+- Steps 11–13, 15–39 are complete. 14 remains deferred. Steps 40–45 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after

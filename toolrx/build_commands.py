@@ -783,6 +783,17 @@ for pat in ("what is in context", "what's in context", "whats in context",
     add(f"context.show.{len(COMMANDS)}", "context.show", "^" + re.escape(pat) + "$",
         {}, pat, "context")
 
+for pat in ("context snapshot", "snapshot the context", "snapshot context",
+            "save a context snapshot", "save the context snapshot"):
+    add(f"context.snapshot.{len(COMMANDS)}", "context.snapshot",
+        "^" + re.escape(pat) + "$", {}, pat, "context")
+
+for pat in ("diff against previous context", "diff against the previous context",
+            "context diff", "show the context diff", "compare the context",
+            "diff the context", "diff context"):
+    add(f"context.diff.{len(COMMANDS)}", "context.diff",
+        "^" + re.escape(pat) + "$", {}, pat, "context")
+
 for pat in ("clear context", "clear the context", "clear my context",
             "forget context", "reset context", "wipe the context"):
     add(f"context.clear.{len(COMMANDS)}", "context.clear", "^" + re.escape(pat) + "$",

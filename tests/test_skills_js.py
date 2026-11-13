@@ -1138,6 +1138,89 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       self.toolrxWeb.projectFile(self.toolrxWeb.project().slug, 'app.js')),
   };
 
+  // Step 39: snapshots and diffs are stable, sorted, and per project.
+  self.toolrxWeb.reset();
+  await pRun('build a shooter game');
+  await pRun('add sound then read missing.txt then add a boss');
+  const snapOne = await pRun('context snapshot');
+  const snapSlug = self.toolrxWeb.project().slug;
+  const snapA = self.toolrxContext.snapshot(snapSlug).text;
+  const snapB = self.toolrxContext.snapshot(snapSlug).text;
+  const diffSame = await pRun('diff against previous context');
+  const continueAfterSnap = await pRun('continue from previous');
+  const diffAfter = await pRun('diff against previous context');
+  const snapshotKinds = contextState().entries.map(e => e.kind);
+  out.context.snapshot = {
+    via: snapOne[0].via,
+    text: snapA,
+    same: snapA === snapB,
+    diffSameText: diffSame[0].text,
+    diffSameVia: diffSame[0].via,
+    continueText: continueAfterSnap[0].text,
+    diffText: diffAfter[0].text,
+    diffVia: diffAfter[0].via,
+    snapshotNotEntry: snapshotKinds.indexOf('snapshot') < 0,
+    scopes: self.toolrxContext.scopes(),
+  };
+
+  // A pending plan survives a project switch with no duplicate steps.
+  self.toolrxWeb.reset();
+  await pRun('build a shooter game');
+  await pRun('add sound then read missing.txt then add a boss');
+  const switchSlug = self.toolrxWeb.project().slug;
+  const switchBefore = JSON.parse(contextEntry('plan', 'last').text);
+  await pRun('new project alpha');
+  await pRun('open project ' + switchSlug);
+  const switchAfter = JSON.parse(contextEntry('plan', 'last').text);
+  const switchContinue = await pRun('continue from previous');
+  const switchFinal = JSON.parse(contextEntry('plan', 'last').text);
+  out.context.switch = {
+    slug: switchSlug,
+    before: switchBefore,
+    after: switchAfter,
+    continueText: switchContinue[0].text,
+    final: switchFinal,
+  };
+
+  // Eviction keeps a dedicated plan marker, so continuation explains itself.
+  try { localStorage.setItem('toolrx.context.cap', '500'); } catch (e) { /* ignore */ }
+  self.toolrxWeb.reset();
+  await pRun('build a shooter game');
+  await pRun('add sound then read missing.txt then add a boss');
+  for (const q of ['add a quest', 'add sound', 'add a theme toggle',
+                   'add a footer note saying hi', 'add a boss', 'add a quest']) {
+    await pRun(q);
+  }
+  const evictedShow = await pRun('what is in context');
+  const evictedContinue = await pRun('continue from previous');
+  const evictedSnap = await pRun('context snapshot');
+  out.context.evicted = {
+    showText: evictedShow[0].text,
+    continueText: evictedContinue[0].text,
+    continueVia: evictedContinue[0].via,
+    snapshotText: evictedSnap[0].text,
+    notes: self.toolrxContext.notes('top-down-shooter'),
+    stored: self.toolrxWeb.context().stored,
+    cap: self.toolrxContext.cap(),
+  };
+  try { localStorage.removeItem('toolrx.context.cap'); } catch (e) { /* ignore */ }
+
+  // A tiny cap trims the plan text itself; continuation names that too.
+  try { localStorage.setItem('toolrx.context.cap', '300'); } catch (e) { /* ignore */ }
+  self.toolrxWeb.reset();
+  await pRun('build a shooter game');
+  await pRun('add sound then read missing.txt then add a boss');
+  const trimmedContinue = await pRun('continue from previous');
+  const trimmedShow = await pRun('what is in context');
+  out.context.trimmed = {
+    continueText: trimmedContinue[0].text,
+    showText: trimmedShow[0].text,
+    notes: self.toolrxContext.notes('top-down-shooter'),
+    stored: self.toolrxWeb.context().stored,
+    cap: self.toolrxContext.cap(),
+  };
+  try { localStorage.removeItem('toolrx.context.cap'); } catch (e) { /* ignore */ }
+
   // Cross-project isolation and replaying the last edit on the other project.
   self.toolrxWeb.reset();
   await pRun('build a platformer game');
@@ -2634,6 +2717,59 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertGreater(c["evicted"], 0)
         self.assertTrue(c["visible"])
         self.assertIn("evicted (oldest first):", c["text"])
+
+    def test_context_snapshot_is_stable_and_not_an_entry(self):
+        s = self.out["context"]["snapshot"]
+        self.assertEqual(s["via"], "context.snapshot")
+        self.assertTrue(s["same"], "two snapshots of the same state must match")
+        self.assertIn("context snapshot", s["text"])
+        self.assertIn("pending plan: 1 step", s["text"])
+        self.assertIn("· add a boss", s["text"])
+        self.assertIn("stored ", s["text"])
+        self.assertTrue(s["snapshotNotEntry"])
+        self.assertIn("top-down-shooter", s["scopes"])
+        self.assertEqual(s["diffSameVia"], "context.diff")
+        self.assertIn("entries: no changes", s["diffSameText"])
+        self.assertIn("pending plan: 1 -> 1", s["diffSameText"])
+
+    def test_context_diff_reports_pending_and_changed_entries(self):
+        s = self.out["context"]["snapshot"]
+        self.assertEqual(s["diffVia"], "context.diff")
+        self.assertIn("context diff", s["diffText"])
+        self.assertIn("pending plan: 1 -> 0", s["diffText"])
+        self.assertIn("- add a boss", s["diffText"])
+        self.assertIn("~ plan/last", s["diffText"])
+        self.assertIn("continued the last plan", s["continueText"])
+
+    def test_pending_plan_survives_a_project_switch_without_duplicates(self):
+        s = self.out["context"]["switch"]
+        self.assertEqual(s["slug"], "top-down-shooter")
+        self.assertEqual(s["after"], s["before"])
+        self.assertEqual(s["after"]["steps"],
+                         ["add sound", "read missing.txt", "add a boss"])
+        self.assertEqual(s["after"]["status"], ["done", "error", "pending"])
+        self.assertIn("continued the last plan", s["continueText"])
+        self.assertEqual(s["final"]["status"], ["done", "error", "done"])
+        self.assertEqual(s["final"]["steps"], s["after"]["steps"])
+
+    def test_evicted_plan_reports_the_loss_explicitly(self):
+        e = self.out["context"]["evicted"]
+        self.assertEqual(e["continueVia"], "context.continue")
+        self.assertIn("the stored plan was evicted", e["continueText"])
+        self.assertIn("rebuild the plan, then continue", e["continueText"])
+        self.assertIn("evicted or trimmed", e["snapshotText"])
+        self.assertTrue(any(n["kind"] == "plan" and n["key"] == "last"
+                            for n in e["notes"]))
+        self.assertLessEqual(e["stored"], e["cap"])
+
+    def test_trimmed_plan_reports_the_loss_explicitly(self):
+        t = self.out["context"]["trimmed"]
+        self.assertIn("the stored plan was trimmed", t["continueText"])
+        self.assertIn("rebuild the plan, then continue", t["continueText"])
+        self.assertIn("trimmed", t["showText"])
+        self.assertTrue(any(n["kind"] == "plan" and n["key"] == "last"
+                            for n in t["notes"]))
+        self.assertLessEqual(t["stored"], t["cap"])
 
     def test_context_never_enters_a_network_payload(self):
         n = self.out["context"]["network"]

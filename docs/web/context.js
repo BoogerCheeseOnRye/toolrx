@@ -13,7 +13,7 @@
  * Exposes: self.toolrxContext = {
  *   LIMIT, PREFIX, byteLength, stable, fingerprint,
  *   read, raw, set, setMany, get, remove, clear, clearAll, scopes,
- *   show, report, empty
+ *   show, report, empty, snapshot, diff, notes
  * }
  */
 (function (root) {
@@ -331,6 +331,8 @@
       ? (function () {
           try { root.localStorage.removeItem(keyFor(slug)); } catch (e) { /* ignore */ }
           writeNotes(slug, []);
+          removeSnapshot(slug);
+          removePlanNote(slug);
           dropScope(slug);
           return true;
         })()
@@ -339,6 +341,17 @@
       return { kind: entry.kind, key: entry.key, bytes: byteLength(entry.text), why: "evicted" };
     }));
     addNotes(slug, notes);
+    var planNote = null;
+    notes.forEach(function (note) {
+      if (note.kind === "plan" && note.key === "last") planNote = note;
+    });
+    var wrotePlan = items.some(function (item) {
+      return item && item.kind === "plan" && item.key === "last";
+    });
+    var removedPlan = opts.kind === "plan"
+      && !wanted["plan\u0000last"];
+    if (planNote) writePlanNote(slug, planNote);
+    else if (wrotePlan || removedPlan) removePlanNote(slug);
     return {
       ok: ok,
       bytes: entryBytes(state.entries),
@@ -382,6 +395,8 @@
   function clear(slug) {
     try { root.localStorage.removeItem(keyFor(slug)); } catch (e) { /* ignore */ }
     try { root.localStorage.removeItem(notesKey(slug)); } catch (e) { /* ignore */ }
+    removeSnapshot(slug);
+    removePlanNote(slug);
     dropScope(slug);
     return true;
   }
@@ -393,11 +408,305 @@
       try {
         root.localStorage.removeItem(keyFor(slug));
         root.localStorage.removeItem(notesKey(slug));
+        removeSnapshot(slug);
+        removePlanNote(slug);
         count++;
       } catch (e) { /* ignore */ }
     });
     try { root.localStorage.removeItem(INDEX_KEY); } catch (e) { /* ignore */ }
     return count;
+  }
+
+  /* Step 39: deterministic snapshots and diffs. A snapshot stores only the
+   * entry shapes, byte counts, hashes, eviction notes, and pending plan steps;
+   * the context text itself is not duplicated. Snapshots live beside the
+   * context under one key per project, so they never enter a network request
+   * and never leak across projects. */
+  function snapshotKey(slug) { return keyFor(slug) + ".snapshot"; }
+  function planNoteKey(slug) { return keyFor(slug) + ".plan-note"; }
+
+  /* The general eviction ring keeps only the newest few notes. A plan is
+   * special: losing it makes continuation impossible, so its last trim or
+   * eviction is kept in a dedicated marker until a new plan replaces it. */
+  function readPlanNote(slug) {
+    try {
+      var raw = root.localStorage && root.localStorage.getItem(planNoteKey(slug));
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || parsed.kind !== "plan" || parsed.key !== "last") return null;
+      return {
+        kind: "plan", key: "last",
+        bytes: Math.max(0, parseInt(parsed.bytes, 10) || 0),
+        why: parsed.why === "trimmed" ? "trimmed" : "evicted"
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writePlanNote(slug, note) {
+    try {
+      root.localStorage.setItem(planNoteKey(slug), stable({
+        kind: "plan", key: "last", bytes: note.bytes,
+        why: note.why === "trimmed" ? "trimmed" : "evicted"
+      }));
+    } catch (e) { /* ignore */ }
+  }
+
+  function removePlanNote(slug) {
+    try { root.localStorage.removeItem(planNoteKey(slug)); } catch (e) { /* ignore */ }
+  }
+
+  function sortedEntries(state) {
+    return state.entries.slice().sort(function (a, b) {
+      if (a.kind !== b.kind) return a.kind < b.kind ? -1 : 1;
+      if (a.key !== b.key) return a.key < b.key ? -1 : 1;
+      return a.seq - b.seq;
+    });
+  }
+
+  function planPending(state) {
+    for (var i = 0; i < state.entries.length; i++) {
+      var entry = state.entries[i];
+      if (entry.kind !== "plan" || entry.key !== "last") continue;
+      try {
+        var plan = JSON.parse(entry.text);
+        var steps = Array.isArray(plan.steps) ? plan.steps : [];
+        var status = Array.isArray(plan.status) ? plan.status : [];
+        var pending = [];
+        for (var j = 0; j < steps.length; j++) {
+          if (status[j] === "pending") pending.push(String(steps[j]));
+        }
+        return { steps: pending, total: steps.length, status: status };
+      } catch (e) {
+        return { steps: [], total: 0, status: [], broken: true };
+      }
+    }
+    return { steps: [], total: 0, status: [] };
+  }
+
+  function shape(state, stored) {
+    var entries = sortedEntries(state).map(function (entry) {
+      return {
+        kind: entry.kind,
+        key: entry.key,
+        seq: entry.seq,
+        bytes: byteLength(entry.text),
+        sha: fingerprint(entry.text)
+      };
+    });
+    var plan = planPending(state);
+    return {
+      version: VERSION,
+      project: state.project,
+      seq: state.seq,
+      entries: entries,
+      bytes: entryBytes(state.entries),
+      stored: byteLength(stored),
+      sha: fingerprint(stored),
+      pending: plan.steps,
+      pendingTotal: plan.total,
+      planBroken: !!plan.broken,
+      notes: notes(state.project)
+    };
+  }
+
+  function readSnapshot(slug) {
+    try {
+      var raw = root.localStorage && root.localStorage.getItem(snapshotKey(slug));
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || parsed.version !== VERSION || !Array.isArray(parsed.entries)) {
+        return null;
+      }
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function removeSnapshot(slug) {
+    try { root.localStorage.removeItem(snapshotKey(slug)); } catch (e) { /* ignore */ }
+  }
+
+  function delta(before, after) {
+    var n = after - before;
+    return n > 0 ? "+" + n : String(n);
+  }
+
+  function pendingDiff(before, after) {
+    var removed = [], added = [], counts = {}, i;
+    for (i = 0; i < before.length; i++) {
+      counts["-" + before[i]] = (counts["-" + before[i]] || 0) + 1;
+    }
+    for (i = 0; i < after.length; i++) {
+      var key = "-" + after[i];
+      if (counts[key]) counts[key]--;
+      else added.push(after[i]);
+    }
+    counts = {};
+    for (i = 0; i < after.length; i++) {
+      counts["+" + after[i]] = (counts["+" + after[i]] || 0) + 1;
+    }
+    for (i = 0; i < before.length; i++) {
+      var pkey = "+" + before[i];
+      if (counts[pkey]) counts[pkey]--;
+      else removed.push(before[i]);
+    }
+    return { removed: removed, added: added };
+  }
+
+  function notesDiff(before, after) {
+    var b = {}, a = {}, i;
+    for (i = 0; i < before.length; i++) {
+      b[before[i].kind + "\u0000" + before[i].key] = before[i];
+    }
+    for (i = 0; i < after.length; i++) {
+      a[after[i].kind + "\u0000" + after[i].key] = after[i];
+    }
+    var added = [], removed = [];
+    for (i = 0; i < after.length; i++) {
+      var n = after[i];
+      if (!b[n.kind + "\u0000" + n.key]) added.push(n);
+    }
+    for (i = 0; i < before.length; i++) {
+      var o = before[i];
+      if (!a[o.kind + "\u0000" + o.key]) removed.push(o);
+    }
+    return { added: added, removed: removed };
+  }
+
+  function snapshotText(snap, saved) {
+    var lines = [
+      "context snapshot · project: " + snap.project,
+      snap.entries.length + " entries · " + snap.bytes + " entry bytes · stored "
+        + snap.stored + " bytes · sha " + snap.sha
+    ];
+    if (snap.planBroken) {
+      lines.push("pending plan: unreadable (the stored plan was trimmed or evicted)");
+    } else {
+      lines.push("pending plan: " + snap.pending.length + " step"
+        + (snap.pending.length === 1 ? "" : "s"));
+      snap.pending.forEach(function (step) { lines.push("  · " + step); });
+    }
+    if (snap.notes.length) {
+      lines.push("evicted or trimmed (oldest first):");
+      snap.notes.forEach(function (note) {
+        lines.push("  " + note.kind + "/" + note.key + " · " + note.bytes
+          + " bytes · " + note.why);
+      });
+    }
+    if (saved) lines.push("saved as the previous context snapshot");
+    return lines.join("\n");
+  }
+
+  function snapshot(slug) {
+    var state = read(slug);
+    var snap = shape(state, raw(slug));
+    try {
+      root.localStorage.setItem(snapshotKey(slug), stable(snap));
+      addScope(state.project);
+    } catch (e) {
+      return { ok: false, snapshot: snap,
+               text: "could not save the context snapshot (storage is unavailable)" };
+    }
+    return { ok: true, snapshot: snap, text: snapshotText(snap, true) };
+  }
+
+  function diff(slug) {
+    var prior = readSnapshot(slug);
+    if (!prior) {
+      return { ok: false, snapshot: null,
+               text: "no previous context snapshot · say context snapshot first" };
+    }
+    var state = read(slug);
+    var current = shape(state, raw(slug));
+    var before = {}, after = {}, i;
+    for (i = 0; i < prior.entries.length; i++) {
+      var pe = prior.entries[i];
+      before[pe.kind + "\u0000" + pe.key] = pe;
+    }
+    for (i = 0; i < current.entries.length; i++) {
+      var ce = current.entries[i];
+      after[ce.kind + "\u0000" + ce.key] = ce;
+    }
+    var added = [], removed = [], changed = [];
+    for (i = 0; i < current.entries.length; i++) {
+      var now = current.entries[i];
+      var old = before[now.kind + "\u0000" + now.key];
+      if (!old) added.push(now);
+      else if (old.sha !== now.sha || old.bytes !== now.bytes) {
+        changed.push({ before: old, after: now });
+      }
+    }
+    for (i = 0; i < prior.entries.length; i++) {
+      var gone = prior.entries[i];
+      if (!after[gone.kind + "\u0000" + gone.key]) removed.push(gone);
+    }
+
+    var lines = [
+      "context diff · project: " + current.project,
+      "snapshot: " + prior.entries.length + " entries · " + prior.bytes
+        + " bytes · stored " + prior.stored + " bytes · sha " + prior.sha,
+      "current:  " + current.entries.length + " entries · " + current.bytes
+        + " bytes · stored " + current.stored + " bytes · sha " + current.sha
+    ];
+    if (!added.length && !removed.length && !changed.length) {
+      lines.push("entries: no changes");
+    } else {
+      lines.push("entries: " + added.length + " added · " + removed.length
+        + " removed · " + changed.length + " changed");
+      added.forEach(function (entry) {
+        lines.push("  + " + entry.kind + "/" + entry.key + " · " + entry.bytes
+          + " bytes · sha " + entry.sha);
+      });
+      removed.forEach(function (entry) {
+        lines.push("  - " + entry.kind + "/" + entry.key + " · " + entry.bytes
+          + " bytes · sha " + entry.sha);
+      });
+      changed.forEach(function (pair) {
+        lines.push("  ~ " + pair.after.kind + "/" + pair.after.key + " · "
+          + pair.before.bytes + " -> " + pair.after.bytes + " bytes · sha "
+          + pair.before.sha + " -> " + pair.after.sha);
+      });
+    }
+    lines.push("bytes: " + delta(prior.bytes, current.bytes) + " entry · "
+      + delta(prior.stored, current.stored) + " stored");
+
+    var pending = pendingDiff(prior.pending || [], current.pending || []);
+    lines.push("pending plan: " + (prior.pending || []).length + " -> "
+      + (current.pending || []).length);
+    pending.removed.forEach(function (step) { lines.push("  - " + step); });
+    pending.added.forEach(function (step) { lines.push("  + " + step); });
+    if (current.planBroken) {
+      lines.push("  ! the current stored plan is unreadable (trimmed or evicted)");
+    }
+
+    var notes = notesDiff(prior.notes || [], current.notes || []);
+    if (notes.added.length || notes.removed.length) {
+      lines.push("evicted or trimmed: " + notes.added.length + " added · "
+        + notes.removed.length + " removed");
+      notes.added.forEach(function (note) {
+        lines.push("  + " + note.kind + "/" + note.key + " · " + note.bytes
+          + " bytes · " + note.why);
+      });
+      notes.removed.forEach(function (note) {
+        lines.push("  - " + note.kind + "/" + note.key + " · " + note.bytes
+          + " bytes · " + note.why);
+      });
+    }
+    return { ok: true, snapshot: prior, current: current, text: lines.join("\n") };
+  }
+
+  function notes(slug) {
+    var list = readNotes(slug).slice();
+    var marker = readPlanNote(slug);
+    if (marker && !list.some(function (note) {
+      return note.kind === "plan" && note.key === "last";
+    })) {
+      list.push(marker);
+    }
+    return list;
   }
 
   function label(entry) {
@@ -500,6 +809,9 @@
     scopes: readIndex,
     show: function (slug) { return show(slug).text; },
     report: show,
+    snapshot: snapshot,
+    diff: diff,
+    notes: notes,
     empty: empty
   };
 })(typeof self !== "undefined" ? self : this);

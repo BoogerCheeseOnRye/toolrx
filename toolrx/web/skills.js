@@ -1911,6 +1911,14 @@
       if (!ctx.contextShow) throw new Error("context needs the browser workspace");
       return ctx.contextShow();
     },
+    "context.snapshot": function (a, ctx) {
+      if (!ctx.contextSnapshot) throw new Error("context needs the browser workspace");
+      return ctx.contextSnapshot();
+    },
+    "context.diff": function (a, ctx) {
+      if (!ctx.contextDiff) throw new Error("context needs the browser workspace");
+      return ctx.contextDiff();
+    },
     "context.clear": function (a, ctx) {
       if (!ctx.contextClear) throw new Error("context needs the browser workspace");
       return ctx.contextClear(false);

@@ -1350,14 +1350,33 @@
     }
   }
 
+  function planNote(slug) {
+    const C = contextModule();
+    if (!C || !C.notes) return null;
+    return C.notes(slug).filter(function (note) {
+      return note.kind === "plan" && note.key === "last";
+    })[0] || null;
+  }
+
+  function planIssue(note) {
+    return { issue: note || {
+      kind: "plan", key: "last", bytes: 0, why: "trimmed",
+    } };
+  }
+
   function readLastPlan(slug) {
     const C = contextModule();
     if (!C) return null;
     const raw = C.get(slug, "plan", "last");
-    if (!raw) return null;
+    if (!raw) {
+      const note = planNote(slug);
+      return note ? planIssue(note) : null;
+    }
     try {
       const plan = JSON.parse(raw);
-      if (!plan || !Array.isArray(plan.steps)) return null;
+      if (!plan || !Array.isArray(plan.steps)) {
+        return planIssue(planNote(slug));
+      }
       plan.status = Array.isArray(plan.status) ? plan.status : [];
       plan.steps.forEach(function (_, i) {
         if (plan.status[i] !== "done" && plan.status[i] !== "error"
@@ -1365,8 +1384,14 @@
       });
       return plan;
     } catch (e) {
-      return null;
+      return planIssue(planNote(slug));
     }
+  }
+
+  function planIssueText(plan, action) {
+    const why = plan.issue.why === "trimmed" ? "trimmed" : "evicted";
+    return "the stored plan was " + why + " from context ("
+      + plan.issue.bytes + " bytes) · rebuild the plan, then " + action;
   }
 
   function planLines(plan) {
@@ -1386,6 +1411,18 @@
   function contextRaw() {
     const C = contextModule();
     return C ? C.raw(contextScope()) : "";
+  }
+
+  function contextSnapshot() {
+    const C = contextModule();
+    if (!C) return "context is unavailable in this browser";
+    return C.snapshot(contextScope()).text;
+  }
+
+  function contextDiff() {
+    const C = contextModule();
+    if (!C) return "context is unavailable in this browser";
+    return C.diff(contextScope()).text;
   }
 
   function contextClear(all) {
@@ -1412,6 +1449,7 @@
       return "no previous plan in context · build a multi-step plan first, "
         + "then say what is in context";
     }
+    if (plan.issue) return planIssueText(plan, "continue");
     const indexes = plan.status.map(function (status, i) {
       return status === "pending" ? i : -1;
     }).filter(function (i) { return i >= 0; });
@@ -1452,11 +1490,13 @@
       return "no last plan to expand · build a multi-step plan first, "
         + "then say expand the last plan with …";
     }
+    if (plan.issue) return planIssueText(plan, "expand");
     const text = String(more || "").trim();
     if (!text) return "nothing to add · say expand the last plan with <steps>";
     const info = skills.splitPromptInfo(text);
-    if (info.overLimit || plan.steps.length + info.steps.length > 40) {
-      return "not expanded · the plan would exceed 40 steps";
+    const maxSteps = (skills.limits && skills.limits.steps) || 40;
+    if (info.overLimit || plan.steps.length + info.steps.length > maxSteps) {
+      return "not expanded · the plan would exceed " + maxSteps + " steps";
     }
     info.steps.forEach(function (step) {
       plan.steps.push(step);
@@ -1761,6 +1801,8 @@
       grow: function (which, name) { return growActiveProject(which, name); },
       contextShow: contextShow,
       contextRaw: contextRaw,
+      contextSnapshot: contextSnapshot,
+      contextDiff: contextDiff,
       contextClear: contextClear,
       contextContinue: contextContinue,
       contextExpand: contextExpand,
@@ -2200,6 +2242,8 @@
       return C ? C.report(contextScope()) : null;
     },
     contextRaw: contextRaw,
+    contextSnapshot: contextSnapshot,
+    contextDiff: contextDiff,
     contextClear: contextClear,
     reset: function () {
       files = Object.assign({}, SEED);
