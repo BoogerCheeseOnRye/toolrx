@@ -340,7 +340,7 @@ never means unbounded.
 | Project files | 32 files | 32 files |
 | Project text | 512 KB total | 512 KB total |
 | Undo snapshots | 16, configurable | 16 |
-| Command patterns | 12,522 | 12,000 |
+| Command patterns | 11,248 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
 
 ### Guardrails
@@ -816,9 +816,9 @@ so it still runs from `file://`, and the full set stays well inside the 32-file
 and 512 KB caps. `tests/test_skills_js.py` covers the bundle, registry
 behaviour, idempotence, partial overlap, deterministic bytes, preview inlining,
 and undo; `tests/fixtures/longform.json` gains a three-system growth case, and
-the catalog is now 12,522 patterns.
+the catalog reached 12,522 patterns before step 41 removed the dead literals.
 
-### 41. Command-library quality pass and coverage metrics
+### 41. Command-library quality pass and coverage metrics — done
 
 Audit the command catalog for redundancy, near-duplicate regexes, low-margin
 collisions, and gaps on long compositional prompts. Generate a deterministic
@@ -832,6 +832,29 @@ whitespace-insensitive duplicate regexes, the coverage report is reproducible an
 lists every fixture family, no long-form family falls to chat fallback, the
 minimum margin stays above the step-34 floor, and additions are justified by the
 report rather than by volume.
+
+Landed with `toolrx/coverage.py` and the checked-in `toolrx/coverage.json`.
+`python3 toolrx/coverage.py` prints the table, `--write` refreshes the report,
+and `--check` exits non-zero when the catalog or fixtures drift. The catalog is
+11,248 commands with 6,567 pure literals, 0 duplicate ids, 0 duplicate
+whitespace-insensitive regexes, and 0 dead literals. The 1,080 removed
+`build.compose.feature.*` entries were pure literals already matched by the
+general `build.variant.*` pattern, so removing them changes no input; the
+remaining compose entries cover the three genre aliases that are not standalone
+build kinds. Pronoun text commands are now declared before the generic
+`reverse {text}` family, `what weekday is it` is a target-free date command,
+`what is my current project` reads project memory, and `who are you` is chat
+identity rather than a duplicate `misc` command. `tests/test_commands.py` now
+normalises escaped spaces in its uniqueness check and asserts the target-free
+text commands; `tests/test_coverage.py` checks reproducibility, lane arithmetic,
+the zero-fallback and margin floors, the dead-literal audit, and that the prefix
+index returns the same first match as a full scan. Coverage over the six
+families: routing 33 router / 0 fallback, plans 38 router / 0 fallback, builds
+8 exact, growth 12 exact, context 11 exact + 3 router / 0 fallback, refusals 4
+refusal. Minimum routing margin 0.027, plan margin 0.082, context margin 0.025,
+all above the 0.019 step-34 floor. The catalog floor in `test_commands.py` moves
+from 12,000 to 11,000 so the test guards regressions without demanding that
+unreachable patterns return.
 
 ### 42. Observability dashboard for long runs
 

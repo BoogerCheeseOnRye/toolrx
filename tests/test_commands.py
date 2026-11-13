@@ -57,14 +57,18 @@ class CommandLibraryTest(unittest.TestCase):
         return {k: fill(v) for k, v in command["args"].items()}
 
     def test_library_is_large(self):
-        self.assertGreaterEqual(self.data["count"], 12000)
-        self.assertGreaterEqual(len(self.commands), 12000)
+        # The floor is a regression guard, not a target: step 41 removed
+        # literal patterns that could never be the first match.
+        self.assertGreaterEqual(self.data["count"], 11000)
+        self.assertGreaterEqual(len(self.commands), 11000)
         self.assertEqual(self.data["count"], len(self.commands))
 
     def test_patterns_are_unique(self):
         seen, duplicates = set(), set()
         for c in self.commands:
-            key = re.sub(r"\s+", "", c["re"].lower())
+            # `re.escape` writes a literal space as `\ `; normalise it so the
+            # check sees the same duplicate the generator sees.
+            key = re.sub(r"\s+", "", c["re"].lower().replace("\\ ", " "))
             if key in seen:
                 duplicates.add(key)
             seen.add(key)
@@ -413,6 +417,22 @@ class CommandLibraryTest(unittest.TestCase):
         for q in ("sort it", "remove duplicate lines", "slugify it",
                   "reverse the lines", "double it", "square the result"):
             self.assertIsNotNone(self.first(q), q)
+
+    def test_target_free_text_commands_beat_generic_patterns(self):
+        # These are exact, target-free commands. The generic "reverse {text}"
+        # shape must not capture "the lines" as literal text.
+        expected = {
+            "reverse the lines": "reverselines",
+            "reverse the line order": "reverselines",
+            "reverse the words": "reversewords",
+            "indent the lines": "indent",
+            "uppercase it": "upper",
+        }
+        for query, op in expected.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "text.transform", query)
+            self.assertEqual(self.args_for(hit, query).get("op"), op, query)
 
 
 if __name__ == "__main__":

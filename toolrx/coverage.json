@@ -1,0 +1,516 @@
+{
+  "audit": {
+    "dead_literals": 0,
+    "examples": [],
+    "mode": "full"
+  },
+  "catalog": {
+    "categories": {
+      "build": 8204,
+      "chat": 67,
+      "color": 10,
+      "context": 47,
+      "data": 15,
+      "date": 32,
+      "edit": 128,
+      "encoding": 30,
+      "facts": 2,
+      "generate": 19,
+      "lang": 45,
+      "library": 43,
+      "llm": 33,
+      "math": 188,
+      "memory": 46,
+      "misc": 15,
+      "plan": 18,
+      "project": 90,
+      "regex": 3,
+      "text": 191,
+      "units": 1990,
+      "web": 32
+    },
+    "count": 11248,
+    "dead_literals": 0,
+    "duplicate_ids": 0,
+    "duplicate_patterns": 0,
+    "model_bytes": 481256,
+    "pure_literals": 6567
+  },
+  "fixtures": {
+    "builds": {
+      "cases": 8,
+      "confidence": null,
+      "lanes": {
+        "exact": 8,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 0
+      },
+      "margin": null,
+      "subfamilies": {
+        "build": {
+          "cases": 8,
+          "confidence": null,
+          "lanes": {
+            "exact": 8,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 8
+        }
+      },
+      "units": 8
+    },
+    "context": {
+      "cases": 3,
+      "confidence": {
+        "max": 0.5016,
+        "median": 0.3866,
+        "min": 0.095,
+        "n": 3,
+        "p10": 0.095
+      },
+      "lanes": {
+        "exact": 11,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 3
+      },
+      "margin": {
+        "max": 0.1809,
+        "median": 0.0796,
+        "min": 0.0249,
+        "n": 3,
+        "p10": 0.0249
+      },
+      "subfamilies": {
+        "base": {
+          "cases": 3,
+          "confidence": null,
+          "lanes": {
+            "exact": 3,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 3
+        },
+        "continue": {
+          "cases": 2,
+          "confidence": null,
+          "lanes": {
+            "exact": 2,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 2
+        },
+        "edit": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "expand": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "otherProject": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "plan": {
+          "cases": 2,
+          "confidence": {
+            "max": 0.5016,
+            "median": 0.3866,
+            "min": 0.095,
+            "n": 3,
+            "p10": 0.095
+          },
+          "lanes": {
+            "exact": 2,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 3
+          },
+          "margin": {
+            "max": 0.1809,
+            "median": 0.0796,
+            "min": 0.0249,
+            "n": 3,
+            "p10": 0.0249
+          },
+          "units": 5
+        },
+        "returnCommand": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        }
+      },
+      "units": 14
+    },
+    "growth": {
+      "cases": 5,
+      "confidence": null,
+      "lanes": {
+        "exact": 12,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 0
+      },
+      "margin": null,
+      "subfamilies": {
+        "base": {
+          "cases": 5,
+          "confidence": null,
+          "lanes": {
+            "exact": 5,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 5
+        },
+        "growth-module": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "growth-modules": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "growth-patches": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 2,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 2
+        },
+        "growth-systems": {
+          "cases": 2,
+          "confidence": null,
+          "lanes": {
+            "exact": 3,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 3
+        }
+      },
+      "units": 12
+    },
+    "plans": {
+      "cases": 6,
+      "confidence": {
+        "max": 0.6114,
+        "median": 0.4873,
+        "min": 0.3839,
+        "n": 38,
+        "p10": 0.3917
+      },
+      "lanes": {
+        "exact": 0,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 38
+      },
+      "margin": {
+        "max": 0.382,
+        "median": 0.1513,
+        "min": 0.0815,
+        "n": 38,
+        "p10": 0.0961
+      },
+      "subfamilies": {
+        "plan-chunked": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.4854,
+            "median": 0.4848,
+            "min": 0.4842,
+            "n": 2,
+            "p10": 0.4842
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 2
+          },
+          "margin": {
+            "max": 0.0969,
+            "median": 0.0965,
+            "min": 0.0961,
+            "n": 2,
+            "p10": 0.0961
+          },
+          "units": 2
+        },
+        "plan-connector": {
+          "cases": 2,
+          "confidence": {
+            "max": 0.6114,
+            "median": 0.4932,
+            "min": 0.3883,
+            "n": 16,
+            "p10": 0.4421
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 16
+          },
+          "margin": {
+            "max": 0.382,
+            "median": 0.1886,
+            "min": 0.0828,
+            "n": 16,
+            "p10": 0.1377
+          },
+          "units": 16
+        },
+        "plan-long": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.5915,
+            "median": 0.4984,
+            "min": 0.3839,
+            "n": 8,
+            "p10": 0.4334
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 8
+          },
+          "margin": {
+            "max": 0.3764,
+            "median": 0.1795,
+            "min": 0.0815,
+            "n": 8,
+            "p10": 0.1277
+          },
+          "units": 8
+        },
+        "plan-numbered": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.6114,
+            "median": 0.4932,
+            "min": 0.3883,
+            "n": 8,
+            "p10": 0.4421
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 8
+          },
+          "margin": {
+            "max": 0.382,
+            "median": 0.1886,
+            "min": 0.0828,
+            "n": 8,
+            "p10": 0.1377
+          },
+          "units": 8
+        },
+        "plan-sentences": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.5683,
+            "median": 0.4751,
+            "min": 0.3917,
+            "n": 4,
+            "p10": 0.3917
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 4
+          },
+          "margin": {
+            "max": 0.2217,
+            "median": 0.1417,
+            "min": 0.1312,
+            "n": 4,
+            "p10": 0.1312
+          },
+          "units": 4
+        }
+      },
+      "units": 38
+    },
+    "refusals": {
+      "cases": 4,
+      "confidence": null,
+      "lanes": {
+        "exact": 0,
+        "fallback": 0,
+        "refusal": 4,
+        "router": 0
+      },
+      "margin": null,
+      "reasons": {
+        "disallowed character": 1,
+        "injection": 1,
+        "query too long": 1,
+        "traversal": 1
+      },
+      "subfamilies": {
+        "refusals": {
+          "cases": 4,
+          "confidence": null,
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 4,
+            "router": 0
+          },
+          "margin": null,
+          "units": 4
+        }
+      },
+      "units": 4
+    },
+    "routing": {
+      "cases": 33,
+      "confidence": {
+        "max": 0.7895,
+        "median": 0.657,
+        "min": 0.5413,
+        "n": 33,
+        "p10": 0.5801
+      },
+      "lanes": {
+        "exact": 0,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 33
+      },
+      "margin": {
+        "max": 0.2833,
+        "median": 0.1707,
+        "min": 0.0271,
+        "n": 33,
+        "p10": 0.0596
+      },
+      "subfamilies": {
+        "routing": {
+          "cases": 27,
+          "confidence": {
+            "max": 0.7895,
+            "median": 0.6608,
+            "min": 0.5466,
+            "n": 27,
+            "p10": 0.6202
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 27
+          },
+          "margin": {
+            "max": 0.2833,
+            "median": 0.1626,
+            "min": 0.0271,
+            "n": 27,
+            "p10": 0.0596
+          },
+          "units": 27
+        },
+        "routing-long": {
+          "cases": 6,
+          "confidence": {
+            "max": 0.6557,
+            "median": 0.5859,
+            "min": 0.5413,
+            "n": 6,
+            "p10": 0.5413
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 6
+          },
+          "margin": {
+            "max": 0.2704,
+            "median": 0.2026,
+            "min": 0.0631,
+            "n": 6,
+            "p10": 0.0631
+          },
+          "units": 6
+        }
+      },
+      "units": 33
+    }
+  },
+  "version": 1
+}

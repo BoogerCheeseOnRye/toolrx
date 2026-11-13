@@ -144,7 +144,13 @@ class LimitsCommandTest(unittest.TestCase):
 
     def test_catalog_count_is_current(self):
         self.assertEqual(self.data["count"], len(self.data["commands"]))
-        self.assertEqual(self.data["count"], 12522)
+        # The count comes from the generated catalog. The coverage report is
+        # the checked-in measurement, so compare against it rather than
+        # hard-coding a number that every quality pass would have to edit.
+        report_path = os.path.join(CORE, "coverage.json")
+        with open(report_path, encoding="utf-8") as fh:
+            report = json.load(fh)
+        self.assertEqual(self.data["count"], report["catalog"]["count"])
 
 
 @unittest.skipUnless(NODE, "node is not installed")

@@ -30,8 +30,11 @@ def _pattern_key(pattern):
 
     `upper case {text}` and `uppercase {text}` compile to the same regex, so the
     first one wins and the second is dropped instead of shipping a dead entry.
+    `re.escape` writes a literal space as ``\\ ``, so unescape that before the
+    whitespace strip or `landing\\ page` would look different from `landing
+    page` even though both match the same text.
     """
-    return re.sub(r"\s+", "", pattern.lower())
+    return re.sub(r"\s+", "", pattern.lower().replace("\\ ", " "))
 
 
 def add(cid, op, pattern, args=None, desc="", cat="misc"):
@@ -295,6 +298,39 @@ for src, dst in (("c", "f"), ("c", "k"), ("f", "c"), ("f", "k"), ("k", "c"), ("k
             f"{src} -> {dst}", "units")
 
 # ---------------------------------------------------------------- text ----
+# Pronoun forms come first. They are exact, target-free commands ("reverse the
+# lines", "uppercase it") and must outrank the generic "reverse {text}" shapes
+# that would otherwise capture the pronoun phrase as literal text.
+for op, patterns in {
+    "reverse": ["reverse it", "reverse that", "flip it", "reverse the result"],
+    "upper": ["uppercase it", "upper case it", "make it uppercase", "shout it"],
+    "lower": ["lowercase it", "lower case it", "make it lowercase"],
+    "title": ["title case it", "title case that"],
+    "sentence": ["sentence case it"],
+    "capitalize": ["capitalize it"],
+    "trim": ["trim it", "strip the whitespace"],
+    "collapse": ["collapse the whitespace", "remove extra whitespace"],
+    "slug": ["slugify it", "slug it", "make it a slug"],
+    "snake": ["snake case it"],
+    "kebab": ["kebab case it"],
+    "camel": ["camel case it"],
+    "pascal": ["pascal case it"],
+    "sortlines": ["sort it", "sort the lines", "sort those lines"],
+    "reverselines": ["reverse the lines", "reverse the line order"],
+    "sortwords": ["sort the words", "sort words"],
+    "reversewords": ["reverse the words", "reverse word order"],
+    "uniqlines": ["remove duplicate lines", "unique the lines"],
+    "striptags": ["strip the html", "remove the html tags"],
+    "leet": ["leet speak it", "leetspeak it"],
+    "initials": ["get the initials", "initials"],
+    "longest": ["longest word", "find the longest word"],
+    "dedupe": ["remove duplicate words", "dedupe it", "dedupe the words"],
+    "indent": ["indent it", "indent the lines"],
+}.items():
+    for pat in patterns:
+        add(f"text.pronoun.{op}.{len(COMMANDS)}", "text.transform",
+            "^" + re.escape(pat) + "$", {"op": op}, pat, "text")
+
 TEXT_OPS = {
     "reverse": ["reverse {text}", "reverse the text {text}", "backwards {text}"],
     "upper": ["uppercase {text}", "upper case {text}", "make {text} uppercase"],
@@ -358,37 +394,6 @@ for op, patterns in {
     for pat in patterns:
         add(f"text.count.bare.{op}.{len(COMMANDS)}", "text.count",
             "^" + re.escape(pat) + "$", {"what": op}, pat, "text")
-
-# "it" / "that" forms so a multi-step chain can feed the previous result
-for op, patterns in {
-    "reverse": ["reverse it", "reverse that", "flip it", "reverse the result"],
-    "upper": ["uppercase it", "upper case it", "make it uppercase", "shout it"],
-    "lower": ["lowercase it", "lower case it", "make it lowercase"],
-    "title": ["title case it", "title case that"],
-    "sentence": ["sentence case it"],
-    "capitalize": ["capitalize it"],
-    "trim": ["trim it", "strip the whitespace"],
-    "collapse": ["collapse the whitespace", "remove extra whitespace"],
-    "slug": ["slugify it", "slug it", "make it a slug"],
-    "snake": ["snake case it"],
-    "kebab": ["kebab case it"],
-    "camel": ["camel case it"],
-    "pascal": ["pascal case it"],
-    "sortlines": ["sort it", "sort the lines", "sort those lines"],
-    "reverselines": ["reverse the lines", "reverse the line order"],
-    "sortwords": ["sort the words", "sort words"],
-    "reversewords": ["reverse the words", "reverse word order"],
-    "uniqlines": ["remove duplicate lines", "unique the lines"],
-    "striptags": ["strip the html", "remove the html tags"],
-    "leet": ["leet speak it", "leetspeak it"],
-    "initials": ["get the initials", "initials"],
-    "longest": ["longest word", "find the longest word"],
-    "dedupe": ["remove duplicate words", "dedupe it", "dedupe the words"],
-    "indent": ["indent it", "indent the lines"],
-}.items():
-    for pat in patterns:
-        add(f"text.pronoun.{op}.{len(COMMANDS)}", "text.transform",
-            "^" + re.escape(pat) + "$", {"op": op}, pat, "text")
 
 for pat, op in (
     ("is {text} a palindrome", "palindrome"),
@@ -525,6 +530,13 @@ for pat, op in (
         "^" + pat.replace("{a}", TXT).replace("{b}", TXT) + "$",
         {"op": op, "a": "$1", "b": "$2"}, pat, "date")
 
+# Target-free day questions first: "what weekday is it" means today, not the
+# literal text "it" passed to the generic "what weekday is {text}" form.
+for pat, op in (("what day is it", "dayname"), ("what day is today", "dayname"),
+                ("what weekday is it", "dayname"), ("what year is it", "year")):
+    add(f"date.{op}.{len(COMMANDS)}", "date.op", "^" + re.escape(pat) + "$",
+        {"op": op}, pat, "date")
+
 for pat in ("what weekday is {text}", "day of the week for {text}"):
     add(f"date.weekday.{len(COMMANDS)}", "date.op", "^" + pat.replace("{text}", TXT) + "$",
         {"op": "weekday", "text": "$1"}, pat, "date")
@@ -534,11 +546,6 @@ for pat in ("is {n} a leap year", "is leap year {n}"):
 for pat in ("convert {text} to a date", "parse date {text}", "format date {text}"):
     add(f"date.parse.{len(COMMANDS)}", "date.op", "^" + pat.replace("{text}", TXT) + "$",
         {"op": "parse", "text": "$1"}, pat, "date")
-
-for pat, op in (("what day is it", "dayname"), ("what day is today", "dayname"),
-                ("what weekday is it", "dayname"), ("what year is it", "year")):
-    add(f"date.{op}.{len(COMMANDS)}", "date.op", "^" + re.escape(pat) + "$",
-        {"op": op}, pat, "date")
 
 for pat in ("how many days in {text}", "days in {text}", "how many days are in {text}"):
     add(f"date.daysin.{len(COMMANDS)}", "date.op", "^" + pat.replace("{text}", TXT) + "$",
@@ -1073,11 +1080,16 @@ for theme in BUILD_THEMES:
 # Kind + feature.
 for feature in BUILD_FEATURES:
     for kind in BUILD_GENRES:
-        for pat in ("build a {k} game with {f}", "build a {k} with {f}"):
-            text = pat.replace("{k}", kind).replace("{f}", feature)
-            add(f"build.compose.feature.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
-                "build", "^" + re.escape(text) + "$",
-                {"kind": kind, "desc": feature}, text, "build")
+        # `build.variant` already matches "build a <kind> with <feature>" for
+        # every kind in BUILD_KINDS, and the "<kind> game" form for the three
+        # genre aliases that are not standalone kinds. Only add the remaining
+        # short form, so no literal is born shadowed.
+        if kind in BUILD_KINDS:
+            continue
+        text = f"build a {kind} with {feature}"
+        add(f"build.compose.feature.{re.sub(r'[^a-z0-9]+', '-', kind)}.{len(COMMANDS)}",
+            "build", "^" + re.escape(text) + "$",
+            {"kind": kind, "desc": feature}, text, "build")
 
 # Scale + kind.
 for scale in BUILD_SCALES:
@@ -1239,6 +1251,14 @@ for pat in ("remember that {text}", "remember this: {text}", "make a note that {
     add(f"memory.note.{len(COMMANDS)}", "memory.note",
         "^" + pat.replace("{text}", REST) + "$", {"text": "$1"}, pat, "memory")
 
+# Specific project-memory questions before the generic "what is my {key}"
+# recall, which would otherwise store the literal key "current project".
+for pat in ("what was i working on", "what did i build last", "what is the active project",
+            "what is my current project", "what am i building", "where was i",
+            "show my current project", "what have i built"):
+    add(f"memory.context.{len(COMMANDS)}", "memory.context",
+        "^" + re.escape(pat) + "$", {}, pat, "memory")
+
 add("memory.recall.what", "memory.recall",
     r"^(?:what(?:'s| is)|whats) my (?!name\b)(.+)$",
     {"key": "$1"}, "what is my {key}", "memory")
@@ -1261,12 +1281,6 @@ for pat in ("forget my {key}", "forget about my {key}", "forget about {key}",
             "forget {key}", "remove my {key} from memory"):
     add(f"memory.forget.{len(COMMANDS)}", "memory.forget",
         "^" + pat.replace("{key}", r"(.+?)") + "$", {"key": "$1"}, pat, "memory")
-
-for pat in ("what was i working on", "what did i build last", "what is the active project",
-            "what is my current project", "what am i building", "where was i",
-            "show my current project", "what have i built"):
-    add(f"memory.context.{len(COMMANDS)}", "memory.context",
-        "^" + re.escape(pat) + "$", {}, pat, "memory")
 
 # --------------------------------------------------------- architecture ---
 for pat in ("plan a {kind}", "plan an {kind}", "plan {kind} app", "plan out a {kind}",
@@ -1347,8 +1361,7 @@ for pat in ("remember my name is {name}", "my name is {name}", "call me {name}")
 add("chat.more", "chat", r"^(?:why|really|and|so)[.!?]?$", {}, "continue the conversation", "chat")
 
 # ----------------------------------------------------------------- misc ---
-for pat, op in (("who are you", "who"), ("what are you", "who"),
-                ("what is your name", "who"), ("help", "help"),
+for pat, op in (("what is your name", "who"), ("help", "help"),
                 ("what can you do", "help"), ("commands", "help"),
                 ("list commands", "help"), ("show commands", "help"),
                 ("command library", "help")):
