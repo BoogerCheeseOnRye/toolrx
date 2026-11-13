@@ -571,7 +571,7 @@ multi-path assignment order is fixed so `path_a`/`path_b` match the query order.
 file or the previous step and are deterministic. The command catalog is now
 12,502 routes.
 
-### 34. Vocabulary, knowledge, and centroid scaling
+### 34. Vocabulary, knowledge, and centroid scaling — done
 
 Expand `knowledge/*.md` and the derived vocabulary and centroids so longer, more
 varied phrasings keep high-confidence routes and healthy margins. Add
@@ -583,7 +583,17 @@ fast, and keep the model within a defined size budget.
 stays within 1.5× its current size, long-prompt accuracy meets the step-35
 threshold, and margins are reported and non-degenerate.
 
-### 35. Long-input / long-output test suite and observability
+Landed by expanding all 27 `knowledge/*.md` documents with longer phrasings plus
+focused disambiguation for the near neighbours (`fs.read_file`/`fs.inspect_dir`,
+`net.cfg_gen`/`net.cfg_check`, `net.lab_topo`/`net.lab_topo_apply`,
+`net.lab_link`/`net.lab_state`, `net.lab_down`). Routing stays one centroid per
+tool: the measured 109-case suite is 109/109 with minimum margin 0.019, p10
+0.048, and median 0.126, so multi-centroid routing is not yet justified. The
+in-process rebuild takes about 1.3 s, and the model is 469 KB (1.30× the 352 KB
+baseline, below the 1.5× cap). `tests/test_router.py` now pins rebuild time,
+model size, long-prompt accuracy, and the non-degenerate margin floor.
+
+### 35. Long-input / long-output test suite and observability — done
 
 Create a dedicated fixture suite: at least 20 prompts of 500–2,000+ characters,
 multi-step plans, complex build specs, and five-patch sequences, each with
@@ -596,6 +606,17 @@ in the README and in the dashboard's honest-limits copy.
 **Done when** the suite runs in `python3 -m unittest discover -s tests` plus the
 Node harness, fails on regressions, the dashboard shows the last-run metrics, and
 the README lists the actual limits.
+
+Landed with `tests/fixtures/longform.json` (27 routing prompts of 541–635
+characters, five plans, four refusal cases), `tests/test_envelope.py` for
+routing/plan/refusal assertions, and `tests/test_envelope_js.py` for a complex
+build spec and a five-patch sequence undone five times byte-exactly. The sandbox
+records `chars`, `steps`, `errors`, `via`, `confidence`, `margin`, `ms`, `bytes`,
+`files`, `undo`, and `ok` for the latest prompt, persists it under
+`toolrx.lastRun.v1`, clears it on reset, and exposes it as
+`toolrxWeb.lastRun()`. The dashboard renders it in the `last run` chip above the
+preview and refreshes it after every prompt and on load. The overall test count
+is 270 (Python + Node harnesses), and the full suite runs offline.
 
 Start the fixture harness with step 26 so every step lands with measurements, even
 though step 35 closes the batch.
@@ -610,7 +631,7 @@ though step 35 closes the batch.
    subset is pinned
 5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
-   capture) → 34 (vocab/centroids) → 35 (gate) — planned
+   capture) → 34 (vocab/centroids) → 35 (gate) — done
 6. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 
 ## Open questions

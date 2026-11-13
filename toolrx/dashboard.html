@@ -269,6 +269,11 @@
     padding:5px 9px;border:1px solid var(--border);border-radius:7px;background:#0d1220;
     color:var(--muted);font-size:11px;font-family:ui-monospace,monospace;display:none}
   #buildStatus.on{display:block}
+  #lastRun{position:absolute;left:10px;top:10px;z-index:11;max-width:calc(100% - 56px);
+    padding:5px 9px;border:1px solid var(--border);border-radius:7px;background:#0d1220;
+    color:var(--muted);font-size:11px;font-family:ui-monospace,monospace;display:none;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #lastRun.on{display:block}
   #previewPane{position:relative}
   #previewPane.full{flex:1 0 100%}
 
@@ -681,7 +686,7 @@
     <div id="eq" aria-hidden="true"><div class="eq-track" id="eqTrack"></div></div>
     <div class="panes">
       <div class="pane on" id="chatPane"><div id="log" role="log" aria-live="polite" aria-relevant="additions text" aria-label="conversation"></div></div>
-      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
+      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="lastRun" aria-live="polite"></div><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
     </div>
     <div class="composer">
       <form id="f">
@@ -935,6 +940,7 @@ async function loadConfig(){
     });
     loadPreview();
     refreshProjectChip();
+    refreshLastRun();
     registerOffline();
     const cmdBtn=document.getElementById('cmdBtn');
     if(cmdBtn) cmdBtn.style.display='inline-flex';
@@ -1174,6 +1180,7 @@ async function loadLocalModels(){
     if(!window.toolrxWeb) return;
     window.toolrxWeb.reset();
     entry('workspace','virtual files reset to their seed contents','stat');
+    refreshLastRun();
     loadLocalModels();
   });
   document.getElementById('cmLocalModel').addEventListener('change',e=>{
@@ -1283,6 +1290,26 @@ function entry(label,text,kind,meta){
 }
 
 /* ---- projects: chip + modal ------------------------------------------- */
+function refreshLastRun(){
+  const el=document.getElementById('lastRun');
+  if(!el) return;
+  const r=(clientMode&&window.toolrxWeb&&window.toolrxWeb.lastRun)
+    ?window.toolrxWeb.lastRun():null;
+  if(!r){ el.textContent=''; el.classList.remove('on'); return; }
+  const bits=[];
+  bits.push((r.chars||0).toLocaleString()+' ch');
+  bits.push((r.steps||0)+(r.steps===1?' step':' steps'));
+  if(r.errors) bits.push(r.errors+(r.errors===1?' error':' errors'));
+  if(r.confidence!=null) bits.push('conf '+Number(r.confidence).toFixed(2));
+  if(r.margin!=null) bits.push('margin '+Number(r.margin).toFixed(3));
+  bits.push((r.ms||0)+' ms');
+  bits.push((r.bytes||0).toLocaleString()+' B');
+  bits.push((r.files||0)+(r.files===1?' file':' files'));
+  if(r.undo) bits.push('undo '+r.undo);
+  el.textContent='last run · '+bits.join(' · ');
+  el.title='via '+(r.via||'n/a')+' · '+(r.ok===false?'with errors':'ok');
+  el.classList.add('on');
+}
 function refreshProjectChip(){
   const btn=document.getElementById('projBtn');
   if(!btn) return;
@@ -2627,6 +2654,7 @@ async function submit(txt){
       }
     }
     refreshProjectChip();
+    refreshLastRun();
     if(document.getElementById('projModal').classList.contains('open')) renderProjectList();
     if(built){
       if(window.matchMedia('(max-width:900px)').matches) entry('preview','built — press ▣ preview to open it','stat');

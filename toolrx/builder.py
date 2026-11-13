@@ -68,7 +68,7 @@ def build(catalog_path="catalog.json"):
         "dim": dim,
         "idf": {str(k): round(v, 5) for k, v in idf.items()},
         "centroids": {
-            name: {str(k): round(v, 6) for k, v in c.items()}
+            name: {str(k): round(v, 4) for k, v in c.items()}
             for name, c in centroids.items()
         },
         "tools": [

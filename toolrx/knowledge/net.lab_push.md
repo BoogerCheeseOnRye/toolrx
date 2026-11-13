@@ -13,3 +13,13 @@ router, and make this change.
 
 The result is a pending change (id) that is only written if the operator
 explicitly applies it via net.lab_apply. Nothing is written by this tool.
+
+Longer requests and phrasings:
+Push this network specification to the lab as a dry run.
+Stage these configuration changes on the lab host without applying.
+Send this safe DSL config to the lab and show me the pending result.
+Preview what would change if I pushed this lab configuration.
+Diff the proposed config against the lab's current FRR file.
+Prepare a pending change id for review, with no write.
+Show the pending lab diff before anything is committed.
+Build and compare a lab config, but do not apply it yet.

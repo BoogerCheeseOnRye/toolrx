@@ -14,3 +14,13 @@ redirection, never a shell string.
 Always preceded by net.lab_push so the operator sees the diff first. The
 prior /etc/frr/frr.conf is intended to be backed up before applying. This
 restarts the FRR daemons.
+
+Longer requests and phrasings:
+Apply the pending lab configuration using the id from the push.
+Confirm and commit the staged network config to the lab now.
+Take the pending configuration id and make it active on the lab.
+Deploy the previously staged lab changes with this identifier.
+Install the reviewed FRR config and reload the daemons.
+Activate the exact pending config, not arbitrary input.
+Write the staged configuration to the lab router after confirmation.
+Commit the dry run that was prepared earlier.

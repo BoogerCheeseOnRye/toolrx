@@ -170,6 +170,19 @@ arguments survive byte-exact, and `extract headings`, `outline`, `first N
 lines`, and `table from …` turn a file or the previous step into deterministic
 output. The remaining batch targets vocabulary scaling and the long-form suite.
 
+Step 34 expands all 27 knowledge documents with longer phrasings and targeted
+disambiguation, without adding a second centroid layer: 109/109 measured routes
+land correctly with a minimum margin of 0.019 and a median of 0.126, while the
+rebuilt model stays at 469 KB (1.30× the 352 KB baseline) and rebuilds in about
+1.3 s. Step 35 pins that envelope in tests: 27 long routing prompts (500–2,000+
+characters), five multi-step plans, four refusal cases, a complex build spec, and
+a five-patch sequence with five exact undos. The in-tab sandbox now records the
+last run (characters, steps, errors, via, confidence, margin, milliseconds,
+bytes, files, undo depth) in `localStorage`, and the dashboard shows it in the
+`last run` chip above the preview; `toolrxWeb.lastRun()` exposes it and a reset
+clears it. `python3 -m unittest discover -s tests` runs the Python and Node
+harnesses together.
+
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
 `add a footer note saying …` rewrite the real `index.html` / `app.js` files.

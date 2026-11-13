@@ -1552,6 +1552,24 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
       panelMs: +panelMs.toFixed(3), panelRows: panelRows,
     };
   })();
+  out.lastRun = {};
+  self.toolrxWeb.reset();
+  out.lastRun.empty = self.toolrxWeb.lastRun();
+  const buildQuery = 'build a small platformer game';
+  await self.toolrxWeb.prompt(buildQuery);
+  out.lastRun.build = self.toolrxWeb.lastRun();
+  out.lastRun.buildProjectFiles = self.toolrxWeb.project().files.length;
+  out.lastRun.buildProjectBytes = self.toolrxWeb.projectBytes();
+  out.lastRun.stored = !!global.localStorage.getItem('toolrx.lastRun.v1');
+  const planQuery = 'what is 12 plus 30 then double it';
+  const planResults = await self.toolrxWeb.prompt(planQuery);
+  out.lastRun.plan = self.toolrxWeb.lastRun();
+  out.lastRun.planSteps = planResults.length;
+  await self.toolrxWeb.prompt('write the following into ../evil.txt:\\nhello');
+  out.lastRun.blocked = self.toolrxWeb.lastRun();
+  self.toolrxWeb.reset();
+  out.lastRun.cleared = self.toolrxWeb.lastRun();
+  out.lastRun.clearedStorage = !global.localStorage.getItem('toolrx.lastRun.v1');
   console.log(JSON.stringify(out));
 })();
 """
@@ -2060,6 +2078,32 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertTrue(w["npcIdsUnique"])
         self.assertEqual(w["baseTowns"], 5, "no counts keeps the size default")
         self.assertGreaterEqual(w["baseEnemies"], 18)
+
+    def test_last_run_metrics_are_reported_and_reset(self):
+        L = self.out["lastRun"]
+        self.assertIsNone(L["empty"])
+        b = L["build"]
+        self.assertIsNotNone(b)
+        self.assertEqual(b["chars"], len("build a small platformer game"))
+        self.assertGreaterEqual(b["steps"], 1)
+        self.assertEqual(b["errors"], 0)
+        self.assertTrue(b["ok"])
+        self.assertIn("build", b["via"])
+        self.assertGreater(b["bytes"], 0)
+        self.assertEqual(b["bytes"], L["buildProjectBytes"])
+        self.assertEqual(b["files"], L["buildProjectFiles"])
+        self.assertGreaterEqual(b["ms"], 0)
+        self.assertTrue(L["stored"])
+        p = L["plan"]
+        self.assertEqual(p["steps"], L["planSteps"], (p, L["planSteps"]))
+        self.assertEqual(p["steps"], 2, p)
+        self.assertTrue(p["via"].startswith("plan:"), p["via"])
+        self.assertEqual(p["errors"], 0)
+        blk = L["blocked"]
+        self.assertEqual(blk["errors"], 1)
+        self.assertFalse(blk["ok"])
+        self.assertIsNone(L["cleared"])
+        self.assertTrue(L["clearedStorage"])
 
     def test_sandbox_preview_inlines_content_js(self):
         c = self.out["sandbox"]["content"]

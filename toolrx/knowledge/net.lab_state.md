@@ -13,3 +13,18 @@ interfaces, adjacency, neighbor, ospf, bgp, prefix, and route table.
 
 The "what" argument selects what to show: int, routes, ospf, bgp, or all
 (default). Pure query over the allowlisted lab host; never mutates anything.
+
+Longer requests and phrasings:
+Show the current state of the network lab, including routes and OSPF.
+What is the lab state right now for interfaces, routes, and BGP?
+Print the running state of the simulated routers in the lab.
+Display the lab routing tables and all interface addresses.
+Query the live lab for OSPF neighbors and BGP summary.
+Inspect the current namespace state and the live routes.
+Read the running router state from the lab without changing it.
+What do the lab routers currently report for routes and adjacencies?
+
+This is a read only query of the current live lab state. Ask for the running
+state of the topology, the present topology state, current routes, live
+interfaces, OSPF neighbors, or BGP summary. It displays the existing state and
+does not build, create, apply, stage, or change any part of the topology.

@@ -15,6 +15,7 @@
   const PROJECTS_KEY = "toolrx.projects.v1";
   const CHAT_KEY = "toolrx.chat.v1";
   const MEMORY_KEY = "toolrx.memory.v1";
+  const LASTRUN_KEY = "toolrx.lastRun.v1";
   // Read/cat caps are for chat-sized output. Project write caps are separate
   // and deliberately larger: step 32 targets 32 files and 512 KB per project.
   const MAX_FILE = 8000;
@@ -1131,6 +1132,63 @@
     try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
   }
 
+  /* ----------------------------------------------------------- last run -- */
+  /* Step 35 observability: the dashboard shows the envelope of the most recent
+   * prompt (size, steps, errors, confidence, margin, time, bytes, files, undo
+   * depth). This is local UI state only; it never enters a network payload. */
+  let lastRun = readLastRun();
+
+  function readLastRun() {
+    try {
+      const raw = root.localStorage && root.localStorage.getItem(LASTRUN_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function recordRun(query, results, started) {
+    const list = Array.isArray(results) ? results : [];
+    if (!list.length) return null;
+    const text = list.map(function (r) { return r && r.text ? r.text : ""; })
+      .filter(Boolean).join("\n");
+    const routed = list.filter(function (r) {
+      return r && typeof r.confidence === "number" && isFinite(r.confidence);
+    });
+    const withMargin = list.filter(function (r) {
+      return r && typeof r.margin === "number" && isFinite(r.margin);
+    });
+    const last = list[list.length - 1] || {};
+    const p = activeProject();
+    const fileMap = (p && p.files) || files || {};
+    const built = list.some(function (r) { return /^build(?:\.|$)/.test(String(r && r.via || "")); });
+    const projectSize = p ? projectBytes(p)
+      : Object.keys(fileMap).reduce(function (n, k) { return n + bytesOf(fileMap[k]); }, 0);
+    const via = list.length === 1
+      ? String(last.via || "")
+      : "plan:" + list.length + ":" + String(last.via || "steps");
+    lastRun = {
+      at: Date.now(),
+      chars: String(query == null ? "" : query).length,
+      steps: list.length,
+      errors: list.filter(function (r) { return r && r.error; }).length,
+      via: via.slice(0, 160),
+      confidence: routed.length ? Math.min.apply(null, routed.map(function (r) { return r.confidence; })) : null,
+      margin: withMargin.length ? Math.min.apply(null, withMargin.map(function (r) { return r.margin; })) : null,
+      ms: Math.max(0, Math.round(now() - started)),
+      bytes: built ? projectSize : bytesOf(text),
+      files: Object.keys(fileMap).length,
+      undo: p && p.history ? p.history.length : 0,
+      ok: !list.some(function (r) { return r && r.error; }),
+    };
+    try {
+      root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(lastRun));
+    } catch (e) { /* storage full or disabled; keep the in-memory value */ }
+    return lastRun;
+  }
+
   /* ------------------------------------------------------------- context -- */
   /* Working memory is deliberately small and printable: the last result, the
    * last plan, the active spec, one summary + hash per file, and a rolling
@@ -2012,24 +2070,29 @@
     /* Multi-step prompt: the deterministic command library runs first, and any
      * step it does not know falls back to the core hashed router. */
     prompt: async function (query) {
+      const started = now();
       if (!api.ready) {
         return [{ step: String(query), text: "router model not loaded", error: true }];
       }
       const skills = root.toolrxSkills;
       if (!skills || !skills.count()) {
         const r = await api.run(query);
-        return [{
+        const results = [{
           step: String(query),
           text: r.blocked ? r.reason : r.output,
           error: !!r.blocked,
           via: "router." + r.tool,
           tool: r.tool,
           confidence: r.confidence,
+          margin: r.margin,
           ms: r.ms,
         }];
+        recordRun(String(query), results, started);
+        return results;
       }
       const results = await skills.runPrompt(String(query), promptContext());
       notePromptContext(String(query), results);
+      recordRun(String(query), results, started);
       // Keep a lightweight transcript for the chat side of the harness.
       chatAppend("you", String(query));
       const said = results.map(function (r) { return r.text; }).filter(Boolean).join("\n");
@@ -2081,6 +2144,8 @@
       writeChat();
       cancelPending = false;
       lastProgress = null;
+      lastRun = null;
+      try { root.localStorage.removeItem(LASTRUN_KEY); } catch (e) { /* ignore */ }
       try { root.localStorage.removeItem(MEMORY_KEY); } catch (e) { /* ignore */ }
       memory = {};
       const C = contextModule();
@@ -2104,6 +2169,9 @@
     },
     progress: function () {
       return lastProgress ? Object.assign({}, lastProgress) : null;
+    },
+    lastRun: function () {
+      return lastRun ? Object.assign({}, lastRun) : null;
     },
     cancelBuild: function () {
       cancelPending = true;

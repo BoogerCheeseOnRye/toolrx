@@ -3,7 +3,10 @@
 
 import json
 import os
+import shutil
 import sys
+import tempfile
+import time
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +21,13 @@ import tokhash  # noqa: E402
 MODEL = os.path.join(CORE, "micro_model.json")
 CATALOG = os.path.join(CORE, "catalog.json")
 TESTS = os.path.join(CORE, "tests.json")
+LONGFORM = os.path.join(HERE, "fixtures", "longform.json")
+
+# The step-34 model budget is 1.5x the model shipped before the knowledge
+# expansion. Pin the byte count so a future edit cannot silently grow it.
+BASELINE_MODEL_BYTES = 360695
+MODEL_SIZE_CAP = int(BASELINE_MODEL_BYTES * 1.5)
+REBUILD_CAP_SECONDS = 2.0
 
 
 class CatalogTest(unittest.TestCase):
@@ -77,6 +87,54 @@ class RouterTest(unittest.TestCase):
     def test_empty_query(self):
         d = router.route("", self.model)
         self.assertEqual(d.get("confidence"), 0)
+
+
+class Step34ModelTest(unittest.TestCase):
+    """Vocabulary expansion must stay fast, bounded, and non-degenerate."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.mkdtemp(prefix="toolrx-model-")
+        shutil.copy2(CATALOG, os.path.join(cls.tmp, "catalog.json"))
+        shutil.copytree(os.path.join(CORE, "knowledge"),
+                        os.path.join(cls.tmp, "knowledge"))
+        cls.catalog = os.path.join(cls.tmp, "catalog.json")
+        started = time.perf_counter()
+        cls.built = builder.build(cls.catalog)
+        cls.build_seconds = time.perf_counter() - started
+        cls.model = router.load(cls.built)
+        with open(LONGFORM, encoding="utf-8") as fh:
+            cls.longform = json.load(fh)["routing"]
+        cls.policy = security.SecurityPolicy.load()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_rebuild_stays_under_two_seconds(self):
+        self.assertLess(self.build_seconds, REBUILD_CAP_SECONDS,
+                        f"rebuild took {self.build_seconds:.2f}s")
+
+    def test_model_stays_within_the_size_budget(self):
+        size = os.path.getsize(self.built)
+        self.assertLessEqual(size, MODEL_SIZE_CAP,
+                             f"{size} bytes > {MODEL_SIZE_CAP} cap")
+
+    def test_long_prompts_route_accurately_with_healthy_margins(self):
+        misses, weak = [], []
+        for case in self.longform:
+            clean = self.policy.normalize(case["query"])
+            got = router.route(clean, self.model)
+            if got["tool"] != case["tool"]:
+                misses.append((case["tool"], got["tool"], case["query"][:60]))
+            # A near-zero margin means the two best centroids are tied; that
+            # is a degenerate route even when the winner happens to be right.
+            if got["margin"] < 0.02:
+                weak.append((case["tool"], round(got["margin"], 4)))
+        accuracy = 1.0 - len(misses) / len(self.longform)
+        self.assertGreaterEqual(accuracy, 0.95, misses)
+        self.assertEqual(misses, [])
+        self.assertEqual(weak, [])
 
 
 class SecurityTest(unittest.TestCase):

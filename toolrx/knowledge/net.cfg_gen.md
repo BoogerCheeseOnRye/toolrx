@@ -28,3 +28,21 @@ The spec is a simple safe DSL, one line per item:
 Generated output covers FRR zebra (interfaces + static routes), ospfd, bgpd,
 and an nftables firewall. Read-only, pure text. This tool does NOT apply,
 install, or reboot anything.
+
+Longer requests and phrasings:
+Generate a network configuration from this declarative specification.
+Turn this safe DSL description into a router configuration for me.
+Produce interface and routing config from the network spec below.
+Build a device configuration using the declarative network language.
+Emit FRR zebra ospfd bgpd and nftables text from the described interfaces.
+Create a ready to review config for a router, switch, or firewall.
+Print the generated configuration without writing or applying it.
+Compose a network config with routes, OSPF, BGP, and firewall rules.
+
+The request is for generated output: a configuration that is generated,
+produced, built, composed, or emitted as text from a declarative description.
+Phrases like generate a configuration, produce the config text, build the
+device configuration, emit FRR and nftables text, print the generated config,
+and turn the spec into configuration all mean this generator. Generation only:
+the result is new configuration text to inspect, not a report about existing
+text. Do not confuse it with a lint pass over input the user already wrote.
