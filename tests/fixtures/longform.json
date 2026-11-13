@@ -1,118 +1,198 @@
 {
+ "version": 2,
+ "families": {
+  "routing": {
+   "minChars": 500,
+   "minConfidence": 0.5,
+   "minMargin": 0.02
+  },
+  "plans": {
+   "minChars": 500,
+   "minConfidence": 0.35,
+   "minMargin": 0.02
+  },
+  "builds": {
+   "minChars": 500
+  },
+  "growth": {
+   "minChars": 500
+  },
+  "context": {
+   "minChars": 500
+  }
+ },
  "routing": [
   {
    "tool": "fs.list_dir",
-   "query": "I am looking at a folder on my machine and I want to know what is inside it. Please list every file and every sub folder in this directory for me. I do not need the text of any file, just the names of the entries. Show the listing with one entry per line and mark folders with a slash. If there are hidden files, include them in the directory listing so I can see the complete contents of the folder. This is a plain browse of the directory, not a request to read or print any document. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I am looking at a folder on my machine and I want to know what is inside it. Please list every file and every sub folder in this directory for me. I do not need the text of any file, just the names of the entries. Show the listing with one entry per line and mark folders with a slash. If there are hidden files, include them in the directory listing so I can see the complete contents of the folder. This is a plain browse of the directory, not a request to read or print any document. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "fs.read_file",
-   "query": "There is a single document in this folder and I need to see exactly what it contains. Please open the text file called notes dot txt and print its contents for me. Do not list the other files in the directory and do not dump the whole workspace. I only want the body of this one named file, verbatim, including its headings and blank lines. If the file is long, show the text from the start so I can read what was written inside that specific document. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "There is a single document in this folder and I need to see exactly what it contains. Please open the text file called notes dot txt and print its contents for me. Do not list the other files in the directory and do not dump the whole workspace. I only want the body of this one named file, verbatim, including its headings and blank lines. If the file is long, show the text from the start so I can read what was written inside that specific document. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "fs.cat_all",
-   "query": "I want a complete bulk read of this small project rather than one specific file. Please print the contents of every text file in the workspace, one after another, each with a header showing its path. Dump all the files at once so I can review the whole codebase in a single output. Skip binary files and show only readable text. The request is about all of the files together, not a folder listing and not a single document, so concatenate each file body into one combined result. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want a complete bulk read of this small project rather than one specific file. Please print the contents of every text file in the workspace, one after another, each with a header showing its path. Dump all the files at once so I can review the whole codebase in a single output. Skip binary files and show only readable text. The request is about all of the files together, not a folder listing and not a single document, so concatenate each file body into one combined result. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "math.sum",
-   "query": "I have a small handful of whole numbers and I need their arithmetic total. Please add together five and seven and nine and twelve and thirty. Work out the sum of these integers and tell me the combined amount. Do not count the numbers and do not multiply them. I just want the ordinary addition total, as if I were adding the amounts on a receipt. Return the final value only after combining every number in the list into one sum. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I have a small handful of whole numbers and I need their arithmetic total. Please add together five and seven and nine and twelve and thirty. Work out the sum of these integers and tell me the combined amount. Do not count the numbers and do not multiply them. I just want the ordinary addition total, as if I were adding the amounts on a receipt. Return the final value only after combining every number in the list into one sum. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "sys.mem_status",
-   "query": "My computer feels sluggish and I want to know whether it is running low on memory. Please report how much RAM is installed, how much is currently used, how much is free, and how much swap is active. Show the total physical memory and the available memory from the system information. I am not asking about disk space and I am not asking for a list of processes. I only need a clear memory usage summary so I can decide whether the machine needs more memory or a restart. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "My computer feels sluggish and I want to know whether it is running low on memory. Please report how much RAM is installed, how much is currently used, how much is free, and how much swap is active. Show the total physical memory and the available memory from the system information. I am not asking about disk space and I am not asking for a list of processes. I only need a clear memory usage summary so I can decide whether the machine needs more memory or a restart. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "sys.disk",
-   "query": "I am worried that the hard drive is getting full and I need a storage summary. Please show how much disk space is used and how much room is left on every mounted filesystem. Report the capacity of each volume and the free space in a readable unit. I am not asking about RAM and I am not asking for a list of files. I want the disk usage figures for the whole machine so I can see which mount is nearly out of space and how much storage remains available. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I am worried that the hard drive is getting full and I need a storage summary. Please show how much disk space is used and how much room is left on every mounted filesystem. Report the capacity of each volume and the free space in a readable unit. I am not asking about RAM and I am not asking for a list of files. I want the disk usage figures for the whole machine so I can see which mount is nearly out of space and how much storage remains available. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "sys.uptime",
-   "query": "I want to know how long this machine has been running without a reboot. Please show the system uptime in days and hours, together with the current load average. Tell me the time since the last boot and whether the host is under heavy load right now. I am not asking for the current date or the time of day and I do not need a process list. Just the uptime duration and the load figures for the machine, so I can tell whether it has been stable since it started. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want to know how long this machine has been running without a reboot. Please show the system uptime in days and hours, together with the current load average. Tell me the time since the last boot and whether the host is under heavy load right now. I am not asking for the current date or the time of day and I do not need a process list. Just the uptime duration and the load figures for the machine, so I can tell whether it has been stable since it started. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "sys.processes",
-   "query": "Something is using a lot of CPU and I want to see what is running on this machine. Please list the active processes with their process identifiers, command names, CPU usage, and memory usage. Display the process table sorted so the heaviest programs are easy to spot. I am not asking for a list of open ports and I am not asking about disk space. I need to see every running task and its resource usage so I can find the program that is loading the system. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "Something is using a lot of CPU and I want to see what is running on this machine. Please list the active processes with their process identifiers, command names, CPU usage, and memory usage. Display the process table sorted so the heaviest programs are easy to spot. I am not asking for a list of open ports and I am not asking about disk space. I need to see every running task and its resource usage so I can find the program that is loading the system. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "sys.netstat",
-   "query": "I need to know which network services are listening on this machine. Please show the TCP and UDP sockets that are open, the local addresses and ports they use, and which connections are currently established. Display the socket table and the listening endpoints so I can see whether a service is bound to the expected port. I am not asking for a ping test and I do not need interface addresses. I want the network connection and open port summary for this host. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I need to know which network services are listening on this machine. Please show the TCP and UDP sockets that are open, the local addresses and ports they use, and which connections are currently established. Display the socket table and the listening endpoints so I can see whether a service is bound to the expected port. I am not asking for a ping test and I do not need interface addresses. I want the network connection and open port summary for this host. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "sys.ifconfig",
-   "query": "I need to check the network adapters on this computer and the addresses they hold. Please show every interface name, its IP address, netmask, MAC address, and whether the link is up or down. Display the local NIC configuration so I can confirm which adapter has which address. I am not asking you to generate a router configuration file and I am not asking for a ping test. I only want the current interface and address state of this machine. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I need to check the network adapters on this computer and the addresses they hold. Please show every interface name, its IP address, netmask, MAC address, and whether the link is up or down. Display the local NIC configuration so I can confirm which adapter has which address. I am not asking you to generate a router configuration file and I am not asking for a ping test. I only want the current interface and address state of this machine. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.ping",
-   "query": "A server seems unreachable and I want a simple connectivity check. Please ping the allowlisted host at eight dot eight dot eight dot eight and report whether it answers. Show the round trip time and any packet loss so I can tell whether the network path is healthy. I am not asking for open ports or interface addresses and I do not need a configuration file. I just want to know whether that host is reachable over the network and how long the replies take. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "A server seems unreachable and I want a simple connectivity check. Please ping the allowlisted host at eight dot eight dot eight dot eight and report whether it answers. Show the round trip time and any packet loss so I can tell whether the network path is healthy. I am not asking for open ports or interface addresses and I do not need a configuration file. I just want to know whether that host is reachable over the network and how long the replies take. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "config.diff",
-   "query": "Before I change anything I want to compare two configuration files. Please diff the current settings file against the proposed version and show me the differences line by line. Use a unified view so I can see what was added, removed, or changed between the two paths. This is a dry run review and it must not write or modify either file. I am not asking to apply the proposed config, only to compare the pair and print the changed lines. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "Before I change anything I want to compare two configuration files. Please diff the current settings file against the proposed version and show me the differences line by line. Use a unified view so I can see what was added, removed, or changed between the two paths. This is a dry run review and it must not write or modify either file. I am not asking to apply the proposed config, only to compare the pair and print the changed lines. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "fs.inspect_dir",
-   "query": "I want two things in one step: a look inside a folder and the text of one file in it. Please inspect the project directory and also read the optional file inside that same folder. First list the directory contents, then open the named file within it and print what it contains. I do not want only a folder listing and I do not want only a single file read. Combine the directory browse with the contents of the chosen file inside that directory. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want two things in one step: a look inside a folder and the text of one file in it. Please inspect the project directory and also read the optional file inside that same folder. First list the directory contents, then open the named file within it and print what it contains. I do not want only a folder listing and I do not want only a single file read. Combine the directory browse with the contents of the chosen file inside that directory. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "module.start",
-   "query": "I want a live widget pinned in the chat that keeps refreshing a system value. Please start a memory monitor that updates every five seconds and runs for ten minutes. Create a pinned tracker for memory usage, or if I ask for disk or uptime, watch that value live instead. This should be a monitoring widget for one metric, not a tool that runs an arbitrary command on a schedule. Begin the live monitor and keep the reading fresh until the duration ends. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want a live widget pinned in the chat that keeps refreshing a system value. Please start a memory monitor that updates every five seconds and runs for ten minutes. Create a pinned tracker for memory usage, or if I ask for disk or uptime, watch that value live instead. This should be a monitoring widget for one metric, not a tool that runs an arbitrary command on a schedule. Begin the live monitor and keep the reading fresh until the duration ends. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "module.run",
-   "query": "I want a read only tool to execute again and again on a timer. Please run the disk usage check every ten seconds and keep the latest output pinned in the chat. Schedule the tool to repeat on that interval and stop after five minutes. This is a periodic run of another tool, not a fixed system value widget and not a one time command. Loop the check, refresh the result each time, and show the newest output until the duration expires. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want a read only tool to execute again and again on a timer. Please run the disk usage check every ten seconds and keep the latest output pinned in the chat. Schedule the tool to repeat on that interval and stop after five minutes. This is a periodic run of another tool, not a fixed system value widget and not a one time command. Loop the check, refresh the result each time, and show the newest output until the duration expires. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "module.stop",
-   "query": "One of the background monitors I started earlier is still running and I want it gone. Please stop the specific module with the id shown in the running monitor list. End that single periodic watcher and remove its pinned widget from the chat, but leave my other monitors alone. This is not a request to clear every module or reset the whole history. Cancel just this one named tracker so the others keep refreshing. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "One of the background monitors I started earlier is still running and I want it gone. Please stop the specific module with the id shown in the running monitor list. End that single periodic watcher and remove its pinned widget from the chat, but leave my other monitors alone. This is not a request to clear every module or reset the whole history. Cancel just this one named tracker so the others keep refreshing. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "module.clear",
-   "query": "I have finished with all of the background monitors and I want a clean list. Please clear every module, remove all pinned widgets, and wipe the stored records of completed monitors. Reset the whole module history and tidy the list so nothing old remains. This is broader than stopping one tracker: it should remove all modules at once, including finished ones, and forget their saved entries. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I have finished with all of the background monitors and I want a clean list. Please clear every module, remove all pinned widgets, and wipe the stored records of completed monitors. Reset the whole module history and tidy the list so nothing old remains. This is broader than stopping one tracker: it should remove all modules at once, including finished ones, and forget their saved entries. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "file.edit",
-   "query": "I need to put some text into a file on disk, but I want to review it first. Please write the following paragraph into a new file called notes dot txt. Prepare the change and show me a dry run diff before anything is written. Hold it for confirmation and keep a backup so the edit can be undone. The target is one sandbox file and the content is the text I supplied, not a directory listing or a read of an existing file. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I need to put some text into a file on disk, but I want to review it first. Please write the following paragraph into a new file called notes dot txt. Prepare the change and show me a dry run diff before anything is written. Hold it for confirmation and keep a backup so the edit can be undone. The target is one sandbox file and the content is the text I supplied, not a directory listing or a read of an existing file. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.cfg_gen",
-   "query": "I need a router configuration generated from a short declarative description. Please produce a network configuration with two interfaces, a static default route, OSPF, a BGP neighbor, and a simple firewall policy. Build the config text from the safe DSL and print it for review. This is generation only: do not lint the result and do not push or apply it to a lab. Emit the ready to review FRR and nftables configuration so I can inspect it before deployment. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I need a router configuration generated from a short declarative description. Please produce a network configuration with two interfaces, a static default route, OSPF, a BGP neighbor, and a simple firewall policy. Build the config text from the safe DSL and print it for review. This is generation only: do not lint the result and do not push or apply it to a lab. Emit the ready to review FRR and nftables configuration so I can inspect it before deployment. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.cfg_check",
-   "query": "Before I deploy a network config I want a careful review of the text. Please check these interface and routing statements for mistakes, validate the OSPF and BGP setup, and lint the firewall rules for shadowed entries. Report findings as OK, WARN, or ERR so I can see what needs fixing. This is analysis only: do not generate a new configuration and do not stage or apply a lab change. Audit the existing statements and return a plain correctness report. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "Before I deploy a network config I want a careful review of the text. Please check these interface and routing statements for mistakes, validate the OSPF and BGP setup, and lint the firewall rules for shadowed entries. Report findings as OK, WARN, or ERR so I can see what needs fixing. This is analysis only: do not generate a new configuration and do not stage or apply a lab change. Audit the existing statements and return a plain correctness report. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_state",
-   "query": "I want to inspect the current live state of the network lab. Please show the running interfaces, the routing table, the OSPF neighbors, and the BGP summary from the lab routers. Query the existing state and display what the routers currently report. This is a read only status check: do not build, create, stage, or apply anything. I just need the present topology state and the live routes so I can confirm that adjacencies and prefixes look correct. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want to inspect the current live state of the network lab. Please show the running interfaces, the routing table, the OSPF neighbors, and the BGP summary from the lab routers. Query the existing state and display what the routers currently report. This is a read only status check: do not build, create, stage, or apply anything. I just need the present topology state and the live routes so I can confirm that adjacencies and prefixes look correct. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_push",
-   "query": "I have a lab config ready and I want to see what it would change before applying. Please push this network specification to the lab as a dry run and show me the pending diff against the current router configuration. Stage the change and return a pending id for review, but do not write anything yet. This is the preview step, not the commit step. Build the config, compare it with the lab's current file, and hold the result for confirmation. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I have a lab config ready and I want to see what it would change before applying. Please push this network specification to the lab as a dry run and show me the pending diff against the current router configuration. Stage the change and return a pending id for review, but do not write anything yet. This is the preview step, not the commit step. Build the config, compare it with the lab's current file, and hold the result for confirmation. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_apply",
-   "query": "I reviewed the lab diff and now I want to commit the staged change. Please apply the pending configuration using the id that was returned by the push. Install the reviewed config on the lab router and reload the FRR daemons. Act on that exact pending id only and do not build a new configuration from scratch. This is the gated mutation after confirmation, so deploy the previously staged bytes and leave arbitrary input out of the operation. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I reviewed the lab diff and now I want to commit the staged change. Please apply the pending configuration using the id that was returned by the push. Install the reviewed config on the lab router and reload the FRR daemons. Act on that exact pending id only and do not build a new configuration from scratch. This is the gated mutation after confirmation, so deploy the previously staged bytes and leave arbitrary input out of the operation. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_topo",
-   "query": "I have a multi node topology description and I want to prepare it for approval. Please parse this safe DSL with three routers, their interfaces, OSPF settings, and the links between them. Validate the nodes and links and stage the design by returning a pending topology id. This is the dry run: do not create namespaces, do not make veth pairs, and do not start any routers yet. Just validate the mesh and prepare it for the later build step. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I have a multi node topology description and I want to prepare it for approval. Please parse this safe DSL with three routers, their interfaces, OSPF settings, and the links between them. Validate the nodes and links and stage the design by returning a pending topology id. This is the dry run: do not create namespaces, do not make veth pairs, and do not start any routers yet. Just validate the mesh and prepare it for the later build step. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_topo_apply",
-   "query": "The topology design is validated and I am ready to build the real lab. Please take the pending topology id and actually create the network namespaces, the veth links, and one FRR router per node. Bring up the interfaces and start the router instances now. This is the gated build action after approval, not another validation or staging pass. Instantiate the confirmed multi node design and connect the routers so the lab is running. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "The topology design is validated and I am ready to build the real lab. Please take the pending topology id and actually create the network namespaces, the veth links, and one FRR router per node. Bring up the interfaces and start the router instances now. This is the gated build action after approval, not another validation or staging pass. Instantiate the confirmed multi node design and connect the routers so the lab is running. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_link",
-   "query": "I want to test failover by changing exactly one connection in the lab. Please set the link between r1 and r2 to down and report the result. Operate on that single link identifier, with an up or down state, so I can watch OSPF converge around the failure and then restore it. Do not tear down the whole lab and do not change any other link. Toggle just this one connection between the two router interfaces. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "I want to test failover by changing exactly one connection in the lab. Please set the link between r1 and r2 to down and report the result. Operate on that single link identifier, with an up or down state, so I can watch OSPF converge around the failure and then restore it. Do not tear down the whole lab and do not change any other link. Toggle just this one connection between the two router interfaces. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
   },
   {
    "tool": "net.lab_down",
-   "query": "The test is finished and I want to remove the whole lab environment. Please tear down the entire multi node topology: stop every router instance, delete all network namespaces, remove every veth link, and clean up the per node config directories. This is the full cleanup, not a single link change and not a single router stop. Destroy all of the lab nodes and leave the host clean so nothing keeps running in the background. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation."
+   "query": "The test is finished and I want to remove the whole lab environment. Please tear down the entire multi node topology: stop every router instance, delete all network namespaces, remove every veth link, and clean up the per node config directories. This is the full cleanup, not a single link change and not a single router stop. Destroy all of the lab nodes and leave the host clean so nothing keeps running in the background. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation.",
+   "family": "routing"
+  },
+  {
+   "tool": "fs.list_dir",
+   "family": "routing-long",
+   "query": "I am looking at a folder on my machine and I want to know what is inside it. Please list every file and every sub folder in this directory for me. I do not need the text of any file, just the names of the entries. Show the listing with one entry per line and mark folders with a slash. If there are hidden files, include them in the directory listing so I can see the complete contents of the folder. This is a plain browse of the directory, not a request to read or print any document. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation. I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line.  I am only interested in the names of the entries in this folder, not the text inside any file. Please show me the listing with one entry per line. "
+  },
+  {
+   "tool": "sys.uptime",
+   "family": "routing-long",
+   "query": "I want to know how long this machine has been running without a reboot. Please show the system uptime in days and hours, together with the current load average. Tell me the time since the last boot and whether the host is under heavy load right now. I am not asking for the current date or the time of day and I do not need a process list. Just the uptime duration and the load figures for the machine, so I can tell whether it has been stable since it started. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation. Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage.  Please show how long this machine has been running since the last reboot. I want the system uptime and load average, not the memory usage and not the disk usage. "
+  },
+  {
+   "tool": "sys.mem_status",
+   "family": "routing-long",
+   "query": "My computer feels sluggish and I want to know whether it is running low on memory. Please report how much RAM is installed, how much is currently used, how much is free, and how much swap is active. Show the total physical memory and the available memory from the system information. I am not asking about disk space and I am not asking for a list of processes. I only need a clear memory usage summary so I can decide whether the machine needs more memory or a restart. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation. Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime.  Please report the memory usage, the free memory, and the available memory on this machine. I need the memory status, not the disk usage and not the uptime. "
+  },
+  {
+   "tool": "sys.disk",
+   "family": "routing-long",
+   "query": "I am worried that the hard drive is getting full and I need a storage summary. Please show how much disk space is used and how much room is left on every mounted filesystem. Report the capacity of each volume and the free space in a readable unit. I am not asking about RAM and I am not asking for a list of files. I want the disk usage figures for the whole machine so I can see which mount is nearly out of space and how much storage remains available. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation. Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes.  Please show the disk usage and the free space for each file system. I want the storage summary, not the memory usage and not the running processes. "
+  },
+  {
+   "tool": "sys.processes",
+   "family": "routing-long",
+   "query": "Something is using a lot of CPU and I want to see what is running on this machine. Please list the active processes with their process identifiers, command names, CPU usage, and memory usage. Display the process table sorted so the heaviest programs are easy to spot. I am not asking for a list of open ports and I am not asking about disk space. I need to see every running task and its resource usage so I can find the program that is loading the system. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation. Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces.  Please show the running processes with their process ids and command names. I want to see what is running and using the cpu, not the memory status and not the network interfaces. "
+  },
+  {
+   "tool": "net.ping",
+   "family": "routing-long",
+   "query": "A server seems unreachable and I want a simple connectivity check. Please ping the allowlisted host at eight dot eight dot eight dot eight and report whether it answers. Show the round trip time and any packet loss so I can tell whether the network path is healthy. I am not asking for open ports or interface addresses and I do not need a configuration file. I just want to know whether that host is reachable over the network and how long the replies take. Please handle this with the local deterministic tool and return a clear plain text answer that I can read in the chat without any extra explanation. Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change.  Please ping the allowed host and report whether it is reachable and the round trip latency. I want a simple connectivity check, not a port scan and not a configuration change. "
   }
  ],
  "plans": [
   {
    "name": "numbered-ops",
-   "query": "1. list the files\n2. show the uptime\n3. how much memory is free\n4. check disk usage\n5. list the running processes\n6. show the network interfaces\n7. show the listening sockets",
+   "family": "plan-numbered",
+   "query": "1. please list the files in the current directory and show the entries one per line\n2. please show the system uptime and load average for this machine\n3. please report the memory usage and free ram on this machine\n4. please check the disk usage on every file system\n5. please show the running processes with their process names\n6. please show the network interfaces and their addresses\n7. please show the listening network connections and ports\n8. please compare the current config and the proposed config",
    "tools": [
     "fs.list_dir",
     "sys.uptime",
@@ -120,50 +200,369 @@
     "sys.disk",
     "sys.processes",
     "sys.ifconfig",
-    "sys.netstat"
-   ]
+    "sys.netstat",
+    "config.diff"
+   ],
+   "minConfidence": 0.35,
+   "minMargin": 0.02
   },
   {
    "name": "then-chain",
-   "query": "please list the files in this directory and then show how long the machine has been running and then report how much memory is free and then check the disk usage and then show the running processes and then display the network interfaces",
+   "family": "plan-connector",
+   "query": "please list the files in the current directory and show the entries one per line then please show the system uptime and load average for this machine then please report the memory usage and free ram on this machine then please check the disk usage on every file system then please show the running processes with their process names then please show the network interfaces and their addresses then please show the listening network connections and ports then please compare the current config and the proposed config",
    "tools": [
     "fs.list_dir",
     "sys.uptime",
     "sys.mem_status",
     "sys.disk",
     "sys.processes",
-    "sys.ifconfig"
-   ]
+    "sys.ifconfig",
+    "sys.netstat",
+    "config.diff"
+   ],
+   "minConfidence": 0.35,
+   "minMargin": 0.02
+  },
+  {
+   "name": "after-that",
+   "family": "plan-connector",
+   "query": "please list the files in the current directory and show the entries one per line after that please show the system uptime and load average for this machine after that please report the memory usage and free ram on this machine after that please check the disk usage on every file system after that please show the running processes with their process names after that please show the network interfaces and their addresses after that please show the listening network connections and ports after that please compare the current config and the proposed config",
+   "tools": [
+    "fs.list_dir",
+    "sys.uptime",
+    "sys.mem_status",
+    "sys.disk",
+    "sys.processes",
+    "sys.ifconfig",
+    "sys.netstat",
+    "config.diff"
+   ],
+   "minConfidence": 0.35,
+   "minMargin": 0.02
   },
   {
    "name": "long-sentences",
-   "query": "please list the files in the current directory and show me the entries one per line. show the system uptime and the current load average for this machine. report the memory usage and the available memory in the system. check the disk usage and the free space on every file system.",
+   "family": "plan-sentences",
+   "query": "please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line. please show the system uptime and load average for this machine and please show the system uptime and load average for this machine. please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine. please check the disk usage on every file system and please check the disk usage on every file system.",
    "tools": [
     "fs.list_dir",
     "sys.uptime",
     "sys.mem_status",
     "sys.disk"
-   ]
+   ],
+   "minConfidence": 0.35,
+   "minMargin": 0.02
   },
   {
-   "name": "dash-steps",
-   "query": "list the files\nshow the uptime\nhow much memory is free\ncheck disk usage\nshow the running processes\nshow the network interfaces",
+   "name": "long-numbered-eight",
+   "family": "plan-long",
+   "query": "1. please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line and please list the files in the current directory and show the entries one per line.\n2. please show the system uptime and load average for this machine and please show the system uptime and load average for this machine and please show the system uptime and load average for this machine and please show the system uptime and load average for this machine and please show the system uptime and load average for this machine and please show the system uptime and load average for this machine and please show the system uptime and load average for this machine and please show the system uptime and load average for this machine.\n3. please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine and please report the memory usage and free ram on this machine.\n4. please check the disk usage on every file system and please check the disk usage on every file system and please check the disk usage on every file system and please check the disk usage on every file system and please check the disk usage on every file system and please check the disk usage on every file system and please check the disk usage on every file system and please check the disk usage on every file system.\n5. please show the running processes with their process names and please show the running processes with their process names and please show the running processes with their process names and please show the running processes with their process names and please show the running processes with their process names and please show the running processes with their process names and please show the running processes with their process names and please show the running processes with their process names.\n6. please show the network interfaces and their addresses and please show the network interfaces and their addresses and please show the network interfaces and their addresses and please show the network interfaces and their addresses and please show the network interfaces and their addresses and please show the network interfaces and their addresses and please show the network interfaces and their addresses and please show the network interfaces and their addresses.\n7. please show the listening network connections and ports and please show the listening network connections and ports and please show the listening network connections and ports and please show the listening network connections and ports and please show the listening network connections and ports and please show the listening network connections and ports and please show the listening network connections and ports and please show the listening network connections and ports.\n8. please compare the current config and the proposed config and please compare the current config and the proposed config and please compare the current config and the proposed config and please compare the current config and the proposed config and please compare the current config and the proposed config and please compare the current config and the proposed config and please compare the current config and the proposed config and please compare the current config and the proposed config.",
    "tools": [
     "fs.list_dir",
     "sys.uptime",
     "sys.mem_status",
     "sys.disk",
     "sys.processes",
-    "sys.ifconfig"
-   ]
+    "sys.ifconfig",
+    "sys.netstat",
+    "config.diff"
+   ],
+   "minConfidence": 0.35,
+   "minMargin": 0.02
   },
   {
    "name": "overlong-single-route",
+   "family": "plan-chunked",
    "query": "list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files list the files",
    "tools": [
     "fs.list_dir"
    ],
-   "chunked": true
+   "chunked": true,
+   "minConfidence": 0.35,
+   "minMargin": 0.02
+  }
+ ],
+ "builds": [
+  {
+   "name": "rpg",
+   "family": "build",
+   "query": "build a huge space rpg game with crafting and 6 quests and 3 levels and 12 enemies and 8 npcs and 4 items and a nebula sub-theme and a 96x96 world and a day night cycle and sound and a boss and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "rpg",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine2d.js",
+    "index.html",
+    "rpg2.js",
+    "styles.css",
+    "worldgen.js"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "platformer",
+   "family": "build",
+   "query": "build a large pixel art platformer game with double jump and 3 levels and enemies and sound and a day night cycle and a wide camera and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "platformer",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine2d.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "shooter",
+   "family": "build",
+   "query": "build a top-down shooter game with pixel art and 3 levels and waves and a boss and sound and a neon city theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "shooter",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine2d.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "explore",
+   "family": "build",
+   "query": "build an exploration game with a large low-poly world and a day night cycle and sound and a distant mountain theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "explore",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine3d.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "roguelike",
+   "family": "build",
+   "query": "build a roguelike game with 5 levels and quests and an inventory and enemies and sound and a dark dungeon theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "roguelike",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine2d.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "farming-sim",
+   "family": "build",
+   "query": "build a farming sim game with weather and 4 items and 3 levels and sound and an underwater theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "farmingsim",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine2d.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "tower-defense",
+   "family": "build",
+   "query": "build a tower defense game with 3 levels and waves and a boss and sound and a pirate theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "towerdefense",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "engine2d.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  },
+  {
+   "name": "tetris",
+   "family": "build",
+   "query": "build a tetris game with pixel art and sound and a dark theme and a small board and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "kind": "tetris",
+   "files": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "app.js",
+    "content.js",
+    "index.html",
+    "styles.css"
+   ],
+   "minBytes": 10000,
+   "deterministic": true
+  }
+ ],
+ "growth": [
+  {
+   "name": "grow-project",
+   "family": "growth-modules",
+   "base": "build a large pixel art platformer game with double jump and 3 levels and enemies and sound and a day night cycle and a wide camera and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "baseKind": "platformer",
+   "steps": [
+    {
+     "query": "grow project",
+     "via": "project.grow",
+     "adds": [
+      "content/seed.js",
+      "core/state.js",
+      "data/seed.js",
+      "ui/render.js"
+     ],
+     "undo": true
+    }
+   ]
+  },
+  {
+   "name": "expand-content",
+   "family": "growth-module",
+   "base": "build a huge space rpg game with crafting and 6 quests and 3 levels and 12 enemies and 8 npcs and 4 items and a nebula sub-theme and a 96x96 world and a day night cycle and sound and a boss and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "baseKind": "rpg",
+   "steps": [
+    {
+     "query": "expand module content",
+     "via": "module.expand",
+     "adds": [
+      "content/seed.js"
+     ],
+     "undo": true
+    }
+   ]
+  },
+  {
+   "name": "add-two-systems",
+   "family": "growth-systems",
+   "base": "build a roguelike game with 5 levels and quests and an inventory and enemies and sound and a dark dungeon theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "baseKind": "roguelike",
+   "steps": [
+    {
+     "query": "add inventory system",
+     "via": "system.add",
+     "adds": [
+      "systems/inventory.js"
+     ],
+     "undo": true
+    },
+    {
+     "query": "add combat system",
+     "via": "system.add",
+     "adds": [
+      "systems/combat.js"
+     ],
+     "undo": true
+    }
+   ]
+  },
+  {
+   "name": "two-patch-bundle",
+   "family": "growth-patches",
+   "base": "build a top-down shooter game with pixel art and 3 levels and waves and a boss and sound and a neon city theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "baseKind": "shooter",
+   "steps": [
+    {
+     "query": "add sound",
+     "via": "edit.apply",
+     "adds": [],
+     "bytesGrow": true,
+     "undo": true
+    },
+    {
+     "query": "add three enemy types and a boss and a quest",
+     "via": "edit.apply.many",
+     "adds": [],
+     "bytesGrow": true,
+     "undo": true
+    }
+   ]
+  }
+ ],
+ "context": [
+  {
+   "name": "continue-after-failure",
+   "family": "context-failure",
+   "base": "build a top-down shooter game with pixel art and 3 levels and waves and a boss and sound and a neon city theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "plan": "add sound then read missing.txt then add a boss",
+   "statusAfterPlan": [
+    "done",
+    "error",
+    "pending"
+   ],
+   "continue": "continue from previous",
+   "continuedSteps": [
+    "add a boss"
+   ],
+   "statusAfterContinue": [
+    "done",
+    "error",
+    "done"
+   ],
+   "failedStepIndex": 1
+  },
+  {
+   "name": "expand-then-continue",
+   "family": "context-expand",
+   "base": "build a large pixel art platformer game with double jump and 3 levels and enemies and sound and a day night cycle and a wide camera and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "plan": "list the files then show the uptime",
+   "statusAfterPlan": [
+    "done",
+    "done"
+   ],
+   "expand": "expand the last plan with add day/night",
+   "expandedStep": "add day/night",
+   "continue": "continue from previous",
+   "continuedSteps": [
+    "add day/night"
+   ],
+   "statusAfterContinue": [
+    "done",
+    "done",
+    "done"
+   ]
+  },
+  {
+   "name": "project-isolation",
+   "family": "context-isolation",
+   "base": "build a large pixel art platformer game with double jump and 3 levels and enemies and sound and a day night cycle and a wide camera and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",
+   "edit": "add sound",
+   "otherProject": "new project alpha",
+   "returnCommand": "open project platformer",
+   "otherEntries": [
+    "result",
+    "session"
+   ],
+   "returnEntries": [
+    "file",
+    "edit",
+    "spec"
+   ]
   }
  ],
  "refusals": [

@@ -195,6 +195,18 @@ bytes, steps, characters, and time, and the dashboard `last run` chip shows the
 remaining room while its tooltip shows used/max for each cap. Python plans
 report the same envelope and stop on the same conditions.
 
+Step 37 makes the fixture file the source of truth for the long-form envelope.
+`tests/fixtures/longform.json` now holds 58 cases across routing, plans, builds,
+growth, context, and refusals, and declares each family's minimum length and
+routing floors. Thirty-three routing prompts include six over 4,000 characters;
+six plans include one over 4,000 and one 2,999-character single-route plan that
+is chunked in order; eight build specs each stay one step and reproduce the same
+file map twice; four growth cases add real module and system files, and two-step
+bundles; three context cases prove continuation after a failed middle step,
+pending-step expansion, and per-project isolation. Every build, growth, and
+context case runs in the real in-tab sandbox in Node, and the Python harness
+reads the same file for routing, plans, refusals, and the fixture contract.
+
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
 `add a footer note saying …` rewrite the real `index.html` / `app.js` files.

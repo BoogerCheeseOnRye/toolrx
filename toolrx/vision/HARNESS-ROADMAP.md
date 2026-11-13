@@ -685,7 +685,7 @@ room and its title shows used/max per cap. `tests/test_budgets.py` drives a slow
 step, a too-small plan budget, a full 40-step preview, and a built project's
 headroom.
 
-### 37. Long-form test suite v1
+### 37. Long-form test suite v1 — done
 
 Expand the step-35 fixtures into the source of truth for long input and output:
 48–80 prompts between 500 and 8,000 characters, grouped into single-route
@@ -701,6 +701,24 @@ characters, every fixture asserts plan structure and outcome, routing floors are
 non-degenerate, refusal fixtures fail before execution, context fixtures prove
 isolation and continuation, and the suite runs offline in
 `python3 -m unittest discover -s tests`.
+
+Landed with `version: 2` in `tests/fixtures/longform.json`: 58 cases — 33
+routing (six over 4,000 characters), six plans (one 4,111-character numbered
+eight-step plan and one 2,999-character single-route plan chunked into two
+steps), eight builds, four growth scenarios, three context scenarios, and four
+refusals. Each family declares `minChars`, and routing/plans carry confidence
+and margin floors (0.50/0.02 and 0.35/0.02). The six long routing prompts route
+correctly at 0.54–0.66 confidence; plan steps stay at or above 0.383 confidence
+and 0.081 margin. Builds are single-sentence, 561–671 characters, and produce
+byte-identical file maps twice. Growth covers `grow project` (four module
+files), `expand module content`, two sequential `system.add` installs, and a
+two-patch bundle; every case undoes byte-exactly. Context proves a failed middle
+step stays `error` while `continue from previous` runs only the pending suffix,
+`expand the last plan with …` appends a pending step, and a second project never
+sees the first project's files or edits. `tests/test_envelope.py` checks the
+contract, routing, plans, and refusals; `tests/test_envelope_js.py` executes
+builds, growth, and context in the real in-tab sandbox and keeps the step-35
+complex build and five-patch undo regressions.
 
 ### 38. Unified limit source of truth
 
@@ -839,7 +857,7 @@ GitHub Pages smoke of the same path passes with no severe console errors.
 5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
    capture) → 34 (vocab/centroids) → 35 (gate) — done
-6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) →
+6. 36 (budgets) → 37 (suite) — done; 38 (limit source) → 39 (continuation) →
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — planned
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
@@ -866,8 +884,8 @@ justifies it; step 45 is last.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13 and 15–35 are complete. 14 remains deferred. Steps 36–45 are
-  planned; none is started.
+- Steps 11–13, 15–37 are complete. 14 remains deferred. Steps 38–45 are
+  planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
   the step-37 suite proves the margin.
