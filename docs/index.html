@@ -1306,8 +1306,17 @@ function refreshLastRun(){
   bits.push((r.bytes||0).toLocaleString()+' B');
   bits.push((r.files||0)+(r.files===1?' file':' files'));
   if(r.undo) bits.push('undo '+r.undo);
+  const b=r.budget||null;
+  if(b&&b.files) bits.push('room '+b.files.remaining+'f');
+  if(b&&b.bytes) bits.push('+'+Math.max(0,Math.round(b.bytes.remaining/1024))+' KB');
+  if(b&&b.ms) bits.push((Math.max(0,b.ms.remaining)/1000).toFixed(1)+' s');
   el.textContent='last run · '+bits.join(' · ');
-  el.title='via '+(r.via||'n/a')+' · '+(r.ok===false?'with errors':'ok');
+  let title='via '+(r.via||'n/a')+' · '+(r.ok===false?'with errors':'ok');
+  if(b&&b.files) title+=' · files '+b.files.used+'/'+b.files.max;
+  if(b&&b.bytes) title+=' · bytes '+b.bytes.used+'/'+b.bytes.max;
+  if(b&&b.ms) title+=' · time '+b.ms.used+'/'+b.ms.max+' ms (step '+b.ms.stepMs+' ms)';
+  if(b&&b.over&&b.over.length) title+=' · over budget: '+b.over.join(', ');
+  el.title=title;
   el.classList.add('on');
 }
 function refreshProjectChip(){

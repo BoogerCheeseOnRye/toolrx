@@ -168,7 +168,7 @@ or truncation, refuses blocks over 8,000 bytes, and still rejects traversal,
 absolute paths, NUL bytes, and injection patterns. Fenced and triple-quoted
 arguments survive byte-exact, and `extract headings`, `outline`, `first N
 lines`, and `table from …` turn a file or the previous step into deterministic
-output. The remaining batch targets vocabulary scaling and the long-form suite.
+output. The next batch hardens those envelope numbers.
 
 Step 34 expands all 27 knowledge documents with longer phrasings and targeted
 disambiguation, without adding a second centroid layer: 109/109 measured routes
@@ -182,6 +182,18 @@ bytes, files, undo depth) in `localStorage`, and the dashboard shows it in the
 `last run` chip above the preview; `toolrxWeb.lastRun()` exposes it and a reset
 clears it. `python3 -m unittest discover -s tests` runs the Python and Node
 harnesses together.
+
+Step 36 puts a clock on every plan. Each step has a 4,000 ms wall-clock cap
+(`toolrx.step.timeout`, 250–30,000 ms) and the whole plan has a 160,000 ms cap
+(`toolrx.plan.timeout`, 250–600,000 ms), alongside the existing file, project,
+and build budgets. The plan preview reports the active chars, steps, per-step
+time, plan time, worst-case time, and whether the request fits; a plan whose
+worst case exceeds the wall budget is refused before any step runs with the
+limiting cap named. A step that overruns reports `budget.timeout` and stops the
+plan without writing. The final run report now carries headroom for files,
+bytes, steps, characters, and time, and the dashboard `last run` chip shows the
+remaining room while its tooltip shows used/max for each cap. Python plans
+report the same envelope and stop on the same conditions.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and

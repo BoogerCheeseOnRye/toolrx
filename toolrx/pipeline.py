@@ -10,6 +10,7 @@ Returns a dict with keys: blocked, reason, decision, result.
 
 import json
 import os
+import time
 
 import router
 import executor
@@ -64,45 +65,94 @@ def _result_text(out):
     return str(value)
 
 
+def _ms_since(started):
+    return max(0, round((time.monotonic() - started) * 1000))
+
+
+def _plan_report(clean, pol, outputs, started):
+    elapsed = _ms_since(started)
+    step_cap = getattr(pol, "max_step_ms", 4000)
+    plan_cap = getattr(pol, "max_plan_ms", 160000)
+    errors = sum(1 for o in outputs
+                 if o.get("blocked") or not (o.get("result") or {}).get("ok"))
+    return {
+        "chars": len(clean),
+        "steps": len(outputs),
+        "errors": errors,
+        "ms": elapsed,
+        "ok": errors == 0 and elapsed <= plan_cap,
+        "budget": {
+            "stepMs": step_cap,
+            "planMs": plan_cap,
+            "remainingMs": max(0, plan_cap - elapsed),
+        },
+    }
+
+
+def _plan_return(blocked, reason, outputs, lines, report):
+    return {
+        "blocked": blocked,
+        "reason": reason,
+        "decision": {"tool": "plan", "confidence": 1.0, "margin": 1.0,
+                     "steps": [o["query"] for o in outputs]},
+        "result": {"ok": not blocked, "tool": "plan",
+                   "result": "\n".join(lines), "steps": outputs},
+        "report": report,
+    }
+
+
 def process_plan(clean, pol, info):
     """Execute an ordered plan. Stop at the first blocked or failed step."""
     m = model()
     steps = info["steps"]
     outputs = []
     lines = []
+    started = time.monotonic()
+    step_cap = getattr(pol, "max_step_ms", 4000)
+    plan_cap = getattr(pol, "max_plan_ms", 160000)
     for i, step in enumerate(steps):
+        if _ms_since(started) >= plan_cap:
+            reason = (f"plan wall budget {plan_cap} ms exhausted before step "
+                      f"{i + 1}")
+            outputs.append({
+                "query": step, "blocked": True, "reason": reason,
+                "decision": {}, "result": {"ok": False, "reason": reason},
+                "ms": _ms_since(started),
+            })
+            lines.append(f"{i + 1}. {reason}")
+            return _plan_return(True, f"step {i + 1}: {reason}", outputs, lines,
+                                _plan_report(clean, pol, outputs, started))
+        step_started = time.monotonic()
         ok, step_clean, reason = pol.sanitize(step)
         if not ok:
             out = {"blocked": True, "reason": reason, "decision": {},
                    "result": {"ok": False, "reason": reason}}
         else:
             out = _run_step(step_clean, pol, m)
+        step_ms = _ms_since(step_started)
         outputs.append({
             "query": step,
             "blocked": out.get("blocked"),
             "reason": out.get("reason"),
             "decision": out.get("decision") or {},
             "result": out.get("result") or {},
+            "ms": step_ms,
         })
         lines.append(f"{i + 1}. {_result_text(out)}")
+        if step_ms > step_cap:
+            reason = f"step timed out after {step_ms} ms (step budget {step_cap} ms)"
+            outputs[-1]["blocked"] = True
+            outputs[-1]["reason"] = reason
+            outputs[-1]["result"] = {"ok": False, "reason": reason}
+            lines[-1] = f"{i + 1}. {reason}"
+            return _plan_return(True, f"step {i + 1}: {reason}", outputs, lines,
+                                _plan_report(clean, pol, outputs, started))
         if out.get("blocked") or not (out.get("result") or {}).get("ok"):
             reason = out.get("reason") or _result_text(out)
-            return {
-                "blocked": True,
-                "reason": f"step {i + 1}: {reason}",
-                "decision": {"tool": "plan", "confidence": 1.0, "margin": 1.0,
-                             "steps": [o["query"] for o in outputs]},
-                "result": {"ok": False, "tool": "plan", "result": "\n".join(lines),
-                           "steps": outputs},
-            }
-    return {
-        "blocked": False,
-        "reason": None,
-        "decision": {"tool": "plan", "confidence": 1.0, "margin": 1.0,
-                     "steps": [o["query"] for o in outputs]},
-        "result": {"ok": True, "tool": "plan", "result": "\n".join(lines),
-                   "steps": outputs},
-    }
+            return _plan_return(True, f"step {i + 1}: {reason}", outputs, lines,
+                                _plan_report(clean, pol, outputs, started))
+    return _plan_return(False, None, outputs, lines,
+                        _plan_report(clean, pol, outputs, started))
 
 
 def process(query):

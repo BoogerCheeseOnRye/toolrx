@@ -116,6 +116,8 @@ class SecurityLimitsTest(unittest.TestCase):
         self.assertEqual(self.pol.max_len, 2000)
         self.assertEqual(self.pol.max_plan_len, 8000)
         self.assertEqual(self.pol.max_plan_steps, 40)
+        self.assertEqual(self.pol.max_step_ms, 4000)
+        self.assertEqual(self.pol.max_plan_ms, 160000)
 
     def test_single_route_rejects_over_cap_and_suggests_steps(self):
         ok, _, reason = self.pol.sanitize(" ".join([FILES] * 300))

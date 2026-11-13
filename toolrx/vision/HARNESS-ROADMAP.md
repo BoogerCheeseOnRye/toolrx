@@ -652,7 +652,7 @@ defaults; every one is configurable within a stated range and printed by `help`,
 | Long-form suite | 48–80 prompts of 500–8,000 chars |
 | Workspace bundle | versioned JSON, round-trips byte-exactly, size-capped |
 
-### 36. Hard output budgets and progressive delivery
+### 36. Hard output budgets and progressive delivery — done
 
 Enforce a per-step wall-clock cap and a plan-level wall budget in addition to the
 existing per-file, per-project, and per-build caps. Every step (route, build,
@@ -669,6 +669,21 @@ time with the limiting cap named, a step that exceeds its cap is reported as
 progress events and is byte-identical to the unobserved build, the final report
 shows headroom for files, bytes, and time, and the dashboard renders the same
 numbers.
+
+Landed with a 4,000 ms per-step cap (`toolrx.step.timeout`, 250–30,000 ms) and
+a 160,000 ms plan cap (`toolrx.plan.timeout`, 250–600,000 ms). The default plan
+cap equals 40 steps × 4,000 ms, so every valid plan fits its worst case; a lower
+configured cap refuses at preview time with the cap named. `planPreview` and
+`toolrxWeb.planPreview()` report chars, steps, per-step time, plan time,
+worst-case time, project file/byte headroom, and `fits`. A step that overruns is
+reported as `budget.timeout` and stops the plan; the Python runner reports the
+same `report.budget` shape, including remaining milliseconds, and stops before a
+step when the plan wall budget is exhausted. `recordRun` now writes
+`budget.files/bytes/ms/steps/chars` with used, max, and remaining values plus a
+`within` flag and `over` list. The dashboard `last run` chip shows remaining
+room and its title shows used/max per cap. `tests/test_budgets.py` drives a slow
+step, a too-small plan budget, a full 40-step preview, and a built project's
+headroom.
 
 ### 37. Long-form test suite v1
 

@@ -56,6 +56,8 @@ class SecurityPolicy:
         self.max_len = int(policy.get("max_len", 2000))
         self.max_plan_len = max(self.max_len, int(policy.get("max_plan_len", 8000)))
         self.max_plan_steps = int(policy.get("max_plan_steps", 40))
+        self.max_step_ms = int(policy.get("max_step_ms", 4000))
+        self.max_plan_ms = int(policy.get("max_plan_ms", 160000))
         # Sandbox root: env override wins; otherwise a relative/empty config
         # value means "the directory this package lives in". This keeps the
         # shipped policy.json free of machine-specific absolute paths.
@@ -212,6 +214,8 @@ _DEFAULT_POLICY = {
     "max_len": 2000,
     "max_plan_len": 8000,
     "max_plan_steps": 40,
+    "max_step_ms": 4000,
+    "max_plan_ms": 160000,
     "sandbox_root": "",
     "allowed_extensions": [".txt", ".md", ".json", ".yaml", ".yml", ".log", ".csv", ".toml", ".ini", ".cfg", ".html", ".htm", ".py", ".pyc", ".c", ".h", ".sh", ".bash", ".js", ".jsx", ".ts", ".tsx", ".css", ".scss", ".java", ".go", ".rs", ".rb", ".php", ".env", ".sql", ".conf", ".example", ".bak", ".orig", ".out"],
     "denied_path_substrings": [

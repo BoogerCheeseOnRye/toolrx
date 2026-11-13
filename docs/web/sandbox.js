@@ -24,6 +24,8 @@
   const MAX_PROJECT = 524288;        // 512 KB per project
   const MAX_PROJECT_FILES = 32;
   const BUILD_TIMEOUT = 4000;        // ms, configurable
+  const STEP_TIMEOUT = 4000;         // ms per plan step, configurable
+  const PLAN_TIMEOUT = 160000;       // ms for a whole plan, configurable
   const PROGRESS_MS = 250;
   const PROGRESS_BYTES = 32768;
 
@@ -115,14 +117,37 @@
     return Math.max(16384, Math.min(2097152, n));
   }
 
-  function buildTimeout() {
-    let n = BUILD_TIMEOUT;
+  function configMs(key, fallback, min, max) {
+    let n = fallback;
     try {
-      const raw = root.localStorage && root.localStorage.getItem("toolrx.build.timeout");
+      const raw = root.localStorage && root.localStorage.getItem(key);
       const parsed = parseInt(raw, 10);
       if (!isNaN(parsed)) n = parsed;
     } catch (e) { /* private mode */ }
-    return Math.max(250, Math.min(30000, n));
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function buildTimeout() {
+    return configMs("toolrx.build.timeout", BUILD_TIMEOUT, 250, 30000);
+  }
+
+  function stepTimeout() {
+    return configMs("toolrx.step.timeout", STEP_TIMEOUT, 250, 30000);
+  }
+
+  function planTimeout() {
+    return configMs("toolrx.plan.timeout", PLAN_TIMEOUT, 250, 600000);
+  }
+
+  function planLimits() {
+    const L = root.toolrxSkills && root.toolrxSkills.limits;
+    return {
+      chars: (L && L.plan) || 8000,
+      steps: (L && L.steps) || 40,
+      block: (L && L.block) || 8000,
+      stepMs: stepTimeout(),
+      planMs: planTimeout(),
+    };
   }
 
   /* All-or-none size check used before a build or edit is written. */
@@ -1169,6 +1194,31 @@
     const via = list.length === 1
       ? String(last.via || "")
       : "plan:" + list.length + ":" + String(last.via || "steps");
+    const elapsed = Math.max(0, Math.round(now() - started));
+    const usedBytes = built ? projectSize : bytesOf(text);
+    const usedFiles = Object.keys(fileMap).length;
+    const maxBytes = projectBudget();
+    const plan = planLimits();
+    const budget = {
+      files: { used: usedFiles, max: MAX_PROJECT_FILES,
+               remaining: Math.max(0, MAX_PROJECT_FILES - usedFiles) },
+      bytes: { used: usedBytes, max: maxBytes,
+               remaining: Math.max(0, maxBytes - usedBytes) },
+      ms: { used: elapsed, max: plan.planMs, stepMs: plan.stepMs,
+            remaining: Math.max(0, plan.planMs - elapsed) },
+      steps: { used: list.length, max: plan.steps,
+               remaining: Math.max(0, plan.steps - list.length) },
+      chars: { used: String(query == null ? "" : query).length,
+               max: plan.chars,
+               remaining: Math.max(0, plan.chars - String(query == null ? "" : query).length) },
+      within: usedFiles <= MAX_PROJECT_FILES && usedBytes <= maxBytes
+        && elapsed <= plan.planMs && list.length <= plan.steps,
+      over: [],
+    };
+    if (usedFiles > MAX_PROJECT_FILES) budget.over.push("files");
+    if (usedBytes > maxBytes) budget.over.push("bytes");
+    if (elapsed > plan.planMs) budget.over.push("ms");
+    if (list.length > plan.steps) budget.over.push("steps");
     lastRun = {
       at: Date.now(),
       chars: String(query == null ? "" : query).length,
@@ -1177,11 +1227,12 @@
       via: via.slice(0, 160),
       confidence: routed.length ? Math.min.apply(null, routed.map(function (r) { return r.confidence; })) : null,
       margin: withMargin.length ? Math.min.apply(null, withMargin.map(function (r) { return r.margin; })) : null,
-      ms: Math.max(0, Math.round(now() - started)),
-      bytes: built ? projectSize : bytesOf(text),
-      files: Object.keys(fileMap).length,
+      ms: elapsed,
+      bytes: usedBytes,
+      files: usedFiles,
       undo: p && p.history ? p.history.length : 0,
       ok: !list.some(function (r) { return r && r.error; }),
+      budget: budget,
     };
     try {
       root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(lastRun));
@@ -1276,7 +1327,9 @@
     }
 
     const skills = root.toolrxSkills;
-    const preview = skills && skills.planPreview ? skills.planPreview(query) : null;
+    const preview = skills && skills.planPreview
+      ? skills.planPreview(query, { stepMs: stepTimeout(), planMs: planTimeout() })
+      : null;
     if (preview && !preview.blocked && preview.plan && !isContextMeta(via)) {
       const plan = {
         version: 1,
@@ -1755,6 +1808,12 @@
         weather: webWeather,
         answer: webAnswer,
       },
+      limits: {
+        stepMs: stepTimeout(),
+        planMs: planTimeout(),
+        chars: planLimits().chars,
+        steps: planLimits().steps,
+      },
     };
     ctx.fallback = async function (step) {
       const decision = rt.route(step, model, []);
@@ -2178,12 +2237,37 @@
       return "build cancel requested — the previous project is kept";
     },
     limits: function () {
+      const plan = planLimits();
       return {
         file: MAX_PROJECT_FILE, project: projectBudget(),
         files: MAX_PROJECT_FILES, timeout: buildTimeout(),
         readFile: MAX_FILE, readTotal: MAX_TOTAL,
+        stepTimeout: plan.stepMs, planTimeout: plan.planMs,
+        planChars: plan.chars, planSteps: plan.steps, block: plan.block,
       };
     },
+    planPreview: function (query) {
+      const skills = root.toolrxSkills;
+      if (!skills || !skills.planPreview) return null;
+      const preview = skills.planPreview(String(query), {
+        stepMs: stepTimeout(), planMs: planTimeout(),
+      });
+      if (preview && preview.budget) {
+        const p = activeProject();
+        const usedFiles = p ? filesForProject(p).length : 0;
+        const usedBytes = p ? projectBytes(p) : 0;
+        preview.budget.project = {
+          files: { used: usedFiles, max: MAX_PROJECT_FILES,
+                   remaining: Math.max(0, MAX_PROJECT_FILES - usedFiles) },
+          bytes: { used: usedBytes, max: projectBudget(),
+                   remaining: Math.max(0, projectBudget() - usedBytes) },
+        };
+        preview.budget.fits = preview.budget.fits
+          && usedFiles <= MAX_PROJECT_FILES && usedBytes <= projectBudget();
+      }
+      return preview;
+    },
+    report: function () { return lastRun ? lastRun.budget || null : null; },
     projectBytes: function (slug) {
       const p = slug === undefined ? activeProject() : findProject(slug);
       if (!p) return 0;

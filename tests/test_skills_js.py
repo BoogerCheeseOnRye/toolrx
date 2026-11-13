@@ -1946,7 +1946,8 @@ class SkillsBridgeTest(unittest.TestCase):
 
     def test_limits_match_the_shared_contract(self):
         self.assertEqual(self.out["limits"],
-                         {"single": 2000, "plan": 8000, "steps": 40, "block": 8000})
+                         {"single": 2000, "plan": 8000, "steps": 40,
+                          "block": 8000, "stepMs": 4000, "planMs": 160000})
 
     def test_split_info_handles_connectors_lines_and_sentences(self):
         info = self.out["splitInfo"]

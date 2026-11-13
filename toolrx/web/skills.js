@@ -2184,7 +2184,10 @@
 
   /* ------------------------------------------------------------- planner -- */
   /* Keep these limits in sync with toolrx/longform.py and policy.json. */
-  const LIMITS = Object.freeze({ single: 2000, plan: 8000, steps: 40, block: 8000 });
+  const LIMITS = Object.freeze({
+    single: 2000, plan: 8000, steps: 40, block: 8000,
+    stepMs: 4000, planMs: 160000,
+  });
   const CONNECTOR_RE = /\s*(?:;|->|→|\bthen\b|\bafter that\b|\band then\b|\bfollowed by\b)\s*/i;
   const SENTENCE_RE = /(?<=[.!?])\s+(?=[a-z0-9"'(\[])/i;
 
@@ -2345,37 +2348,73 @@
     return splitPromptInfo(q).steps;
   }
 
+  function numberLimit(value, fallback) {
+    const n = Number(value);
+    return (isFinite(n) && n > 0) ? Math.round(n) : fallback;
+  }
+
+  /* The budget is reported even when a request is refused, so the caller can
+   * name the cap that stopped it. Time is a worst-case bound: every step gets
+   * `stepMs`, so a plan can only fit when steps × stepMs <= planMs. */
+  function previewBudget(chars, steps, opts) {
+    const o = opts || {};
+    const stepMs = numberLimit(o.stepMs, LIMITS.stepMs);
+    const planMs = numberLimit(o.planMs, LIMITS.planMs);
+    const worstCaseMs = steps * stepMs;
+    return {
+      chars: chars, maxChars: LIMITS.plan,
+      steps: steps, maxSteps: LIMITS.steps,
+      stepMs: stepMs, planMs: planMs, worstCaseMs: worstCaseMs,
+      timeFits: worstCaseMs <= planMs,
+      fits: chars <= LIMITS.plan && steps <= LIMITS.steps
+        && worstCaseMs <= planMs,
+    };
+  }
+
   /* Preview a plan without executing anything. Exact command matches are
    * labelled with their operation; the rest will use the hashed router. */
-  function planPreview(q) {
+  function planPreview(q, opts) {
     const text = String(q == null ? "" : q);
     const block = blockCapture(text);
     if (block) {
+      const budget = previewBudget(text.length, 1, opts);
       if (!block.ok) {
         return { blocked: true, reason: block.reason, steps: [], total: 0,
-                 truncated: false, overLimit: false, plan: false, block: true };
+                 truncated: false, overLimit: false, plan: false, block: true,
+                 budget: budget };
       }
       return { blocked: false, reason: null, total: 1, truncated: false,
-               overLimit: false, plan: false, block: true,
+               overLimit: false, plan: false, block: true, budget: budget,
                steps: [{ text: block.header, via: "block.write", exact: true }] };
     }
     if (text.length > LIMITS.plan) {
       return { blocked: true, reason: "query too long (" + text.length + " > "
         + LIMITS.plan + "); split it into fewer steps", steps: [], total: 0,
-        truncated: false, overLimit: false, plan: false };
+        truncated: false, overLimit: false, plan: false,
+        budget: previewBudget(text.length, 0, opts) };
     }
     const info = splitPromptInfo(text);
+    const budget = previewBudget(text.length, info.total, opts);
     if (info.overLimit) {
       return { blocked: true, reason: "plan too long (" + info.total + " > "
         + LIMITS.steps + " steps)", steps: [], total: info.total,
-        truncated: true, overLimit: true, plan: true };
+        truncated: true, overLimit: true, plan: true, budget: budget };
+    }
+    if (budget.steps > 0 && !budget.timeFits) {
+      return { blocked: true, reason: "plan wall budget " + budget.planMs
+        + " ms is below the worst case (" + budget.steps + " steps × "
+        + budget.stepMs + " ms = " + budget.worstCaseMs
+        + " ms); raise toolrx.plan.timeout or split the plan",
+        steps: [], total: info.total, truncated: false, overLimit: false,
+        plan: info.plan, budget: budget };
     }
     const steps = info.steps.map(function (step) {
       const hit = match(step);
       return { text: step, via: hit ? hit.op : "router", exact: !!hit };
     });
     return { blocked: false, reason: null, steps: steps, total: info.total,
-             truncated: false, overLimit: false, plan: steps.length > 1 };
+             truncated: false, overLimit: false, plan: steps.length > 1,
+             budget: budget };
   }
 
   async function exec(skill, ctx) {
@@ -2386,12 +2425,43 @@
     return { text: cap(out === undefined ? "" : out) };
   }
 
+  /* Resolve to {value}, {failure}, or {timedOut}. The step cap cannot always
+   * cancel work already in flight, so handlers also receive the deadline and
+   * the build path writes only after its own budget check. */
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve) {
+      let settled = false;
+      const timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        resolve({ timedOut: true });
+      }, ms);
+      promise.then(function (value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve({ value: value });
+      }, function (failure) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve({ failure: failure });
+      });
+    });
+  }
+
   async function runPrompt(query, ctx) {
+    const base = ctx || {};
     const block = blockCapture(query);
-    if (block) return [runBlockWrite(block, ctx)];
-    const preview = planPreview(query);
+    if (block) return [runBlockWrite(block, base)];
+    const limits = base.limits || {};
+    const stepMs = numberLimit(limits.stepMs, LIMITS.stepMs);
+    const planMs = numberLimit(limits.planMs, LIMITS.planMs);
+    const preview = planPreview(query, { stepMs: stepMs, planMs: planMs });
     if (preview.blocked) {
-      return [{ step: String(query), text: preview.reason, error: true, via: "limit" }];
+      const via = /^plan wall budget/.test(String(preview.reason || ""))
+        ? "budget.plan" : "limit";
+      return [{ step: String(query), text: preview.reason, error: true, via: via }];
     }
     const steps = preview.steps.map(function (s) { return s.text; });
     const results = [];
@@ -2400,7 +2470,17 @@
     const L = root.toolrxLang;
     const clock = () => (typeof performance !== "undefined" && performance.now)
       ? performance.now() : Date.now();
+    const planStarted = clock();
     for (const step of steps) {
+      const planElapsed = clock() - planStarted;
+      if (planElapsed >= planMs) {
+        results.push({
+          step: step, error: true, via: "budget.plan", ms: Math.round(planElapsed),
+          text: "plan wall budget " + planMs + " ms exhausted after "
+            + results.length + " step(s) — the plan stopped; previous project kept",
+        });
+        break;
+      }
       const started = clock();
       // Known localized intents normalize to their canonical English command.
       // The original text stays on `result.step`; `working` drives matching and
@@ -2414,21 +2494,40 @@
           interpreted = norm;
         }
       }
-      const local = Object.assign({}, ctx, { prev, prevResult, step: working });
-      let result;
-      const skill = match(working);
-      if (skill) {
-        try {
-          result = await exec(skill, local);
-          result.via = skill.op;
-          result.desc = skill.desc;
-        } catch (e) {
-          result = { text: String(e.message || e), error: true, via: skill.op, desc: skill.desc };
+      const local = Object.assign({}, base, {
+        prev: prev, prevResult: prevResult, step: working,
+        deadline: started + stepMs, planDeadline: planStarted + planMs,
+      });
+      const runOne = async function () {
+        const skill = match(working);
+        if (skill) {
+          try {
+            const out = await exec(skill, local);
+            out.via = skill.op;
+            out.desc = skill.desc;
+            return out;
+          } catch (e) {
+            return { text: String(e.message || e), error: true,
+                     via: skill.op, desc: skill.desc };
+          }
         }
-      } else if (ctx.fallback) {
-        result = await ctx.fallback(working, local);
+        if (base.fallback) return base.fallback(working, local);
+        return { text: shellSay("no_command") || "no command matched that step",
+                 error: true };
+      };
+      const outcome = await withTimeout(runOne(), stepMs);
+      let result;
+      if (outcome.timedOut) {
+        result = {
+          text: "step timed out after " + stepMs + " ms (step budget "
+            + stepMs + " ms) — the plan stopped; previous project kept",
+          error: true, via: "budget.timeout",
+        };
+      } else if (outcome.failure) {
+        result = { text: String(outcome.failure && outcome.failure.message
+          || outcome.failure), error: true, via: "budget.error" };
       } else {
-        result = { text: shellSay("no_command") || "no command matched that step", error: true };
+        result = outcome.value || { text: "", error: false };
       }
       result.step = step;
       if (interpreted) {
