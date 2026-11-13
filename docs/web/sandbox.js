@@ -940,7 +940,7 @@
 
   /* Grow the active project with real module files (or one named module or
    * system). Files are additive; app.js is only ever appended to. */
-  function growActiveProject(which, name) {
+  function applyGrowth(which, name) {
     const p = projectForEdit();
     const P = root.toolrxPatches;
     if (!P || !P.grow) throw new Error("project growth is not loaded");
@@ -982,10 +982,21 @@
     const lines = ['grew "' + p.name + '" · ' + res.label];
     if (t && t.specLine) lines.push(t.specLine(p.spec));
     lines.push("added: " + res.added.join(", "));
+    if (res.skipped && res.skipped.length) {
+      lines.push("already present: " + res.skipped.join(", "));
+    }
     lines.push("changed: " + changed.join(", "));
     lines.push("preview re-bundled · active project: " + p.slug
       + " · say undo to remove the growth");
     return lines.join("\n");
+  }
+
+  function growActiveProject(which, name) {
+    return applyGrowth(which, name);
+  }
+
+  function growActiveSystems(list) {
+    return applyGrowth("systems", list);
   }
 
   function undoProjectEdit() {
@@ -1799,6 +1810,7 @@
       edit: function (patch, arg) { return applyProjectEdit(patch, arg); },
       editMany: function (list) { return applyProjectEdits(list); },
       grow: function (which, name) { return growActiveProject(which, name); },
+      growSystems: function (list) { return growActiveSystems(list); },
       contextShow: contextShow,
       contextRaw: contextRaw,
       contextSnapshot: contextSnapshot,

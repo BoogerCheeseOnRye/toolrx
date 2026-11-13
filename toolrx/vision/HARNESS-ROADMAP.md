@@ -340,7 +340,7 @@ never means unbounded.
 | Project files | 32 files | 32 files |
 | Project text | 512 KB total | 512 KB total |
 | Undo snapshots | 16, configurable | 16 |
-| Command patterns | 12,516 | 12,000 |
+| Command patterns | 12,522 | 12,000 |
 | Context store | remember/forget notes | 8 KB serialized, inspectable |
 
 ### Guardrails
@@ -782,7 +782,7 @@ stable snapshot, a no-change diff, a pending-step diff, a project switch with no
 duplicated steps, an evicted plan, and a trimmed plan; the network guard still
 shows no context payload in any request.
 
-### 40. Richer multi-module skeletons and system libraries
+### 40. Richer multi-module skeletons and system libraries — done
 
 Grow the additive module surface with reusable, seeded system templates:
 inventory, dialogue, combat, save/load, quests, crafting, UI panels, and audio
@@ -797,6 +797,26 @@ budgets. Shared engines stay plain scripts that load from `file://`.
 single prompt can add three or more at once, each adds real code and files, the
 preview still runs, one undo removes the whole bundle, repeated adds are
 idempotent, and the project stays inside the v2 file and byte caps.
+
+Landed with eleven systems: `inventory`, `dialogue`, `combat`, `save`,
+`quests`, `crafting`, `ui`, `audio`, `weather`, `particles`, and `ai`. Each is a
+real plain script under `systems/`, seeded from the project spec plus the system
+name, and registers one API with `window.toolrxSystems`; the same prompt and
+seed produce byte-identical files. Behaviour is real rather than a stub:
+inventory counts, dialogue turns, combat damage, a localStorage/memory
+save/load round trip, quest progress, crafting costs, DOM panels (guarded when
+there is no document), WebAudio cues (silent fallback), a weather cycle, a
+particle pool, and a small AI state machine. `add inventory and dialogue and
+save systems` installs any two or more named systems in one atomic grow: the
+script tags are inserted before `app.js`, README and ARCHITECTURE rows are
+appended, the spec records the system list, and one undo entry removes the
+whole bundle. A repeated bundle reports `already grown` and rewrites nothing;
+a partial overlap adds only the missing files. The preview inlines the systems,
+so it still runs from `file://`, and the full set stays well inside the 32-file
+and 512 KB caps. `tests/test_skills_js.py` covers the bundle, registry
+behaviour, idempotence, partial overlap, deterministic bytes, preview inlining,
+and undo; `tests/fixtures/longform.json` gains a three-system growth case, and
+the catalog is now 12,522 patterns.
 
 ### 41. Command-library quality pass and coverage metrics
 
@@ -887,8 +907,8 @@ GitHub Pages smoke of the same path passes with no severe console errors.
 5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
    capture) → 34 (vocab/centroids) → 35 (gate) — done
-6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) — done;
-   40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
+6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) →
+   40 (systems) — done; 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — planned
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 
@@ -914,7 +934,7 @@ justifies it; step 45 is last.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–39 are complete. 14 remains deferred. Steps 40–45 are
+- Steps 11–13, 15–40 are complete. 14 remains deferred. Steps 41–45 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after

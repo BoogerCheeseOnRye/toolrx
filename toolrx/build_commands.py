@@ -743,8 +743,8 @@ add(f"edit.many.{len(COMMANDS)}", "edit.apply.many", "^add " + _MANY_LIST + "$",
 
 # Multi-file growth: additive module and system files, never a rebuild.
 GROWTH_MODULES = ["core", "ui", "data", "content"]
-GROWTH_SYSTEMS = ["inventory", "crafting", "quests", "weather", "audio",
-                  "save", "particles", "ai", "combat", "dialogue"]
+GROWTH_SYSTEMS = ["inventory", "dialogue", "combat", "save", "quests",
+                  "crafting", "ui", "audio", "weather", "particles", "ai"]
 for pat in ("grow project", "grow the project", "split into modules",
             "split the project into modules", "add modules",
             "grow the codebase"):
@@ -760,6 +760,15 @@ for system in GROWTH_SYSTEMS:
                 f"add the {system} system", f"add {system} mechanics"):
         add(f"grow.system.{system}.{len(COMMANDS)}", "system.add",
             "^" + re.escape(pat) + "$", {"system": system}, pat, "edit")
+
+# Step 40: one prompt can install two or more named systems in one atomic grow.
+_SYS_ALT = "(?:" + "|".join(re.escape(s) for s in GROWTH_SYSTEMS) + ")"
+_SYS_LIST = "(" + _SYS_ALT + r"(?:\s+and\s+" + _SYS_ALT + r"){1,})"
+for lead in ("add ", "add the "):
+    add(f"grow.systems.{len(COMMANDS)}", "system.add.many",
+        "^" + re.escape(lead) + _SYS_LIST + r" systems?$",
+        {"list": "$1"},
+        "add inventory and dialogue and save systems", "edit")
 
 for pat in ("make the world {n}x{n}", "make the world {n} by {n}",
             "resize the world to {n}x{n}", "grow the world to {n}x{n}",

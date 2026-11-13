@@ -607,8 +607,10 @@
     data: "data/seed.js",
     content: "content/seed.js"
   };
-  var SYSTEMS = ["inventory", "crafting", "quests", "weather", "audio",
-                 "save", "particles", "ai", "combat", "dialogue"];
+  /* Step 40: every system is a real seeded file under systems/. The order is
+   * the canonical listing order used by messages and docs. */
+  var SYSTEMS = ["inventory", "dialogue", "combat", "save", "quests",
+                 "crafting", "ui", "audio", "weather", "particles", "ai"];
 
   function cloneSpec(spec) {
     return JSON.parse(JSON.stringify(spec || {}));
@@ -720,12 +722,38 @@
     ].join("\n");
   }
 
+  function hashName(text) {
+    var h = 2166136261, i;
+    for (i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  /* Step 40: real per-system code. Each file is a plain script, carries its own
+   * seeded generator, and registers one API with window.toolrxSystems. The
+   * same project seed and system name always produce the same file bytes. */
   function systemSource(name, spec) {
-    var seed = (spec && spec.seed) || 1;
-    return [
-      "/* toolrx system: " + name + " · generated from the build spec, no model */",
+    var seed = ((spec && spec.seed) || 1) >>> 0;
+    var local = (seed ^ hashName(name)) >>> 0;
+    var projectName = String((spec && (spec.genre || spec.kind || spec.theme))
+      || "project").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "").slice(0, 40) || "project";
+    var project = JSON.stringify(projectName);
+    var head = [
+      "/* toolrx system: " + name + " · seeded from the build spec, no model */",
       "(function (root) {",
       "  \"use strict\";",
+      "  function rng(a) {",
+      "    return function () {",
+      "      a |= 0; a = a + 0x6D2B79F5 | 0;",
+      "      var t = Math.imul(a ^ a >>> 15, 1 | a);",
+      "      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;",
+      "      return ((t ^ t >>> 14) >>> 0) / 4294967296;",
+      "    };",
+      "  }",
+      "  var seed = " + local + ", roll = rng(seed), project = " + project + ";",
       "  var registry = root.toolrxSystems = root.toolrxSystems || {",
       "    items: {},",
       "    register: function (name, def) { this.items[name] = def; return def; },",
@@ -735,31 +763,391 @@
       "        if (item && item.tick) item.tick(dt || 0);",
       "      }, this);",
       "    }",
-      "  };",
-      "  registry.register(" + JSON.stringify(name) + ", {",
-      "    name: " + JSON.stringify(name) + ",",
-      "    seed: " + seed + ",",
-      "    time: 0,",
-      "    tick: function (dt) { this.time += dt || 0; },",
-      "    state: function () { return { name: this.name, seed: this.seed, time: this.time }; }",
-      "  });",
+      "  };"
+    ];
+    var body = [];
+
+    if (name === "inventory") {
+      body = [
+        "  var NAMES = [\"ember shard\", \"harbor salt\", \"signal coil\", \"ridge herb\"];",
+        "  var items = NAMES.map(function (id) {",
+        "    return { id: id, qty: 1 + Math.floor(roll() * 3) };",
+        "  });",
+        "  function find(id) {",
+        "    for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i];",
+        "    return null;",
+        "  }",
+        "  var api = {",
+        "    name: \"inventory\", seed: seed, project: project, items: items,",
+        "    list: function () {",
+        "      return items.map(function (it) { return it.id + \" x\" + it.qty; });",
+        "    },",
+        "    count: function (id) { var it = find(id); return it ? it.qty : 0; },",
+        "    add: function (id, n) {",
+        "      var it = find(id);",
+        "      if (!it) { it = { id: String(id), qty: 0 }; items.push(it); }",
+        "      it.qty += Math.max(0, n || 1);",
+        "      return it.qty;",
+        "    },",
+        "    remove: function (id, n) {",
+        "      var it = find(id);",
+        "      if (!it) return 0;",
+        "      it.qty = Math.max(0, it.qty - Math.max(0, n || 1));",
+        "      return it.qty;",
+        "    },",
+        "    total: function () {",
+        "      return items.reduce(function (n, it) { return n + it.qty; }, 0);",
+        "    },",
+        "    state: function () {",
+        "      return { name: \"inventory\", seed: seed, items: api.list(), total: api.total() };",
+        "    }",
+        "  };"
+      ];
+    } else if (name === "dialogue") {
+      body = [
+        "  var LINES = {",
+        "    keeper: [\"the gate remembers you\", \"bring light before the bell\", \"nothing leaves without a name\"],",
+        "    scout: [\"tracks east of the ridge\", \"the fog moved against the wind\", \"two shapes, then none\"],",
+        "    smith: [\"heat first, then patience\", \"this metal wants a story\", \"come back with both hands\"]",
+        "  };",
+        "  var cursor = {};",
+        "  var api = {",
+        "    name: \"dialogue\", seed: seed, project: project, lines: LINES,",
+        "    speakers: function () { return Object.keys(LINES).sort(); },",
+        "    line: function (who, index) {",
+        "      var list = LINES[who] || LINES.keeper;",
+        "      var i = Math.max(0, Math.floor(index || 0)) % list.length;",
+        "      return list[i];",
+        "    },",
+        "    say: function (who) {",
+        "      var key = LINES[who] ? who : \"keeper\";",
+        "      var i = cursor[key] || 0;",
+        "      cursor[key] = i + 1;",
+        "      return { who: key, line: api.line(key, i) };",
+        "    },",
+        "    state: function () {",
+        "      return { name: \"dialogue\", seed: seed, said: cursor };",
+        "    }",
+        "  };"
+      ];
+    } else if (name === "combat") {
+      body = [
+        "  var TYPES = [\"drone\", \"brute\", \"dart\"];",
+        "  var foes = TYPES.map(function (type, i) {",
+        "    return {",
+        "      type: type,",
+        "      hp: 2 + Math.floor(roll() * 4),",
+        "      atk: 1 + Math.floor(roll() * 3),",
+        "      alive: true",
+        "    };",
+        "  });",
+        "  var api = {",
+        "    name: \"combat\", seed: seed, project: project, foes: foes,",
+        "    roster: function () {",
+        "      return foes.map(function (f) {",
+        "        return f.type + \" hp \" + f.hp + (f.alive ? \"\" : \" down\");",
+        "      });",
+        "    },",
+        "    strike: function (index, power) {",
+        "      var f = foes[Math.max(0, Math.min(foes.length - 1, index || 0))];",
+        "      if (!f || !f.alive) return { ok: false, why: \"that foe is already down\" };",
+        "      var dmg = Math.max(1, (power || 2) + Math.floor(roll() * 2));",
+        "      f.hp -= dmg;",
+        "      if (f.hp <= 0) { f.hp = 0; f.alive = false; }",
+        "      return { ok: true, type: f.type, damage: dmg, hp: f.hp, alive: f.alive };",
+        "    },",
+        "    state: function () {",
+        "      return { name: \"combat\", seed: seed, foes: api.roster() };",
+        "    }",
+        "  };"
+      ];
+    } else if (name === "save") {
+      body = [
+        "  var KEY = \"toolrx.save.\" + project;",
+        "  var memory = null;",
+        "  var api = {",
+        "    name: \"save\", seed: seed, project: project, key: KEY,",
+        "    save: function (state) {",
+        "      var text = JSON.stringify(state == null ? {} : state);",
+        "      try {",
+        "        if (root.localStorage) { root.localStorage.setItem(KEY, text); return true; }",
+        "      } catch (e) { /* fall through to memory */ }",
+        "      memory = text;",
+        "      return true;",
+        "    },",
+        "    load: function () {",
+        "      var text = memory;",
+        "      try {",
+        "        if (root.localStorage) {",
+        "          var stored = root.localStorage.getItem(KEY);",
+        "          if (stored) text = stored;",
+        "        }",
+        "      } catch (e) { /* use memory */ }",
+        "      if (!text) return null;",
+        "      try { return JSON.parse(text); } catch (e) { return null; }",
+        "    },",
+        "    clear: function () {",
+        "      memory = null;",
+        "      try { if (root.localStorage) root.localStorage.removeItem(KEY); } catch (e) { /* ignore */ }",
+        "      return true;",
+        "    },",
+        "    state: function () { return { name: \"save\", seed: seed, key: KEY, stored: !!api.load() }; }",
+        "  };"
+      ];
+    } else if (name === "quests") {
+      body = [
+        "  var TITLES = [\"first light\", \"the quiet road\", \"a debt of salt\", \"the last signal\"];",
+        "  var quests = TITLES.map(function (title, i) {",
+        "    return { id: \"q\" + (i + 1), title: title, status: \"open\" };",
+        "  });",
+        "  function find(id) {",
+        "    for (var i = 0; i < quests.length; i++) if (quests[i].id === id) return quests[i];",
+        "    return null;",
+        "  }",
+        "  var api = {",
+        "    name: \"quests\", seed: seed, project: project, quests: quests,",
+        "    open: function () {",
+        "      return quests.filter(function (q) { return q.status === \"open\"; });",
+        "    },",
+        "    start: function (id) {",
+        "      var q = find(id);",
+        "      if (!q) return null;",
+        "      if (q.status === \"open\") q.status = \"active\";",
+        "      return q.status;",
+        "    },",
+        "    complete: function (id) {",
+        "      var q = find(id);",
+        "      if (!q) return null;",
+        "      q.status = \"done\";",
+        "      return q.status;",
+        "    },",
+        "    progress: function () {",
+        "      var done = quests.filter(function (q) { return q.status === \"done\"; }).length;",
+        "      return done + \"/\" + quests.length;",
+        "    },",
+        "    state: function () {",
+        "      return { name: \"quests\", seed: seed, progress: api.progress(), quests: quests };",
+        "    }",
+        "  };"
+      ];
+    } else if (name === "crafting") {
+      body = [
+        "  var RECIPES = [",
+        "    { id: \"torch\", needs: { \"ember shard\": 1, \"ridge herb\": 1 }, makes: \"torch\" },",
+        "    { id: \"coil\", needs: { \"signal coil\": 1 }, makes: \"tuned coil\" },",
+        "    { id: \"salve\", needs: { \"harbor salt\": 1, \"ridge herb\": 2 }, makes: \"salve\" }",
+        "  ];",
+        "  var stock = { \"ember shard\": 2, \"harbor salt\": 2, \"signal coil\": 1, \"ridge herb\": 3 };",
+        "  function recipe(id) {",
+        "    for (var i = 0; i < RECIPES.length; i++) if (RECIPES[i].id === id) return RECIPES[i];",
+        "    return null;",
+        "  }",
+        "  var api = {",
+        "    name: \"crafting\", seed: seed, project: project, recipes: RECIPES, stock: stock,",
+        "    canCraft: function (id) {",
+        "      var r = recipe(id);",
+        "      if (!r) return false;",
+        "      for (var k in r.needs) {",
+        "        if (Object.prototype.hasOwnProperty.call(r.needs, k)",
+        "            && (stock[k] || 0) < r.needs[k]) return false;",
+        "      }",
+        "      return true;",
+        "    },",
+        "    craft: function (id) {",
+        "      if (!api.canCraft(id)) return { ok: false, why: \"missing materials\" };",
+        "      var r = recipe(id);",
+        "      for (var k in r.needs) {",
+        "        if (Object.prototype.hasOwnProperty.call(r.needs, k)) stock[k] -= r.needs[k];",
+        "      }",
+        "      return { ok: true, made: r.makes, left: JSON.parse(JSON.stringify(stock)) };",
+        "    },",
+        "    state: function () {",
+        "      return { name: \"crafting\", seed: seed, stock: JSON.parse(JSON.stringify(stock)) };",
+        "    }",
+        "  };"
+      ];
+    } else if (name === "ui") {
+      body = [
+        "  var panels = [];",
+        "  function mount(panel) {",
+        "    if (typeof document === \"undefined\" || !document.body) return null;",
+        "    var box = document.createElement(\"section\");",
+        "    box.className = \"card toolrx-system\";",
+        "    box.setAttribute(\"data-toolrx-system\", \"ui\");",
+        "    var title = document.createElement(\"h2\");",
+        "    title.textContent = panel.name;",
+        "    box.appendChild(title);",
+        "    (panel.rows || []).forEach(function (row) {",
+        "      var p = document.createElement(\"p\");",
+        "      p.className = \"muted small\";",
+        "      p.textContent = String(row);",
+        "      box.appendChild(p);",
+        "    });",
+        "    document.body.appendChild(box);",
+        "    return box;",
+        "  }",
+        "  var api = {",
+        "    name: \"ui\", seed: seed, project: project, panels: panels,",
+        "    panel: function (name, rows) {",
+        "      var panel = { name: String(name || \"status\"), rows: (rows || []).slice() };",
+        "      panels.push(panel);",
+        "      return mount(panel);",
+        "    },",
+        "    mountAll: function () {",
+        "      panels.forEach(mount);",
+        "      return panels.length;",
+        "    },",
+        "    state: function () {",
+        "      return { name: \"ui\", seed: seed, panels: panels.map(function (p) { return p.name; }) };",
+        "    }",
+        "  };"
+      ];
+    } else if (name === "audio") {
+      body = [
+        "  var CUES = {",
+        "    step: { hz: 220, ms: 40 },",
+        "    pickup: { hz: 660, ms: 80 },",
+        "    hit: { hz: 110, ms: 90 },",
+        "    win: { hz: 880, ms: 160 }",
+        "  };",
+        "  var played = 0;",
+        "  var api = {",
+        "    name: \"audio\", seed: seed, project: project, cues: CUES,",
+        "    cue: function (name) {",
+        "      var spec = CUES[name] || CUES.step;",
+        "      played++;",
+        "      var C = root.AudioContext || root.webkitAudioContext;",
+        "      if (!C) return { ok: true, played: played, silent: true, hz: spec.hz };",
+        "      try {",
+        "        var ctx = api.ctx || (api.ctx = new C());",
+        "        var osc = ctx.createOscillator();",
+        "        var gain = ctx.createGain();",
+        "        osc.frequency.value = spec.hz;",
+        "        gain.gain.value = 0.04;",
+        "        osc.connect(gain); gain.connect(ctx.destination);",
+        "        osc.start();",
+        "        osc.stop(ctx.currentTime + spec.ms / 1000);",
+        "        return { ok: true, played: played, hz: spec.hz };",
+        "      } catch (e) {",
+        "        return { ok: true, played: played, silent: true, hz: spec.hz };",
+        "      }",
+        "    },",
+        "    state: function () { return { name: \"audio\", seed: seed, played: played }; }",
+        "  };"
+      ];
+    } else if (name === "weather") {
+      body = [
+        "  var CYCLE = [\"clear\", \"rain\", \"fog\", \"storm\"];",
+        "  var index = Math.floor(roll() * CYCLE.length);",
+        "  var time = 0;",
+        "  var api = {",
+        "    name: \"weather\", seed: seed, project: project, cycle: CYCLE,",
+        "    now: function () { return CYCLE[index % CYCLE.length]; },",
+        "    step: function (dt) {",
+        "      time += Math.max(0, dt || 0);",
+        "      if (time >= 30) { time = 0; index = (index + 1) % CYCLE.length; }",
+        "      return api.now();",
+        "    },",
+        "    tick: function (dt) { api.step(dt); },",
+        "    state: function () { return { name: \"weather\", seed: seed, now: api.now(), time: time }; }",
+        "  };"
+      ];
+    } else if (name === "particles") {
+      body = [
+        "  var pool = [];",
+        "  var api = {",
+        "    name: \"particles\", seed: seed, project: project, pool: pool,",
+        "    emit: function (n) {",
+        "      var count = Math.max(1, Math.min(64, n || 8));",
+        "      for (var i = 0; i < count; i++) {",
+        "        pool.push({",
+        "          x: Math.floor(roll() * 100), y: Math.floor(roll() * 100),",
+        "          vx: roll() * 2 - 1, vy: roll() * 2 - 1, life: 1",
+        "        });",
+        "      }",
+        "      return pool.length;",
+        "    },",
+        "    step: function (dt) {",
+        "      var d = Math.max(0, dt || 0);",
+        "      pool.forEach(function (p) {",
+        "        p.x += p.vx * d; p.y += p.vy * d; p.life -= d * 0.1;",
+        "      });",
+        "      pool = pool.filter(function (p) { return p.life > 0; });",
+        "      api.pool = pool;",
+        "      return pool.length;",
+        "    },",
+        "    tick: function (dt) { api.step(dt); },",
+        "    state: function () { return { name: \"particles\", seed: seed, live: pool.length }; }",
+        "  };"
+      ];
+    } else {
+      body = [
+        "  var STATES = [\"idle\", \"patrol\", \"chase\"];",
+        "  var state = STATES[Math.floor(roll() * STATES.length)];",
+        "  var api = {",
+        "    name: \"ai\", seed: seed, project: project, states: STATES,",
+        "    now: function () { return state; },",
+        "    update: function (dt, distance) {",
+        "      var d = distance == null ? 999 : distance;",
+        "      if (d < 60) state = \"chase\";",
+        "      else if (state === \"chase\") state = \"patrol\";",
+        "      else if (state === \"idle\" && d < 140) state = \"patrol\";",
+        "      else if (state === \"patrol\" && d > 220) state = \"idle\";",
+        "      return state;",
+        "    },",
+        "    tick: function (dt) { api.update(dt, 999); },",
+        "    state: function () { return { name: \"ai\", seed: seed, now: state }; }",
+        "  };"
+      ];
+    }
+
+    return head.concat(body, [
+      "  registry.register(" + JSON.stringify(name) + ", api);",
       "})(typeof window !== \"undefined\" ? window : this);",
       ""
-    ].join("\n");
+    ]).join("\n");
+  }
+
+  function systemRequest(mode, name) {
+    if (mode === "system") return [String(name || "").toLowerCase()];
+    if (mode === "systems") {
+      var list = Array.isArray(name) ? name : String(name || "").split(/\s+/);
+      return list.map(function (s) { return String(s || "").toLowerCase(); })
+        .filter(Boolean);
+    }
+    return [];
+  }
+
+  function docRows(added, mode) {
+    return added.map(function (p) {
+      if (mode === "systems" || p.indexOf("systems/") === 0) {
+        return "| `" + p + "` | seeded system · registers with `window.toolrxSystems` |";
+      }
+      return "| `" + p + "` | generated module · plain script, no build step |";
+    }).join("\n");
   }
 
   function grow(project, which, name) {
     project = project || {};
     var files = clone(project.files || {});
     var spec = cloneSpec(project.spec || {});
-    var added = [], mode = String(which || "project").toLowerCase();
+    var added = [], skipped = [], mode = String(which || "project").toLowerCase();
     var wanted = String(name || "").toLowerCase();
-    if (mode === "system") {
-      if (SYSTEMS.indexOf(wanted) < 0) {
-        return { ok: false, message: "unknown system \"" + wanted
-          + "\"; try " + SYSTEMS.join(", ") };
+    var requested = systemRequest(mode, name);
+
+    if (mode === "system" || mode === "systems") {
+      var seen = {};
+      requested = requested.filter(function (s) {
+        if (seen[s]) return false;
+        seen[s] = true;
+        return true;
+      });
+      var unknown = requested.filter(function (s) { return SYSTEMS.indexOf(s) < 0; });
+      if (!requested.length || unknown.length) {
+        return { ok: false, message: "unknown system \""
+          + (unknown[0] || "") + "\"; try " + SYSTEMS.join(", ") };
       }
-      added.push("systems/" + wanted + ".js");
+      requested.forEach(function (s) { added.push("systems/" + s + ".js"); });
     } else if (mode === "module") {
       if (!MODULES[wanted]) {
         return { ok: false, message: "unknown module \"" + wanted
@@ -769,16 +1157,25 @@
     } else {
       added = Object.keys(MODULES).map(function (k) { return MODULES[k]; });
     }
-    added = added.filter(function (p) { return !files[p]; });
-    if (!added.length) {
-      return { ok: false, message: "already grown: nothing new to add" };
+
+    var fresh = [];
+    added.forEach(function (p) {
+      if (files[p]) skipped.push(p);
+      else fresh.push(p);
+    });
+    if (!fresh.length) {
+      return { ok: false, skipped: skipped,
+        message: "already grown: " + skipped.join(", ") };
     }
+    added = fresh;
+
     added.forEach(function (path) {
       if (path.indexOf("systems/") === 0) {
-        files[path] = systemSource(wanted, spec);
+        var id = path.replace(/^systems\//, "").replace(/\.js$/, "");
+        files[path] = systemSource(id, spec);
       } else {
-        var id = Object.keys(MODULES).filter(function (k) { return MODULES[k] === path; })[0];
-        files[path] = moduleSource(id, spec);
+        var mid = Object.keys(MODULES).filter(function (k) { return MODULES[k] === path; })[0];
+        files[path] = moduleSource(mid, spec);
       }
     });
     var html = String(files["index.html"] || "");
@@ -792,23 +1189,36 @@
       files["index.html"] = html.replace(/<\/body>/i, tags + "\n</body>");
     }
     if (files["app.js"]) {
+      var isSystem = added.some(function (p) { return p.indexOf("systems/") === 0; });
       var boot = ["", "/* toolrx modules: real files beside app.js */",
         "window.toolrxProject = window.toolrxProject || { name: "
           + JSON.stringify((spec && (spec.theme || spec.genre)) || project.kind || "app")
-          + ", modules: [] };",
-        "window.toolrxProject.modules = window.toolrxProject.modules || [];"];
+          + ", modules: [], systems: [] };",
+        "window.toolrxProject.modules = window.toolrxProject.modules || [];",
+        "window.toolrxProject.systems = window.toolrxProject.systems || [];"];
       added.forEach(function (p) {
-        boot.push("window.toolrxProject.modules.push(" + JSON.stringify(p) + ");");
+        var target = p.indexOf("systems/") === 0 ? "systems" : "modules";
+        boot.push("window.toolrxProject." + target + ".push(" + JSON.stringify(p) + ");");
       });
+      if (isSystem) {
+        boot.push("if (window.toolrxSystems && window.toolrxSystems.run) window.toolrxSystems.run(0);");
+      }
       files["app.js"] = append(files["app.js"], boot.join("\n"));
     }
     var modules = (spec.modules || []).slice();
-    added.forEach(function (p) { if (modules.indexOf(p) < 0) modules.push(p); });
-    spec.modules = modules.sort();
+    var systems = (spec.systems || []).slice();
+    added.forEach(function (p) {
+      if (p.indexOf("systems/") === 0) {
+        var id = p.replace(/^systems\//, "").replace(/\.js$/, "");
+        if (systems.indexOf(id) < 0) systems.push(id);
+      } else if (modules.indexOf(p) < 0) {
+        modules.push(p);
+      }
+    });
+    if (modules.length) spec.modules = modules.sort();
+    if (systems.length) spec.systems = systems.sort();
     if (files["README.md"]) {
-      var rows = added.map(function (p) {
-        return "| `" + p + "` | generated module · plain script, no build step |";
-      }).join("\n");
+      var rows = docRows(added, mode);
       files["README.md"] = String(files["README.md"])
         .replace(/\n## Run\b/, "\n" + rows + "\n\n## Run");
     }
@@ -818,14 +1228,21 @@
         .replace(/\n## Build order\b/, "\n" + bullets + "\n\n## Build order");
     }
     syncDocs(files, spec);
+    var label;
+    if (mode === "system") label = "add " + requested[0] + " system";
+    else if (mode === "systems") label = "add " + requested.length + " systems ("
+      + requested.join(", ") + ")";
+    else if (mode === "module") label = "expand module " + wanted;
+    else label = "grow project";
     return {
       ok: true,
       files: files,
       spec: spec,
       added: added,
-      label: mode === "system" ? "add " + wanted + " system"
-        : (mode === "module" ? "expand module " + wanted : "grow project"),
+      skipped: skipped,
+      label: label,
       message: "added " + added.join(", ")
+        + (skipped.length ? " · already present: " + skipped.join(", ") : "")
     };
   }
 

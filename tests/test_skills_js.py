@@ -1032,6 +1032,88 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     preview: /toolrxSystems/.test(expandAfter.html)
       && /toolrxContentIndex/.test(expandAfter.html),
   };
+  // Step 40: one prompt installs several seeded systems atomically, each is
+  // real code, the preview inlines them, repeats are idempotent, and one undo
+  // removes the whole bundle.
+  const baseSystemPrompt = 'build a roguelike game with 5 levels and quests '
+    + 'and an inventory and enemies and sound and a dark dungeon theme';
+  self.toolrxWeb.reset();
+  await pRun(baseSystemPrompt);
+  const multiBase = snap();
+  const multiRun = await pRun('add inventory and dialogue and save systems');
+  const multiAfter = snap();
+  const systemPaths = ['systems/inventory.js', 'systems/dialogue.js',
+                       'systems/save.js'];
+  delete global.toolrxSystems;
+  systemPaths.forEach(p => { new Function('window', multiAfter.files[p])(global); });
+  const reg = global.toolrxSystems;
+  const inv = reg && reg.items.inventory;
+  const dlg = reg && reg.items.dialogue;
+  const save = reg && reg.items.save;
+  out.growth.multi = {
+    via: multiRun[0].via,
+    text: multiRun[0].text,
+    files: systemPaths.filter(p => !!multiAfter.files[p]),
+    registry: reg ? Object.keys(reg.items).sort() : [],
+    syntax: systemPaths.map(p => jsCheck(multiAfter.files[p])),
+    tags: systemPaths.every(p => multiAfter.files['index.html']
+      .indexOf('src="' + p + '"') >= 0),
+    tagsBeforeApp: multiAfter.files['index.html'].indexOf('src="app.js"')
+      > multiAfter.files['index.html'].indexOf('src="systems/inventory.js"'),
+    previewInlined: /toolrxSystems/.test(multiAfter.html),
+    previewExternal: /src=["']systems\//.test(multiAfter.html),
+    cssUntouched: multiBase.files['styles.css'] === multiAfter.files['styles.css'],
+    inventory: inv ? {
+      list: inv.list(), total: inv.total(),
+      added: inv.add('ember shard', 2), removed: inv.remove('ember shard', 1),
+      state: inv.state(),
+    } : null,
+    dialogue: dlg ? [dlg.say('scout'), dlg.say('scout')] : null,
+    save: save ? { wrote: save.save({ hp: 3 }), read: save.load(), key: save.key } : null,
+    runOk: (() => { try { reg.run(1); return true; } catch (e) { return false; } })(),
+    readmeRows: systemPaths.every(p => multiAfter.files['README.md']
+      .indexOf('`' + p + '`') >= 0),
+    archRows: systemPaths.every(p => multiAfter.files['ARCHITECTURE.md']
+      .indexOf('`' + p + '`') >= 0),
+  };
+
+  const multiAgain = await pRun('add inventory and dialogue and save systems');
+  const multiAgainAfter = snap();
+  out.growth.multiIdempotent = {
+    text: multiAgain[0].text,
+    same: sameMap(multiAfter.files, multiAgainAfter.files),
+    bootLines: (multiAgainAfter.files['app.js']
+      .match(/toolrxProject\.systems\.push/g) || []).length,
+    systemFiles: Object.keys(multiAgainAfter.files)
+      .filter(p => p.indexOf('systems/') === 0).length,
+  };
+
+  await pRun('undo');
+  out.growth.multiUndo = sameMap(multiBase.files, snap().files);
+
+  self.toolrxWeb.reset();
+  await pRun(baseSystemPrompt);
+  await pRun('add inventory and dialogue and save systems');
+  const partialRun = await pRun('add inventory and combat systems');
+  const partialAfter = snap();
+  out.growth.multiPartial = {
+    via: partialRun[0].via,
+    text: partialRun[0].text,
+    skipped: /already present: systems\/inventory\.js/.test(partialRun[0].text),
+    hasCombat: !!partialAfter.files['systems/combat.js'],
+    bootLines: (partialAfter.files['app.js']
+      .match(/toolrxProject\.systems\.push/g) || []).length,
+    systemFiles: Object.keys(partialAfter.files)
+      .filter(p => p.indexOf('systems/') === 0).sort(),
+  };
+
+  self.toolrxWeb.reset();
+  await pRun(baseSystemPrompt);
+  await pRun('add inventory and dialogue and save systems');
+  const multiRepeat = snap();
+  out.growth.multiDeterministic = systemPaths.every(
+    p => multiRepeat.files[p] === multiAfter.files[p]);
+
   try { localStorage.setItem('toolrx.undo.depth', '3'); } catch (e) { /* ignore */ }
   self.toolrxWeb.reset();
   await pRun('build a platformer game');
@@ -2643,6 +2725,54 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertTrue(s["hasContentModule"])
         self.assertEqual(s["tags"], 2)
         self.assertTrue(s["preview"])
+
+    def test_multi_system_growth_is_real_seeded_and_atomic(self):
+        m = self.out["growth"]["multi"]
+        self.assertEqual(m["via"], "system.add.many")
+        self.assertEqual(m["files"], ["systems/inventory.js",
+                                      "systems/dialogue.js",
+                                      "systems/save.js"])
+        self.assertEqual(m["registry"],
+                         ["dialogue", "inventory", "save"])
+        self.assertEqual(m["syntax"], ["ok", "ok", "ok"])
+        self.assertTrue(m["tags"])
+        self.assertTrue(m["tagsBeforeApp"])
+        self.assertTrue(m["previewInlined"])
+        self.assertFalse(m["previewExternal"],
+                         "the preview must inline systems, not fetch them")
+        self.assertTrue(m["cssUntouched"])
+        self.assertTrue(m["readmeRows"])
+        self.assertTrue(m["archRows"])
+        self.assertTrue(m["runOk"])
+        inv = m["inventory"]
+        self.assertEqual(len(inv["list"]), 4)
+        self.assertGreater(inv["total"], 0)
+        self.assertGreater(inv["state"]["total"], 0)
+        self.assertEqual(inv["removed"], inv["added"] - 1)
+        self.assertEqual(len(m["dialogue"]), 2)
+        self.assertNotEqual(m["dialogue"][0]["line"], m["dialogue"][1]["line"])
+        self.assertEqual(m["dialogue"][0]["who"], "scout")
+        self.assertTrue(m["save"]["wrote"])
+        self.assertEqual(m["save"]["read"], {"hp": 3})
+        self.assertEqual(m["save"]["key"], "toolrx.save.roguelike")
+        self.assertTrue(self.out["growth"]["multiUndo"])
+
+    def test_repeated_and_partial_system_adds_are_idempotent(self):
+        again = self.out["growth"]["multiIdempotent"]
+        self.assertIn("already grown", again["text"])
+        self.assertTrue(again["same"], "a repeated add must not rewrite files")
+        self.assertEqual(again["bootLines"], 3)
+        self.assertEqual(again["systemFiles"], 3)
+        partial = self.out["growth"]["multiPartial"]
+        self.assertEqual(partial["via"], "system.add.many")
+        self.assertTrue(partial["skipped"])
+        self.assertTrue(partial["hasCombat"])
+        self.assertEqual(partial["bootLines"], 4)
+        self.assertEqual(partial["systemFiles"],
+                         ["systems/combat.js", "systems/dialogue.js",
+                          "systems/inventory.js", "systems/save.js"])
+        self.assertTrue(self.out["growth"]["multiDeterministic"],
+                        "the same prompt and seed must produce the same bytes")
 
     def test_undo_depth_is_configurable(self):
         d = self.out["growth"]["undoDepth"]

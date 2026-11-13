@@ -142,6 +142,29 @@ class CommandLibraryTest(unittest.TestCase):
         self.assertEqual(self.args_for(expand, "expand the last plan with add day/night"),
                          {"more": "add day/night"})
 
+    def test_multi_system_growth_routes_in_one_step(self):
+        cases = {
+            "add inventory and dialogue and save systems":
+                "inventory and dialogue and save",
+            "add the ui and audio and weather systems":
+                "ui and audio and weather",
+            "add inventory and dialogue systems":
+                "inventory and dialogue",
+            "add inventory and dialogue and combat and save and quests "
+            "and crafting and ui and audio and weather and particles and ai systems":
+                "inventory and dialogue and combat and save and quests "
+                "and crafting and ui and audio and weather and particles and ai",
+        }
+        for query, expected in cases.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], "system.add.many", query)
+            self.assertEqual(self.args_for(hit, query), {"list": expected}, query)
+        single = self.first("add crafting system")
+        self.assertEqual(single["op"], "system.add")
+        self.assertEqual(self.args_for(single, "add crafting system"),
+                         {"system": "crafting"})
+
     def test_long_compositional_prompts_keep_kind_and_modifiers(self):
         cases = {
             "build a huge space rpg game with crafting":

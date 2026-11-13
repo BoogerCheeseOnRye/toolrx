@@ -1907,6 +1907,12 @@
       if (!ctx.grow) throw new Error("project growth needs the browser workspace");
       return ctx.grow("system", a.system);
     },
+    "system.add.many": function (a, ctx) {
+      if (!ctx.growSystems) throw new Error("project growth needs the browser workspace");
+      const names = String(a.list || "").toLowerCase().split(/\s+and\s+/)
+        .map(function (s) { return s.trim(); }).filter(Boolean);
+      return ctx.growSystems(names);
+    },
     "context.show": function (a, ctx) {
       if (!ctx.contextShow) throw new Error("context needs the browser workspace");
       return ctx.contextShow();

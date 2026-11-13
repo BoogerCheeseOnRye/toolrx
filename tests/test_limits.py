@@ -144,7 +144,7 @@ class LimitsCommandTest(unittest.TestCase):
 
     def test_catalog_count_is_current(self):
         self.assertEqual(self.data["count"], len(self.data["commands"]))
-        self.assertEqual(self.data["count"], 12516)
+        self.assertEqual(self.data["count"], 12522)
 
 
 @unittest.skipUnless(NODE, "node is not installed")

@@ -482,6 +482,24 @@
    ]
   },
   {
+   "name": "add-three-systems",
+   "family": "growth-systems",
+   "baseKind": "roguelike",
+   "steps": [
+    {
+     "query": "add inventory and dialogue and save systems",
+     "via": "system.add.many",
+     "adds": [
+      "systems/dialogue.js",
+      "systems/inventory.js",
+      "systems/save.js"
+     ],
+     "undo": true
+    }
+   ],
+   "base": "build a roguelike game with 5 levels and quests and an inventory and enemies and sound and a dark dungeon theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level"
+  },
+  {
    "name": "two-patch-bundle",
    "family": "growth-patches",
    "base": "build a top-down shooter game with pixel art and 3 levels and waves and a boss and sound and a neon city theme and I want the same files every time and no network request and a playable preview and a short readme and an architecture note and a short changelog and simple controls guide and I want the result to name every feature and the file count and stay inside the project budget and load from a local file with no build step and I want the readme to describe every system and the controls in plain text and I want the preview to show the title and the current score and the current level",

@@ -197,6 +197,7 @@ please tell know show see use read list open view display print get find
 give make take set check total add sum count number numbers value values
 file files folder folders directory dir path home memory ram storage usage
 limits used free available total status info information system machine device
+inventory dialogue combat save quests crafting particles weather audio systems ai
 config configuration settings note notes text doc document log file
 contents items entries data my project
 cat changelog config cfg ini html whats usage check
