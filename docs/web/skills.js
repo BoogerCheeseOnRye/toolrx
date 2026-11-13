@@ -2031,6 +2031,26 @@
       if (!ctx.project) throw new Error("projects need the browser workspace");
       return ctx.project.note(a.slug, a.text);
     },
+    "project.export": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.exportBundle(a.slug);
+    },
+    "project.import": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.importBundle(a.bundle);
+    },
+    "workspace.export": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.exportWorkspace();
+    },
+    "workspace.import": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.importWorkspace(a.bundle);
+    },
+    "workspace.bundles": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.bundles();
+    },
     "memory.remember": function (a, ctx) { return memoryRemember(a, ctx); },
     "memory.note": function (a, ctx) { return memoryNote(a, ctx); },
     "memory.recall": function (a, ctx) { return memoryRecall(a, ctx); },
@@ -2102,6 +2122,7 @@
       ["contextBytes", "context store"],
       ["undoDepth", "undo history"],
       ["outputChars", "one chat reply"],
+      ["bundleBytes", "one export bundle"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
       + L.version + ")"];

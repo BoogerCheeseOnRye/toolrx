@@ -190,13 +190,18 @@ class DashboardTest(unittest.TestCase):
     def test_project_export_import_ui(self):
         self.assertIn('id="pjImport"', self.html)
         self.assertIn('id="pjFile"', self.html)
+        self.assertIn('id="pjExportAll"', self.html)
         self.assertIn("exportProject", self.html)
-        self.assertIn("importProject", self.html)
+        self.assertIn("importBundle", self.html)
+        self.assertIn("exportWorkspace", self.html)
         sandbox = open(os.path.join(ROOT, "toolrx", "web", "sandbox.js"),
                        encoding="utf-8").read()
         for marker in ("function exportProject", "function importProject",
-                       "MAX_PROJECT_FILE", "budgetCheck(out)", "safeImportName",
-                       "uniqueSlug(name)"):
+                       "function exportWorkspace", "function importWorkspace",
+                       "function parseBundle", "function stageFiles",
+                       "function importFileReason", "function saveBundle",
+                       "MAX_PROJECT_FILE", "budgetCheck(files)",
+                       "safeImportName", "LIMITS.bundleBytes"):
             self.assertIn(marker, sandbox)
 
     def test_dialogs_are_keyboard_accessible(self):

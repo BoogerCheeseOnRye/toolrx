@@ -23,18 +23,18 @@
       "memory": 46,
       "misc": 15,
       "plan": 18,
-      "project": 90,
+      "project": 111,
       "regex": 3,
       "text": 191,
       "units": 1990,
       "web": 32
     },
-    "count": 11248,
+    "count": 11269,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 481256,
-    "pure_literals": 6567
+    "pure_literals": 6580
   },
   "fixtures": {
     "builds": {

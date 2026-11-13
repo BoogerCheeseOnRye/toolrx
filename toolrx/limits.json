@@ -14,5 +14,6 @@
   "readTotalBytes": 24000,
   "contextBytes": 8192,
   "undoDepth": 16,
-  "outputChars": 12000
+  "outputChars": 12000,
+  "bundleBytes": 2097152
 }

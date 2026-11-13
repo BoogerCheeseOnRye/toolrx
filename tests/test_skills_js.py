@@ -1754,6 +1754,23 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   self.toolrxWeb.reset();
   out.lastRun.cleared = self.toolrxWeb.lastRun();
   out.lastRun.clearedStorage = !global.localStorage.getItem('toolrx.lastRun.v1');
+
+  // Step 43: bundles are reachable from chat, saved in the tab, and the
+  // strict importers refuse the wrong kind of bundle by name.
+  self.toolrxWeb.reset();
+  await self.toolrxWeb.prompt('build a small platformer game');
+  out.bundles = {};
+  out.bundles.export = await self.toolrxWeb.prompt('export this project');
+  out.bundles.workspace = await self.toolrxWeb.prompt('export the workspace');
+  out.bundles.list = await self.toolrxWeb.prompt('list bundles');
+  out.bundles.import = await self.toolrxWeb.prompt(
+    'import the project from platformer.toolrx.json');
+  out.bundles.slugs = self.toolrxWeb.projects().map(p => p.slug).sort();
+  out.bundles.wrongKind = await self.toolrxWeb.prompt(
+    'import the workspace from platformer.toolrx.json');
+  out.bundles.missing = await self.toolrxWeb.prompt(
+    'import the project from nope.toolrx.json');
+  out.bundles.limits = self.toolrxLimits.bundleBytes;
   console.log(JSON.stringify(out));
 })();
 """
@@ -2345,6 +2362,22 @@ class SkillsBridgeTest(unittest.TestCase):
         # the populated distribution.
         self.assertIsNone(mixed["distribution"]["confidence"])
         self.assertIsNone(mixed["distribution"]["margin"])
+
+    def test_project_bundles_run_from_chat(self):
+        b = self.out["bundles"]
+        self.assertIn("exported", b["export"][0]["text"])
+        self.assertIn("bundle platformer.toolrx.json", b["export"][0]["text"])
+        self.assertFalse(b["export"][0].get("error"))
+        self.assertIn("exported workspace", b["workspace"][0]["text"])
+        self.assertIn("platformer.toolrx.json", b["list"][0]["text"])
+        self.assertIn("workspace.toolrx.json", b["list"][0]["text"])
+        self.assertIn("imported", b["import"][0]["text"])
+        self.assertEqual(b["slugs"], ["platformer", "platformer-2"])
+        self.assertTrue(b["wrongKind"][0]["error"])
+        self.assertIn("single project bundle", b["wrongKind"][0]["text"])
+        self.assertTrue(b["missing"][0]["error"])
+        self.assertIn("no bundle named", b["missing"][0]["text"])
+        self.assertEqual(b["limits"], 2097152)
 
     def test_sandbox_preview_inlines_content_js(self):
         c = self.out["sandbox"]["content"]

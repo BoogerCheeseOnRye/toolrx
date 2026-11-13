@@ -1235,6 +1235,34 @@ for pat in ("add a footer note saying {text}", "add a footer note that says {tex
     add(f"project.note.{len(COMMANDS)}", "project.note",
         "^" + pat.replace("{text}", REST) + "$", {"text": "$1"}, pat, "project")
 
+# Project portability (step 43): a bundle is versioned JSON saved in this tab
+# under a plain name. Export writes it; import validates it before writing.
+# Exact forms come first so the bare "export project" is not read as a name.
+for pat in ("export this project", "export the project", "export the active project",
+            "export project", "export my project"):
+    add(f"project.export.{len(COMMANDS)}", "project.export", "^" + re.escape(pat) + "$",
+        {}, pat, "project")
+for pat in ("export project {slug}", "export the project {slug}"):
+    add(f"project.export.slug.{len(COMMANDS)}", "project.export",
+        "^" + pat.replace("{slug}", REST) + "$", {"slug": "$1"}, pat, "project")
+for pat in ("export the workspace", "export workspace", "export all projects",
+            "export the whole workspace", "export my workspace"):
+    add(f"workspace.export.{len(COMMANDS)}", "workspace.export",
+        "^" + re.escape(pat) + "$", {}, pat, "project")
+for pat in ("import the project from {bundle}", "import project from {bundle}",
+            "import project {bundle}"):
+    add(f"project.import.{len(COMMANDS)}", "project.import",
+        "^" + pat.replace("{bundle}", r"([A-Za-z0-9._-]+)") + "$",
+        {"bundle": "$1"}, pat, "project")
+for pat in ("import the workspace from {bundle}", "import workspace from {bundle}",
+            "import workspace {bundle}"):
+    add(f"workspace.import.{len(COMMANDS)}", "workspace.import",
+        "^" + pat.replace("{bundle}", r"([A-Za-z0-9._-]+)") + "$",
+        {"bundle": "$1"}, pat, "project")
+for pat in ("list bundles", "show bundles", "list project bundles"):
+    add(f"workspace.bundles.{len(COMMANDS)}", "workspace.bundles",
+        "^" + re.escape(pat) + "$", {}, pat, "project")
+
 # ------------------------------------------------------------- memory ----
 # Conversation memory is explicit and inspectable: facts, notes, and the last
 # build live in localStorage; nothing is inferred or sent anywhere.

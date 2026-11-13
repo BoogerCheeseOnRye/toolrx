@@ -146,6 +146,38 @@ class CommandLibraryTest(unittest.TestCase):
         self.assertEqual(self.args_for(expand, "expand the last plan with add day/night"),
                          {"more": "add day/night"})
 
+    def test_project_bundles_route_with_exact_arguments(self):
+        exact = {
+            "export this project": ("project.export", {}),
+            "export the project": ("project.export", {}),
+            "export the active project": ("project.export", {}),
+            "export project": ("project.export", {}),
+            "export the workspace": ("workspace.export", {}),
+            "export all projects": ("workspace.export", {}),
+            "list bundles": ("workspace.bundles", {}),
+            "show bundles": ("workspace.bundles", {}),
+        }
+        for query, (op, expected) in exact.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+            self.assertEqual(self.args_for(hit, query), expected, query)
+
+        named = {
+            "export project notes": ("project.export", {"slug": "notes"}),
+            "export the project verdant wood": ("project.export",
+                                                {"slug": "verdant wood"}),
+            "import the project from notes.toolrx.json":
+                ("project.import", {"bundle": "notes.toolrx.json"}),
+            "import the workspace from workspace.toolrx.json":
+                ("workspace.import", {"bundle": "workspace.toolrx.json"}),
+        }
+        for query, (op, expected) in named.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+            self.assertEqual(self.args_for(hit, query), expected, query)
+
     def test_multi_system_growth_routes_in_one_step(self):
         cases = {
             "add inventory and dialogue and save systems":

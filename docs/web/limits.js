@@ -4,6 +4,7 @@
   root.toolrxLimits = Object.freeze({
   "blockBytes": 8000,
   "buildMs": 4000,
+  "bundleBytes": 2097152,
   "contextBytes": 8192,
   "outputChars": 12000,
   "planChars": 8000,

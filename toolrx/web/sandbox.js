@@ -16,6 +16,7 @@
   const CHAT_KEY = "toolrx.chat.v1";
   const MEMORY_KEY = "toolrx.memory.v1";
   const LASTRUN_KEY = "toolrx.lastRun.v1";
+  const BUNDLE_KEY = "toolrx.bundles.v1";
   /* All numeric caps come from toolrx/limits.json via web/limits.js. Read/cat
    * caps are for chat-sized output; project write caps are separate and
    * deliberately larger. Loading without the limits file is a wiring bug. */
@@ -350,77 +351,432 @@
     return "deleted " + p.name + " · " + (projects.active ? "active is now " + projects.active : "no projects left");
   }
 
-  /* Project portability: a single project is a JSON document with its real
-   * files. Import never overwrites — it gets a unique slug, and it has to fit
-   * the same file and project budget as a build. */
+  /* ------------------------------------------------------- portability ---- */
+  /* A bundle is a versioned JSON document and never touches the network. A
+   * project bundle carries the plan, the file map, the build spec (and its
+   * seed), the per-project context, the envelope it was written under, and the
+   * operator settings. A workspace bundle carries every project plus the
+   * active slug. Import validates the whole document before writing anything
+   * and refuses unknown versions, traversal paths, duplicate slugs, and
+   * oversized bundles by name. */
+
+  function bundleKey(name) {
+    const raw = String(name == null ? "" : name).trim() || "bundle";
+    const stem = /\.toolrx\.json$/.test(raw)
+      ? raw.slice(0, -".toolrx.json".length) : raw;
+    return slugify(stem).slice(0, 60) + ".toolrx.json";
+  }
+
+  function readBundles() {
+    try {
+      const raw = root.localStorage && root.localStorage.getItem(BUNDLE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed && parsed.items && typeof parsed.items === "object") return parsed;
+    } catch (e) { /* private mode */ }
+    return { items: {} };
+  }
+
+  function saveBundle(name, text) {
+    const body = String(text == null ? "" : text);
+    const bytes = bytesOf(body);
+    if (bytes > LIMITS.bundleBytes) {
+      throw new Error("that bundle is " + bytes + " bytes, over the "
+        + LIMITS.bundleBytes + "-byte bundle cap");
+    }
+    const key = bundleKey(name);
+    const all = readBundles();
+    all.items[key] = { text: body, at: Date.now(), bytes: bytes };
+    try { root.localStorage.setItem(BUNDLE_KEY, JSON.stringify(all)); }
+    catch (e) { throw new Error("this browser refused to store the bundle (storage is full)"); }
+    const back = readBundles();
+    if (!back.items[key] || back.items[key].text !== body) {
+      throw new Error("this browser did not keep the bundle (storage is full)");
+    }
+    return key;
+  }
+
+  function readBundle(name) {
+    const key = bundleKey(name);
+    const item = readBundles().items[key];
+    if (!item) {
+      throw new Error("no bundle named \"" + key + "\" — export one first (say: list bundles)");
+    }
+    return item.text;
+  }
+
+  function bundleList() {
+    const items = readBundles().items;
+    const keys = Object.keys(items).sort();
+    if (!keys.length) return "no bundles yet — say: export this project";
+    return keys.map(function (key) {
+      const item = items[key];
+      return key + "  ·  " + (item.bytes || 0).toLocaleString() + " B  ·  "
+        + new Date(item.at || 0).toISOString().slice(0, 19) + "Z";
+    }).join("\n");
+  }
+
+  function settingsSnapshot() {
+    return {
+      projectBytes: projectBudget(),
+      undoDepth: undoDepth(),
+      stepMs: stepTimeout(),
+      planMs: planTimeout(),
+    };
+  }
+
+  /* Settings are stored as given; the readers clamp them, so a bundle can
+   * never smuggle a value past the envelope. */
+  function applySettings(src) {
+    if (!src || typeof src !== "object") return;
+    const put = function (key, value) {
+      const n = parseInt(value, 10);
+      if (!isFinite(n)) return;
+      try { root.localStorage.setItem(key, String(n)); } catch (e) { /* ignore */ }
+    };
+    put("toolrx.project.budget", src.projectBytes);
+    put("toolrx.undo.depth", src.undoDepth);
+    put("toolrx.step.timeout", src.stepMs);
+    put("toolrx.plan.timeout", src.planMs);
+  }
+
+  function projectPayload(p) {
+    const C = contextModule();
+    const state = C ? C.read(p.slug) : null;
+    const plan = readLastPlan(p.slug);
+    return {
+      slug: p.slug,
+      name: p.name, kind: p.kind, desc: p.desc,
+      created: p.created || null, updated: p.updated || null,
+      spec: p.spec || null,
+      seed: p.spec && p.spec.seed != null ? (p.spec.seed >>> 0) : null,
+      files: Object.assign({}, p.files || {}),
+      plan: plan && Array.isArray(plan.steps)
+        ? { version: 1, steps: plan.steps.slice(), status: (plan.status || []).slice() }
+        : null,
+      context: state ? state.entries.map(function (entry) {
+        return { kind: entry.kind, key: entry.key, text: entry.text };
+      }) : [],
+    };
+  }
+
+  function projectDoc(p) {
+    return {
+      format: "toolrx.project",
+      version: 2,
+      exported: new Date().toISOString(),
+      project: projectPayload(p),
+      limits: Object.assign({}, LIMITS),
+      settings: settingsSnapshot(),
+    };
+  }
 
   function exportProject(ref) {
     const p = findProject(ref);
     if (!p) throw new Error("no such project: " + ref);
+    return JSON.stringify(projectDoc(p), null, 2);
+  }
+
+  function exportWorkspace() {
     return JSON.stringify({
-      format: "toolrx.project",
+      format: "toolrx.workspace",
       version: 1,
       exported: new Date().toISOString(),
-      project: {
-        name: p.name, kind: p.kind, desc: p.desc,
-        created: p.created || null, updated: p.updated || null,
-        files: p.files,
-      },
+      active: projects.active || "",
+      projects: Object.keys(projects.items).sort().map(function (slug) {
+        return projectPayload(projects.items[slug]);
+      }),
+      limits: Object.assign({}, LIMITS),
+      settings: settingsSnapshot(),
     }, null, 2);
   }
 
-  function safeImportName(name) {
-    return String(name || "").replace(/\\/g, "/").split("/").pop()
-      .replace(/[^A-Za-z0-9._-]/g, "-").replace(/^[.-]+/, "").slice(0, 80);
+  function checkBundleVersion(doc, format, low, high) {
+    const version = parseInt(doc.version, 10);
+    if (!isFinite(version)) throw new Error(format + " bundle has no version");
+    if (version < low || version > high) {
+      throw new Error("unsupported " + format + " version " + version
+        + " (this build reads " + low + (high === low ? "" : "–" + high) + ")");
+    }
   }
 
-  function importProject(text) {
+  function parseBundle(text) {
+    const body = String(text == null ? "" : text);
+    if (bytesOf(body) > LIMITS.bundleBytes) {
+      throw new Error("that bundle is " + bytesOf(body) + " bytes, over the "
+        + LIMITS.bundleBytes + "-byte bundle cap");
+    }
     let raw;
-    try { raw = JSON.parse(String(text || "")); }
+    try { raw = JSON.parse(body); }
     catch (e) { throw new Error("that file is not valid JSON"); }
-    const src = raw && raw.project && typeof raw.project === "object" ? raw.project : raw;
-    if (!src || typeof src !== "object" || !src.files || typeof src.files !== "object") {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error("that file is not a toolrx bundle");
+    }
+    const format = raw.format ? String(raw.format) : "";
+    if (format && format !== "toolrx.project" && format !== "toolrx.workspace") {
+      throw new Error("unsupported bundle format \"" + format
+        + "\" (this build reads toolrx.project and toolrx.workspace)");
+    }
+    if (format === "toolrx.workspace") {
+      checkBundleVersion(raw, "toolrx.workspace", 1, 1);
+      return { kind: "workspace", doc: raw };
+    }
+    if (format === "toolrx.project") {
+      checkBundleVersion(raw, "toolrx.project", 1, 2);
+      const project = raw.project && typeof raw.project === "object" ? raw.project : null;
+      if (!project) throw new Error("that bundle has no project inside it");
+      return { kind: "project", doc: raw, project: project };
+    }
+    // Documents written before the format field are single-project v1.
+    const project = raw.project && typeof raw.project === "object" ? raw.project : raw;
+    return { kind: "project", doc: raw, project: project };
+  }
+
+  function safeImportName(name) {
+    return String(name || "").replace(/[^A-Za-z0-9._-]/g, "-")
+      .replace(/^[.-]+/, "").slice(0, 80);
+  }
+
+  function importFileReason(name) {
+    const raw = String(name == null ? "" : name);
+    if (!raw.trim()) return "an empty name";
+    if (/[\u0000-\u001f]/.test(raw)) return "control characters";
+    if (raw.indexOf("\\") !== -1) return "a backslash path";
+    if (/^[A-Za-z]:/.test(raw)) return "an absolute Windows path";
+    if (raw.charAt(0) === "/") return "an absolute path";
+    if (raw === "." || raw === "..") return "a relative path";
+    if (raw.indexOf("/") !== -1) return "a folder path";
+    return null;
+  }
+
+  function stageFiles(map) {
+    if (!map || typeof map !== "object" || Array.isArray(map)) {
       throw new Error("no project files found in that JSON");
     }
     const out = {};
-    let total = 0;
-    Object.keys(src.files).forEach(function (orig) {
-      let name = safeImportName(orig);
-      if (!name) return;
-      let n = 2;
-      const base = name;
-      while (out[name]) name = n++ + "-" + base;
-      const body = String(src.files[orig] === undefined || src.files[orig] === null ? "" : src.files[orig]);
-      if (bytesOf(body) > MAX_PROJECT_FILE) {
-        throw new Error(base + " is larger than " + MAX_PROJECT_FILE + " bytes");
+    Object.keys(map).forEach(function (orig) {
+      const reason = importFileReason(orig);
+      if (reason) {
+        throw new Error("refused \"" + orig
+          + "\": project files must be plain names, not " + reason);
       }
-      total += bytesOf(body);
+      let name = safeImportName(orig);
+      if (!name) {
+        throw new Error("refused \"" + orig + "\": the name is empty after sanitising");
+      }
+      const base = name;
+      let n = 2;
+      while (out[name]) name = n++ + "-" + base;
+      const body = String(map[orig] === undefined || map[orig] === null ? "" : map[orig]);
+      const bytes = bytesOf(body);
+      if (bytes > MAX_PROJECT_FILE) {
+        throw new Error("\"" + base + "\" is " + bytes + " bytes, over the "
+          + MAX_PROJECT_FILE + "-byte file cap");
+      }
       out[name] = body;
     });
     if (!Object.keys(out).length) throw new Error("the project has no files");
-    const budget = budgetCheck(out);
-    if (!budget.ok) throw new Error("that project is too large to import (" + budget.why + ")");
+    return out;
+  }
+
+  function stageContext(list) {
+    if (!Array.isArray(list)) return [];
+    const out = [];
+    list.forEach(function (entry) {
+      if (!entry || typeof entry !== "object") return;
+      const kind = String(entry.kind == null ? "" : entry.kind).slice(0, 40);
+      const key = String(entry.key == null ? "" : entry.key).slice(0, 80);
+      if (!/^[a-z][a-z0-9.]*$/.test(kind) || !key) return;
+      out.push({ kind: kind, key: key, text: String(entry.text == null ? "" : entry.text) });
+    });
+    return out;
+  }
+
+  function stagePlan(plan) {
+    if (!plan || typeof plan !== "object" || !Array.isArray(plan.steps)) return null;
+    const steps = plan.steps.map(function (s) { return String(s == null ? "" : s); });
+    if (!steps.length) return null;
+    const limit = planLimits().steps;
+    if (steps.length > limit) {
+      throw new Error("that plan has " + steps.length + " steps, over the "
+        + limit + "-step cap");
+    }
+    const status = Array.isArray(plan.status) ? plan.status : [];
+    return {
+      version: 1,
+      steps: steps,
+      status: steps.map(function (_, i) {
+        const s = String(status[i] || "");
+        return s === "done" || s === "error" ? s : "pending";
+      }),
+    };
+  }
+
+  function stageProject(src, slug) {
+    if (!src || typeof src !== "object") throw new Error("that project is not an object");
+    const files = stageFiles(src.files);
+    const budget = budgetCheck(files);
+    if (!budget.ok) {
+      throw new Error("that project is too large to import (" + budget.why + ")");
+    }
     const name = String(src.name || "Imported project").trim().slice(0, 60) || "Imported project";
     const p = {
-      slug: uniqueSlug(name), name: name,
+      slug: slug, name: name,
       kind: String(src.kind || "imported").slice(0, 40),
       desc: String(src.desc || "").slice(0, 300),
-      files: out, bundled: "", created: Date.now(), updated: Date.now(),
+      files: files, bundled: "", created: Date.now(), updated: Date.now(),
     };
+    if (src.spec && typeof src.spec === "object") p.spec = src.spec;
+    return { project: p, context: stageContext(src.context), plan: stagePlan(src.plan) };
+  }
+
+  function restoreProjectContext(slug, context, plan) {
+    const C = contextModule();
+    if (!C) return;
+    if (context && context.length) C.setMany(slug, context);
+    if (plan) C.set(slug, "plan", "last", C.stable(plan));
+  }
+
+  function installProject(staged) {
+    const p = staged.project;
     projects.items[p.slug] = p;
     projects.active = p.slug;
     p.bundled = bundleProject(p);
     writeProjects();
     writeProjectFiles(p);
+    restoreProjectContext(p.slug, staged.context, staged.plan);
     if (p.bundled) {
       preview = {
         html: p.bundled, kind: p.kind, desc: p.desc, title: p.name,
-        theme: htmlTheme(out["index.html"]) || preview.theme, at: Date.now(),
+        theme: htmlTheme(p.files["index.html"]) || preview.theme, at: Date.now(),
       };
       notifyPreview();
     }
-    return "imported \"" + p.name + "\" → projects/" + p.slug
-      + " (" + Object.keys(p.files).length + " files)";
+  }
+
+  function importProject(text) {
+    return importProjectDoc(parseBundle(text));
+  }
+
+  function importProjectDoc(parsed) {
+    if (parsed.kind === "workspace") {
+      throw new Error("that is a workspace bundle — say: import the workspace from <bundle>");
+    }
+    const name = String(parsed.project.name || "Imported project").trim().slice(0, 60)
+      || "Imported project";
+    const staged = stageProject(parsed.project, uniqueSlug(name));
+    installProject(staged);
+    return "imported \"" + staged.project.name + "\" → projects/" + staged.project.slug
+      + " (" + Object.keys(staged.project.files).length + " files"
+      + (staged.plan ? " + plan" : "") + ")";
+  }
+
+  function importWorkspace(text) {
+    return importWorkspaceDoc(parseBundle(text));
+  }
+
+  function importWorkspaceDoc(parsed) {
+    if (parsed.kind !== "workspace") {
+      throw new Error("that is a single project bundle — say: import the project from <bundle>");
+    }
+    const list = Array.isArray(parsed.doc.projects) ? parsed.doc.projects : [];
+    if (!list.length) throw new Error("that workspace has no projects");
+    const seen = {};
+    const staged = list.map(function (src, i) {
+      const label = src && (src.slug || src.name) ? String(src.slug || src.name) : "project " + (i + 1);
+      const slug = slugify(label);
+      if (seen[slug]) {
+        throw new Error("duplicate project slug \"" + slug + "\" in that workspace");
+      }
+      seen[slug] = true;
+      if (projects.items[slug]) {
+        throw new Error("this workspace already has \"" + slug
+          + "\" — delete it first or rename the bundle");
+      }
+      return stageProject(src, slug);
+    });
+    // All-or-none: snapshot the workspace, then restore it on any failure.
+    const before = {
+      active: projects.active,
+      items: JSON.parse(JSON.stringify(projects.items)),
+      files: Object.assign({}, files),
+    };
+    try {
+      staged.forEach(function (s) { projects.items[s.project.slug] = s.project; });
+      const want = String(parsed.doc.active || "");
+      projects.active = staged.some(function (s) { return s.project.slug === want; })
+        ? want : staged[0].project.slug;
+      staged.forEach(function (s) { s.project.bundled = bundleProject(s.project); });
+      writeProjects();
+      staged.forEach(function (s) {
+        writeProjectFiles(s.project);
+        restoreProjectContext(s.project.slug, s.context, s.plan);
+      });
+      applySettings(parsed.doc.settings);
+      const check = readProjects();
+      const lost = staged.filter(function (s) { return !check.items[s.project.slug]; });
+      if (lost.length) throw new Error("this browser did not keep the workspace (storage is full)");
+    } catch (e) {
+      projects = { active: before.active, items: before.items };
+      files = before.files;
+      writeFS(files);
+      writeProjects();
+      staged.forEach(function (s) {
+        const C = contextModule();
+        if (C) C.clear(s.project.slug);
+      });
+      throw e;
+    }
+    const p = activeProject();
+    if (p && p.bundled) {
+      preview = {
+        html: p.bundled, kind: p.kind, desc: p.desc, title: p.name,
+        theme: htmlTheme(p.files["index.html"]) || preview.theme, at: Date.now(),
+      };
+      notifyPreview();
+    }
+    return "imported workspace · " + staged.length + " project"
+      + (staged.length === 1 ? "" : "s") + " · active " + projects.active;
+  }
+
+  function importBundle(text) {
+    const parsed = parseBundle(text);
+    return parsed.kind === "workspace"
+      ? importWorkspaceDoc(parsed) : importProjectDoc(parsed);
+  }
+
+  function shortSha(text) {
+    return root.blake2bHex ? root.blake2bHex(String(text), null, 8) : "n/a";
+  }
+
+  function exportProjectBundle(ref) {
+    const p = findProject(ref);
+    if (!p) throw new Error("no such project: " + ref);
+    const text = exportProject(p.slug);
+    const key = saveBundle(p.slug, text);
+    return "exported \"" + p.name + "\" · " + Object.keys(p.files || {}).length + " files · "
+      + bytesOf(text).toLocaleString() + " B · seed "
+      + (p.spec && p.spec.seed != null ? (p.spec.seed >>> 0) : "n/a")
+      + "\nbundle " + key + " saved in this tab · sha " + shortSha(text)
+      + "\ndownload it from Projects → export, or import it with: import the project from "
+      + key;
+  }
+
+  function exportWorkspaceBundle() {
+    const text = exportWorkspace();
+    const key = saveBundle("workspace", text);
+    const n = Object.keys(projects.items).length;
+    return "exported workspace · " + n + " project" + (n === 1 ? "" : "s") + " · "
+      + bytesOf(text).toLocaleString() + " B · sha " + shortSha(text)
+      + "\nbundle " + key + " saved in this tab"
+      + "\nimport it with: import the workspace from " + key;
+  }
+
+  function importProjectNamed(name) {
+    return importProject(readBundle(name));
+  }
+
+  function importWorkspaceNamed(name) {
+    return importWorkspace(readBundle(name));
   }
 
   function filesForProject(p) {
@@ -1878,6 +2234,11 @@
           return "  " + n + "  ·  " + String(p.files[n] || "").length + " chars";
         }).join("\n");
       },
+      exportBundle: function (ref) { return exportProjectBundle(ref); },
+      importBundle: function (name) { return importProjectNamed(name); },
+      exportWorkspace: function () { return exportWorkspaceBundle(); },
+      importWorkspace: function (name) { return importWorkspaceNamed(name); },
+      bundles: function () { return bundleList(); },
       active: function () { return activeProject(); },
     };
   }
@@ -2340,6 +2701,14 @@
     deleteProject: function (slug) { return deleteProject(slug); },
     exportProject: function (slug) { return exportProject(slug); },
     importProject: function (text) { return importProject(text); },
+    exportWorkspace: function () { return exportWorkspace(); },
+    importWorkspace: function (text) { return importWorkspace(text); },
+    importBundle: function (text) { return importBundle(text); },
+    exportProjectBundle: function (slug) { return exportProjectBundle(slug); },
+    exportWorkspaceBundle: function () { return exportWorkspaceBundle(); },
+    importProjectNamed: function (name) { return importProject(readBundle(name)); },
+    importWorkspaceNamed: function (name) { return importWorkspace(readBundle(name)); },
+    bundles: function () { return bundleList(); },
     renameProject: function (slug, name) { return renameProject(slug, name); },
     chatHistory: chatHistory,
     memory: function (k, v) { return remember(k, v); },

@@ -888,7 +888,7 @@ multi-file growth and a two-patch plan and asserts touched files, written and
 emitted bytes, and per-step fields. Both harnesses read the record, not the
 markup; the dashboard renders from the same stored record.
 
-### 43. Project portability and workspace bundles
+### 43. Project portability and workspace bundles — done
 
 Finish project export/import and add a versioned workspace bundle containing
 multiple projects, per-project context, the active plan, and the relevant
@@ -903,6 +903,31 @@ context and the active plan survive the round-trip, a single-project package
 reproduces the same files from its seed, unknown or oversized bundles are
 refused before writes, traversal paths are rejected, and import leaves the
 existing workspace intact on any failure.
+
+Landed with `toolrx.project` v2 and `toolrx.workspace` v1 documents in
+`toolrx/web/sandbox.js`. A project bundle carries `slug`, `name`, `kind`,
+`desc`, `created`, `updated`, `spec`, `seed`, `files`, `plan`, and `context`
+plus the `limits` envelope and the four operator `settings`
+(`projectBytes`, `undoDepth`, `stepMs`, `planMs`); a workspace bundle carries
+the same payload for every project and the active slug. Legacy v1 documents
+still import. Validation runs entirely before writes: unknown formats and
+versions are named (`unsupported toolrx.project version 9 (this build reads
+1–2)`), file names must be plain (`refused "../../evil.txt": project files must
+be plain names, not a folder path`), files are capped at 128 KB, projects at
+32 files / 512 KB, plans at 40 steps, and bundles at the new
+`bundleBytes` = 2 MB in `limits.json`. Workspace imports refuse duplicate slugs
+inside the bundle and against the existing workspace, then write through a
+snapshot and restore on any failure, including a storage read-back check.
+Exports are saved in the tab under `toolrx.bundles.v1` (kept across `reset`)
+and downloadable from Projects; `importBundle` dispatches on `format`, so the
+picker accepts either kind. A package carries its files byte-exactly rather
+than regenerating them; the seed travels with them so the same build can be
+repeated. Commands: `export this project`, `export the
+workspace`, `import the project from <bundle>`, `import the workspace from
+<bundle>`, `list bundles`. `tests/test_sandbox_js.py` proves a three-project
+round-trip with byte-exact files, stable plan and context, restored active slug
+and settings, the all-or-none rollback, every named refusal, and the
+named-bundle lifecycle; `tests/test_skills_js.py` runs the chat path.
 
 ### 44. Deterministic summarizers and extractors for long intermediates
 

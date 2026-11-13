@@ -20,6 +20,7 @@ Ranges (the human-facing contract):
   contextBytes     256–65,536
   undoDepth        1–64
   outputChars      1,000–100,000
+  bundleBytes      65,536–8,388,608
 """
 
 import json
@@ -44,6 +45,7 @@ _RANGES = {
     "contextBytes": (256, 65_536),
     "undoDepth": (1, 64),
     "outputChars": (1_000, 100_000),
+    "bundleBytes": (65_536, 8_388_608),
 }
 
 
