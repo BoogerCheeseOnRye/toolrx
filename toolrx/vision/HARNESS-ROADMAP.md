@@ -7,7 +7,9 @@ later fill a validated spec or propose a patch, but it never becomes required.
 
 Steps 26–35 extend the same rules to longer input and longer output. They add no
 model: longer prompts become verified multi-step plans, and larger builds become
-seeded, composable projects.
+seeded, composable projects. Steps 36–45 harden that envelope: one limit table,
+a larger long-form suite, stricter budgets, safer continuation, richer modules,
+coverage metrics, portable workspaces, and a demo that proves the whole path.
 
 ## Where this plan started
 
@@ -621,6 +623,196 @@ is 270 (Python + Node harnesses), and the full suite runs offline.
 Start the fixture harness with step 26 so every step lands with measurements, even
 though step 35 closes the batch.
 
+## Next batch: hardening the long-form envelope (steps 36–45)
+
+Steps 26–35 proved that longer input and larger output work. This batch makes the
+promise durable: every cap has one source, every long request has a measured
+budget, continuation survives failure and switching projects, and the demo,
+tests, docs, and pitch all report the same numbers. The deterministic path stays
+first and the LLM adapter stays optional and off.
+
+### Target envelope (v2)
+
+The v1 table is the contract for input, plans, projects, undo, and context. The
+v2 table adds the budgets and observability that steps 36–45 must pin. Values are
+defaults; every one is configurable within a stated range and printed by `help`,
+`limits`, and the plan preview.
+
+| Dimension | v2 target |
+| --- | --- |
+| Single-route input | 2,000 chars |
+| Plan input | 8,000 chars / 40 steps |
+| Per-step wall time | 4,000 ms default, 250–30,000 ms |
+| Plan wall time | 60,000 ms default, refuses before running when the plan cannot fit |
+| Project files | 32 files |
+| Project text | 512 KB total |
+| Undo snapshots | 16 default, 1–64 |
+| Context store | 8 KB serialized, cap visible, eviction notes |
+| Block capture | 8,000 bytes, over-cap refused not cut |
+| Long-form suite | 48–80 prompts of 500–8,000 chars |
+| Workspace bundle | versioned JSON, round-trips byte-exactly, size-capped |
+
+### 36. Hard output budgets and progressive delivery
+
+Enforce a per-step wall-clock cap and a plan-level wall budget in addition to the
+existing per-file, per-project, and per-build caps. Every step (route, build,
+patch, growth, or continuation) starts under the same budget object and ends with
+a named success, refusal, timeout, or cancellation. Large builds and worldgens
+keep emitting progress at phase boundaries and at least every ~250 ms or 32 KB.
+Plan preview reports the active limits and whether the plan fits before anything
+runs; the final report reports bytes, files, steps, elapsed time, and headroom for
+each cap. A failed step stops the plan and leaves the last good project intact.
+
+**Done when** a plan that would exceed the plan wall budget is refused at preview
+time with the limiting cap named, a step that exceeds its cap is reported as
+`timeout` without writing files, a maximum-size build still emits at least three
+progress events and is byte-identical to the unobserved build, the final report
+shows headroom for files, bytes, and time, and the dashboard renders the same
+numbers.
+
+### 37. Long-form test suite v1
+
+Expand the step-35 fixtures into the source of truth for long input and output:
+48–80 prompts between 500 and 8,000 characters, grouped into single-route
+descriptions, connector and numbered plans, long build specs, multi-module
+growth with two-to-five patches, context continuation, and edge/refusal cases.
+Each fixture declares its family, expected plan structure, step count,
+confidence and margin floors, expected files or markers, undo depth, and context
+assertions. The Python and Node harnesses read the same fixture file and assert
+the same structural outcomes.
+
+**Done when** at least 48 fixtures span every family, at least six exceed 4,000
+characters, every fixture asserts plan structure and outcome, routing floors are
+non-degenerate, refusal fixtures fail before execution, context fixtures prove
+isolation and continuation, and the suite runs offline in
+`python3 -m unittest discover -s tests`.
+
+### 38. Unified limit source of truth
+
+Replace the duplicated constants in `security.py` / `policy.json`, `longform.py`,
+`blocks.py`, `executor.py`, `skills.js`, and `sandbox.js` with one checked-in
+configuration (`toolrx/limits.json`) plus loaders on each side. Security policy
+keeps its allowlists and denied patterns; numeric envelopes move to the shared
+file. Python imports the loader, the browser fetches the same JSON, and tests
+assert that every runtime limit equals the configured value. `help`, `limits`,
+`toolrxWeb.limits()`, and the plan preview print the active envelope and its
+source. A drift test fails if any duplicated constant reappears.
+
+**Done when** all numeric envelopes are defined once, both runtimes expose the
+same values, no duplicated limit constant remains outside the loader and tests,
+`limits` prints the active table, and changing one value in the JSON changes both
+the Python and browser behaviour in tests.
+
+### 39. Context and plan continuation hardening
+
+Make `continue from previous`, `expand the last plan with …`, and cross-file
+replay safe under truncation, partial failure, plan editing, and project
+switches. Add `context snapshot` and `diff against previous context` commands
+that show a stable, sorted diff of entries, bytes, and pending steps. A
+continuation must never mark a failed or skipped step as done, must not leak
+context across projects, and must say when a stored plan was truncated or
+evicted. Keep the visible byte cap and eviction notes.
+
+**Done when** snapshot and diff outputs are deterministic and match the stored
+bytes, continuation after a failed middle step runs only the pending suffix,
+switching away and back restores the same pending plan without duplication,
+truncated and evicted plans report it explicitly, and context payloads never
+enter a network request.
+
+### 40. Richer multi-module skeletons and system libraries
+
+Grow the additive module surface with reusable, seeded system templates:
+inventory, dialogue, combat, save/load, quests, crafting, UI panels, and audio
+cues at minimum. Each system is a real named file under `systems/` (or the
+engine-specific equivalent), registers through `window.toolrxSystems`, and
+appends its bootstrap, README, and ARCHITECTURE rows without regenerating the
+project. One long prompt may request and compose several systems at once; the
+whole set installs atomically under one undo entry and respects the project
+budgets. Shared engines stay plain scripts that load from `file://`.
+
+**Done when** at least eight systems exist with seeded, reproducible output, a
+single prompt can add three or more at once, each adds real code and files, the
+preview still runs, one undo removes the whole bundle, repeated adds are
+idempotent, and the project stays inside the v2 file and byte caps.
+
+### 41. Command-library quality pass and coverage metrics
+
+Audit the command catalog for redundancy, near-duplicate regexes, low-margin
+collisions, and gaps on long compositional prompts. Generate a deterministic
+coverage report that maps every long-form family to exact-match, router, and
+fallback shares, and to the confidence and margin distribution. Remove or merge
+only patterns that measure as low signal; add only patterns that close a measured
+gap. Counts and coverage derive from the generated catalog, never hard-coded.
+
+**Done when** the catalog regenerates byte-identically with no duplicate ids or
+whitespace-insensitive duplicate regexes, the coverage report is reproducible and
+lists every fixture family, no long-form family falls to chat fallback, the
+minimum margin stays above the step-34 floor, and additions are justified by the
+report rather than by volume.
+
+### 42. Observability dashboard for long runs
+
+Extend `lastRun()` into a long-run record: plan length, steps executed and
+failed, per-step `via`, `ms`, confidence, margin, and bytes, the confidence and
+margin distribution, peak context bytes, total bytes written, files touched, undo
+depth, and headroom for files, bytes, and time. Persist it beside the current
+record, clear it on reset, and render it in the preview pane so "what just
+happened on that long prompt" is readable without opening the console. Keep the
+one-line chip and add an expandable detail view.
+
+**Done when** every field is populated for a multi-step, multi-module run,
+per-step timings sum to the reported total within the measurement tolerance,
+headroom matches the active limits, the detail view renders from the stored
+record after reload, reset clears both record and view, and the Node harness
+asserts the fields rather than the markup.
+
+### 43. Project portability and workspace bundles
+
+Finish project export/import and add a versioned workspace bundle containing
+multiple projects, per-project context, the active plan, and the relevant
+settings. A project package exports the plan, the resulting file map, the seed,
+and the limits so the run is reproducible; an import validates version, schema,
+paths, and budgets before writing. Round-trips are byte-exact for files and
+stable for context. Unknown versions, traversal paths, oversized bundles, and
+duplicate slugs are refused with a named reason. No account and no network.
+
+**Done when** a workspace with at least three projects round-trips byte-exactly,
+context and the active plan survive the round-trip, a single-project package
+reproduces the same files from its seed, unknown or oversized bundles are
+refused before writes, traversal paths are rejected, and import leaves the
+existing workspace intact on any failure.
+
+### 44. Deterministic summarizers and extractors for long intermediates
+
+Extend the step-33 text family with exact, offline tools for long intermediate
+results: extract lists, key facts, file outlines, and diff summaries, alongside
+the existing `summarize`, `headings`, `outline`, `firstlines`, and `table`.
+Each accepts a file or the previous step, caps its input and output explicitly,
+handles empty and short input honestly, preserves source order where it matters,
+and produces byte-identical output for the same input. A summarizer result can
+feed the next step without a model.
+
+**Done when** at least four new extractors exist, each is deterministic across
+runs, input and output caps are named and enforced, empty and short inputs return
+a clear message rather than a crash, two-step chains consume the previous result,
+and fixtures pin every output byte.
+
+### 45. End-to-end long harness demo and pitch refresh
+
+Ship a reproducible long-prompt demo that runs fully offline: one 3,000–6,000
+character request that becomes a verified plan, builds a multi-module project,
+composes several systems, applies a multi-patch bundle, continues from context,
+and finishes with an exact undo. The demo emits a transcript with the active
+limits, per-step decisions, confidence and margin, bytes and files, timings,
+headroom, and context snapshots. Update `README.md`, `docs/pitch.html`, and the
+dashboard copy from measured values; no number ships without a test or a
+regenerated report behind it.
+
+**Done when** the demo runs offline in the suite and as a documented command,
+the transcript is reproducible byte-for-byte apart from timings, every demo
+assertion passes, the pitch and README numbers match the report, and a live
+GitHub Pages smoke of the same path passes with no severe console errors.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
@@ -632,22 +824,39 @@ though step 35 closes the batch.
 5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
    capture) → 34 (vocab/centroids) → 35 (gate) — done
-6. Step 14 stays independent; it can land whenever the sprite subset is chosen.
+6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) →
+   40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
+   44 (extractors) → 45 (demo) — planned
+7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
+
+Steps 36–37 come first because they define the budget and the gate every later
+step measures against. Step 38 lands immediately after so no new limit is added
+to two places. Steps 39–44 may be reordered within the batch if a measurement
+justifies it; step 45 is last.
 
 ## Open questions
 
 - Step 14 source is known: `huggingface.co/datasets/Angais/pixel-art-atlas-1.4m`,
   CC0-1.0, native 16×16 RGBA. Vendoring a pinned subset with a manifest and
   checksums is deferred; procedural sprites remain the fallback.
-- Are the v1 envelope numbers right? Decide from step-35 measurements, not from
-  optimism; adjust the table and the tests together.
-- Should caps be editable in Command Center, or stay in `policy.json` only?
-- How is plan quality scored: completion rate, confidence floor, refusal
-  correctness, or a weighted mix? Pick one formula before step 27 ships.
-- Should context be per project (default) or global, and should it survive a
-  project switch?
-- Do multi-file patches install atomically only, or may they stage a pending
-  multi-file diff like the LLM path? Atomic is the default.
+- The v1 envelope is settled by the step-35 measurements: 2,000 / 8,000 / 40
+  steps, 32 files, 512 KB, 16 undo, 8 KB context. v2 changes only from step-37
+  evidence, never from optimism.
+- Caps stay in the shared config, not in the Command Center. The Command Center
+  may display them; changing them stays a file edit with a restart.
+- Plan quality is scored by completion rate, the confidence floor, refusal
+  correctness, and margin, all reported by the suite. No weighted single score.
+- Context is per project and survives a project switch; cross-project payloads
+  are never merged.
+- Multi-file patches install atomically only. The LLM path may stage a pending
+  diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13 and 15–25 are complete. 14 remains deferred. Steps 26–35 are
+- Steps 11–13 and 15–35 are complete. 14 remains deferred. Steps 36–45 are
   planned; none is started.
+- Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
+  512 KB, or raise one dimension at a time from measurements? Raise only after
+  the step-37 suite proves the margin.
+- Should workspace bundles include the whole settings object or only project,
+  context, plan, and limits? Include only what affects reproduction.
+- Should the coverage report ship as a generated file in `docs/` or stay a test
+  artifact? Ship it once step 41 proves the format is stable.
