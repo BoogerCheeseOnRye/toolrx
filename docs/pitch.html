@@ -333,7 +333,7 @@
           <div class="out"><b>spawnBoss()</b> in app.js · spec updated · lossless undo</div>
         </article>
       </div>
-      <p class="note">One prompt can be a plan: <b>then</b>, <b>;</b>, <b>-&gt;</b>, or numbered lines split into steps, and each step sees the previous result.</p>
+      <p class="note">One prompt can be a plan: <b>then</b>, <b>;</b>, <b>-&gt;</b>, numbered lines, or a long multi-sentence request split into steps, and each step sees the previous result.</p>
     </div>
   </section>
 
@@ -345,7 +345,7 @@
         <div class="stat"><div class="v">12,502</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
         <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
         <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
-        <div class="stat"><div class="v">170</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code.</div></div>
+        <div class="stat"><div class="v">270</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
         <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
         <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
       </div>
@@ -487,7 +487,7 @@
         <div class="row"><span class="tag done">done</span><p><b>Multi-module growth (step 30).</b> Additive <code>core/</code>, <code>ui/</code>, <code>data/</code>, <code>content/</code> and <code>systems/</code> files, atomic two-to-five patch bundles, and 16-deep undo.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Deterministic context (step 31).</b> Per-project working memory with a visible byte cap, <code>what is in context</code>, <code>continue from previous</code>, plan expansion, and cross-project edit replay — never in a network payload.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Output budgets (step 32).</b> 128 KB files, 512 KB projects, phase and per-file progress with partial lists, and cancellation or timeout that keeps the previous project intact.</p></div>
-        <div class="row"><span class="tag done">done</span><p><b>Long-form envelope (steps 33–35).</b> Byte-exact block capture, expanded knowledge with non-degenerate margins, and 27 long prompts plus plan, refusal, build, and five-patch undo fixtures — still no LLM.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Long-form envelope (steps 33–35).</b> Byte-exact block capture, expanded knowledge with non-degenerate margins, 27 long prompts plus plan, refusal, build, and five-patch undo fixtures, and a dashboard <code>last run</code> chip for size, steps, time, bytes, files, and undo depth — still no LLM.</p></div>
         <div class="row"><span class="tag next">next</span><p><b>Project import/export.</b> Move a workspace between browsers without an account.</p></div>
         <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
       </div>
