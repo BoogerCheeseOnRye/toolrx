@@ -27,6 +27,8 @@ import os
 import re
 import unicodedata
 
+import envelope
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 POLICY_PATH = os.path.join(HERE, "policy.json")
 
@@ -53,11 +55,11 @@ class SecurityPolicy:
         self.allowed_extensions = set(policy.get("allowed_extensions", []))
         self.allowed_hosts = set(policy.get("allowed_hosts", []))
         self.denied_path_substrings = policy.get("denied_path_substrings", [])
-        self.max_len = int(policy.get("max_len", 2000))
-        self.max_plan_len = max(self.max_len, int(policy.get("max_plan_len", 8000)))
-        self.max_plan_steps = int(policy.get("max_plan_steps", 40))
-        self.max_step_ms = int(policy.get("max_step_ms", 4000))
-        self.max_plan_ms = int(policy.get("max_plan_ms", 160000))
+        self.max_len = int(envelope.get("singleChars"))
+        self.max_plan_len = max(self.max_len, int(envelope.get("planChars")))
+        self.max_plan_steps = int(envelope.get("planSteps"))
+        self.max_step_ms = int(envelope.get("stepMs"))
+        self.max_plan_ms = int(envelope.get("planMs"))
         # Sandbox root: env override wins; otherwise a relative/empty config
         # value means "the directory this package lives in". This keeps the
         # shipped policy.json free of machine-specific absolute paths.
@@ -194,7 +196,7 @@ up down off on out over under again further then once here there
 please tell know show see use read list open view display print get find
 give make take set check total add sum count number numbers value values
 file files folder folders directory dir path home memory ram storage usage
-used free available total status info information system machine device
+limits used free available total status info information system machine device
 config configuration settings note notes text doc document log file
 contents items entries data my project
 cat changelog config cfg ini html whats usage check
@@ -211,11 +213,6 @@ linux unix shell command exec
 """
 
 _DEFAULT_POLICY = {
-    "max_len": 2000,
-    "max_plan_len": 8000,
-    "max_plan_steps": 40,
-    "max_step_ms": 4000,
-    "max_plan_ms": 160000,
     "sandbox_root": "",
     "allowed_extensions": [".txt", ".md", ".json", ".yaml", ".yml", ".log", ".csv", ".toml", ".ini", ".cfg", ".html", ".htm", ".py", ".pyc", ".c", ".h", ".sh", ".bash", ".js", ".jsx", ".ts", ".tsx", ".css", ".scss", ".java", ".go", ".rs", ".rb", ".php", ".env", ".sql", ".conf", ".example", ".bak", ".orig", ".out"],
     "denied_path_substrings": [

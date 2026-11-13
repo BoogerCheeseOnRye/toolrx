@@ -68,7 +68,7 @@ global.fetch = async (url, opts) => {
 };
 
 for (const f of ['engine2d.js', 'engine3d.js', 'templates.js', 'patches.js',
-                 'lang.js', 'llm.js', 'skills.js', 'sandbox.js']) {
+                 'limits.js', 'lang.js', 'llm.js', 'skills.js', 'sandbox.js']) {
   eval(fs.readFileSync(path.join(WEB, f), 'utf8'));
 }
 

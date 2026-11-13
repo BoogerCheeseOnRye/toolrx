@@ -28,6 +28,7 @@ global.localStorage = {
 global.CustomEvent = class { constructor(type, opts) { this.type = type; this.detail = opts && opts.detail; } };
 global.dispatchEvent = () => {};
 global.fetch = () => Promise.reject(new Error('network disabled in tests'));
+eval(fs.readFileSync(require('path').join(require('path').dirname(process.argv[1]), 'limits.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[1], 'utf8'));
 
 const api = self.toolrxWeb;

@@ -11,7 +11,16 @@
 (function (root) {
   "use strict";
 
-  const MAX_OUT = 12000;
+  /* One source of numeric envelopes: toolrx/limits.json, generated into
+   * toolrx/web/limits.js by toolrx/gen_limits.py. Loading this script without
+   * the limits file is a wiring bug, so fail loudly instead of guessing. */
+  const LIMITS_RAW = (function () {
+    if (!root.toolrxLimits) {
+      throw new Error("toolrx/web/limits.js must load before skills.js");
+    }
+    return root.toolrxLimits;
+  })();
+  const MAX_OUT = LIMITS_RAW.outputChars;
   const PRONOUN = /^(?:it|that|this|the text|the result|the output|previous|above|same)$/i;
 
   let COMMANDS = [];
@@ -1858,6 +1867,7 @@
             ? " — the optional LLM adapter is enabled in this browser and only runs on llm plan / llm patch."
             : " unless you explicitly enable the optional LLM adapter in Command Center.");
       }
+      if (a.op === "limits") return limitsText();
       const topic = (a.topic || "").toLowerCase();
       if (a.op === "help" || a.op === "help") {
         return helpText(topic, ctx);
@@ -2060,6 +2070,33 @@
     },
   };
 
+  function limitsText() {
+    const L = LIMITS_RAW;
+    const order = [
+      ["singleChars", "one routed request"],
+      ["planChars", "one plan"],
+      ["planSteps", "steps per plan"],
+      ["blockBytes", "verbatim block"],
+      ["stepMs", "per-step wall clock"],
+      ["planMs", "whole-plan wall clock"],
+      ["projectFileBytes", "one project file"],
+      ["projectBytes", "one project"],
+      ["projectFiles", "files per project"],
+      ["buildMs", "one build"],
+      ["readFileBytes", "one file read"],
+      ["readTotalBytes", "all reads combined"],
+      ["contextBytes", "context store"],
+      ["undoDepth", "undo history"],
+      ["outputChars", "one chat reply"],
+    ];
+    const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
+      + L.version + ")"];
+    for (const [key, label] of order) {
+      rows.push("  " + key.padEnd(16) + String(L[key]).padStart(9) + "  " + label);
+    }
+    return rows.join("\n");
+  }
+
   function helpText(topic, ctx) {
     const cats = meta.categories || {};
     if (topic) {
@@ -2183,10 +2220,11 @@
   }
 
   /* ------------------------------------------------------------- planner -- */
-  /* Keep these limits in sync with toolrx/longform.py and policy.json. */
+  /* Values come from toolrx/limits.json via web/limits.js. */
   const LIMITS = Object.freeze({
-    single: 2000, plan: 8000, steps: 40, block: 8000,
-    stepMs: 4000, planMs: 160000,
+    single: LIMITS_RAW.singleChars, plan: LIMITS_RAW.planChars,
+    steps: LIMITS_RAW.planSteps, block: LIMITS_RAW.blockBytes,
+    stepMs: LIMITS_RAW.stepMs, planMs: LIMITS_RAW.planMs,
   });
   const CONNECTOR_RE = /\s*(?:;|->|→|\bthen\b|\bafter that\b|\band then\b|\bfollowed by\b)\s*/i;
   const SENTENCE_RE = /(?<=[.!?])\s+(?=[a-z0-9"'(\[])/i;
@@ -2562,6 +2600,7 @@
     search: search,
     catalog: catalog,
     limits: LIMITS,
+    limitsText: limitsText,
     splitPrompt: splitPrompt,
     splitPromptInfo: splitPromptInfo,
     planPreview: planPreview,

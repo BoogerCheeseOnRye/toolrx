@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "singleChars": 2000,
+  "planChars": 8000,
+  "planSteps": 40,
+  "blockBytes": 8000,
+  "stepMs": 4000,
+  "planMs": 160000,
+  "projectFileBytes": 131072,
+  "projectBytes": 524288,
+  "projectFiles": 32,
+  "buildMs": 4000,
+  "readFileBytes": 8000,
+  "readTotalBytes": 24000,
+  "contextBytes": 8192,
+  "undoDepth": 16,
+  "outputChars": 12000
+}

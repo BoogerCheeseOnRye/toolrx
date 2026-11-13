@@ -51,7 +51,7 @@ global.CustomEvent = class {
 global.dispatchEvent = () => {};
 
 for (const name of [
-  'blake2b.js', 'router.js', 'skills.js', 'templates.js', 'context.js', 'lang.js',
+  'blake2b.js', 'router.js', 'limits.js', 'skills.js', 'templates.js', 'context.js', 'lang.js',
   'patches.js', 'engine2d.js', 'engine2d.embed.js', 'engine3d.js',
   'engine3d.embed.js', 'worldgen.js', 'worldgen.embed.js', 'rpg2.js',
   'rpg2.embed.js', 'sandbox.js',

@@ -1,9 +1,4 @@
 {
-  "max_len": 2000,
-  "max_plan_len": 8000,
-  "max_plan_steps": 40,
-  "max_step_ms": 4000,
-  "max_plan_ms": 160000,
   "sandbox_root": "",
   "allowed_extensions": [
     ".txt",
@@ -438,6 +433,7 @@
     "leaving",
     "less",
     "like",
+    "limits",
     "line",
     "lines",
     "link",

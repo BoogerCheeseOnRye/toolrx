@@ -16,16 +16,23 @@
   const CHAT_KEY = "toolrx.chat.v1";
   const MEMORY_KEY = "toolrx.memory.v1";
   const LASTRUN_KEY = "toolrx.lastRun.v1";
-  // Read/cat caps are for chat-sized output. Project write caps are separate
-  // and deliberately larger: step 32 targets 32 files and 512 KB per project.
-  const MAX_FILE = 8000;
-  const MAX_TOTAL = 24000;
-  const MAX_PROJECT_FILE = 131072;   // 128 KB per file
-  const MAX_PROJECT = 524288;        // 512 KB per project
-  const MAX_PROJECT_FILES = 32;
-  const BUILD_TIMEOUT = 4000;        // ms, configurable
-  const STEP_TIMEOUT = 4000;         // ms per plan step, configurable
-  const PLAN_TIMEOUT = 160000;       // ms for a whole plan, configurable
+  /* All numeric caps come from toolrx/limits.json via web/limits.js. Read/cat
+   * caps are for chat-sized output; project write caps are separate and
+   * deliberately larger. Loading without the limits file is a wiring bug. */
+  const LIMITS = (function () {
+    if (!root.toolrxLimits) {
+      throw new Error("toolrx/web/limits.js must load before sandbox.js");
+    }
+    return root.toolrxLimits;
+  })();
+  const MAX_FILE = LIMITS.readFileBytes;
+  const MAX_TOTAL = LIMITS.readTotalBytes;
+  const MAX_PROJECT_FILE = LIMITS.projectFileBytes;
+  const MAX_PROJECT = LIMITS.projectBytes;
+  const MAX_PROJECT_FILES = LIMITS.projectFiles;
+  const BUILD_TIMEOUT = LIMITS.buildMs;        // ms, configurable
+  const STEP_TIMEOUT = LIMITS.stepMs;          // ms per plan step, configurable
+  const PLAN_TIMEOUT = LIMITS.planMs;          // ms for a whole plan, configurable
   const PROGRESS_MS = 250;
   const PROGRESS_BYTES = 32768;
 
@@ -142,9 +149,9 @@
   function planLimits() {
     const L = root.toolrxSkills && root.toolrxSkills.limits;
     return {
-      chars: (L && L.plan) || 8000,
-      steps: (L && L.steps) || 40,
-      block: (L && L.block) || 8000,
+      chars: (L && L.plan) || LIMITS.planChars,
+      steps: (L && L.steps) || LIMITS.planSteps,
+      block: (L && L.block) || LIMITS.blockBytes,
       stepMs: stepTimeout(),
       planMs: planTimeout(),
     };
@@ -781,7 +788,7 @@
   }
 
   /* Undo depth is configurable and defaults to 16 full-file snapshots. */
-  const UNDO_DEFAULT = 16;
+  const UNDO_DEFAULT = LIMITS.undoDepth;
   function undoDepth() {
     let n = UNDO_DEFAULT;
     try {

@@ -12,6 +12,7 @@ import json
 import os
 
 import security
+import envelope
 import os_tools
 import modules
 import edits
@@ -64,7 +65,8 @@ def do_list_dir(args, pol):
 def do_cat_all(args, pol):
     """Dump the text contents of every text file inside the sandbox."""
     root = pol.sandbox_root
-    _MAX_FILE, _MAX_TOTAL = 8000, 120000
+    _MAX_FILE = int(envelope.get("readFileBytes"))
+    _MAX_TOTAL = int(envelope.get("readTotalBytes"))
     _SKIP = {"__pycache__", ".git", ".gitignore"}
     blocks, total = [], 0
     for dirpath, dirnames, filenames in os.walk(root):

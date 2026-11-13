@@ -1337,6 +1337,9 @@ for pat, op in (("who are you", "who"), ("what are you", "who"),
 
 add("misc.help.topic", "system", r"^help\s+(.+)$", {"op": "help", "topic": "$1"},
     "help on a topic", "misc")
+for pat in ("limits", "show limits"):
+    add(f"misc.limits.{len(COMMANDS)}", "system", "^" + re.escape(pat) + "$",
+        {"op": "limits"}, pat, "misc")
 add("misc.preview", "preview", r"^(?:show|open|display)\s+(?:the\s+)?preview$", {},
     "show the preview pane", "misc")
 add("misc.theme.dark", "preview.theme", r"^(?:make it dark|use a dark theme|dark mode)$",

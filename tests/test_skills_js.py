@@ -33,9 +33,10 @@ global.localStorage = {
 global.CustomEvent = class { constructor(type, opts) { this.type = type; this.detail = opts && opts.detail; } };
 global.dispatchEvent = () => {};
 global.toolrxRouter = { load: () => ({}), route: () => ({ tool: 'none', args: {}, confidence: 0 }) };
+const WEB = require('path').dirname(process.argv[4]);
+eval(fs.readFileSync(require('path').join(WEB, 'limits.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 eval(fs.readFileSync(process.argv[3], 'utf8'));
-const WEB = require('path').dirname(process.argv[4]);
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.embed.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'engine3d.js'), 'utf8'));

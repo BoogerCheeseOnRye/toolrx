@@ -17,6 +17,7 @@ import executor
 import longform
 import security
 import blocks
+import envelope
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MODEL = os.path.join(HERE, "micro_model.json")
@@ -71,8 +72,8 @@ def _ms_since(started):
 
 def _plan_report(clean, pol, outputs, started):
     elapsed = _ms_since(started)
-    step_cap = getattr(pol, "max_step_ms", 4000)
-    plan_cap = getattr(pol, "max_plan_ms", 160000)
+    step_cap = getattr(pol, "max_step_ms", envelope.get("stepMs"))
+    plan_cap = getattr(pol, "max_plan_ms", envelope.get("planMs"))
     errors = sum(1 for o in outputs
                  if o.get("blocked") or not (o.get("result") or {}).get("ok"))
     return {
@@ -108,8 +109,8 @@ def process_plan(clean, pol, info):
     outputs = []
     lines = []
     started = time.monotonic()
-    step_cap = getattr(pol, "max_step_ms", 4000)
-    plan_cap = getattr(pol, "max_plan_ms", 160000)
+    step_cap = getattr(pol, "max_step_ms", envelope.get("stepMs"))
+    plan_cap = getattr(pol, "max_plan_ms", envelope.get("planMs"))
     for i, step in enumerate(steps):
         if _ms_since(started) >= plan_cap:
             reason = (f"plan wall budget {plan_cap} ms exhausted before step "

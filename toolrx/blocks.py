@@ -14,7 +14,9 @@ header is content, including lines that look like commands.
 
 import re
 
-MAX_BLOCK = 8000
+import envelope
+
+MAX_BLOCK = int(envelope.get("blockBytes"))
 
 _HEADER = re.compile(
     r"^[ \t]*(?:write|save|put|create|append)[ \t]+(?:the[ \t]+)?"

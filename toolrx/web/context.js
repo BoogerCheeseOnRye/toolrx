@@ -22,7 +22,12 @@
   var PREFIX = "toolrx.context.v1.";
   var INDEX_KEY = PREFIX + "index";
   var VERSION = 1;
-  var LIMIT = 8192;
+  var LIMIT = (function () {
+    if (!root.toolrxLimits) {
+      throw new Error("toolrx/web/limits.js must load before context.js");
+    }
+    return root.toolrxLimits.contextBytes;
+  })();
   var NOTE_MAX = 3;
   var OVERHEAD = 300;
 

@@ -6,16 +6,18 @@ connectors, then cap each step at the single-route length. This module is pure
 text handling so both the Python pipeline and the tests can use it without a
 model or a network.
 
-Limits are mirrored in `toolrx/web/skills.js` (`LIMITS`) and in policy.json.
-Keep the three in sync; `tests/test_longform.py` checks the Python side and the
-Node harness checks the browser side.
+The numeric envelope lives in `toolrx/limits.json`. Python reads it through
+`envelope`; the browser reads the generated `toolrx/web/limits.js`. Neither side
+keeps a private copy, and `tests/test_limits.py` fails if they drift.
 """
 
 import re
 
-SINGLE_MAX = 2000
-PLAN_MAX = 8000
-PLAN_STEPS = 40
+import envelope
+
+SINGLE_MAX = int(envelope.get("singleChars"))
+PLAN_MAX = int(envelope.get("planChars"))
+PLAN_STEPS = int(envelope.get("planSteps"))
 
 # Sentence boundary: punctuation followed by whitespace and a likely new
 # sentence. Decimals (3.5) and filenames (notes.txt) have no whitespace after
