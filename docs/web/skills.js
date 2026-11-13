@@ -2505,7 +2505,11 @@
   async function runPrompt(query, ctx) {
     const base = ctx || {};
     const block = blockCapture(query);
-    if (block) return [runBlockWrite(block, base)];
+    if (block) {
+      const blockResult = runBlockWrite(block, base);
+      blockResult.planLength = 1;
+      return [blockResult];
+    }
     const limits = base.limits || {};
     const stepMs = numberLimit(limits.stepMs, LIMITS.stepMs);
     const planMs = numberLimit(limits.planMs, LIMITS.planMs);
@@ -2513,7 +2517,8 @@
     if (preview.blocked) {
       const via = /^plan wall budget/.test(String(preview.reason || ""))
         ? "budget.plan" : "limit";
-      return [{ step: String(query), text: preview.reason, error: true, via: via }];
+      return [{ step: String(query), text: preview.reason, error: true,
+                via: via, planLength: 1 }];
     }
     const steps = preview.steps.map(function (s) { return s.text; });
     const results = [];
@@ -2528,6 +2533,7 @@
       if (planElapsed >= planMs) {
         results.push({
           step: step, error: true, via: "budget.plan", ms: Math.round(planElapsed),
+          planLength: steps.length,
           text: "plan wall budget " + planMs + " ms exhausted after "
             + results.length + " step(s) — the plan stopped; previous project kept",
         });
@@ -2582,6 +2588,7 @@
         result = outcome.value || { text: "", error: false };
       }
       result.step = step;
+      result.planLength = steps.length;
       if (interpreted) {
         const label = L && L.say ? L.say(interpreted.lang, "interpreted") : "interpreted as";
         result.lang = interpreted.lang;

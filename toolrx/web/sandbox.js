@@ -1192,17 +1192,35 @@
     }
   }
 
-  function recordRun(query, results, started) {
+  function distribution(values) {
+    const nums = (values || []).filter(function (v) {
+      return typeof v === "number" && isFinite(v);
+    }).sort(function (a, b) { return a - b; });
+    if (!nums.length) return null;
+    const pick = function (q) {
+      return nums[Math.max(0, Math.min(nums.length - 1,
+        Math.round(q * (nums.length - 1))))];
+    };
+    const mid = Math.floor(nums.length / 2);
+    const median = nums.length % 2
+      ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+    const round = function (v) { return Math.round(v * 10000) / 10000; };
+    return {
+      n: nums.length,
+      min: round(nums[0]),
+      p10: round(pick(0.10)),
+      median: round(median),
+      p90: round(pick(0.90)),
+      max: round(nums[nums.length - 1]),
+    };
+  }
+
+  function recordRun(query, results, started, meta) {
     const list = Array.isArray(results) ? results : [];
     if (!list.length) return null;
+    meta = meta || {};
     const text = list.map(function (r) { return r && r.text ? r.text : ""; })
       .filter(Boolean).join("\n");
-    const routed = list.filter(function (r) {
-      return r && typeof r.confidence === "number" && isFinite(r.confidence);
-    });
-    const withMargin = list.filter(function (r) {
-      return r && typeof r.margin === "number" && isFinite(r.margin);
-    });
     const last = list[list.length - 1] || {};
     const p = activeProject();
     const fileMap = (p && p.files) || files || {};
@@ -1217,6 +1235,35 @@
     const usedFiles = Object.keys(fileMap).length;
     const maxBytes = projectBudget();
     const plan = planLimits();
+    const stepsDetail = list.map(function (r, i) {
+      const item = r || {};
+      const number = function (v) {
+        return typeof v === "number" && isFinite(v) ? v : null;
+      };
+      return {
+        n: i + 1,
+        step: String(item.step || "").replace(/\s+/g, " ").slice(0, 240),
+        via: String(item.via || "").slice(0, 80),
+        ms: number(item.ms) == null ? null : Math.max(0, Math.round(item.ms)),
+        confidence: number(item.confidence),
+        margin: number(item.margin),
+        bytes: bytesOf(item.text || ""),
+        error: !!item.error,
+      };
+    });
+    const confidenceStats = distribution(stepsDetail.map(function (s) { return s.confidence; }));
+    const marginStats = distribution(stepsDetail.map(function (s) { return s.margin; }));
+    const failed = list.filter(function (r) { return r && r.error; }).length;
+    const planned = Number.isFinite(meta.planned) ? meta.planned
+      : (list[0] && list[0].planLength) || list.length;
+    const beforeFiles = meta.beforeFiles || {};
+    const touched = Object.keys(fileMap).filter(function (name) {
+      return beforeFiles[name] !== fileMap[name];
+    }).sort();
+    const beforeBytes = Number.isFinite(meta.beforeBytes) ? meta.beforeBytes : 0;
+    const contextBytes = typeof meta.contextBytes === "number" && isFinite(meta.contextBytes)
+      ? Math.max(0, Math.round(meta.contextBytes)) : null;
+    const emitted = stepsDetail.reduce(function (n, s) { return n + s.bytes; }, 0);
     const budget = {
       files: { used: usedFiles, max: MAX_PROJECT_FILES,
                remaining: Math.max(0, MAX_PROJECT_FILES - usedFiles) },
@@ -1229,33 +1276,73 @@
       chars: { used: String(query == null ? "" : query).length,
                max: plan.chars,
                remaining: Math.max(0, plan.chars - String(query == null ? "" : query).length) },
+      context: { used: contextBytes == null ? 0 : contextBytes,
+                 max: LIMITS.contextBytes,
+                 remaining: contextBytes == null ? LIMITS.contextBytes
+                   : Math.max(0, LIMITS.contextBytes - contextBytes) },
       within: usedFiles <= MAX_PROJECT_FILES && usedBytes <= maxBytes
-        && elapsed <= plan.planMs && list.length <= plan.steps,
+        && elapsed <= plan.planMs && list.length <= plan.steps
+        && (contextBytes == null || contextBytes <= LIMITS.contextBytes),
       over: [],
     };
     if (usedFiles > MAX_PROJECT_FILES) budget.over.push("files");
     if (usedBytes > maxBytes) budget.over.push("bytes");
     if (elapsed > plan.planMs) budget.over.push("ms");
     if (list.length > plan.steps) budget.over.push("steps");
+    if (contextBytes != null && contextBytes > LIMITS.contextBytes) budget.over.push("context");
     lastRun = {
+      version: 2,
       at: Date.now(),
       chars: String(query == null ? "" : query).length,
+      planned: planned,
       steps: list.length,
-      errors: list.filter(function (r) { return r && r.error; }).length,
+      executed: list.length,
+      failed: failed,
+      errors: failed,
       via: via.slice(0, 160),
-      confidence: routed.length ? Math.min.apply(null, routed.map(function (r) { return r.confidence; })) : null,
-      margin: withMargin.length ? Math.min.apply(null, withMargin.map(function (r) { return r.margin; })) : null,
+      // Keep the scalars the chip already reads, and add the full spread.
+      confidence: confidenceStats ? confidenceStats.min : null,
+      margin: marginStats ? marginStats.min : null,
+      distribution: { confidence: confidenceStats, margin: marginStats },
       ms: elapsed,
       bytes: usedBytes,
+      written: Math.max(0, projectSize - beforeBytes),
+      emitted: emitted,
       files: usedFiles,
+      filesTouched: touched,
+      contextBytes: contextBytes,
+      peakContextBytes: contextBytes,
       undo: p && p.history ? p.history.length : 0,
-      ok: !list.some(function (r) { return r && r.error; }),
+      ok: failed === 0,
+      stepsDetail: stepsDetail,
       budget: budget,
     };
     try {
       root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(lastRun));
     } catch (e) { /* storage full or disabled; keep the in-memory value */ }
     return lastRun;
+  }
+
+  /* Snapshot of the workspace before a prompt, so the run record can name the
+   * files it touched and the bytes it actually wrote rather than guessing. */
+  function runSnapshot() {
+    const p = activeProject();
+    const map = (p && p.files) || files || {};
+    return {
+      files: Object.assign({}, map),
+      bytes: Object.keys(map).reduce(function (n, k) { return n + bytesOf(map[k]); }, 0),
+    };
+  }
+
+  function contextStoredBytes() {
+    const C = contextModule();
+    if (!C || !C.report) return null;
+    try {
+      const report = C.report(contextScope());
+      return report && typeof report.stored === "number" ? report.stored : null;
+    } catch (e) {
+      return null;
+    }
   }
 
   /* ------------------------------------------------------------- context -- */
@@ -2191,6 +2278,7 @@
      * step it does not know falls back to the core hashed router. */
     prompt: async function (query) {
       const started = now();
+      const before = runSnapshot();
       if (!api.ready) {
         return [{ step: String(query), text: "router model not loaded", error: true }];
       }
@@ -2207,12 +2295,18 @@
           margin: r.margin,
           ms: r.ms,
         }];
-        recordRun(String(query), results, started);
+        recordRun(String(query), results, started, {
+          beforeFiles: before.files, beforeBytes: before.bytes,
+          contextBytes: contextStoredBytes(),
+        });
         return results;
       }
       const results = await skills.runPrompt(String(query), promptContext());
       notePromptContext(String(query), results);
-      recordRun(String(query), results, started);
+      recordRun(String(query), results, started, {
+        beforeFiles: before.files, beforeBytes: before.bytes,
+        contextBytes: contextStoredBytes(),
+      });
       // Keep a lightweight transcript for the chat side of the harness.
       chatAppend("you", String(query));
       const said = results.map(function (r) { return r.text; }).filter(Boolean).join("\n");

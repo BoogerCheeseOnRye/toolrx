@@ -856,7 +856,7 @@ all above the 0.019 step-34 floor. The catalog floor in `test_commands.py` moves
 from 12,000 to 11,000 so the test guards regressions without demanding that
 unreachable patterns return.
 
-### 42. Observability dashboard for long runs
+### 42. Observability dashboard for long runs — done
 
 Extend `lastRun()` into a long-run record: plan length, steps executed and
 failed, per-step `via`, `ms`, confidence, margin, and bytes, the confidence and
@@ -871,6 +871,22 @@ per-step timings sum to the reported total within the measurement tolerance,
 headroom matches the active limits, the detail view renders from the stored
 record after reload, reset clears both record and view, and the Node harness
 asserts the fields rather than the markup.
+
+Landed with `recordRun` v2 in `toolrx/web/sandbox.js` and the expandable
+`#lastRunDetail` panel in `toolrx/dashboard.html`. The record is schema v2 and
+adds `planned`, `executed`, `failed`, `written`, `emitted`, `filesTouched`,
+`contextBytes`, `peakContextBytes`, `stepsDetail`, `distribution`, and
+`budget.context`; the scalar `confidence` and `margin` stay as the minimum of
+their distribution so the one-line chip keeps working. The workspace snapshot
+is taken before the prompt, so touched files are a real diff rather than a
+guess, and written bytes come from the project-size delta. `skills.js` tags each
+result with `planLength` so a truncated or budget-stopped plan still reports
+what it intended to run. `tests/test_budgets.py` runs a routed two-step plan
+through the real model and asserts per-step parity with the results, the
+distribution ordering, and the context cap; `tests/test_skills_js.py` runs a
+multi-file growth and a two-patch plan and asserts touched files, written and
+emitted bytes, and per-step fields. Both harnesses read the record, not the
+markup; the dashboard renders from the same stored record.
 
 ### 43. Project portability and workspace bundles
 

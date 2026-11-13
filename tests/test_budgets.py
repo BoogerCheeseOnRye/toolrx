@@ -98,6 +98,17 @@ for (const name of [
     limits: self.toolrxWeb.limits(),
   };
 
+  self.toolrxWeb.reset();
+  const routed = await self.toolrxWeb.prompt('list the files then show the uptime');
+  out.routed = {
+    last: self.toolrxWeb.lastRun(),
+    results: routed.map(r => ({
+      via: r.via || '', confidence: r.confidence, margin: r.margin,
+      ms: r.ms, error: !!r.error,
+    })),
+    cap: self.toolrxLimits.contextBytes,
+  };
+
   console.log(JSON.stringify(out));
 })().catch(e => { console.error(e && e.stack || e); process.exit(1); });
 """
@@ -232,6 +243,42 @@ class BrowserBudgetTest(unittest.TestCase):
         self.assertGreaterEqual(budget["ms"]["used"], 0)
         self.assertLessEqual(budget["ms"]["used"], budget["ms"]["max"])
         self.assertEqual(budget["over"], [])
+
+    def test_routed_plan_records_distribution_and_context_headroom(self):
+        routed = self.out["routed"]
+        last = routed["last"]
+        results = routed["results"]
+        self.assertEqual(last["planned"], 2, last)
+        self.assertEqual(last["steps"], 2, last)
+        self.assertEqual(last["steps"], len(results))
+        self.assertEqual(last["failed"], 0)
+        self.assertEqual(len(last["stepsDetail"]), 2)
+        dist = last["distribution"]
+        self.assertIsNotNone(dist["confidence"], dist)
+        self.assertIsNotNone(dist["margin"], dist)
+        self.assertEqual(dist["confidence"]["n"], 2)
+        self.assertEqual(dist["margin"]["n"], 2)
+        self.assertLessEqual(dist["confidence"]["min"],
+                             dist["confidence"]["median"])
+        self.assertLessEqual(dist["confidence"]["median"],
+                             dist["confidence"]["max"])
+        self.assertLessEqual(dist["margin"]["min"], dist["margin"]["median"])
+        self.assertLessEqual(dist["margin"]["median"], dist["margin"]["max"])
+        self.assertGreater(dist["confidence"]["min"], 0)
+        self.assertEqual(last["confidence"], dist["confidence"]["min"])
+        self.assertEqual(last["margin"], dist["margin"]["min"])
+        for step, result in zip(last["stepsDetail"], results):
+            self.assertEqual(step["via"], result["via"])
+            self.assertEqual(step["confidence"], result["confidence"])
+            self.assertEqual(step["margin"], result["margin"])
+            self.assertEqual(step["ms"], result["ms"])
+            self.assertGreater(step["bytes"], 0)
+        context = last["budget"]["context"]
+        self.assertEqual(context["max"], routed["cap"])
+        self.assertGreaterEqual(last["peakContextBytes"], 0)
+        self.assertLessEqual(last["peakContextBytes"], routed["cap"])
+        self.assertEqual(last["peakContextBytes"], last["contextBytes"])
+        self.assertTrue(last["budget"]["within"], last["budget"])
 
 
 if __name__ == "__main__":

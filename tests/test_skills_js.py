@@ -1731,6 +1731,24 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
   const planResults = await self.toolrxWeb.prompt(planQuery);
   out.lastRun.plan = self.toolrxWeb.lastRun();
   out.lastRun.planSteps = planResults.length;
+  // Step 42: a long, multi-file run records per-step detail, the confidence
+  // and margin spread, the files it touched, and context/headroom.
+  self.toolrxWeb.reset();
+  await self.toolrxWeb.prompt('build a small platformer game');
+  out.lastRun.longBeforeBytes = self.toolrxWeb.projectBytes();
+  const longResults = await self.toolrxWeb.prompt('add inventory and dialogue systems');
+  out.lastRun.long = self.toolrxWeb.lastRun();
+  out.lastRun.longResults = longResults.map(r => r.via || '');
+  out.lastRun.longProjectFiles = self.toolrxWeb.project().files.slice().sort();
+  out.lastRun.longProjectBytes = self.toolrxWeb.projectBytes();
+  self.toolrxWeb.reset();
+  // A shooter supports both patches, so the two-step run completes and the
+  // record can be checked for per-step detail rather than an honest refusal.
+  await self.toolrxWeb.prompt('build a small top-down shooter');
+  const mixed = await self.toolrxWeb.prompt('add sound then add a boss');
+  out.lastRun.mixed = self.toolrxWeb.lastRun();
+  out.lastRun.mixedResults = mixed.length;
+  out.lastRun.contextCap = self.toolrxLimits.contextBytes;
   await self.toolrxWeb.prompt('write the following into ../evil.txt:\\nhello');
   out.lastRun.blocked = self.toolrxWeb.lastRun();
   self.toolrxWeb.reset();
@@ -2271,6 +2289,62 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertFalse(blk["ok"])
         self.assertIsNone(L["cleared"])
         self.assertTrue(L["clearedStorage"])
+
+    def test_long_run_record_names_files_steps_and_headroom(self):
+        L = self.out["lastRun"]
+        long = L["long"]
+        self.assertEqual(long["version"], 2)
+        self.assertEqual(long["planned"], 1)
+        self.assertEqual(long["executed"], 1)
+        self.assertEqual(long["failed"], 0)
+        self.assertEqual(len(long["stepsDetail"]), 1)
+        step = long["stepsDetail"][0]
+        for key in ("n", "step", "via", "ms", "confidence", "margin",
+                    "bytes", "error"):
+            self.assertIn(key, step)
+        self.assertEqual(step["n"], 1)
+        self.assertGreater(step["bytes"], 0)
+        self.assertGreater(long["written"], 0)
+        self.assertGreaterEqual(long["emitted"], step["bytes"])
+        self.assertEqual(long["written"],
+                         L["longProjectBytes"] - L["longBeforeBytes"])
+        touched = long["filesTouched"]
+        self.assertIn("systems/inventory.js", touched)
+        self.assertIn("systems/dialogue.js", touched)
+        self.assertIn("index.html", touched)
+        self.assertEqual(touched, sorted(touched))
+        self.assertEqual(long["files"], len(L["longProjectFiles"]))
+        self.assertEqual(long["peakContextBytes"], long["contextBytes"])
+        self.assertIsNotNone(long["peakContextBytes"])
+        self.assertLessEqual(long["peakContextBytes"], L["contextCap"])
+        self.assertEqual(long["budget"]["context"]["max"], L["contextCap"])
+        self.assertTrue(long["budget"]["within"])
+        self.assertGreaterEqual(long["budget"]["files"]["remaining"], 0)
+        self.assertGreaterEqual(long["budget"]["bytes"]["remaining"], 0)
+        self.assertGreaterEqual(long["budget"]["ms"]["remaining"], 0)
+
+    def test_multi_step_run_distribution_and_per_step_fields(self):
+        L = self.out["lastRun"]
+        mixed = L["mixed"]
+        self.assertEqual(mixed["planned"], 2)
+        self.assertEqual(mixed["steps"], L["mixedResults"])
+        self.assertEqual(mixed["steps"], 2, mixed)
+        self.assertEqual(len(mixed["stepsDetail"]), 2)
+        self.assertEqual([s["n"] for s in mixed["stepsDetail"]], [1, 2])
+        for step in mixed["stepsDetail"]:
+            self.assertIsInstance(step["ms"], int)
+            self.assertGreaterEqual(step["ms"], 0)
+            self.assertGreater(step["bytes"], 0)
+            self.assertIn("via", step)
+            self.assertIn("confidence", step)
+            self.assertIn("margin", step)
+        self.assertEqual(mixed["failed"], 0)
+        self.assertTrue(mixed["via"].startswith("plan:"), mixed["via"])
+        # Exact commands carry no router confidence, so the spread is absent
+        # rather than fabricated. The router-plan test in test_budgets pins
+        # the populated distribution.
+        self.assertIsNone(mixed["distribution"]["confidence"])
+        self.assertIsNone(mixed["distribution"]["margin"])
 
     def test_sandbox_preview_inlines_content_js(self):
         c = self.out["sandbox"]["content"]

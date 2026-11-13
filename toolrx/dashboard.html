@@ -272,8 +272,20 @@
   #lastRun{position:absolute;left:10px;top:10px;z-index:11;max-width:calc(100% - 56px);
     padding:5px 9px;border:1px solid var(--border);border-radius:7px;background:#0d1220;
     color:var(--muted);font-size:11px;font-family:ui-monospace,monospace;display:none;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
   #lastRun.on{display:block}
+  #lastRun:focus-visible{outline:1px solid var(--accent)}
+  #lastRunDetail{position:absolute;left:10px;top:36px;z-index:12;max-width:calc(100% - 56px);
+    max-height:62%;overflow:auto;padding:8px 10px;border:1px solid var(--border);
+    border-radius:8px;background:#0d1220;color:var(--muted);font-size:11px;
+    font-family:ui-monospace,monospace;display:none;line-height:1.45}
+  #lastRunDetail.on{display:block}
+  #lastRunDetail .lr-head{color:var(--text);margin-bottom:4px}
+  #lastRunDetail .lr-meta{white-space:pre-wrap;margin-bottom:6px}
+  #lastRunDetail table{border-collapse:collapse;width:100%}
+  #lastRunDetail th,#lastRunDetail td{text-align:left;padding:1px 8px 1px 0;white-space:nowrap}
+  #lastRunDetail th{color:var(--text);font-weight:600}
+  #lastRunDetail .lr-bad td{color:#ff8a8a}
   #previewPane{position:relative}
   #previewPane.full{flex:1 0 100%}
 
@@ -686,7 +698,7 @@
     <div id="eq" aria-hidden="true"><div class="eq-track" id="eqTrack"></div></div>
     <div class="panes">
       <div class="pane on" id="chatPane"><div id="log" role="log" aria-live="polite" aria-relevant="additions text" aria-label="conversation"></div></div>
-      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="lastRun" aria-live="polite"></div><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
+      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="lastRun" aria-live="polite"></div><div id="lastRunDetail" aria-live="polite"></div><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
     </div>
     <div class="composer">
       <form id="f">
@@ -1291,22 +1303,90 @@ function entry(label,text,kind,meta){
 }
 
 /* ---- projects: chip + modal ------------------------------------------- */
+function lastRunStats(stats,digits){
+  if(!stats) return '—';
+  return 'min '+stats.min.toFixed(digits)+' · med '+stats.median.toFixed(digits)
+    +' · max '+stats.max.toFixed(digits)+' (n '+stats.n+')';
+}
+function renderLastRunDetail(box,r){
+  box.textContent='';
+  const head=document.createElement('div');
+  head.className='lr-head';
+  head.textContent='run · planned '+(r.planned||0)+' · executed '+(r.steps||0)
+    +' · failed '+(r.failed||0)+' · '+(r.ms||0)+' ms · wrote '
+    +(r.written||0).toLocaleString()+' B · output '+(r.emitted||0).toLocaleString()+' B';
+  box.append(head);
+  const b=r.budget||null;
+  const bits=['via '+(r.via||'n/a')];
+  bits.push('files touched '+((r.filesTouched&&r.filesTouched.length)
+    ? r.filesTouched.length+': '+r.filesTouched.join(', ') : '0'));
+  bits.push('undo '+(r.undo||0));
+  bits.push('confidence '+lastRunStats(r.distribution&&r.distribution.confidence,2));
+  bits.push('margin '+lastRunStats(r.distribution&&r.distribution.margin,3));
+  bits.push('context peak '+(r.peakContextBytes==null?'n/a':r.peakContextBytes)
+    +' B'+(b&&b.context?' / cap '+b.context.max+' B':''));
+  if(b){
+    bits.push('room files '+b.files.remaining+' · bytes '+b.bytes.remaining
+      +' · time '+b.ms.remaining+' ms · steps '+b.steps.remaining);
+    if(b.over&&b.over.length) bits.push('over budget: '+b.over.join(', '));
+  }
+  const meta=document.createElement('div');
+  meta.className='lr-meta';
+  meta.textContent=bits.join('\n');
+  box.append(meta);
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  const headRow=document.createElement('tr');
+  ['#','via','ms','conf','margin','bytes','step'].forEach(function(label){
+    const th=document.createElement('th');
+    th.textContent=label;
+    headRow.append(th);
+  });
+  thead.append(headRow);
+  table.append(thead);
+  const tbody=document.createElement('tbody');
+  (r.stepsDetail||[]).forEach(function(s){
+    const row=document.createElement('tr');
+    if(s.error) row.className='lr-bad';
+    [s.n,s.via||'—',s.ms==null?'—':s.ms,
+     s.confidence==null?'—':Number(s.confidence).toFixed(2),
+     s.margin==null?'—':Number(s.margin).toFixed(3),
+     s.bytes==null?'—':s.bytes,s.step].forEach(function(value,i){
+      const td=document.createElement('td');
+      td.textContent=String(value);
+      if(i===6){ td.style.whiteSpace='normal'; td.style.maxWidth='38ch'; }
+      row.append(td);
+    });
+    tbody.append(row);
+  });
+  table.append(tbody);
+  box.append(table);
+}
 function refreshLastRun(){
   const el=document.getElementById('lastRun');
+  const detail=document.getElementById('lastRunDetail');
   if(!el) return;
   const r=(clientMode&&window.toolrxWeb&&window.toolrxWeb.lastRun)
     ?window.toolrxWeb.lastRun():null;
-  if(!r){ el.textContent=''; el.classList.remove('on'); return; }
+  if(!r){
+    el.textContent=''; el.classList.remove('on');
+    el.removeAttribute('role'); el.removeAttribute('tabindex');
+    el.onclick=null; el.onkeydown=null;
+    if(detail){ detail.textContent=''; detail.classList.remove('on'); }
+    return;
+  }
   const bits=[];
   bits.push((r.chars||0).toLocaleString()+' ch');
-  bits.push((r.steps||0)+(r.steps===1?' step':' steps'));
-  if(r.errors) bits.push(r.errors+(r.errors===1?' error':' errors'));
+  if(r.planned&&r.planned!==r.steps) bits.push(r.steps+'/'+r.planned+' steps');
+  else bits.push((r.steps||0)+(r.steps===1?' step':' steps'));
+  if(r.failed) bits.push(r.failed+(r.failed===1?' error':' errors'));
   if(r.confidence!=null) bits.push('conf '+Number(r.confidence).toFixed(2));
   if(r.margin!=null) bits.push('margin '+Number(r.margin).toFixed(3));
   bits.push((r.ms||0)+' ms');
   bits.push((r.bytes||0).toLocaleString()+' B');
   bits.push((r.files||0)+(r.files===1?' file':' files'));
   if(r.undo) bits.push('undo '+r.undo);
+  if(r.peakContextBytes!=null) bits.push('ctx '+r.peakContextBytes+' B');
   const b=r.budget||null;
   if(b&&b.files) bits.push('room '+b.files.remaining+'f');
   if(b&&b.bytes) bits.push('+'+Math.max(0,Math.round(b.bytes.remaining/1024))+' KB');
@@ -1316,9 +1396,23 @@ function refreshLastRun(){
   if(b&&b.files) title+=' · files '+b.files.used+'/'+b.files.max;
   if(b&&b.bytes) title+=' · bytes '+b.bytes.used+'/'+b.bytes.max;
   if(b&&b.ms) title+=' · time '+b.ms.used+'/'+b.ms.max+' ms (step '+b.ms.stepMs+' ms)';
+  if(r.filesTouched&&r.filesTouched.length) title+=' · touched '+r.filesTouched.join(', ');
   if(b&&b.over&&b.over.length) title+=' · over budget: '+b.over.join(', ');
   el.title=title;
   el.classList.add('on');
+  el.setAttribute('role','button');
+  el.setAttribute('tabindex','0');
+  const toggle=function(){
+    if(!detail) return;
+    detail.classList.toggle('on');
+    el.setAttribute('aria-expanded',detail.classList.contains('on')?'true':'false');
+    if(detail.classList.contains('on')) renderLastRunDetail(detail,r);
+  };
+  el.onclick=toggle;
+  el.onkeydown=function(e){
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); }
+  };
+  if(detail&&detail.classList.contains('on')) renderLastRunDetail(detail,r);
 }
 function refreshProjectChip(){
   const btn=document.getElementById('projBtn');

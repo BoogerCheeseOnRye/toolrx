@@ -270,6 +270,23 @@ above the step-34 floor of 0.019.
 margin floors, dead-literal audit, and the prefix index that makes the audit
 linear instead of a quadratic scan.
 
+Step 42 makes a long run legible after the fact. `lastRun()` is now a versioned
+record (`toolrx.lastRun.v1`, schema v2): the one-line chip keeps the prompt size,
+steps, time, bytes, files, and undo depth, and the chip expands into a per-step
+table with `via`, wall time, confidence, margin, output bytes, and the step text.
+The record also carries the planned-versus-executed step count, failures, the
+files the run actually touched (diffed against a workspace snapshot taken before
+the prompt), bytes written versus bytes emitted, the confidence and margin
+distribution (`min`, `p10`, median, `p90`, `max`) rather than one scalar, the
+context store's stored bytes, and headroom for files, bytes, time, steps,
+characters, and context. Scalar `confidence` and `margin` remain as the minimum
+of their distribution so the old chip contract still holds. The detail view
+renders from the stored record after a reload, and `reset` clears both the record
+and the panel. `tests/test_budgets.py` drives a real routed two-step plan and
+checks that each per-step value matches the result it came from and that the
+context peak stays inside the 8 KB cap; `tests/test_skills_js.py` checks a
+multi-file growth run for touched files, written bytes, and per-step detail.
+
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
 `add a footer note saying …` rewrite the real `index.html` / `app.js` files.

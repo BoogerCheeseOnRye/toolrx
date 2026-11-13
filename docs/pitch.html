@@ -345,7 +345,7 @@
         <div class="stat"><div class="v">11,248</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
         <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
         <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
-        <div class="stat"><div class="v">319</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
+        <div class="stat"><div class="v">322</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
         <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
         <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
       </div>
@@ -491,6 +491,7 @@
         <div class="row"><span class="tag done">done</span><p><b>Hardening the envelope (steps 36–38).</b> Per-step and per-plan wall budgets with preview-time refusal and headroom, a 58-case long-form suite, and one <code>limits.json</code> read by Python and the browser.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Context and systems (steps 39–40).</b> Deterministic context snapshots and diffs, explicit trimmed/evicted plan notes, and eleven seeded system files that install atomically under one undo.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Catalog quality pass (step 41).</b> 11,248 commands with 0 duplicate ids, 0 duplicate regexes, and 0 dead literals; a checked-in coverage report proves every long-form family routes with no chat fallback.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Run observability (step 42).</b> The last-run chip expands into per-step timings, confidence and margin spread, files touched, bytes written, context peak, and headroom — persisted so it survives a reload.</p></div>
         <div class="row"><span class="tag next">next</span><p><b>Project import/export.</b> Move a workspace between browsers without an account.</p></div>
         <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
       </div>
