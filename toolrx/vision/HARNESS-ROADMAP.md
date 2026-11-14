@@ -10,6 +10,10 @@ model: longer prompts become verified multi-step plans, and larger builds become
 seeded, composable projects. Steps 36–45 harden that envelope: one limit table,
 a larger long-form suite, stricter budgets, safer continuation, richer modules,
 coverage metrics, portable workspaces, and a demo that proves the whole path.
+Steps 46–59 are the locked next batch: everyday language becomes a measured
+surface, the envelope becomes a visible bar with explicit compaction, and
+thinking becomes its own deterministic program. The LLM stays optional and off
+by default.
 
 ## Where this plan started
 
@@ -998,6 +1002,205 @@ already did, and `context.expand`/`context.continue` no longer store their own
 plan listing as `result/last`, which used to evict the plan they had just
 edited.
 
+## Harness roadmap 3 — everyday language, visible budgets, deterministic thinking (steps 46–59)
+
+Steps 46–59 extend the same deterministic surface in three phases. First the
+system learns how people actually talk: paraphrase tables, conversational
+repair, and a measured everyday-language family. Then the envelope becomes
+visible: a live budget bar, explicit compaction, and a budget-aware plan
+rewrite. Finally thinking becomes a first-class program: a deterministic
+`think` skill, bounded self-critique, and reasoning traces that live in
+context. The optional LLM adapter stays off and none of these steps may
+require it.
+
+### Design rules for this phase
+
+1. **Language is data.** Synonyms and paraphrase families live in checked-in
+   tables that feed both the exact matcher and the hashed router. They are
+   rebuilt, diffed, and tested like the command catalog.
+2. **Compaction is visible.** Nothing is dropped or summarized silently: every
+   compacted entry is named with its bytes and reason, and the stored plan
+   survives.
+3. **Thinking is a program.** `think` and the critique loop have fixed inputs,
+   bounded passes, structured output, and no hidden state or network call.
+4. **Budgets are shown before and during work.** Characters, steps, context,
+   project bytes, and time each have a numeric read-out and a filling bar.
+5. **No new limit ships in two places.** Every cap joins `limits.json` and is
+   read by Python and the browser.
+6. **Everyday does not mean fuzzy.** A natural phrasing either maps to an exact
+   command or gets an honest refusal naming the closest supported action.
+
+### 46. Everyday paraphrase layer — planned
+
+Teach the catalog the intents people use most — builds, edits, file operations,
+math, context, growth, and extractors — in the way people actually type them:
+casual variants, synonyms, incomplete sentences, and reordered clauses. Keep
+the positive allowlist, metacharacter rejection, and bounded arguments. The new
+phrasings are generated from data and reviewed as one catalog diff, not added
+as one-off regexes.
+
+**Done when** at least 500 new high-signal phrasings cover ten everyday
+families, `tests/fixtures/everyday.json` pins every phrasing, at least 90% of
+the fixture set resolves to an exact command with no chat or router fallback,
+the catalog rebuild is reproducible with zero duplicate ids and zero duplicate
+regexes, and the README/pitch catalog count is regenerated from the build.
+
+### 47. Conversational glue and soft intents — planned
+
+Handle greetings, acknowledgements, corrections, confirmations, and short
+multi-turn repair deterministically. `no, I meant …` and `actually make it …`
+must revise the previous action or ask one bounded clarifying question; a
+confirmation applies only the pending action and never re-runs a build.
+Conversation memory stays small, capped, inspectable, and local.
+
+**Done when** corrections, confirmations, and repairs have exact routes with
+fixtures; an ambiguous confirmation changes nothing and says what it needs; the
+conversation-memory cap is explicit; and the same transcript produces the same
+replies on every run.
+
+### 48. Synonym and paraphrase tables — planned
+
+Move everyday variation into explicit data: a checked-in synonym/paraphrase
+table keyed by intent, consumed by the exact matcher and by centroid
+generation. Rebuild the model from the expanded knowledge, and measure margin
+on a fixed natural-language prompt set before and after.
+
+**Done when** the table is the only source of paraphrase expansion, the router
+rebuild consumes it, the fixed prompt set shows no lower median margin and a
+higher exact-hit rate, and the table round-trips through a deterministic
+export.
+
+### 49. Everyday-language coverage dashboard — planned
+
+Add an `everyday` family to `coverage.py` and the coverage report. Track exact
+hits, router hits, chat fallbacks, refusals, and the confidence/margin
+distribution per family. Surface the same numbers in the command center or a
+small dashboard panel.
+
+**Done when** `coverage.json` carries the new family with lane counts and
+margin buckets, `coverage.py --check` fails when the fixture set or thresholds
+drift, the dashboard shows the same numbers, and no everyday case is counted
+twice.
+
+### 50. Visual budget bar — planned
+
+Extend the existing context bar into a live envelope bar for the plan preview
+and the running plan: characters, steps, context bytes, project bytes, and
+time headroom. Each segment shows used/max, a fill bar, and warning/limit
+colors. The numeric read-out stays visible; the bar is an addition, not a
+replacement.
+
+**Done when** the preview and the last-run detail show all five budgets with
+accessible labels, the bar updates while steps run, a limit crossing is
+announced in text as well as color, and the DOM harness asserts the numbers
+match the report.
+
+### 51. Deterministic compaction engine — planned
+
+Add explicit context compaction. Keep the active plan, build spec, last N
+results, and critical file hashes; summarize older results with the step-44
+extractors; drop low-value session notes first. Every action records what was
+compacted, its bytes, and why. Add `compact context` and an automatic trigger
+before the byte cap.
+
+**Done when** compaction is byte-identical across runs, the plan and spec
+survive, every dropped or summarized entry appears in the notes, automatic
+compaction never evicts the active plan, and the cap stays enforced.
+
+### 52. Budget-aware plan rewriting — planned
+
+When a long request would exceed the character, step, time, context, or
+project budget, produce a deterministic compacted plan variant: keep the
+highest-value steps, summarize or drop the rest, and show the before/after
+bars. The user can accept, edit, or refuse; nothing is truncated silently.
+
+**Done when** an over-budget plan yields a named variant with exact before and
+after numbers, accepting it runs only the listed steps, refusing leaves the
+project untouched, and a test covers each budget kind.
+
+### 53. `think` and `reason` as deterministic skills — planned
+
+Add first-class `think about …`, `reason step by step`, `analyze the
+trade-offs`, and `critique this plan` routes. They run a small inspectable
+program: structured decomposition, a checklist against the active limits and
+known systems, a deterministic pro/con table, and one recommended next action
+or revised plan. They accept a literal, a file, the previous step, or context,
+and their output can feed the next step.
+
+**Done when** at least four thinking intents have exact routes, the same input
+produces byte-identical output, every claim in the output is traceable to the
+input or a checked-in rule, empty input returns a clear message, and no
+thinking route touches the network.
+
+### 54. Self-critique and plan repair loop — planned
+
+After a plan preview or a failed step, offer a bounded critique pass: identify
+the failing constraint, propose the smallest repair, and either emit a revised
+plan or say why it cannot proceed. The loop is capped at two passes and never
+marks a failed or skipped step as done.
+
+**Done when** a failed middle step produces a repair or a refusal with the
+exact reason, the revised plan runs only the changed suffix, the two-pass cap
+is enforced, and the original plan remains available for undo.
+
+### 55. Reasoning traces in context and observability — planned
+
+Store thinking and critique outputs as their own context kind with an explicit
+priority and byte cap. Show the trace in the last-run detail and the context
+snapshot, and compact traces before the active plan or spec.
+
+**Done when** a trace survives a reload, the last-run view names the trace that
+chose or rejected a path, traces have a named cap and eviction note, and
+compaction never leaves a trace without its plan.
+
+### 56. Project journal and multi-turn memory — planned
+
+Add a per-project deterministic journal for decisions, rejected alternatives,
+and user preferences. It is queryable in everyday language (`what did we
+decide about the art style?`), bounded, exportable with the project bundle,
+and separate from the short conversation memory.
+
+**Done when** the journal records decisions and rejections with a source step,
+an everyday question returns the matching entry, the bundle round-trips it,
+the cap and eviction notes are visible, and switching projects never leaks one
+journal into another.
+
+### 57. Error recovery and partial-result continuation — planned
+
+Make a mid-plan failure recoverable without a rebuild: isolate the failing
+step, name the smallest fix or compatible starter, and offer one command to
+resume the pending suffix. The failed step stays failed; completed files stay
+written.
+
+**Done when** a failed step yields an isolated reason and a resume command,
+resuming runs only the pending steps, the project before the failure is still
+openable, and the recovery path is covered for build, patch, and context
+failures.
+
+### 58. Adaptive response style — planned
+
+Add a persisted `concise`, `explanatory`, or `tutorial` style that changes only
+the wrapper text around exact results. Tool choice, arguments, files, limits,
+and refusals never change with style.
+
+**Done when** the same request under each style produces identical tool
+choices, arguments, and file bytes; the style persists across reloads; the
+wrapper stays within a named character cap; and tests compare the three
+outputs.
+
+### 59. LLM-parity scorecard and gap analysis — planned
+
+Add a living, checked-in scorecard mapping common harness capabilities
+(planning, tool use, long context, compaction, self-correction, natural
+language, offline operation, inspectability, cost, reproducibility) to
+toolrx's current coverage, evidence, and next step. It drives prioritization
+after this batch and keeps claims tied to tests.
+
+**Done when** every capability has a status, evidence link, and honest gap;
+`coverage.py --check` or a dedicated test fails when the scorecard drifts from
+the suite; and the pitch and README quote the scorecard rather than ad-hoc
+claims.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
@@ -1013,11 +1216,20 @@ edited.
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
+8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
+   50 (budget bar) → 51 (compaction) → 52 (plan rewrite) → 53 (think) →
+   54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
+   58 (style) → 59 (scorecard) — planned
 
 Steps 36–37 come first because they define the budget and the gate every later
 step measures against. Step 38 lands immediately after so no new limit is added
 to two places. Steps 39–44 may be reordered within the batch if a measurement
 justifies it; step 45 is last.
+
+Steps 46–49 come first because everyday language must be measured before the
+budget UI claims to help it. Steps 50–52 land as one envelope batch. Steps
+53–55 are the thinking program. Steps 56–59 close the remaining parity gaps;
+they may be reordered within the batch when a measurement justifies it.
 
 ## Open questions
 
@@ -1036,7 +1248,7 @@ justifies it; step 45 is last.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–40 are complete. 14 remains deferred. Steps 41–45 are
+- Steps 11–13, 15–45 are complete. 14 remains deferred. Steps 46–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
@@ -1045,3 +1257,17 @@ justifies it; step 45 is last.
   context, plan, and limits? Include only what affects reproduction.
 - Should the coverage report ship as a generated file in `docs/` or stay a test
   artifact? Ship it once step 41 proves the format is stable.
+- Everyday coverage starts at a 90% exact-hit floor with no median-margin
+  regression; change the floor only from the first measurement, never from
+  optimism.
+- Compaction ships command-only first. Automatic compaction at 90% of the cap
+  follows only after the notes and the plan-survival test are green, and the
+  user can always turn it off.
+- Thinking traces: store the last trace per project by default and store every
+  trace only on request, so the context cap stays honest.
+- Response style may change sentence shape and examples, never tool choice,
+  arguments, files, or refusal text. The wrapper gets its own named cap.
+- The parity scorecard is one JSON source plus a generated markdown table, so
+  the docs and the drift test read the same numbers.
+- This batch covers English paraphrases only. Localized intents stay in the
+  existing language packs.

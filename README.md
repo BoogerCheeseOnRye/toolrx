@@ -349,6 +349,15 @@ byte-for-byte reproducible; `python3 toolrx/demo.py --check` fails on drift, and
 continuation runs only the pending step, the undo restores every file, and the
 README/pitch numbers match the report.
 
+The locked next batch (steps 46–59) keeps the same rules. Everyday paraphrase
+tables and conversational repair come first, measured by a new coverage family.
+Then the envelope gets a live budget bar, explicit compaction, and
+budget-aware plan rewriting. Finally `think`/reason becomes a deterministic
+program with bounded self-critique, stored traces, a per-project journal,
+mid-plan recovery, response styles that never change tool choice, and an
+honest LLM-parity scorecard. None of it is shipped yet; the acceptance criteria
+live in `toolrx/vision/HARNESS-ROADMAP.md`.
+
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
 `add a footer note saying …` rewrite the real `index.html` / `app.js` files.
