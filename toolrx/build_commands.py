@@ -11,8 +11,13 @@ import json
 import os
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import everyday  # noqa: E402  (step 46: one table for catalog + fixture)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1472,6 +1477,15 @@ add("misc.theme.light", "preview.theme", r"^(?:make it light|use a light theme|l
 for pat in ("echo {text}", "say {text}"):
     add(f"misc.echo.{len(COMMANDS)}", "echo", "^" + pat.replace("{text}", REST) + "$",
         {"text": "$1"}, pat, "misc")
+
+
+# ----------------------------------------------------------- everyday ----
+# Step 46: everyday phrasings live in one checked-in table. They are appended
+# last so every original exact form still wins, and the same table produces
+# `tests/fixtures/everyday.json` so the catalog and the fixture cannot drift.
+for _entry in everyday.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
 
 
 def main():

@@ -198,7 +198,7 @@ class DemoReportTest(unittest.TestCase):
         match = re.search(r'<div class="v">(\d+)</div><div class="k">automated tests</div>',
                           pitch)
         self.assertIsNotNone(match)
-        self.assertGreaterEqual(int(match.group(1)), 349)
+        self.assertGreaterEqual(int(match.group(1)), 357)
 
 
 if __name__ == "__main__":

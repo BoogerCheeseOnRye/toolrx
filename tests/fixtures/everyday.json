@@ -1,0 +1,4159 @@
+{
+  "version": 1,
+  "count": 525,
+  "families": {
+    "build": 108,
+    "context": 42,
+    "edit": 54,
+    "extract": 56,
+    "growth": 60,
+    "math": 36,
+    "memory": 45,
+    "projects": 36,
+    "system": 40,
+    "text": 48
+  },
+  "cases": [
+    {
+      "family": "build",
+      "text": "can you build a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a chart",
+      "op": "build",
+      "args": {
+        "kind": "chart"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a markdown editor",
+      "op": "build",
+      "args": {
+        "kind": "markdown editor"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a maze",
+      "op": "build",
+      "args": {
+        "kind": "maze"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a todo list",
+      "op": "build",
+      "args": {
+        "kind": "todo list"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a chart",
+      "op": "build",
+      "args": {
+        "kind": "chart"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a markdown editor",
+      "op": "build",
+      "args": {
+        "kind": "markdown editor"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a maze",
+      "op": "build",
+      "args": {
+        "kind": "maze"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a todo list",
+      "op": "build",
+      "args": {
+        "kind": "todo list"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
+      }
+    },
+    {
+      "family": "build",
+      "text": "could you build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a chart",
+      "op": "build",
+      "args": {
+        "kind": "chart"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a markdown editor",
+      "op": "build",
+      "args": {
+        "kind": "markdown editor"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a maze",
+      "op": "build",
+      "args": {
+        "kind": "maze"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a todo list",
+      "op": "build",
+      "args": {
+        "kind": "todo list"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
+      }
+    },
+    {
+      "family": "build",
+      "text": "go ahead and build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a chart",
+      "op": "build",
+      "args": {
+        "kind": "chart"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a markdown editor",
+      "op": "build",
+      "args": {
+        "kind": "markdown editor"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a maze",
+      "op": "build",
+      "args": {
+        "kind": "maze"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a todo list",
+      "op": "build",
+      "args": {
+        "kind": "todo list"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like you to build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a chart",
+      "op": "build",
+      "args": {
+        "kind": "chart"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a markdown editor",
+      "op": "build",
+      "args": {
+        "kind": "markdown editor"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a maze",
+      "op": "build",
+      "args": {
+        "kind": "maze"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a todo list",
+      "op": "build",
+      "args": {
+        "kind": "todo list"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a chart",
+      "op": "build",
+      "args": {
+        "kind": "chart"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a markdown editor",
+      "op": "build",
+      "args": {
+        "kind": "markdown editor"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a maze",
+      "op": "build",
+      "args": {
+        "kind": "maze"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a todo list",
+      "op": "build",
+      "args": {
+        "kind": "todo list"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
+      }
+    },
+    {
+      "family": "build",
+      "text": "would you build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "context",
+      "text": "can you clear context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "can you continue from previous",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "can you diff against previous context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "can you show context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "can you show the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "can you show the context diff",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "can you take a context snapshot",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you clear context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you continue from previous",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you diff against previous context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you show context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you show the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you show the context diff",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you take a context snapshot",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and clear context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and continue from previous",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and diff against previous context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and show context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and show the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and show the context diff",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "go ahead and take a context snapshot",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to clear context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to continue from previous",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to diff against previous context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to show context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to show the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to show the context diff",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to take a context snapshot",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please clear context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please continue from previous",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please diff against previous context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please show context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please show the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please show the context diff",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "please take a context snapshot",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you clear context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you continue from previous",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you diff against previous context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you show context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you show the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you show the context diff",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you take a context snapshot",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "edit",
+      "text": "can you add a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you add a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you add day/night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you add double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you add sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you add three enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you make it 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you make it harder",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "can you switch to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you add a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you add a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you add day/night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you add double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you add sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you add three enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you make it 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you make it harder",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "could you switch to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and add a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and add a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and add day/night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and add double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and add sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and add three enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and make it 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and make it harder",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "go ahead and switch to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to add a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to add a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to add day/night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to add double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to add sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to add three enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to make it 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to make it harder",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "i'd like you to switch to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please add a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please add a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please add day/night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please add double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please add sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please add three enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please make it 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please make it harder",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "please switch to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you add a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you add a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you add day/night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you add double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you add sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you add three enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you make it 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you make it harder",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "would you switch to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "can you summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "could you summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "go ahead and summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "i want you to summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "please summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "quickly summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you count the words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you diff notes.md and README.md",
+      "op": "text.diff",
+      "args": {
+        "a": "notes.md",
+        "b": "README.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you extract the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you extract the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you extract the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you outline the code in notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you show me the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "would you summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you add a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you add a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you add a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you add an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you add the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you add the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you expand the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you expand the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "can you grow the project",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "can you split the project into modules",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "could you add a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you add a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you add a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you add an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you add the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you add the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you expand the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you expand the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "could you grow the project",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "could you split the project into modules",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and add a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and add a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and add a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and add an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and add the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and add the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and expand the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and expand the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and grow the project",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "go ahead and split the project into modules",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to add a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to add a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to add a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to add an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to add the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to add the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to expand the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to expand the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to grow the project",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "i'd like you to split the project into modules",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "please add a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please add a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please add a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please add an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please add the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please add the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please expand the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please expand the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "please grow the project",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "please split the project into modules",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "would you add a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you add a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you add a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you add an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you add the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you add the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you expand the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you expand the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "would you grow the project",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "would you split the project into modules",
+      "op": "project.grow",
+      "args": {}
+    },
+    {
+      "family": "math",
+      "text": "can you add 12 and 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "can you divide 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "can you multiply 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "can you subtract 30 from 12",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "b": "30",
+        "a": "12"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you add 12 and 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you divide 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you multiply 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you subtract 30 from 12",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "b": "30",
+        "a": "12"
+      }
+    },
+    {
+      "family": "math",
+      "text": "how much is 12 divided by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "how much is 12 minus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "how much is 12 plus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "how much is 12 times 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "i need 12 divided by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "i need 12 minus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "i need 12 plus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "i need 12 times 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please add 12 and 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please divide 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please multiply 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please subtract 30 from 12",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "b": "30",
+        "a": "12"
+      }
+    },
+    {
+      "family": "math",
+      "text": "tell me what 12 divided by 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "tell me what 12 minus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "tell me what 12 plus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "tell me what 12 times 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what do you get if you add 12 and 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what do you get if you divide 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what do you get if you multiply 12 by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what do you get if you subtract 30 from 12",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "b": "30",
+        "a": "12"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what's 12 divided by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what's 12 minus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what's 12 plus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what's 12 times 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "whats 12 divided by 30",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "whats 12 minus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "whats 12 plus 30",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "whats 12 times 30",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "can you clear your memory",
+      "op": "memory.forget",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "can you forget my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "can you make a note that the demo is offline",
+      "op": "memory.note",
+      "args": {
+        "text": "the demo is offline"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "can you remember favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "can you remember that my favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "can you show your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "can you tell me what my favourite colour is",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "can you tell me what you have saved",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "can you tell me what you remember about my favourite colour",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "could you clear your memory",
+      "op": "memory.forget",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "could you forget my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "could you make a note that the demo is offline",
+      "op": "memory.note",
+      "args": {
+        "text": "the demo is offline"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "could you remember favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "could you remember that my favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "could you show your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "could you tell me what my favourite colour is",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "could you tell me what you have saved",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "could you tell me what you remember about my favourite colour",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "i'd like to know what my favourite colour is",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "i'd like to know what you have saved",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "i'd like to know what you remember about my favourite colour",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "just clear your memory",
+      "op": "memory.forget",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "just forget my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "just make a note that the demo is offline",
+      "op": "memory.note",
+      "args": {
+        "text": "the demo is offline"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "just remember favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "just remember that my favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "just show your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "please clear your memory",
+      "op": "memory.forget",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "please forget my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "please make a note that the demo is offline",
+      "op": "memory.note",
+      "args": {
+        "text": "the demo is offline"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "please remember favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "please remember that my favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "please show your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "please tell me what my favourite colour is",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "please tell me what you have saved",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "please tell me what you remember about my favourite colour",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "quickly clear your memory",
+      "op": "memory.forget",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "quickly forget my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "quickly make a note that the demo is offline",
+      "op": "memory.note",
+      "args": {
+        "text": "the demo is offline"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "quickly remember favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "quickly remember that my favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "quickly show your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "quickly tell me what my favourite colour is",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "quickly tell me what you have saved",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "quickly tell me what you remember about my favourite colour",
+      "op": "memory.recall",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "projects",
+      "text": "can you export this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "can you list bundles",
+      "op": "workspace.bundles",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "can you list projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "can you show my current project",
+      "op": "memory.context",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "can you show my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "can you show project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "could you export this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "could you list bundles",
+      "op": "workspace.bundles",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "could you list projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "could you show my current project",
+      "op": "memory.context",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "could you show my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "could you show project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go ahead and export this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go ahead and list bundles",
+      "op": "workspace.bundles",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go ahead and list projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go ahead and show my current project",
+      "op": "memory.context",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go ahead and show my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go ahead and show project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "i'd like you to export this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "i'd like you to list bundles",
+      "op": "workspace.bundles",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "i'd like you to list projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "i'd like you to show my current project",
+      "op": "memory.context",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "i'd like you to show my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "i'd like you to show project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "please export this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "please list bundles",
+      "op": "workspace.bundles",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "please list projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "please show my current project",
+      "op": "memory.context",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "please show my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "please show project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "would you export this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "would you list bundles",
+      "op": "workspace.bundles",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "would you list projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "would you show my current project",
+      "op": "memory.context",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "would you show my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "would you show project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "system",
+      "text": "can you tell me how big a plan can be",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me how this works",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me what commands you have",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me what the caps are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me what the maximum plan size is",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me what you can do",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me what your limits are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "can you tell me what your name is",
+      "op": "system",
+      "args": {
+        "op": "who"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me how big a plan can be",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me how this works",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me what commands you have",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me what the caps are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me what the maximum plan size is",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me what you can do",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me what your limits are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "could you tell me what your name is",
+      "op": "system",
+      "args": {
+        "op": "who"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know how big a plan can be",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know how this works",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know what commands you have",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know what the caps are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know what the maximum plan size is",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know what you can do",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know what your limits are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "i'd like to know what your name is",
+      "op": "system",
+      "args": {
+        "op": "who"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me how big a plan can be",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me how this works",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me what commands you have",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me what the caps are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me what the maximum plan size is",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me what you can do",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me what your limits are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "please tell me what your name is",
+      "op": "system",
+      "args": {
+        "op": "who"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me how big a plan can be",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me how this works",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me what commands you have",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me what the caps are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me what the maximum plan size is",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me what you can do",
+      "op": "system",
+      "args": {
+        "op": "help"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me what your limits are",
+      "op": "system",
+      "args": {
+        "op": "limits"
+      }
+    },
+    {
+      "family": "system",
+      "text": "quickly tell me what your name is",
+      "op": "system",
+      "args": {
+        "op": "who"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you lowercase HELLO WORLD",
+      "op": "text.transform",
+      "args": {
+        "op": "lower",
+        "text": "HELLO WORLD"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you remove duplicate lines from hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "uniqlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you reverse hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reverse",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you reverse the words in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reversewords",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you slugify hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "slug",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you sort the lines in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "sortlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you title case hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "title",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "can you uppercase hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "upper",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you lowercase HELLO WORLD",
+      "op": "text.transform",
+      "args": {
+        "op": "lower",
+        "text": "HELLO WORLD"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you remove duplicate lines from hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "uniqlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you reverse hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reverse",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you reverse the words in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reversewords",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you slugify hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "slug",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you sort the lines in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "sortlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you title case hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "title",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "could you uppercase hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "upper",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and lowercase HELLO WORLD",
+      "op": "text.transform",
+      "args": {
+        "op": "lower",
+        "text": "HELLO WORLD"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and remove duplicate lines from hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "uniqlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and reverse hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reverse",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and reverse the words in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reversewords",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and slugify hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "slug",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and sort the lines in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "sortlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and title case hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "title",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "go ahead and uppercase hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "upper",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just lowercase HELLO WORLD",
+      "op": "text.transform",
+      "args": {
+        "op": "lower",
+        "text": "HELLO WORLD"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just remove duplicate lines from hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "uniqlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just reverse hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reverse",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just reverse the words in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reversewords",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just slugify hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "slug",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just sort the lines in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "sortlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just title case hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "title",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "just uppercase hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "upper",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please lowercase HELLO WORLD",
+      "op": "text.transform",
+      "args": {
+        "op": "lower",
+        "text": "HELLO WORLD"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please remove duplicate lines from hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "uniqlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please reverse hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reverse",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please reverse the words in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reversewords",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please slugify hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "slug",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please sort the lines in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "sortlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please title case hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "title",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "please uppercase hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "upper",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly lowercase HELLO WORLD",
+      "op": "text.transform",
+      "args": {
+        "op": "lower",
+        "text": "HELLO WORLD"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly remove duplicate lines from hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "uniqlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly reverse hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reverse",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly reverse the words in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "reversewords",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly slugify hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "slug",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly sort the lines in hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "sortlines",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly title case hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "title",
+        "text": "hello world"
+      }
+    },
+    {
+      "family": "text",
+      "text": "quickly uppercase hello world",
+      "op": "text.transform",
+      "args": {
+        "op": "upper",
+        "text": "hello world"
+      }
+    }
+  ]
+}

@@ -1030,7 +1030,7 @@ require it.
 6. **Everyday does not mean fuzzy.** A natural phrasing either maps to an exact
    command or gets an honest refusal naming the closest supported action.
 
-### 46. Everyday paraphrase layer — planned
+### 46. Everyday paraphrase layer — done
 
 Teach the catalog the intents people use most — builds, edits, file operations,
 math, context, growth, and extractors — in the way people actually type them:
@@ -1044,6 +1044,21 @@ families, `tests/fixtures/everyday.json` pins every phrasing, at least 90% of
 the fixture set resolves to an exact command with no chat or router fallback,
 the catalog rebuild is reproducible with zero duplicate ids and zero duplicate
 regexes, and the README/pitch catalog count is regenerated from the build.
+
+Landed with 525 phrasings across ten families (`build`, `edit`, `growth`,
+`context`, `projects`, `math`, `extract`, `text`, `memory`, `system`). One
+checked-in table, `toolrx/everyday.py`, feeds both the catalog and
+`tests/fixtures/everyday.json`; `build_commands.py` appends it last so every
+original exact form still wins. The catalog is 11,859 patterns. The fixture
+runs through the shipped first-match order: 525/525 resolve to their own
+`everyday.*` command with exact arguments, with zero chat/router fallbacks,
+zero shadowing, and zero duplicate ids or regexes. Two ordering rules keep it
+honest: specific text transforms precede the generic `reverse {text}`, and
+`work out …` stays with the existing `math.expr` route instead of duplicating
+it. `tests/test_everyday.py` fails on fixture drift, a family below 30 cases,
+a table/catalog mismatch, a shadowed case, or a README/pitch count that no
+longer matches the build; its Node harness runs the same 525 through the real
+browser `planPreview` and gets 525 exact hits.
 
 ### 47. Conversational glue and soft intents — planned
 
@@ -1216,7 +1231,7 @@ claims.
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
-8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
+8. 46 (paraphrase) — done; 47 (glue) → 48 (tables) → 49 (language coverage) →
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) → 53 (think) →
    54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
    58 (style) → 59 (scorecard) — planned
@@ -1248,7 +1263,7 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–45 are complete. 14 remains deferred. Steps 46–59 are
+- Steps 11–13, 15–46 are complete. 14 remains deferred. Steps 47–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after

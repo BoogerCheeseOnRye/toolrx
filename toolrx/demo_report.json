@@ -5,7 +5,7 @@
     "steps": 32,
     "sha256": "c1ea344c34f35e9415a2a1b00916f6d20c2169cbb8d2b5bcedceca3dc7cd785c"
   },
-  "catalog": 11334,
+  "catalog": 11859,
   "limits": {
     "blockBytes": 8000,
     "buildMs": 4000,
