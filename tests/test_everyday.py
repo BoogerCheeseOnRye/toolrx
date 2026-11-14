@@ -128,6 +128,28 @@ class EverydayLayerTest(unittest.TestCase):
         everyday = [c for c in self.commands if c["id"].startswith("everyday.")]
         self.assertEqual(len(everyday), len(self.fixture["cases"]))
 
+    def test_generated_phrasings_never_repeat_a_word(self):
+        """A wrapper that repeats its own prefix produces text nobody types.
+
+        Step 46 shipped `can you tell me tell me what 12 plus 30 is` because the
+        math wrapper kept the base phrase's `tell me`. The fixture passed while
+        the phrase a person actually types fell through to chat. Guard both the
+        fixture and the table, and pin the phrasing that exposed it.
+        """
+        texts = [case["text"] for case in self.fixture["cases"]]
+        sys.path.insert(0, os.path.join(ROOT, "toolrx"))
+        try:
+            import everyday  # noqa: WPS433 (local module under test)
+        finally:
+            sys.path.pop(0)
+        texts += [entry["d"] for entry in everyday.entries()]
+        for text in texts:
+            words = re.findall(r"[a-z']+", text.lower())
+            for left, right in zip(words, words[1:]):
+                self.assertNotEqual(left, right,
+                                    "doubled word in %r" % text)
+        self.assertIn("can you tell me what 12 plus 30 is", texts)
+
     def test_everyday_catalog_matches_the_table(self):
         sys.path.insert(0, os.path.join(ROOT, "toolrx"))
         try:

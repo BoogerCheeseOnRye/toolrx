@@ -2529,7 +2529,7 @@
     },
     {
       "family": "math",
-      "text": "can you tell me tell me what 12 divided by 30 is",
+      "text": "can you tell me what 12 divided by 30 is",
       "op": "math.binary",
       "args": {
         "op": "div",
@@ -2539,7 +2539,7 @@
     },
     {
       "family": "math",
-      "text": "can you tell me tell me what 12 minus 30 is",
+      "text": "can you tell me what 12 minus 30 is",
       "op": "math.binary",
       "args": {
         "op": "sub",
@@ -2549,7 +2549,7 @@
     },
     {
       "family": "math",
-      "text": "can you tell me tell me what 12 plus 30 is",
+      "text": "can you tell me what 12 plus 30 is",
       "op": "math.binary",
       "args": {
         "op": "add",
@@ -2559,7 +2559,7 @@
     },
     {
       "family": "math",
-      "text": "can you tell me tell me what 12 times 30 is",
+      "text": "can you tell me what 12 times 30 is",
       "op": "math.binary",
       "args": {
         "op": "mul",
@@ -2609,7 +2609,7 @@
     },
     {
       "family": "math",
-      "text": "could you tell me tell me what 12 divided by 30 is",
+      "text": "could you tell me what 12 divided by 30 is",
       "op": "math.binary",
       "args": {
         "op": "div",
@@ -2619,7 +2619,7 @@
     },
     {
       "family": "math",
-      "text": "could you tell me tell me what 12 minus 30 is",
+      "text": "could you tell me what 12 minus 30 is",
       "op": "math.binary",
       "args": {
         "op": "sub",
@@ -2629,7 +2629,7 @@
     },
     {
       "family": "math",
-      "text": "could you tell me tell me what 12 plus 30 is",
+      "text": "could you tell me what 12 plus 30 is",
       "op": "math.binary",
       "args": {
         "op": "add",
@@ -2639,7 +2639,7 @@
     },
     {
       "family": "math",
-      "text": "could you tell me tell me what 12 times 30 is",
+      "text": "could you tell me what 12 times 30 is",
       "op": "math.binary",
       "args": {
         "op": "mul",
@@ -2649,7 +2649,7 @@
     },
     {
       "family": "math",
-      "text": "do you know tell me what 12 divided by 30 is",
+      "text": "do you know what 12 divided by 30 is",
       "op": "math.binary",
       "args": {
         "op": "div",
@@ -2659,7 +2659,7 @@
     },
     {
       "family": "math",
-      "text": "do you know tell me what 12 minus 30 is",
+      "text": "do you know what 12 minus 30 is",
       "op": "math.binary",
       "args": {
         "op": "sub",
@@ -2669,7 +2669,7 @@
     },
     {
       "family": "math",
-      "text": "do you know tell me what 12 plus 30 is",
+      "text": "do you know what 12 plus 30 is",
       "op": "math.binary",
       "args": {
         "op": "add",
@@ -2679,7 +2679,7 @@
     },
     {
       "family": "math",
-      "text": "do you know tell me what 12 times 30 is",
+      "text": "do you know what 12 times 30 is",
       "op": "math.binary",
       "args": {
         "op": "mul",
@@ -2809,7 +2809,7 @@
     },
     {
       "family": "math",
-      "text": "please tell me tell me what 12 divided by 30 is",
+      "text": "please tell me what 12 divided by 30 is",
       "op": "math.binary",
       "args": {
         "op": "div",
@@ -2819,7 +2819,7 @@
     },
     {
       "family": "math",
-      "text": "please tell me tell me what 12 minus 30 is",
+      "text": "please tell me what 12 minus 30 is",
       "op": "math.binary",
       "args": {
         "op": "sub",
@@ -2829,7 +2829,7 @@
     },
     {
       "family": "math",
-      "text": "please tell me tell me what 12 plus 30 is",
+      "text": "please tell me what 12 plus 30 is",
       "op": "math.binary",
       "args": {
         "op": "add",
@@ -2839,7 +2839,7 @@
     },
     {
       "family": "math",
-      "text": "please tell me tell me what 12 times 30 is",
+      "text": "please tell me what 12 times 30 is",
       "op": "math.binary",
       "args": {
         "op": "mul",

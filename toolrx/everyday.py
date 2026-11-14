@@ -282,13 +282,16 @@ def _math():
     out = []
     for op, templates in MATH.items():
         # Prefix the existing "tell me what ..." form so a polite wrapper does
-        # not need a second hand-written table. Every wrapper keeps the same
-        # capture order and the same expected arguments.
+        # not need a second hand-written table. Strip the leading "tell me "
+        # first: the wrapper already carries it, and keeping both produced
+        # "can you tell me tell me what ...", which no one types. Every wrapper
+        # keeps the same capture order and the same expected arguments.
         expanded = list(templates)
         for pattern, argmap in templates:
             if pattern.startswith("tell me what "):
+                body = pattern[len("tell me "):]
                 for form in MATH_WRAPPERS:
-                    expanded.append((form + " " + pattern, argmap))
+                    expanded.append((form + " " + body, argmap))
         for pattern, argmap in expanded:
             values = {"a": "12", "b": "30"}
             order = re.findall(r"\{(\w+)\}", pattern)
