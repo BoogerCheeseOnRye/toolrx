@@ -1,0 +1,32 @@
+build a small top-down shooter game about defending an orbital station from waves of drones, with a title screen that lists the controls, a scrolling starfield background, wave-based enemy spawns that get faster each wave, a boss fight every fifth wave, sound effects for shooting and explosions, a day and night cycle that changes the sky colour, three enemy types with different speeds and hit points, a persistent high score saved between runs, a small tutorial overlay that explains movement and firing, a pause menu that freezes the action, a game over screen with a restart button, a minimal heads-up display for score and lives, a radar minimap in the corner, a combo counter that rewards fast takedowns, a shield bar that recharges slowly, a weapon upgrade system with three tiers, drifting asteroids that block shots, a docking bay backdrop with blinking lights, a wave counter, a boss health bar, a damage flash when the station is hit, a subtle screen shake on explosions, a start prompt that waits for the player, keyboard and touch controls, a mute button for the audio, a credits line in the footer, a deterministic seed so the same run can be reproduced later, and a small README that explains how to play
+grow the project
+add inventory and dialogue and combat and save and quests and crafting and ui and audio and weather and particles and ai systems
+add a boss, a quest, sound, day/night and three enemy types
+add a footer note saying this project was built offline from one long prompt with no model in the loop and every step was matched by a deterministic pattern rather than a language model
+change the page title to Station Defense: Long Prompt Demo
+add a theme toggle
+make this project light
+make it harder
+summarize projects/top-down-shooter/README.md
+summarize projects/top-down-shooter/ARCHITECTURE.md
+extract the headings from projects/top-down-shooter/ARCHITECTURE.md
+extract the key facts from projects/top-down-shooter/README.md
+extract the list from projects/top-down-shooter/README.md
+outline the code in projects/top-down-shooter/app.js
+diff projects/top-down-shooter/README.md and projects/top-down-shooter/ARCHITECTURE.md
+first 5 lines of projects/top-down-shooter/README.md
+count the words in projects/top-down-shooter/README.md
+count the lines in projects/top-down-shooter/ARCHITECTURE.md
+count the characters in projects/top-down-shooter/README.md
+first 8 lines of projects/top-down-shooter/app.js
+uppercase the release note: toolrx built this station defense demo offline from a single long prompt and every command was matched by a deterministic pattern with no model in the loop and no network access at any point during the run
+reverse the sentence: the quick brown fox jumps over the lazy dog while the station defense demo runs entirely offline and never calls a model for routing or generation
+make a slug from Station Defense Long Prompt Demo
+base64 encode the phrase offline first and deterministic always
+remember the demo goal is a reproducible long prompt that builds a multi-module project grows several systems applies a multi-patch bundle continues from context and finishes with an exact undo and no network
+count the characters in the phrase reproducible offline deterministic router with no model in the loop
+what is in context
+show project files
+what is my current project
+show limits
+what is 144 divided by 12

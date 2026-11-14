@@ -345,11 +345,24 @@
         <div class="stat"><div class="v">11,334</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
         <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
         <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
-        <div class="stat"><div class="v">339</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
+        <div class="stat"><div class="v">349</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
         <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
         <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
       </div>
       <p class="note"><b>Honest numbers:</b> these are counts from this repository at this commit. The test suite is the source of truth, not a benchmark against other products.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="one offline demo" aria-label="One offline demo">
+    <div class="inner">
+      <div class="kicker">one offline demo</div>
+      <h2>One 3,367-character request. <span class="quiet">32 steps, all deterministic. No model.</span></h2>
+      <div class="stats">
+        <div class="stat"><div class="v">3,367</div><div class="k">characters in the request</div><div class="d">One checked-in plan; 3,367/8,000 characters and 32/40 steps fit before anything runs.</div></div>
+        <div class="stat"><div class="v">22 files</div><div class="k">built from that request</div><div class="d">Four grown modules, eleven seeded systems, one five-patch bundle, and 54,823 project bytes.</div></div>
+        <div class="stat"><div class="v">1</div><div class="k">pending step continued</div><div class="d">The plan is expanded, the pending step runs from context, and one undo restores the exact bytes.</div></div>
+      </div>
+      <p class="note"><code>python3 toolrx/demo.py</code> runs the real browser modules in Node with a fake catalog fetch. The checked-in <code>toolrx/demo_report.json</code> normalizes timings; <code>--check</code> fails on drift.</p>
     </div>
   </section>
 
@@ -494,7 +507,7 @@
         <div class="row"><span class="tag done">done</span><p><b>Run observability (step 42).</b> The last-run chip expands into per-step timings, confidence and margin spread, files touched, bytes written, context peak, and headroom — persisted so it survives a reload.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Portable workspaces (step 43).</b> Versioned project and workspace bundles with the plan, seed, files, context, and settings; imports validate versions, paths, and budgets before writing.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Deterministic extractors (step 44).</b> Lists, key facts, code outlines, and line-diff summaries from long intermediates, with named input/output caps and byte-pinned fixtures.</p></div>
-        <div class="row"><span class="tag next">next</span><p><b>End-to-end long demo (step 45).</b> One offline transcript that plans, builds, grows, patches, continues, and undoes, with measured numbers.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>End-to-end long demo (step 45).</b> One 3,367-character request, 32 deterministic steps, 22 files, one continued pending step, and a byte-exact undo; <code>demo_report.json</code> is checked on every run.</p></div>
         <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
       </div>
       <p class="note">Roadmap, not promises. Every item has to stay testable offline and honest about failure.</p>

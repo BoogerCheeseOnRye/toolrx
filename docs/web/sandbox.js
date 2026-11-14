@@ -890,6 +890,7 @@
       return "<h1" + attrs + ">" + escHtml(title) + "</h1>";
     });
     if (!changed) throw new Error("this page has no title element to change");
+    pushProjectHistory(p, "page title");
     p.files["index.html"] = html;
     if (p.files["README.md"]) {
       p.files["README.md"] = p.files["README.md"].replace(/^# [^\n]*/m, "# " + title);
@@ -907,6 +908,7 @@
   function setProjectTheme(ref, name) {
     const p = projectForEdit(ref);
     const theme = String(name || "").toLowerCase() === "light" ? "light" : "dark";
+    pushProjectHistory(p, "theme " + theme);
     p.files["index.html"] = setHtmlTheme(p.files["index.html"], theme);
     preview.title = preview.title || p.name;
     refreshProject(p, theme);
@@ -924,6 +926,7 @@
     if (hasButton && hasScript) {
       return p.name + " already has a theme toggle · nothing changed";
     }
+    pushProjectHistory(p, "theme toggle");
     if (!hasButton) {
       p.files["index.html"] = p.files["index.html"].replace(/<h1\b([^>]*)>[\s\S]*?<\/h1>/i,
         function (m) {
@@ -956,6 +959,7 @@
     const p = projectForEdit(ref);
     const note = String(text || "").replace(/\s+/g, " ").trim().slice(0, 160);
     if (!note) throw new Error("say what the footer note should say");
+    pushProjectHistory(p, "footer note");
     const block = '<div id="projectNote" class="muted small" '
       + 'style="max-width:980px;margin:14px auto 0;text-align:center">'
       + escHtml(note) + "</div>\n";
@@ -991,6 +995,7 @@
     if (!budget.ok) {
       throw new Error("not written · " + budget.why + " — previous project kept");
     }
+    pushProjectHistory(p, "write " + n);
     p.files[n] = text;
     p.updated = Date.now();
     refreshProject(p);
@@ -1769,7 +1774,10 @@
     const list = Array.isArray(results) ? results : [];
     const last = list.filter(function (r) { return r && r.text; }).slice(-1)[0] || null;
     const via = last ? String(last.via || "") : "";
-    const quiet = /^context\.(?:show|clear|clear\.all)$/.test(via);
+    // Meta commands describe or move the plan; storing their own output as
+    // `result/last` would evict the plan they just edited. The session rows
+    // below already skip the same set.
+    const quiet = /^context\.(?:show|clear|clear\.all|expand|continue)$/.test(via);
 
     if (last && !quiet) {
       const head = "query: " + String(query).replace(/\s+/g, " ").slice(0, 240)

@@ -331,6 +331,24 @@ fixtures/extractors.json` pins every output byte; `tests/test_extractors_js.py`
 checks determinism, the caps, the refusals, and the two-step chain, while
 `tests/test_commands.py` pins the routing and arguments.
 
+Step 45 turns that whole path into one checked-in demo. `toolrx/demo_request.txt`
+is a single 3,367-character request; `python3 toolrx/demo.py` runs it through
+the real browser modules in Node with a fake catalog fetch (no server, no
+browser, no model), prints the measured transcript, and verifies
+`toolrx/demo_report.json`. The plan's 32 steps fit before anything runs
+(3,367/8,000 characters, 32/40 steps, worst case 128,000/160,000 ms), then
+builds a shooter with 22 files, the four grown modules, and all 11 systems,
+applies a five-patch bundle in one step, reads the generated README,
+ARCHITECTURE, and app.js through the step-44 extractors, expands the stored plan
+with one pending step, continues it from context, and undoes it byte-exactly.
+The project is 54,823 bytes with 10 files and 8 steps of headroom; every step
+matched an exact command, so confidence and margin stay null rather than
+inventing a probability. The report normalizes `at` and `ms` so it is
+byte-for-byte reproducible; `python3 toolrx/demo.py --check` fails on drift, and
+`tests/test_demo.py` asserts the plan fits, every step succeeds, the
+continuation runs only the pending step, the undo restores every file, and the
+README/pitch numbers match the report.
+
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
 `add a footer note saying …` rewrite the real `index.html` / `app.js` files.

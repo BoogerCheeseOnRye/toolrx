@@ -964,7 +964,7 @@ marker-free input returns a sentence instead of an empty string.
 the empty/short replies, and the two-step chain; `tests/test_commands.py` pins
 routing, arguments, and that `outline notes.md` still means headings.
 
-### 45. End-to-end long harness demo and pitch refresh
+### 45. End-to-end long harness demo and pitch refresh — done
 
 Ship a reproducible long-prompt demo that runs fully offline: one 3,000–6,000
 character request that becomes a verified plan, builds a multi-module project,
@@ -980,6 +980,24 @@ the transcript is reproducible byte-for-byte apart from timings, every demo
 assertion passes, the pitch and README numbers match the report, and a live
 GitHub Pages smoke of the same path passes with no severe console errors.
 
+Landed as `toolrx/demo_request.txt` (3,367 characters, 32 steps),
+`toolrx/demo_harness.js` (the real browser modules in Node with a fake catalog
+fetch, no server/browser/model), `toolrx/demo.py` (`--write`, `--check`, and a
+measured transcript), and the checked-in `toolrx/demo_report.json`. The request
+builds a 22-file shooter, grows the four modules and eleven systems, applies a
+five-patch bundle in one step, reads the generated files through the step-44
+extractors, expands the stored plan with one pending step, continues it from
+context, and undoes it byte-exactly. The report normalizes `at`/`ms` (including
+the build line's elapsed milliseconds) and re-pins each step's byte count and
+sha; two runs produce identical JSON. `tests/test_demo.py` checks the plan
+envelope, every step's deterministic `via`, the project shape, the bundle, the
+continuation, the exact undo, the shared limits envelope, and the README/pitch
+numbers. Two robustness fixes came out of the demo: title, theme, toggle,
+footer-note, and project-file writes now push one undo snapshot like patches
+already did, and `context.expand`/`context.continue` no longer store their own
+plan listing as `result/last`, which used to evict the plan they had just
+edited.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
@@ -993,7 +1011,7 @@ GitHub Pages smoke of the same path passes with no severe console errors.
    capture) → 34 (vocab/centroids) → 35 (gate) — done
 6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) →
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
-   44 (extractors) — done; 45 (demo) — next
+   44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 
 Steps 36–37 come first because they define the budget and the gate every later
