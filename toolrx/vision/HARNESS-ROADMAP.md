@@ -1045,20 +1045,20 @@ the fixture set resolves to an exact command with no chat or router fallback,
 the catalog rebuild is reproducible with zero duplicate ids and zero duplicate
 regexes, and the README/pitch catalog count is regenerated from the build.
 
-Landed with 525 phrasings across ten families (`build`, `edit`, `growth`,
+Landed with 541 phrasings across ten families (`build`, `edit`, `growth`,
 `context`, `projects`, `math`, `extract`, `text`, `memory`, `system`). One
 checked-in table, `toolrx/everyday.py`, feeds both the catalog and
 `tests/fixtures/everyday.json`; `build_commands.py` appends it last so every
-original exact form still wins. The catalog is 11,859 patterns. The fixture
-runs through the shipped first-match order: 525/525 resolve to their own
+original exact form still wins. The catalog is 11,875 patterns. The fixture
+runs through the shipped first-match order: 541/541 resolve to their own
 `everyday.*` command with exact arguments, with zero chat/router fallbacks,
 zero shadowing, and zero duplicate ids or regexes. Two ordering rules keep it
 honest: specific text transforms precede the generic `reverse {text}`, and
 `work out …` stays with the existing `math.expr` route instead of duplicating
 it. `tests/test_everyday.py` fails on fixture drift, a family below 30 cases,
 a table/catalog mismatch, a shadowed case, or a README/pitch count that no
-longer matches the build; its Node harness runs the same 525 through the real
-browser `planPreview` and gets 525 exact hits.
+longer matches the build; its Node harness runs the same 541 through the real
+browser `planPreview` and gets 541 exact hits.
 
 ### 47. Conversational glue and soft intents — planned
 

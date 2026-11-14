@@ -19,7 +19,7 @@
       "lang": 45,
       "library": 43,
       "llm": 33,
-      "math": 224,
+      "math": 240,
       "memory": 91,
       "misc": 55,
       "plan": 18,
@@ -29,7 +29,7 @@
       "units": 1990,
       "web": 32
     },
-    "count": 11859,
+    "count": 11875,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,

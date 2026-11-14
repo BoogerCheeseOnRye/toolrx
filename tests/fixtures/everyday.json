@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "count": 525,
+  "count": 541,
   "families": {
     "build": 108,
     "context": 42,
     "edit": 54,
     "extract": 56,
     "growth": 60,
-    "math": 36,
+    "math": 52,
     "memory": 45,
     "projects": 36,
     "system": 40,
@@ -2529,6 +2529,46 @@
     },
     {
       "family": "math",
+      "text": "can you tell me tell me what 12 divided by 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "can you tell me tell me what 12 minus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "can you tell me tell me what 12 plus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "can you tell me tell me what 12 times 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
       "text": "could you add 12 and 30",
       "op": "math.binary",
       "args": {
@@ -2565,6 +2605,86 @@
         "op": "sub",
         "b": "30",
         "a": "12"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you tell me tell me what 12 divided by 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you tell me tell me what 12 minus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you tell me tell me what 12 plus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "could you tell me tell me what 12 times 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "do you know tell me what 12 divided by 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "do you know tell me what 12 minus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "do you know tell me what 12 plus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "do you know tell me what 12 times 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
       }
     },
     {
@@ -2685,6 +2805,46 @@
         "op": "sub",
         "b": "30",
         "a": "12"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please tell me tell me what 12 divided by 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "div",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please tell me tell me what 12 minus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "sub",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please tell me tell me what 12 plus 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "add",
+        "a": "12",
+        "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "please tell me tell me what 12 times 30 is",
+      "op": "math.binary",
+      "args": {
+        "op": "mul",
+        "a": "12",
+        "b": "30"
       }
     },
     {

@@ -274,10 +274,22 @@ def _captured(family, op, cores, forms, cat):
     return out
 
 
+MATH_WRAPPERS = ["can you tell me", "could you tell me", "please tell me",
+                 "do you know"]
+
+
 def _math():
     out = []
     for op, templates in MATH.items():
+        # Prefix the existing "tell me what ..." form so a polite wrapper does
+        # not need a second hand-written table. Every wrapper keeps the same
+        # capture order and the same expected arguments.
+        expanded = list(templates)
         for pattern, argmap in templates:
+            if pattern.startswith("tell me what "):
+                for form in MATH_WRAPPERS:
+                    expanded.append((form + " " + pattern, argmap))
+        for pattern, argmap in expanded:
             values = {"a": "12", "b": "30"}
             order = re.findall(r"\{(\w+)\}", pattern)
             expect = {"op": op}
