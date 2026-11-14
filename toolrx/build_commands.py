@@ -446,6 +446,12 @@ for pat in ("first {n} lines", "first {n} lines of it", "first {n} lines of that
     add(f"text.firstlines.prev.{len(COMMANDS)}", "text.firstlines",
         "^" + pat.replace("{n}", N) + "$", {"n": "$1"}, pat, "text")
 
+# Code-outline phrasings must precede the generic `outline {text}` shape, or
+# "outline the code" would be read as a heading outline of the words.
+add("text.code.outline", "text.code", r"^outline the code$", {}, "outline the code", "text")
+add("text.code.outline.text", "text.code", r"^outline the code in (.+)$",
+    {"text": "$1"}, "outline the code in {text}", "text")
+
 for pat in ("outline it", "outline that", "outline this", "outline the text",
             "outline the result", "outline the output", "make an outline"):
     add(f"text.outline.prev.{len(COMMANDS)}", "text.outline",
@@ -461,6 +467,62 @@ for pat in ("table from {text}", "make a table from {text}",
             "format {text} as a table", "convert {text} to a table"):
     add(f"text.table.{len(COMMANDS)}", "text.table",
         "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+
+# Step 44: extractors for long intermediates. Each reads a literal, a file
+# path, or the previous step, and reports the caps it applied (extractChars on
+# the input, extractItems on the output). Source order is preserved.
+for pat in ("extract the list from {text}", "extract list from {text}",
+            "extract the lists from {text}", "extract lists from {text}",
+            "extract the list items from {text}", "extract list items from {text}",
+            "extract the bullet points from {text}", "extract bullet points from {text}",
+            "list the items in {text}", "list items in {text}",
+            "pull out the list from {text}", "pull out the bullet points from {text}"):
+    add(f"text.list.{len(COMMANDS)}", "text.list",
+        "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+for pat in ("extract the list", "extract list", "extract the lists",
+            "extract the list items", "extract list items",
+            "extract the bullet points", "extract bullet points",
+            "pull out the list", "list the items", "list items"):
+    add(f"text.list.prev.{len(COMMANDS)}", "text.list",
+        "^" + re.escape(pat) + "$", {}, pat, "text")
+
+for pat in ("extract the key facts from {text}", "extract key facts from {text}",
+            "key facts from {text}", "pull out the key facts from {text}",
+            "list the key facts in {text}", "list key facts in {text}",
+            "what are the key facts in {text}", "get the key facts from {text}"):
+    add(f"text.facts.{len(COMMANDS)}", "text.facts",
+        "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+for pat in ("extract the key facts", "extract key facts", "key facts",
+            "pull out the key facts", "list the key facts", "list key facts",
+            "what are the key facts"):
+    add(f"text.facts.prev.{len(COMMANDS)}", "text.facts",
+        "^" + re.escape(pat) + "$", {}, pat, "text")
+
+for pat in ("extract the functions from {text}", "extract functions from {text}",
+            "list the functions in {text}", "list functions in {text}",
+            "functions in {text}", "extract the code outline from {text}",
+            "code outline from {text}",
+            "extract the classes from {text}", "list the classes in {text}"):
+    add(f"text.code.{len(COMMANDS)}", "text.code",
+        "^" + pat.replace("{text}", TXT) + "$", {"text": "$1"}, pat, "text")
+for pat in ("extract the functions", "extract functions", "list the functions",
+            "list functions", "extract the code outline", "code outline",
+            "extract the classes", "list the classes"):
+    add(f"text.code.prev.{len(COMMANDS)}", "text.code",
+        "^" + re.escape(pat) + "$", {}, pat, "text")
+
+# Specific diff forms come before the bare "diff {a} and {b}" so the summary
+# phrasings keep their two captures.
+for pat in ("summarize the diff between {a} and {b}",
+            "summarize the difference between {a} and {b}",
+            "diff summary of {a} and {b}", "diff summary between {a} and {b}",
+            "summarize the changes from {a} to {b}",
+            "summarize the changes between {a} and {b}",
+            "what changed between {a} and {b}", "what changed from {a} to {b}",
+            "diff {a} and {b}"):
+    add(f"text.diff.{len(COMMANDS)}", "text.diff",
+        "^" + pat.replace("{a}", TXT).replace("{b}", TXT) + "$",
+        {"a": "$1", "b": "$2"}, pat, "text")
 
 # -------------------------------------------------------------- encoding --
 ENCODE = {

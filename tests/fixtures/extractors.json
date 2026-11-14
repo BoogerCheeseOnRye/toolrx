@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "documents": {
+    "list": "# Packing list\n\n- passport\n- charger\n  - usb-c cable\n* notebook\n1. tickets\n2) hotel confirmation\n- [x] keys\n- [ ] toothbrush\n\nBring a jacket. The forecast is cold.",
+    "facts": "# Field notes\n\nThe bridge is 240 metres long. It opened in 1897.\nThe river floods every spring! Locals call it the \"long water\".\n\n- a list item, not a fact\n- another item\n\n## Measurements\n\nThe deck is 12 metres wide. Traffic runs on two lanes.\n\n| span | year |\n| --- | --- |\n| 240 | 1897 |\n\n```js\nfunction hidden() {}\n```\n\nEngineers inspect it yearly. The last inspection found no cracks.",
+    "code": "import x from \"y\";\n\nexport function buildPage(kind) {\n  return kind;\n}\n\nasync function fetchAll() {}\n\nconst slugify = (s) => s.trim();\nlet counter = 0;\nvar legacy = function () {};\n\nexport default class Store {}\nclass Helper {}\n\ndef parse_args(argv):\n    return argv\n\nasync def save(path):\n    pass\n",
+    "diffLeft": "alpha\nbravo\ncharlie\ndelta\necho",
+    "diffRight": "alpha\nBRAVO\ncharlie\necho\nfoxtrot"
+  },
+  "expected": {
+    "list": "passport\ncharger\nusb-c cable\nnotebook\ntickets\nhotel confirmation\nkeys\ntoothbrush",
+    "facts": "- The bridge is 240 metres long.\n- The deck is 12 metres wide.\n- Engineers inspect it yearly.",
+    "code": "function buildPage\nfunction fetchAll\nconst slugify\nclass Store\nclass Helper\ndef parse_args\ndef save",
+    "diff": "diff · 2 added · 2 removed · 3 unchanged\n- bravo\n+ BRAVO\n- delta\n+ foxtrot"
+  }
+}

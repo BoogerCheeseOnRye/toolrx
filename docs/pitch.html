@@ -238,7 +238,7 @@
       </div>
       <div class="hero-stats" aria-label="Highlights">
         <span class="pill"><b>27</b> tools</span>
-        <span class="pill"><b>11,269</b> commands</span>
+        <span class="pill"><b>11,334</b> commands</span>
         <span class="pill"><b>1</b> browser tab</span>
         <span class="pill"><b>0</b> network calls by default</span>
       </div>
@@ -278,7 +278,7 @@
       <div class="flow" aria-label="Request pipeline">
         <span class="node">prompt</span><span class="arrow">→</span>
         <span class="node hot">normalize</span><span class="arrow">→</span>
-        <span class="node hot">11,269 exact commands</span><span class="arrow">→</span>
+        <span class="node hot">11,334 exact commands</span><span class="arrow">→</span>
         <span class="node">hashed n-gram router</span><span class="arrow">→</span>
         <span class="node">allow-listed tool</span><span class="arrow">→</span>
         <span class="node end">real result</span>
@@ -342,10 +342,10 @@
       <div class="kicker">by the numbers</div>
       <h2>Small enough to inspect. <span class="quiet">Useful enough to keep.</span></h2>
       <div class="stats">
-        <div class="stat"><div class="v">11,269</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
+        <div class="stat"><div class="v">11,334</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
         <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
         <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
-        <div class="stat"><div class="v">330</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
+        <div class="stat"><div class="v">339</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope.</div></div>
         <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
         <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
       </div>
@@ -479,7 +479,7 @@
       <div class="kicker">roadmap</div>
       <h2>Ship the next useful thing.</h2>
       <div class="stack">
-        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, 11,269 patterns, chained steps, confidence and margin.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, 11,334 patterns, chained steps, confidence and margin.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Builds and composable edits.</b> 16 genre starters, 20 RPG packs, named-function patches, lossless undo.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Optional LLM adapter.</b> Off by default, strict JSON, pending diffs, budgets, cache, local key.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Longer input and verified plans (steps 26–27).</b> 2,000-character routes, 8,000-character / 40-step plans, preview before execution, stop at the first failed step — still no LLM.</p></div>
@@ -493,7 +493,8 @@
         <div class="row"><span class="tag done">done</span><p><b>Catalog quality pass (step 41).</b> 11,248 commands with 0 duplicate ids, 0 duplicate regexes, and 0 dead literals; a checked-in coverage report proves every long-form family routes with no chat fallback.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Run observability (step 42).</b> The last-run chip expands into per-step timings, confidence and margin spread, files touched, bytes written, context peak, and headroom — persisted so it survives a reload.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Portable workspaces (step 43).</b> Versioned project and workspace bundles with the plan, seed, files, context, and settings; imports validate versions, paths, and budgets before writing.</p></div>
-        <div class="row"><span class="tag next">next</span><p><b>Deterministic summarizers.</b> Extract lists, outlines, and diff summaries from long intermediates.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Deterministic extractors (step 44).</b> Lists, key facts, code outlines, and line-diff summaries from long intermediates, with named input/output caps and byte-pinned fixtures.</p></div>
+        <div class="row"><span class="tag next">next</span><p><b>End-to-end long demo (step 45).</b> One offline transcript that plans, builds, grows, patches, continues, and undoes, with measured numbers.</p></div>
         <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
       </div>
       <p class="note">Roadmap, not promises. Every item has to stay testable offline and honest about failure.</p>

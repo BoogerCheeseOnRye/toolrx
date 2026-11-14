@@ -21,6 +21,9 @@ Ranges (the human-facing contract):
   undoDepth        1–64
   outputChars      1,000–100,000
   bundleBytes      65,536–8,388,608
+  extractChars     1,000–32,000  extractor input
+  extractItems     10–500  extractor output lines
+  diffLines        50–2,000  diff lines per side
 """
 
 import json
@@ -46,6 +49,9 @@ _RANGES = {
     "undoDepth": (1, 64),
     "outputChars": (1_000, 100_000),
     "bundleBytes": (65_536, 8_388_608),
+    "extractChars": (1_000, 32_000),
+    "extractItems": (10, 500),
+    "diffLines": (50, 2_000),
 }
 
 

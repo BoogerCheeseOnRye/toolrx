@@ -178,6 +178,34 @@ class CommandLibraryTest(unittest.TestCase):
             self.assertEqual(hit["op"], op, query)
             self.assertEqual(self.args_for(hit, query), expected, query)
 
+    def test_extractor_commands_route_with_exact_arguments(self):
+        exact = {
+            "extract the list from notes.md": ("text.list", {"text": "notes.md"}),
+            "extract the bullet points": ("text.list", {}),
+            "list the items in notes.md": ("text.list", {"text": "notes.md"}),
+            "extract the key facts from notes.md":
+                ("text.facts", {"text": "notes.md"}),
+            "key facts": ("text.facts", {}),
+            "outline the code in app.js": ("text.code", {"text": "app.js"}),
+            "extract the functions": ("text.code", {}),
+            "code outline from app.js": ("text.code", {"text": "app.js"}),
+            "diff a.js and b.js": ("text.diff", {"a": "a.js", "b": "b.js"}),
+            "summarize the diff between a.js and b.js":
+                ("text.diff", {"a": "a.js", "b": "b.js"}),
+            "what changed between old.md and new.md":
+                ("text.diff", {"a": "old.md", "b": "new.md"}),
+        }
+        for query, (op, expected) in exact.items():
+            hit = self.first(query)
+            self.assertIsNotNone(hit, query)
+            self.assertEqual(hit["op"], op, query)
+            self.assertEqual(self.args_for(hit, query), expected, query)
+        # The generic heading outline still wins for ordinary text.
+        hit = self.first("outline notes.md")
+        self.assertEqual(hit["op"], "text.outline")
+        self.assertEqual(self.args_for(hit, "outline notes.md"),
+                         {"text": "notes.md"})
+
     def test_multi_system_growth_routes_in_one_step(self):
         cases = {
             "add inventory and dialogue and save systems":

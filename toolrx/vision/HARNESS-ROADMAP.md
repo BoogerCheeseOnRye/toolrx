@@ -929,7 +929,7 @@ round-trip with byte-exact files, stable plan and context, restored active slug
 and settings, the all-or-none rollback, every named refusal, and the
 named-bundle lifecycle; `tests/test_skills_js.py` runs the chat path.
 
-### 44. Deterministic summarizers and extractors for long intermediates
+### 44. Deterministic summarizers and extractors for long intermediates — done
 
 Extend the step-33 text family with exact, offline tools for long intermediate
 results: extract lists, key facts, file outlines, and diff summaries, alongside
@@ -943,6 +943,26 @@ feed the next step without a model.
 runs, input and output caps are named and enforced, empty and short inputs return
 a clear message rather than a crash, two-step chains consume the previous result,
 and fixtures pin every output byte.
+
+Landed as `text.list`, `text.facts`, `text.code`, and `text.diff` in
+`toolrx/web/skills.js`, with 65 command patterns in `toolrx/build_commands.py`
+(catalog 11,334). `extract the list` returns bullet, numbered, and checkbox
+items in source order; `extract the key facts` takes the first sentence of each
+prose paragraph and skips headings, lists, tables, and fenced code; `outline the
+code` lists `function`, `class`, arrow, and `def` declarations as they appear;
+`diff a and b` walks a line-level LCS (common prefix and suffix trimmed first)
+and prints added/removed/unchanged counts plus the changed lines. Every
+extractor reads a literal, a file path, or the previous step through
+`resolveText`, so a facts result can feed the list extractor with no model.
+Three caps joined `limits.json`: `extractChars` = 8,000 (input),
+`extractItems` = 200 (output lines), and `diffLines` = 400 (per side).
+Truncation is printed with the exact numbers, an over-long diff throws
+`the diff is capped at 400 lines per side (left has 401)`, and empty or
+marker-free input returns a sentence instead of an empty string.
+`tests/fixtures/extractors.json` pins every output byte;
+`tests/test_extractors_js.py` checks determinism, both caps, the diff refusals,
+the empty/short replies, and the two-step chain; `tests/test_commands.py` pins
+routing, arguments, and that `outline notes.md` still means headings.
 
 ### 45. End-to-end long harness demo and pitch refresh
 
@@ -972,8 +992,8 @@ GitHub Pages smoke of the same path passes with no severe console errors.
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
    capture) → 34 (vocab/centroids) → 35 (gate) — done
 6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) →
-   40 (systems) — done; 41 (coverage) → 42 (observability) → 43 (workspaces) →
-   44 (extractors) → 45 (demo) — planned
+   40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
+   44 (extractors) — done; 45 (demo) — next
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 
 Steps 36–37 come first because they define the budget and the gate every later

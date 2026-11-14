@@ -733,6 +733,161 @@
     return out.join("\n");
   }
 
+  /* ------------------------------------------------------- extractors ---- */
+  /* Step 44. Each extractor reads a literal, a file path, or the previous
+   * step, in that order (resolveText), then applies the same two named caps:
+   * extractChars on the input and extractItems on the output. Order is the
+   * source order; nothing is ranked by a model. */
+  function extractorInput(v, ctx) {
+    const text = resolveText(v, ctx);
+    const max = LIMITS_RAW.extractChars;
+    if (text.length <= max) return { text: text, total: text.length, cut: 0 };
+    return { text: text.slice(0, max), total: text.length, cut: text.length };
+  }
+
+  function extractorNote(got) {
+    if (!got.cut) return "";
+    return "\n(input truncated at " + LIMITS_RAW.extractChars
+      + " of " + got.total + " chars)";
+  }
+
+  function capItems(lines, what) {
+    const max = LIMITS_RAW.extractItems;
+    if (lines.length <= max) return lines;
+    return lines.slice(0, max).concat(
+      "(showing first " + max + " of " + lines.length + " " + what + ")");
+  }
+
+  function extractorResult(got, lines, what, empty) {
+    if (!got.text.trim()) return "nothing to extract — the text is empty";
+    if (!lines.length) return empty;
+    return capItems(lines, what).join("\n") + extractorNote(got);
+  }
+
+  function listItemsOf(text) {
+    const out = [];
+    String(text == null ? "" : text).replace(/\r/g, "").split("\n")
+      .forEach(function (line) {
+        const m = /^\s{0,6}(?:[-*+]|\d{1,3}[.)])\s+(?:\[[ xX]\]\s+)?(.+?)\s*$/.exec(line);
+        if (m && m[1]) out.push(m[1]);
+      });
+    return out;
+  }
+
+  function keyFactsOf(text) {
+    const out = [];
+    const seen = {};
+    String(text == null ? "" : text).replace(/\r/g, "").split(/\n{2,}/)
+      .forEach(function (block) {
+        const body = block.trim();
+        if (!body) return;
+        // Fenced code, tables, and heading-only blocks are structure, not facts.
+        if (/^```/.test(body) || /^\|/.test(body)) return;
+        const prose = body.split("\n")
+          .filter(function (line) { return !/^\s{0,3}#{1,6}\s/.test(line); })
+          .join("\n").trim();
+        if (!prose) return;
+        if (/^(?:[-*+]|\d{1,3}[.)])\s+/.test(prose)) return;
+        const first = prose.match(/[^.!?]+[.!?]+/);
+        const line = (first ? first[0] : prose.split("\n")[0])
+          .replace(/\s+/g, " ").trim();
+        if (!line || seen[line]) return;
+        seen[line] = true;
+        out.push("- " + line);
+      });
+    return out;
+  }
+
+  function codeOutlineOf(text) {
+    const out = [];
+    const seen = {};
+    const push = function (kind, name) {
+      const line = kind + " " + name;
+      if (seen[line]) return;
+      seen[line] = true;
+      out.push(line);
+    };
+    String(text == null ? "" : text).replace(/\r/g, "").split("\n")
+      .forEach(function (line) {
+        let m = /^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/.exec(line);
+        if (m) return push("function", m[1]);
+        m = /^\s*(?:export\s+)?(?:default\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/.exec(line);
+        if (m) return push("class", m[1]);
+        m = /^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>/.exec(line);
+        if (m) return push("const", m[1]);
+        m = /^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)/.exec(line);
+        if (m) return push("def", m[1]);
+      });
+    return out;
+  }
+
+  function diffSide(text) {
+    let t = String(text == null ? "" : text).replace(/\r\n?/g, "\n");
+    if (t.charAt(t.length - 1) === "\n") t = t.slice(0, -1);
+    return t === "" ? [] : t.split("\n");
+  }
+
+  /* Longest common subsequence over lines, with the common prefix and suffix
+   * trimmed first. Deterministic tie-break: prefer the deletion, so the same
+   * pair always produces the same op order. */
+  function lineDiff(a, b) {
+    let start = 0;
+    while (start < a.length && start < b.length && a[start] === b[start]) start++;
+    let endA = a.length, endB = b.length;
+    while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) {
+      endA--; endB--;
+    }
+    const A = a.slice(start, endA), B = b.slice(start, endB);
+    const n = A.length, m = B.length;
+    const dp = new Int32Array((n + 1) * (m + 1));
+    const at = function (i, j) { return i * (m + 1) + j; };
+    for (let i = n - 1; i >= 0; i--) {
+      for (let j = m - 1; j >= 0; j--) {
+        dp[at(i, j)] = A[i] === B[j]
+          ? dp[at(i + 1, j + 1)] + 1
+          : Math.max(dp[at(i + 1, j)], dp[at(i, j + 1)]);
+      }
+    }
+    const ops = [];
+    let i = 0, j = 0;
+    while (i < n && j < m) {
+      if (A[i] === B[j]) { ops.push({ t: "=", v: A[i] }); i++; j++; }
+      else if (dp[at(i + 1, j)] >= dp[at(i, j + 1)]) {
+        ops.push({ t: "-", v: A[i] }); i++;
+      } else { ops.push({ t: "+", v: B[j] }); j++; }
+    }
+    while (i < n) ops.push({ t: "-", v: A[i++] });
+    while (j < m) ops.push({ t: "+", v: B[j++] });
+    return ops;
+  }
+
+  function diffSummaryOf(leftText, rightText) {
+    const left = diffSide(leftText), right = diffSide(rightText);
+    if (!left.length && !right.length) return "nothing to diff — both sides are empty";
+    if (!left.length) return "nothing to diff — the left side is empty";
+    if (!right.length) return "nothing to diff — the right side is empty";
+    const cap = LIMITS_RAW.diffLines;
+    if (left.length > cap || right.length > cap) {
+      const side = left.length > cap ? "left" : "right";
+      const n = Math.max(left.length, right.length);
+      throw new Error("the diff is capped at " + cap + " lines per side ("
+        + side + " has " + n + ")");
+    }
+    const diff = lineDiff(left, right);
+    const added = diff.filter(function (o) { return o.t === "+"; }).length;
+    const removed = diff.filter(function (o) { return o.t === "-"; }).length;
+    const unchanged = left.length - removed;
+    if (!added && !removed) {
+      return "no changes · " + unchanged + " line"
+        + (unchanged === 1 ? "" : "s") + " identical";
+    }
+    const changed = diff.filter(function (o) { return o.t !== "="; })
+      .map(function (o) { return o.t + " " + o.v; });
+    const body = capItems(changed, "changed lines");
+    return ["diff · " + added + " added · " + removed + " removed · "
+      + unchanged + " unchanged"].concat(body).join("\n");
+  }
+
   /* ------------------------------------------------------------ memory ---- */
   function memoryStore(ctx) {
     const m = ctx && ctx.memory;
@@ -2102,6 +2257,31 @@
     "text.table": function (a, ctx) {
       return tableOf(resolveText(a.text, ctx));
     },
+    "text.list": function (a, ctx) {
+      const got = extractorInput(a.text, ctx);
+      return extractorResult(got, listItemsOf(got.text), "list items",
+        "(no list items found)");
+    },
+    "text.facts": function (a, ctx) {
+      const got = extractorInput(a.text, ctx);
+      return extractorResult(got, keyFactsOf(got.text), "key facts",
+        "(no key facts found)");
+    },
+    "text.code": function (a, ctx) {
+      const got = extractorInput(a.text, ctx);
+      return extractorResult(got, codeOutlineOf(got.text), "functions or classes",
+        "(no functions or classes found)");
+    },
+    "text.diff": function (a, ctx) {
+      const left = extractorInput(a.a, ctx), right = extractorInput(a.b, ctx);
+      const out = diffSummaryOf(left.text, right.text);
+      if (!left.cut && !right.cut) return out;
+      const parts = [];
+      if (left.cut) parts.push("left " + left.total);
+      if (right.cut) parts.push("right " + right.total);
+      return out + "\n(input truncated at " + LIMITS_RAW.extractChars
+        + " chars: " + parts.join(", ") + ")";
+    },
   };
 
   function limitsText() {
@@ -2123,6 +2303,9 @@
       ["undoDepth", "undo history"],
       ["outputChars", "one chat reply"],
       ["bundleBytes", "one export bundle"],
+      ["extractChars", "extractor input"],
+      ["extractItems", "extractor output lines"],
+      ["diffLines", "diff lines per side"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
       + L.version + ")"];
