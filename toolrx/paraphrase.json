@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "synonyms": {
+    "sum": ["tally", "add up", "sum up"],
+    "combine": ["combine", "merge", "put together"],
+    "extract": ["extract", "pull", "grab"],
+    "first": ["top", "leading"],
+    "open": ["jump to", "bring up", "switch over to"],
+    "remove": ["drop", "get rid of", "throw away"]
+  },
+  "intents": {
+    "math.sum": {
+      "tool": "math.sum",
+      "exact": [
+        {"text": "what do {list} come to", "op": "math.list", "args": {"op": "sum", "list": "$1"}},
+        {"text": "{sum} {list}", "op": "math.list", "args": {"op": "sum", "list": "$1"}},
+        {"text": "{combine} {list}", "op": "math.list", "args": {"op": "sum", "list": "$1"}},
+        {"text": "what is the total of {list}", "op": "math.list", "args": {"op": "sum", "list": "$1"}},
+        {"text": "how much do {list} make", "op": "math.list", "args": {"op": "sum", "list": "$1"}}
+      ],
+      "knowledge": [
+        "Work out what a handful of whole numbers comes to when they are added together.",
+        "Tally, total, or combine several small amounts into one final value.",
+        "I have a few numbers and I want the arithmetic sum, not each number separately.",
+        "Add up the amounts and tell me the combined total in one line."
+      ]
+    },
+    "text.count.words": {
+      "tool": null,
+      "exact": [
+        {"text": "how many words are there in {text}", "op": "text.count", "args": {"what": "words", "text": "$1"}},
+        {"text": "what is the word count of {text}", "op": "text.count", "args": {"what": "words", "text": "$1"}},
+        {"text": "count up the words in {text}", "op": "text.count", "args": {"what": "words", "text": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "text.extract.emails": {
+      "tool": null,
+      "exact": [
+        {"text": "{extract} the emails from {text}", "op": "text.extract", "args": {"what": "emails", "text": "$1"}},
+        {"text": "{extract} the email addresses from {text}", "op": "text.extract", "args": {"what": "emails", "text": "$1"}},
+        {"text": "{extract} the links from {text}", "op": "text.extract", "args": {"what": "urls", "text": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "text.firstlines": {
+      "tool": null,
+      "exact": [
+        {"text": "{first} {n} lines of {text}", "op": "text.firstlines", "args": {"n": "$1", "text": "$2"}},
+        {"text": "give me the {first} {n} lines of {text}", "op": "text.firstlines", "args": {"n": "$1", "text": "$2"}},
+        {"text": "print the {first} {n} lines of {text}", "op": "text.firstlines", "args": {"n": "$1", "text": "$2"}}
+      ],
+      "knowledge": []
+    },
+    "text.transform.upper": {
+      "tool": null,
+      "exact": [
+        {"text": "convert {text} to uppercase", "op": "text.transform", "args": {"op": "upper", "text": "$1"}},
+        {"text": "turn {text} into all caps", "op": "text.transform", "args": {"op": "upper", "text": "$1"}},
+        {"text": "make {text} all caps", "op": "text.transform", "args": {"op": "upper", "text": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "text.list": {
+      "tool": null,
+      "exact": [
+        {"text": "grab the bullet points from {text}", "op": "text.list", "args": {"text": "$1"}},
+        {"text": "pull the list items out of {text}", "op": "text.list", "args": {"text": "$1"}},
+        {"text": "get the list items from {text}", "op": "text.list", "args": {"text": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "memory.note": {
+      "tool": null,
+      "exact": [
+        {"text": "jot down that {text}", "op": "memory.note", "args": {"text": "$1"}},
+        {"text": "remind me that {text}", "op": "memory.note", "args": {"text": "$1"}},
+        {"text": "don't forget that {text}", "op": "memory.note", "args": {"text": "$1"}},
+        {"text": "make a mental note that {text}", "op": "memory.note", "args": {"text": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "memory.recall": {
+      "tool": null,
+      "exact": [
+        {"text": "what did i say my {key} was", "op": "memory.recall", "args": {"key": "$1"}},
+        {"text": "what was my {key} again", "op": "memory.recall", "args": {"key": "$1"}},
+        {"text": "do you recall my {key}", "op": "memory.recall", "args": {"key": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "project.list": {
+      "tool": null,
+      "exact": [
+        {"text": "what projects are there", "op": "project.list", "args": {}},
+        {"text": "which projects exist", "op": "project.list", "args": {}},
+        {"text": "show me every project", "op": "project.list", "args": {}}
+      ],
+      "knowledge": []
+    },
+    "project.files": {
+      "tool": null,
+      "exact": [
+        {"text": "what files does this project have", "op": "project.files", "args": {}},
+        {"text": "which files are in this project", "op": "project.files", "args": {}},
+        {"text": "list the files this project contains", "op": "project.files", "args": {}}
+      ],
+      "knowledge": []
+    },
+    "project.open": {
+      "tool": null,
+      "exact": [
+        {"text": "{open} project {slug}", "op": "project.open", "args": {"slug": "$1"}},
+        {"text": "take me to project {slug}", "op": "project.open", "args": {"slug": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "project.delete": {
+      "tool": null,
+      "exact": [
+        {"text": "{remove} project {slug}", "op": "project.delete", "args": {"slug": "$1"}},
+        {"text": "erase the project named {slug}", "op": "project.delete", "args": {"slug": "$1"}}
+      ],
+      "knowledge": []
+    },
+    "project.rename": {
+      "tool": null,
+      "exact": [
+        {"text": "give project {slug} the name {name}", "op": "project.rename", "args": {"slug": "$1", "name": "$2"}},
+        {"text": "call project {slug} {name}", "op": "project.rename", "args": {"slug": "$1", "name": "$2"}},
+        {"text": "rename project {slug} as {name}", "op": "project.rename", "args": {"slug": "$1", "name": "$2"}}
+      ],
+      "knowledge": []
+    },
+    "fs.list_dir": {
+      "tool": "fs.list_dir",
+      "exact": [],
+      "knowledge": [
+        "I want to see the names of everything in the current folder, not the text inside any file.",
+        "Browse this directory and tell me what entries it contains, one per line.",
+        "What files and subfolders are sitting in this folder right now?",
+        "Show the folder contents and mark each directory with a slash."
+      ]
+    },
+    "fs.read_file": {
+      "tool": "fs.read_file",
+      "exact": [],
+      "knowledge": [
+        "Open the file called notes.txt and print its contents in the chat.",
+        "Show me the text inside the document without listing the folder.",
+        "Read this one file and return what it says, line by line.",
+        "Print the contents of the named file so I can read it here.",
+        "Show the config file in the chat without changing it."
+      ]
+    },
+    "fs.cat_all": {
+      "tool": "fs.cat_all",
+      "exact": [],
+      "knowledge": [
+        "Print every file in the folder one after another so I can scan them together.",
+        "Dump the text of all the files in this directory in one combined answer.",
+        "Show the contents of each file, not just the file names.",
+        "Concatenate the files in this folder and return the combined text."
+      ]
+    },
+    "sys.mem_status": {
+      "tool": "sys.mem_status",
+      "exact": [],
+      "knowledge": [
+        "How much memory is free on this machine right now?",
+        "Report the ram usage and the available memory in plain numbers.",
+        "What is the current memory pressure and swap use?",
+        "Tell me how much of the system memory is in use and how much is left."
+      ]
+    },
+    "sys.uptime": {
+      "tool": "sys.uptime",
+      "exact": [],
+      "knowledge": [
+        "How long has this machine been running since the last boot?",
+        "Show the uptime and the load average for this computer.",
+        "Tell me when the system last started and how busy it has been.",
+        "What is the current uptime and one-minute load?"
+      ]
+    },
+    "sys.disk": {
+      "tool": "sys.disk",
+      "exact": [],
+      "knowledge": [
+        "How much free space is left on each filesystem?",
+        "Show the disk usage for every mounted volume.",
+        "Are the disks getting full, and which mount has the least room?",
+        "Report the used and available space on each drive."
+      ]
+    },
+    "sys.processes": {
+      "tool": "sys.processes",
+      "exact": [],
+      "knowledge": [
+        "What programs are running on this machine right now?",
+        "List the active processes and how much cpu each one is using.",
+        "Show the process table with names and process ids.",
+        "Which tasks are currently running on this computer?"
+      ]
+    },
+    "sys.ifconfig": {
+      "tool": "sys.ifconfig",
+      "exact": [],
+      "knowledge": [
+        "What network interfaces and ip addresses does this machine have?",
+        "Show the network adapters and the address assigned to each one.",
+        "List the local ip addresses for every interface.",
+        "Which network device is up and what address does it hold?"
+      ]
+    },
+    "sys.netstat": {
+      "tool": "sys.netstat",
+      "exact": [],
+      "knowledge": [
+        "Which ports are listening on this machine?",
+        "Show the active network connections and listening sockets.",
+        "List the open tcp ports and the addresses they are bound to.",
+        "What network connections does this host currently have open?"
+      ]
+    },
+    "net.ping": {
+      "tool": "net.ping",
+      "exact": [],
+      "knowledge": [
+        "Check whether the host responds to a ping.",
+        "Ping this address and report the round-trip time.",
+        "Is the remote machine reachable over the network?",
+        "Send a few ping packets and tell me if any reply comes back."
+      ]
+    },
+    "config.diff": {
+      "tool": "config.diff",
+      "exact": [],
+      "knowledge": [
+        "Compare the current configuration with the proposed one and report what changed.",
+        "Diff the two configurations and name every changed line.",
+        "What is different between the running config and the new config?",
+        "List every setting that differs between the two configurations."
+      ]
+    },
+    "file.edit": {
+      "tool": "file.edit",
+      "exact": [],
+      "knowledge": [
+        "Change one line in the named file and keep the rest of the text intact.",
+        "Apply a small edit to the file and show the resulting diff.",
+        "Replace the old line with the new line in this document.",
+        "Patch the file in place without rewriting unrelated content."
+      ]
+    }
+  }
+}

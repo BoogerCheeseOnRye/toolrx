@@ -12,21 +12,30 @@ import os
 import sys
 
 from tokhash import features, l2, _DIM
+import paraphrase
 
 MODEL_PATH = "micro_model.json"
 
 
-def count_docs(catalog, base):
-    """Return {tool_name: [ {index: count}, ... ]} plus aggregate df."""
+def count_docs(catalog, base, expand=True):
+    """Return {tool_name: [ {index: count}, ... ]} plus aggregate df.
+
+    With ``expand`` the checked-in paraphrase table appends its knowledge
+    lines to each tool's training text. The .md files stay untouched; the
+    table is the only source of this expansion.
+    """
     per_tool = {}
     df = {}  # document frequency per feature index
     n_docs = 0
     for tool in catalog["tools"]:
         vecs = []
+        extra = paraphrase.knowledge(tool["name"]) if expand else []
         for rel in tool["knowledge"]:
             path = os.path.join(base, rel)
             with open(path, encoding="utf-8") as f:
                 text = f.read()
+            if extra:
+                text = text + "\n" + "\n".join(extra)
             v = features(text, catalog.get("dim", _DIM))
             seen = set()
             for k in v:
@@ -40,7 +49,7 @@ def count_docs(catalog, base):
     return per_tool, df, n_docs
 
 
-def build(catalog_path="catalog.json"):
+def build(catalog_path="catalog.json", expand=True):
     base = os.path.dirname(os.path.abspath(catalog_path))
     with open(catalog_path, encoding="utf-8") as f:
         catalog = json.load(f)
@@ -49,7 +58,7 @@ def build(catalog_path="catalog.json"):
         catalog = {"dim": _DIM, "tools": catalog}
 
     dim = catalog.get("dim", _DIM)
-    per_tool, df, n_docs = count_docs(catalog, base)
+    per_tool, df, n_docs = count_docs(catalog, base, expand=expand)
 
     # idf: log(N / df) smoothed
     idf = {k: math.log(n_docs / (1 + v)) + 1.0 for k, v in df.items()}

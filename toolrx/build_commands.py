@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 
 import conversation  # noqa: E402  (step 47: one table for catalog + fixture)
 import everyday  # noqa: E402  (step 46: one table for catalog + fixture)
+import paraphrase  # noqa: E402  (step 48: one table for catalog + centroids)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1493,6 +1494,14 @@ for _entry in everyday.entries():
 # after the everyday layer so an original command always wins; the handler in
 # web/skills.js adds the previous-turn state that a bare pattern cannot carry.
 for _entry in conversation.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# ---------------------------------------------------------- paraphrase ----
+# Step 48: synonym/paraphrase routes come from the same checked-in table that
+# expands the router's knowledge. They are appended after the everyday and
+# conversation layers, so an original exact form always wins.
+for _entry in paraphrase.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

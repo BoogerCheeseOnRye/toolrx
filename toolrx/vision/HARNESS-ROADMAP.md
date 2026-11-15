@@ -1088,9 +1088,9 @@ nothing staged, changes nothing and says so. An unmappable correction asks one
 bounded question and leaves the project untouched. `tests/test_conversation.py`
 pins the fixture, the exact routes, the once-only confirmation, the ambiguous
 cases, the caps, and a byte-identical replay of the same transcript. The catalog
-is 11,930 patterns.
+is 11,987 patterns.
 
-### 48. Synonym and paraphrase tables — planned
+### 48. Synonym and paraphrase tables — done
 
 Move everyday variation into explicit data: a checked-in synonym/paraphrase
 table keyed by intent, consumed by the exact matcher and by centroid
@@ -1101,6 +1101,21 @@ on a fixed natural-language prompt set before and after.
 rebuild consumes it, the fixed prompt set shows no lower median margin and a
 higher exact-hit rate, and the table round-trips through a deterministic
 export.
+
+Landed with one checked-in table, `toolrx/paraphrase.json`: 25 intents, 57
+expanded exact routes, and 52 knowledge lines. `toolrx/paraphrase.py` validates
+the table, expands synonyms in table order, feeds `build_commands.py`, and
+exports `tests/fixtures/paraphrase.json`; `builder.py` appends each tool's
+`knowledge` lines before the centroid is built, so the exact matcher and the
+hashed router consume the same data. The catalog is 11,987 patterns and the
+model is 494,381 bytes, under the 541,042-byte cap. A fixed 32-prompt set
+(`tests/fixtures/paraphrase_eval.json`) measures both lanes: exact hits go
+0/22 → 22/22, router hits 9/10 → 10/10, and the router-lane median margin rises
+from 0.1511 to 0.2247. The validator refuses an unknown placeholder, a repeated
+capture, an unknown tool, an out-of-range capture, an unused capture, a phrase
+duplicated across intents, and an over-long knowledge list. `--check` fails on
+fixture drift, and `--measure` rebuilds the baseline and expanded models in
+separate temporary directories so one build cannot overwrite the other.
 
 ### 49. Everyday-language coverage dashboard — planned
 
@@ -1248,7 +1263,7 @@ claims.
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
-8. 46 (paraphrase) → 47 (glue) — done; 48 (tables) → 49 (language coverage) →
+8. 46 (paraphrase) → 47 (glue) → 48 (tables) — done; 49 (language coverage) →
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) → 53 (think) →
    54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
    58 (style) → 59 (scorecard) — planned
@@ -1280,7 +1295,7 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–47 are complete. 14 remains deferred. Steps 48–59 are
+- Steps 11–13, 15–48 are complete. 14 remains deferred. Steps 49–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after

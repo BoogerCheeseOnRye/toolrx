@@ -19,22 +19,22 @@
       "lang": 45,
       "library": 43,
       "llm": 33,
-      "math": 240,
-      "memory": 91,
+      "math": 249,
+      "memory": 98,
       "misc": 55,
       "plan": 18,
-      "project": 147,
+      "project": 164,
       "regex": 3,
-      "text": 360,
+      "text": 384,
       "units": 1990,
       "web": 32
     },
-    "count": 11930,
+    "count": 11987,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
-    "model_bytes": 481256,
-    "pure_literals": 7013
+    "model_bytes": 494381,
+    "pure_literals": 7019
   },
   "fixtures": {
     "builds": {
@@ -66,11 +66,11 @@
     "context": {
       "cases": 3,
       "confidence": {
-        "max": 0.5016,
-        "median": 0.3866,
-        "min": 0.095,
+        "max": 0.4707,
+        "median": 0.4103,
+        "min": 0.1008,
         "n": 3,
-        "p10": 0.095
+        "p10": 0.1008
       },
       "lanes": {
         "exact": 11,
@@ -79,11 +79,11 @@
         "router": 3
       },
       "margin": {
-        "max": 0.1809,
-        "median": 0.0796,
-        "min": 0.0249,
+        "max": 0.1965,
+        "median": 0.0407,
+        "min": 0.0199,
         "n": 3,
-        "p10": 0.0249
+        "p10": 0.0199
       },
       "subfamilies": {
         "base": {
@@ -149,11 +149,11 @@
         "plan": {
           "cases": 2,
           "confidence": {
-            "max": 0.5016,
-            "median": 0.3866,
-            "min": 0.095,
+            "max": 0.4707,
+            "median": 0.4103,
+            "min": 0.1008,
             "n": 3,
-            "p10": 0.095
+            "p10": 0.1008
           },
           "lanes": {
             "exact": 2,
@@ -162,11 +162,11 @@
             "router": 3
           },
           "margin": {
-            "max": 0.1809,
-            "median": 0.0796,
-            "min": 0.0249,
+            "max": 0.1965,
+            "median": 0.0407,
+            "min": 0.0199,
             "n": 3,
-            "p10": 0.0249
+            "p10": 0.0199
           },
           "units": 5
         },
@@ -262,11 +262,11 @@
     "plans": {
       "cases": 6,
       "confidence": {
-        "max": 0.6114,
-        "median": 0.4873,
-        "min": 0.3839,
+        "max": 0.6105,
+        "median": 0.5197,
+        "min": 0.3959,
         "n": 38,
-        "p10": 0.3917
+        "p10": 0.4018
       },
       "lanes": {
         "exact": 0,
@@ -275,21 +275,21 @@
         "router": 38
       },
       "margin": {
-        "max": 0.382,
-        "median": 0.1513,
-        "min": 0.0815,
+        "max": 0.3756,
+        "median": 0.1524,
+        "min": 0.0511,
         "n": 38,
-        "p10": 0.0961
+        "p10": 0.1229
       },
       "subfamilies": {
         "plan-chunked": {
           "cases": 1,
           "confidence": {
-            "max": 0.4854,
-            "median": 0.4848,
-            "min": 0.4842,
+            "max": 0.453,
+            "median": 0.4524,
+            "min": 0.4518,
             "n": 2,
-            "p10": 0.4842
+            "p10": 0.4518
           },
           "lanes": {
             "exact": 0,
@@ -298,22 +298,22 @@
             "router": 2
           },
           "margin": {
-            "max": 0.0969,
-            "median": 0.0965,
-            "min": 0.0961,
+            "max": 0.0528,
+            "median": 0.0519,
+            "min": 0.0511,
             "n": 2,
-            "p10": 0.0961
+            "p10": 0.0511
           },
           "units": 2
         },
         "plan-connector": {
           "cases": 2,
           "confidence": {
-            "max": 0.6114,
-            "median": 0.4932,
-            "min": 0.3883,
+            "max": 0.6105,
+            "median": 0.5214,
+            "min": 0.3969,
             "n": 16,
-            "p10": 0.4421
+            "p10": 0.4493
           },
           "lanes": {
             "exact": 0,
@@ -322,22 +322,22 @@
             "router": 16
           },
           "margin": {
-            "max": 0.382,
-            "median": 0.1886,
-            "min": 0.0828,
+            "max": 0.3756,
+            "median": 0.2016,
+            "min": 0.1229,
             "n": 16,
-            "p10": 0.1377
+            "p10": 0.1452
           },
           "units": 16
         },
         "plan-long": {
           "cases": 1,
           "confidence": {
-            "max": 0.5915,
-            "median": 0.4984,
-            "min": 0.3839,
+            "max": 0.5969,
+            "median": 0.5261,
+            "min": 0.3959,
             "n": 8,
-            "p10": 0.4334
+            "p10": 0.4458
           },
           "lanes": {
             "exact": 0,
@@ -346,22 +346,22 @@
             "router": 8
           },
           "margin": {
-            "max": 0.3764,
-            "median": 0.1795,
-            "min": 0.0815,
+            "max": 0.3711,
+            "median": 0.1951,
+            "min": 0.1209,
             "n": 8,
-            "p10": 0.1277
+            "p10": 0.1406
           },
           "units": 8
         },
         "plan-numbered": {
           "cases": 1,
           "confidence": {
-            "max": 0.6114,
-            "median": 0.4932,
-            "min": 0.3883,
+            "max": 0.6105,
+            "median": 0.5214,
+            "min": 0.3969,
             "n": 8,
-            "p10": 0.4421
+            "p10": 0.4493
           },
           "lanes": {
             "exact": 0,
@@ -370,22 +370,22 @@
             "router": 8
           },
           "margin": {
-            "max": 0.382,
-            "median": 0.1886,
-            "min": 0.0828,
+            "max": 0.3756,
+            "median": 0.2016,
+            "min": 0.1229,
             "n": 8,
-            "p10": 0.1377
+            "p10": 0.1452
           },
           "units": 8
         },
         "plan-sentences": {
           "cases": 1,
           "confidence": {
-            "max": 0.5683,
-            "median": 0.4751,
-            "min": 0.3917,
+            "max": 0.5657,
+            "median": 0.4907,
+            "min": 0.4018,
             "n": 4,
-            "p10": 0.3917
+            "p10": 0.4018
           },
           "lanes": {
             "exact": 0,
@@ -394,11 +394,11 @@
             "router": 4
           },
           "margin": {
-            "max": 0.2217,
-            "median": 0.1417,
-            "min": 0.1312,
+            "max": 0.2481,
+            "median": 0.1465,
+            "min": 0.1463,
             "n": 4,
-            "p10": 0.1312
+            "p10": 0.1463
           },
           "units": 4
         }
@@ -440,11 +440,11 @@
     "routing": {
       "cases": 33,
       "confidence": {
-        "max": 0.7895,
-        "median": 0.657,
-        "min": 0.5413,
+        "max": 0.7878,
+        "median": 0.6642,
+        "min": 0.5398,
         "n": 33,
-        "p10": 0.5801
+        "p10": 0.5907
       },
       "lanes": {
         "exact": 0,
@@ -453,21 +453,21 @@
         "router": 33
       },
       "margin": {
-        "max": 0.2833,
-        "median": 0.1707,
-        "min": 0.0271,
+        "max": 0.2921,
+        "median": 0.1734,
+        "min": 0.0353,
         "n": 33,
-        "p10": 0.0596
+        "p10": 0.0652
       },
       "subfamilies": {
         "routing": {
           "cases": 27,
           "confidence": {
-            "max": 0.7895,
-            "median": 0.6608,
-            "min": 0.5466,
+            "max": 0.7878,
+            "median": 0.6702,
+            "min": 0.5588,
             "n": 27,
-            "p10": 0.6202
+            "p10": 0.6189
           },
           "lanes": {
             "exact": 0,
@@ -476,22 +476,22 @@
             "router": 27
           },
           "margin": {
-            "max": 0.2833,
-            "median": 0.1626,
-            "min": 0.0271,
+            "max": 0.2921,
+            "median": 0.1734,
+            "min": 0.0353,
             "n": 27,
-            "p10": 0.0596
+            "p10": 0.0693
           },
           "units": 27
         },
         "routing-long": {
           "cases": 6,
           "confidence": {
-            "max": 0.6557,
-            "median": 0.5859,
-            "min": 0.5413,
+            "max": 0.6737,
+            "median": 0.5936,
+            "min": 0.5398,
             "n": 6,
-            "p10": 0.5413
+            "p10": 0.5398
           },
           "lanes": {
             "exact": 0,
@@ -500,11 +500,11 @@
             "router": 6
           },
           "margin": {
-            "max": 0.2704,
-            "median": 0.2026,
-            "min": 0.0631,
+            "max": 0.2858,
+            "median": 0.1945,
+            "min": 0.0652,
             "n": 6,
-            "p10": 0.0631
+            "p10": 0.0652
           },
           "units": 6
         }
