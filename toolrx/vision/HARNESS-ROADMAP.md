@@ -1146,7 +1146,7 @@ a friendlier version; the local server serves the same file at
 `/web/coverage.json`. `tests/test_coverage.py` pins the deduplication, the
 subfamily arithmetic, the summary, and the threshold-drift refusal.
 
-### 50. Visual budget bar — planned
+### 50. Visual budget bar — done
 
 Extend the existing context bar into a live envelope bar for the plan preview
 and the running plan: characters, steps, context bytes, project bytes, and
@@ -1158,6 +1158,26 @@ replacement.
 accessible labels, the bar updates while steps run, a limit crossing is
 announced in text as well as color, and the DOM harness asserts the numbers
 match the report.
+
+Landed with one pure model, `toolrx/web/budget.js`: `toolrxBudget.bars()` turns
+a `{used, max}` pair for characters, steps, context bytes, project bytes, and
+time into labelled descriptors with a formatted read-out, remaining room, a
+ratio, and `ok`/`warn`/`over` levels (warn at 80%). Every maximum comes from
+`toolrxLimits`, which is generated from `toolrx/limits.json`; the module owns
+no cap of its own. `skills.planPreview` now attaches all five bars, using the
+active project bytes and stored context bytes supplied by
+`sandbox.planPreview`, and `recordRun` attaches the same five bars to the
+last-run report. The composer renders them as five progress bars with visible
+numeric read-outs and `role="progressbar"` plus `aria-valuemin`,
+`aria-valuemax`, `aria-valuenow`, and `aria-valuetext`; the expanded last-run
+detail repeats them beside the exact room numbers. A visually hidden
+`role="status"` region announces "budget limit crossed · …" once per crossing,
+so color is never the only signal. Multi-step plans emit a `plan` progress
+event before the first step and after each one, so steps and elapsed time move
+while the plan runs; single-step builds keep their existing progress sequence.
+`tests/test_budget_bar.py` drives the real modules in Node and compares every
+bar number with the preview and last-run reports, then compares the caps with
+the Python envelope.
 
 ### 51. Deterministic compaction engine — planned
 
@@ -1280,8 +1300,8 @@ claims.
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
-8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) — done;
-   50 (budget bar) → 51 (compaction) → 52 (plan rewrite) → 53 (think) →
+8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
+   50 (budget bar) — done; 51 (compaction) → 52 (plan rewrite) → 53 (think) →
    54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
    58 (style) → 59 (scorecard) — planned
 
@@ -1312,7 +1332,7 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–49 are complete. 14 remains deferred. Steps 50–59 are
+- Steps 11–13, 15–50 are complete. 14 remains deferred. Steps 51–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after

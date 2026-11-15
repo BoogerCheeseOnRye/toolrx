@@ -47,7 +47,8 @@
       "planMs": 160000,
       "worstCaseMs": 128000,
       "timeFits": true,
-      "fits": true
+      "fits": true,
+      "bars": []
     }
   },
   "run": {

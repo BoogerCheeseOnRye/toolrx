@@ -2923,12 +2923,26 @@
 
   /* The budget is reported even when a request is refused, so the caller can
    * name the cap that stopped it. Time is a worst-case bound: every step gets
-   * `stepMs`, so a plan can only fit when steps × stepMs <= planMs. */
+   * `stepMs`, so a plan can only fit when steps × stepMs <= planMs. The five
+   * `bars` are the same descriptors the dashboard renders; they use the same
+   * caps and never recompute a number. */
   function previewBudget(chars, steps, opts) {
     const o = opts || {};
     const stepMs = numberLimit(o.stepMs, LIMITS.stepMs);
     const planMs = numberLimit(o.planMs, LIMITS.planMs);
     const worstCaseMs = steps * stepMs;
+    const contextUsed = numberLimit(o.contextBytes, 0);
+    const contextMax = numberLimit(o.contextMax, LIMITS.contextBytes);
+    const projectUsed = numberLimit(o.projectBytes, 0);
+    const projectMax = numberLimit(o.projectMax, LIMITS.projectBytes);
+    const B = root.toolrxBudget;
+    const bars = B ? B.bars({
+      chars: { used: chars, max: LIMITS.plan },
+      steps: { used: steps, max: LIMITS.steps },
+      context: { used: contextUsed, max: contextMax },
+      project: { used: projectUsed, max: projectMax },
+      time: { used: worstCaseMs, max: planMs },
+    }) : [];
     return {
       chars: chars, maxChars: LIMITS.plan,
       steps: steps, maxSteps: LIMITS.steps,
@@ -2936,6 +2950,7 @@
       timeFits: worstCaseMs <= planMs,
       fits: chars <= LIMITS.plan && steps <= LIMITS.steps
         && worstCaseMs <= planMs,
+      bars: bars,
     };
   }
 
@@ -3085,6 +3100,12 @@
     const clock = () => (typeof performance !== "undefined" && performance.now)
       ? performance.now() : Date.now();
     const planStarted = clock();
+    const reportStep = function (done) {
+      if (steps.length < 2 || typeof base.onStep !== "function") return;
+      try { base.onStep(done, steps.length, Math.round(clock() - planStarted)); }
+      catch (e) { /* a bad progress listener never breaks a plan */ }
+    };
+    reportStep(0);
     for (const step of steps) {
       const planElapsed = clock() - planStarted;
       if (planElapsed >= planMs) {
@@ -3156,6 +3177,7 @@
       result.ms = Math.max(0, Math.round(clock() - started));
       if (result && result.text) { prev = result.text; prevResult = result; }
       results.push(result);
+      reportStep(results.length);
       // A failed step stops the plan; later steps may depend on its result.
       if (result && result.error) break;
     }

@@ -410,13 +410,30 @@ by `docs/build.py` and shows the identical numbers, so the dashboard cannot
 recompute a friendlier version. `tests/test_coverage.py` pins the deduplication,
 the subfamily arithmetic, the summary, and the threshold-drift refusal.
 
-The locked next batch (steps 50–59) keeps the same rules. The envelope gets a
-live budget bar, explicit compaction, and budget-aware plan rewriting. Finally
-`think`/reason becomes a deterministic program with bounded self-critique,
-stored traces, a per-project journal, mid-plan recovery, response styles that
-never change tool choice, and an honest LLM-parity scorecard. Steps 46–49 are
-shipped; the rest is not yet. The acceptance criteria live in
-`toolrx/vision/HARNESS-ROADMAP.md`.
+Step 50 makes the envelope visible. `toolrx/web/budget.js` is one pure model for
+the five budgets: characters, steps, context bytes, project bytes, and time.
+`toolrxBudget.bars()` returns a labelled descriptor for each with a formatted
+read-out, remaining room, a ratio, and `ok`/`warn`/`over` levels (warn at 80%);
+every maximum comes from `toolrxLimits`, generated from `toolrx/limits.json`, so
+the bar owns no cap of its own. `skills.planPreview` attaches all five bars using
+the active project bytes and stored context bytes supplied by
+`sandbox.planPreview`, and `recordRun` attaches the same five to the last-run
+report. The composer shows them as five progress bars with visible numbers and
+`role="progressbar"` / `aria-valuenow` / `aria-valuetext`; the expanded last-run
+detail repeats them beside the exact room. A visually hidden `role="status"`
+region announces "budget limit crossed · …" once per crossing, so color is never
+the only signal. Multi-step plans emit a `plan` progress event before the first
+step and after each one, so steps and elapsed time move while the plan runs;
+single-step builds keep their existing progress sequence.
+`tests/test_budget_bar.py` compares every bar number with the preview and
+last-run reports, then compares the caps with the Python envelope.
+
+The locked next batch (steps 51–59) keeps the same rules. The envelope gets
+explicit compaction and budget-aware plan rewriting. Finally `think`/reason
+becomes a deterministic program with bounded self-critique, stored traces, a
+per-project journal, mid-plan recovery, response styles that never change tool
+choice, and an honest LLM-parity scorecard. Steps 46–50 are shipped; the rest is
+not yet. The acceptance criteria live in `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and

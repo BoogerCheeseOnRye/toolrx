@@ -1643,6 +1643,7 @@
                    : Math.max(0, LIMITS.contextBytes - contextBytes) },
       within: usedFiles <= MAX_PROJECT_FILES && usedBytes <= maxBytes
         && elapsed <= plan.planMs && list.length <= plan.steps
+        && String(query == null ? "" : query).length <= plan.chars
         && (contextBytes == null || contextBytes <= LIMITS.contextBytes),
       over: [],
     };
@@ -1651,6 +1652,18 @@
     if (elapsed > plan.planMs) budget.over.push("ms");
     if (list.length > plan.steps) budget.over.push("steps");
     if (contextBytes != null && contextBytes > LIMITS.contextBytes) budget.over.push("context");
+    if (String(query == null ? "" : query).length > plan.chars) budget.over.push("chars");
+    if (root.toolrxBudget) {
+      budget.bars = root.toolrxBudget.bars({
+        chars: { used: String(query == null ? "" : query).length,
+                 max: plan.chars },
+        steps: { used: list.length, max: plan.steps },
+        context: { used: contextBytes == null ? 0 : contextBytes,
+                   max: LIMITS.contextBytes },
+        project: { used: usedBytes, max: maxBytes },
+        time: { used: elapsed, max: plan.planMs },
+      });
+    }
     lastRun = {
       version: 2,
       at: Date.now(),
@@ -1922,7 +1935,7 @@
         + (errors ? " (" + errors + " error" + (errors === 1 ? "" : "s") + ")" : "");
     }
     const steps = indexes.map(function (i) { return plan.steps[i]; });
-    const results = await skills.runPrompt(steps.join("\n"), promptContext());
+    const results = await skills.runPrompt(steps.join("\n"), promptContext(steps.join("\n")));
     results.forEach(function (r, i) {
       plan.status[indexes[i]] = r.error ? "error" : "done";
     });
@@ -2251,7 +2264,7 @@
     };
   }
 
-  function promptContext() {
+  function promptContext(query) {
     const ctx = {
       prev: "",
       fs: {
@@ -2330,6 +2343,29 @@
         planMs: planTimeout(),
         chars: planLimits().chars,
         steps: planLimits().steps,
+      },
+      onStep: function (done, total, elapsed) {
+        const p = activeProject();
+        const usedBytes = p ? projectBytes(p) : 0;
+        const stored = contextStoredBytes();
+        const plan = planLimits();
+        const budget = { bars: [] };
+        if (root.toolrxBudget) {
+          budget.bars = root.toolrxBudget.bars({
+            chars: { used: String(query == null ? "" : query).length,
+                     max: plan.chars },
+            steps: { used: done, max: plan.steps },
+            context: { used: stored == null ? 0 : stored,
+                       max: LIMITS.contextBytes },
+            project: { used: usedBytes, max: projectBudget() },
+            time: { used: elapsed == null ? 0 : elapsed, max: plan.planMs },
+          });
+        }
+        notifyProgress({
+          phase: "plan", done: done, total: total,
+          ms: elapsed == null ? 0 : elapsed, budget: budget,
+          partial: done < total,
+        });
       },
     };
     ctx.fallback = async function (step) {
@@ -2670,7 +2706,7 @@
         });
         return results;
       }
-      const results = await skills.runPrompt(String(query), promptContext());
+      const results = await skills.runPrompt(String(query), promptContext(String(query)));
       notePromptContext(String(query), results);
       recordRun(String(query), results, started, {
         beforeFiles: before.files, beforeBytes: before.bytes,
@@ -2783,18 +2819,28 @@
     planPreview: function (query) {
       const skills = root.toolrxSkills;
       if (!skills || !skills.planPreview) return null;
+      const p = activeProject();
+      const usedFiles = p ? filesForProject(p).length : 0;
+      const usedBytes = p ? projectBytes(p) : 0;
+      const stored = contextStoredBytes();
       const preview = skills.planPreview(String(query), {
         stepMs: stepTimeout(), planMs: planTimeout(),
+        contextBytes: stored == null ? 0 : stored,
+        contextMax: LIMITS.contextBytes,
+        projectBytes: usedBytes, projectMax: projectBudget(),
       });
       if (preview && preview.budget) {
-        const p = activeProject();
-        const usedFiles = p ? filesForProject(p).length : 0;
-        const usedBytes = p ? projectBytes(p) : 0;
         preview.budget.project = {
           files: { used: usedFiles, max: MAX_PROJECT_FILES,
                    remaining: Math.max(0, MAX_PROJECT_FILES - usedFiles) },
           bytes: { used: usedBytes, max: projectBudget(),
                    remaining: Math.max(0, projectBudget() - usedBytes) },
+        };
+        preview.budget.context = {
+          used: stored == null ? 0 : stored,
+          max: LIMITS.contextBytes,
+          remaining: stored == null ? LIMITS.contextBytes
+            : Math.max(0, LIMITS.contextBytes - stored),
         };
         preview.budget.fits = preview.budget.fits
           && usedFiles <= MAX_PROJECT_FILES && usedBytes <= projectBudget();

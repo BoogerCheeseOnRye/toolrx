@@ -302,6 +302,26 @@
   .composer button:disabled{opacity:.5;cursor:not-allowed}
   .composer button.stop{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
   .composer .hint{color:var(--muted);font-size:10px;margin-top:4px}
+  #budgetBar{display:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;
+    margin:0 0 8px;padding:7px 10px;border:1px solid var(--border);border-radius:10px;
+    background:var(--panel)}
+  #budgetBar.on{display:grid}
+  .bg-item{min-width:0}
+  .bg-head{display:flex;align-items:baseline;justify-content:space-between;gap:6px;
+    font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bg-head b{color:var(--text);font-weight:600;text-transform:none;letter-spacing:0;
+    font-size:10px}
+  .bg-track{height:4px;background:#141c2c;border-radius:3px;overflow:hidden;margin-top:3px}
+  .bg-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));
+    transition:width .3s}
+  .bg-item.warn .bg-fill{background:#fbbf24}
+  .bg-item.over .bg-fill{background:#f87171}
+  .bg-item.over .bg-head b{color:#ff8a8a}
+  .bg-say{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  #lastRunDetail .bg-budget{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
+    gap:6px;margin:6px 0}
   .hintrow{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
   .hintrow .hint{flex:1;min-width:0;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #pvMobile{display:none}
@@ -343,6 +363,7 @@
     .devcard .hd{padding-top:5px}
     #traincard,#clustersum{padding:6px 10px}
     .composer{padding:8px 12px}
+    #budgetBar.on{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
   /* JS-driven density modes */
   #devices.compact .devcard{margin-bottom:5px}
@@ -709,6 +730,8 @@
       <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="lastRun" aria-live="polite"></div><div id="lastRunDetail" aria-live="polite"></div><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
     </div>
     <div class="composer">
+      <div id="budgetBar" role="group" aria-label="plan budgets"></div>
+      <div id="budgetSay" class="bg-say" role="status" aria-live="assertive"></div>
       <form id="f">
         <textarea id="q" rows="1" aria-label="ask toolrx" placeholder="ask toolrx… (enter to send, shift+enter for newline)"></textarea>
         <button id="send" type="submit">Send</button>
@@ -879,6 +902,7 @@
 <script src="web/blake2b.js"></script>
 <script src="web/router.js"></script>
 <script src="web/limits.js"></script>
+<script src="web/budget.js"></script>
 <script src="web/context.js"></script>
 <script src="web/engine2d.js"></script>
 <script src="web/engine2d.embed.js"></script>
@@ -952,6 +976,18 @@ async function loadConfig(){
     if(hint) hint.textContent='runs in this tab · '+(commandCount?commandCount.toLocaleString()+' commands · ':'')+'no LLM by default, no network';
     if(window.toolrxWeb.onPreview) window.toolrxWeb.onPreview(renderPreview);
     if(window.toolrxWeb.onProgress) window.toolrxWeb.onProgress(s=>{
+      if(s.phase==='plan'){
+        if(s.budget&&s.budget.bars) renderBudgetBar(s.budget.bars);
+        const el=document.getElementById('buildStatus');
+        if(el){
+          el.textContent='plan · '+s.done+'/'+s.total+' steps · '+Math.round(s.ms||0)+' ms';
+          el.classList.add('on');
+          if(s.done>=s.total){
+            setTimeout(()=>{ if(el.textContent.indexOf('plan ·')===0){ el.textContent=''; el.classList.remove('on'); } },1200);
+          }
+        }
+        return;
+      }
       const el=document.getElementById('buildStatus');
       if(!el) return;
       if(s.phase==='done' || s.phase==='spec'){ el.textContent=''; el.classList.remove('on'); return; }
@@ -1370,6 +1406,54 @@ function lastRunStats(stats,digits){
   return 'min '+stats.min.toFixed(digits)+' · med '+stats.median.toFixed(digits)
     +' · max '+stats.max.toFixed(digits)+' (n '+stats.n+')';
 }
+let budgetOverKey='';
+function budgetBarHTML(bars){
+  return (bars||[]).map(function(b){
+    const pct=b.max?Math.min(100,Math.round(100*b.used/b.max)):0;
+    const label=b.label+' budget: '+b.readout+' · '+b.room+' left';
+    return '<div class="bg-item '+b.level+'" role="group" aria-label="'+label+'">'
+      +'<div class="bg-head"><span>'+b.label+'</span><b>'+b.readout+'</b></div>'
+      +'<div class="bg-track" role="progressbar" aria-label="'+b.label+' budget"'
+      +' aria-valuemin="0" aria-valuemax="'+b.max+'" aria-valuenow="'+b.used+'"'
+      +' aria-valuetext="'+b.readout+' · '+b.room+' left">'
+      +'<div class="bg-fill" style="width:'+pct+'%"></div></div></div>';
+  }).join('');
+}
+function budgetBarsFromRun(b){
+  if(!b) return [];
+  if(b.bars&&b.bars.length) return b.bars;
+  if(!window.toolrxBudget) return [];
+  const used=k=>b[k]&&b[k].used!=null?b[k].used:0;
+  const max=k=>b[k]&&b[k].max!=null?b[k].max:0;
+  return window.toolrxBudget.bars({
+    chars:{used:used('chars'),max:max('chars')},
+    steps:{used:used('steps'),max:max('steps')},
+    context:{used:used('context'),max:max('context')},
+    project:{used:used('bytes'),max:max('bytes')},
+    time:{used:used('ms'),max:max('ms')}
+  });
+}
+function renderBudgetBar(bars){
+  const box=document.getElementById('budgetBar');
+  const say=document.getElementById('budgetSay');
+  if(!box) return;
+  if(!bars||!bars.length){
+    box.classList.remove('on'); box.innerHTML=''; budgetOverKey='';
+    if(say) say.textContent='';
+    return;
+  }
+  box.innerHTML=budgetBarHTML(bars);
+  box.classList.add('on');
+  const over=bars.filter(function(b){return b.over;});
+  const key=over.map(function(b){return b.key+':'+b.used+'/'+b.max;}).join('|');
+  if(say&&over.length&&key!==budgetOverKey){
+    say.textContent='budget limit crossed · '+over.map(function(b){
+      return b.label+' '+b.readout;
+    }).join(' · ');
+  }
+  if(say&&!over.length) say.textContent='';
+  budgetOverKey=key;
+}
 function renderLastRunDetail(box,r){
   box.textContent='';
   const head=document.createElement('div');
@@ -1379,6 +1463,15 @@ function renderLastRunDetail(box,r){
     +(r.written||0).toLocaleString()+' B · output '+(r.emitted||0).toLocaleString()+' B';
   box.append(head);
   const b=r.budget||null;
+  const runBars=budgetBarsFromRun(b);
+  if(runBars.length){
+    const bar=document.createElement('div');
+    bar.className='bg-budget';
+    bar.setAttribute('role','group');
+    bar.setAttribute('aria-label','last run budgets');
+    bar.innerHTML=budgetBarHTML(runBars);
+    box.append(bar);
+  }
   const bits=['via '+(r.via||'n/a')];
   bits.push('files touched '+((r.filesTouched&&r.filesTouched.length)
     ? r.filesTouched.length+': '+r.filesTouched.join(', ') : '0'));
@@ -1435,6 +1528,7 @@ function refreshLastRun(){
     el.removeAttribute('role'); el.removeAttribute('tabindex');
     el.onclick=null; el.onkeydown=null;
     if(detail){ detail.textContent=''; detail.classList.remove('on'); }
+    renderBudgetBar([]);
     return;
   }
   const bits=[];
@@ -1462,6 +1556,7 @@ function refreshLastRun(){
   if(b&&b.over&&b.over.length) title+=' · over budget: '+b.over.join(', ');
   el.title=title;
   el.classList.add('on');
+  renderBudgetBar(budgetBarsFromRun(b));
   el.setAttribute('role','button');
   el.setAttribute('tabindex','0');
   const toggle=function(){
@@ -2798,9 +2893,12 @@ async function submit(txt){
     // Preview the plan before running it, so a long prompt is inspectable
     // first and the steps are printed exactly once.
     let previewed=false;
-    const preview=(window.toolrxSkills&&window.toolrxSkills.planPreview)
-      ?window.toolrxSkills.planPreview(txt):null;
+    const preview=(window.toolrxWeb&&window.toolrxWeb.planPreview)
+      ?window.toolrxWeb.planPreview(txt)
+      :((window.toolrxSkills&&window.toolrxSkills.planPreview)
+        ?window.toolrxSkills.planPreview(txt):null);
     if(preview){
+      if(preview.budget&&preview.budget.bars) renderBudgetBar(preview.budget.bars);
       if(preview.blocked){ entry('plan · blocked',preview.reason,'err'); return; }
       if(preview.plan){
         entry('plan · '+preview.steps.length+' steps',
