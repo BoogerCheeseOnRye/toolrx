@@ -17,6 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import conversation  # noqa: E402  (step 47: one table for catalog + fixture)
 import everyday  # noqa: E402  (step 46: one table for catalog + fixture)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
@@ -1484,6 +1485,14 @@ for pat in ("echo {text}", "say {text}"):
 # last so every original exact form still wins, and the same table produces
 # `tests/fixtures/everyday.json` so the catalog and the fixture cannot drift.
 for _entry in everyday.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# --------------------------------------------------------- conversation ----
+# Step 47: short conversational replies are exact routes too. They are added
+# after the everyday layer so an original command always wins; the handler in
+# web/skills.js adds the previous-turn state that a bare pattern cannot carry.
+for _entry in conversation.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

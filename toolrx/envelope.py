@@ -24,6 +24,8 @@ Ranges (the human-facing contract):
   extractChars     1,000–32,000  extractor input
   extractItems     10–500  extractor output lines
   diffLines        50–2,000  diff lines per side
+  conversationTurns 2–64  stored conversation turns
+  conversationBytes 512–65,536  serialized conversation state
 """
 
 import json
@@ -52,6 +54,8 @@ _RANGES = {
     "extractChars": (1_000, 32_000),
     "extractItems": (10, 500),
     "diffLines": (50, 2_000),
+    "conversationTurns": (2, 64),
+    "conversationBytes": (512, 65_536),
 }
 
 

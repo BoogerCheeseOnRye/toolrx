@@ -6,6 +6,8 @@
   "buildMs": 4000,
   "bundleBytes": 2097152,
   "contextBytes": 8192,
+  "conversationBytes": 4096,
+  "conversationTurns": 12,
   "diffLines": 400,
   "extractChars": 8000,
   "extractItems": 200,

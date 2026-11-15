@@ -562,6 +562,9 @@
     if (/\b(thanks|thank you|thx|appreciate it)\b/.test(q)) {
       return pick(["You're welcome. Want to keep going?", "Any time. What's next?", "Glad it helped."], seed);
     }
+    if (/^(?:got it|cool|nice|perfect|great|sounds good|ok thanks|nice one|well done|good job|that works|makes sense)(?:[.!]+)?$/i.test(q)) {
+      return pick(["Good. What's next?", "Got it. Give me the next command when you're ready.", "Okay. Want to build something or run a tool?"], seed);
+    }
     if (/^(?:bye|goodbye|see you|later|good night)\b/.test(q)) {
       return pick(["See you. Your workspace stays here.", "Later. The project is saved in this browser.", "Good night. Pick it up whenever."], seed);
     }
@@ -1028,6 +1031,294 @@
       return "No active project or saved context yet.\n\nTry: build a todo list · new project notes · remember my name is Ada";
     }
     return "Here is where you left off:\n\n" + lines.join("\n");
+  }
+
+  /* ------------------------------------------------------- conversation ---- */
+  /* Step 47. Short replies are exact catalog routes, but they need the previous
+   * turn. The state lives beside facts and notes in the same small memory
+   * object, capped by limits.json, and is inspectable with "show conversation".
+   * A correction either revises the last action, stages one build for a yes/no,
+   * or asks one bounded question. A confirmation only runs the staged action
+   * once; it never re-runs the previous build. */
+  const CONV_KEY = "conversation";
+  const CONV_VERSION = 1;
+
+  function conversationStore(ctx) {
+    return memoryStore(ctx);
+  }
+
+  function conversationState(ctx) {
+    const mem = conversationStore(ctx);
+    const raw = mem ? mem.get(CONV_KEY) : null;
+    if (!raw || typeof raw !== "object" || raw.version !== CONV_VERSION) {
+      return { version: CONV_VERSION, turns: [], last: null, pending: null,
+               dropped: 0, turnsSeen: 0 };
+    }
+    return {
+      version: CONV_VERSION,
+      turns: Array.isArray(raw.turns) ? raw.turns.slice() : [],
+      last: raw.last && typeof raw.last === "object" ? raw.last : null,
+      pending: raw.pending && typeof raw.pending === "object" ? raw.pending : null,
+      dropped: Number(raw.dropped) || 0,
+      turnsSeen: Number(raw.turnsSeen) || 0,
+    };
+  }
+
+  function conversationSave(ctx, state) {
+    const mem = conversationStore(ctx);
+    if (!mem) return state;
+    const maxTurns = LIMITS_RAW.conversationTurns;
+    const maxBytes = LIMITS_RAW.conversationBytes;
+    const next = {
+      version: CONV_VERSION,
+      turns: state.turns.slice(),
+      last: state.last || null,
+      pending: state.pending || null,
+      dropped: Number(state.dropped) || 0,
+      turnsSeen: Number(state.turnsSeen) || 0,
+    };
+    while (next.turns.length > maxTurns) {
+      next.turns.shift();
+      next.dropped++;
+    }
+    // Drop the oldest turns first until the serialized state fits. The current
+    // turn and any pending action are kept; only their text is trimmed if a
+    // single entry is larger than the whole cap.
+    while (next.turns.length > 1
+           && byteLength(JSON.stringify(next)) > maxBytes) {
+      next.turns.shift();
+      next.dropped++;
+    }
+    if (byteLength(JSON.stringify(next)) > maxBytes) {
+      if (next.last) {
+        next.last.text = String(next.last.text || "").slice(0, 240);
+        next.last.result = String(next.last.result || "").slice(0, 240);
+        if (Array.isArray(next.last.steps)) {
+          next.last.steps = next.last.steps.slice(0, 4).map(function (s) {
+            return { text: String(s.text || "").slice(0, 120), via: s.via || "" };
+          });
+        }
+      }
+      if (next.pending) {
+        next.pending.text = String(next.pending.text || "").slice(0, 240);
+      }
+      while (next.turns.length > 1
+             && byteLength(JSON.stringify(next)) > maxBytes) {
+        next.turns.shift();
+        next.dropped++;
+      }
+    }
+    mem.set(CONV_KEY, next);
+    return next;
+  }
+
+  function conversationRecord(ctx, query, results, opts) {
+    if (opts && opts.skip) return;
+    const list = Array.isArray(results) ? results : [];
+    const last = list[list.length - 1] || {};
+    // Inspection is read-only: recording the show turn after rendering would
+    // evict a turn and make the printed counts disagree with the stored state.
+    if (String(last.via || "") === "conversation.show") return;
+    const state = conversationState(ctx);
+    state.turnsSeen = (state.turnsSeen || 0) + 1;
+    state.turns.push({
+      you: String(query).slice(0, LIMITS_RAW.singleChars),
+      via: String(last.via || ""),
+      text: String(last.text || "").slice(0, 400),
+      error: !!last.error,
+      n: state.turnsSeen,
+    });
+    // Inspection, repair questions, acknowledgements, and staged proposals are
+    // turns, but they are not actions. Keep `last` on the last real command so
+    // a later correction still revises what the user actually ran.
+    const actions = list.filter(function (r) {
+      const via = String(r.via || "");
+      return via && via !== "chat" && via.indexOf("conversation.") !== 0;
+    });
+    if (actions.length) {
+      const action = actions[actions.length - 1];
+      const actionText = String((opts && opts.actionText) || query);
+      state.last = {
+        text: actionText.slice(0, LIMITS_RAW.singleChars),
+        steps: actions.map(function (r) {
+          return { text: String(r.step || "").slice(0, 240),
+                   via: String(r.via || "") };
+        }),
+        via: String(action.via || ""),
+        result: String(action.text || "").slice(0, 400),
+        error: !!action.error,
+        n: state.turnsSeen,
+      };
+    }
+    // A normal command means the user moved on. A staged correction is the
+    // exception: its reply is recorded with keepPending so "yes" can find it.
+    if (!(opts && opts.keepPending)) state.pending = null;
+    conversationSave(ctx, state);
+  }
+
+  function conversationText(ctx) {
+    const state = conversationState(ctx);
+    const stored = byteLength(JSON.stringify(state));
+    const lines = [
+      "conversation · " + state.turns.length + " turn"
+        + (state.turns.length === 1 ? "" : "s") + " stored",
+      "cap " + LIMITS_RAW.conversationTurns + " turns · "
+        + LIMITS_RAW.conversationBytes + " bytes",
+      "stored " + stored + " bytes · dropped " + state.dropped,
+    ];
+    lines.push(state.last
+      ? "last: " + state.last.text + " · via " + (state.last.via || "?")
+      : "last: none");
+    if (!state.pending) {
+      lines.push("pending: none");
+    } else if (state.pending.kind === "action") {
+      lines.push("pending: " + state.pending.text
+        + " · say yes to run it once or no to cancel");
+    } else {
+      lines.push("pending: needs " + state.pending.need);
+    }
+    if (!state.turns.length) lines.push("(no turns yet)");
+    state.turns.forEach(function (t, i) {
+      lines.push("  " + (i + 1) + ". you: " + t.you + " → "
+        + (t.via || "?") + (t.error ? " (error)" : ""));
+    });
+    return lines.join("\n");
+  }
+
+  function conversationClear(ctx) {
+    const mem = conversationStore(ctx);
+    if (mem) {
+      mem.set(CONV_KEY, { version: CONV_VERSION, turns: [], last: null,
+                          pending: null, dropped: 0, turnsSeen: 0 });
+    }
+    return "conversation cleared · memory facts, notes, projects, and context are untouched";
+  }
+
+  function conversationNeed() {
+    return 'the full corrected request, for example "build a platformer" or "add 13 and 30".';
+  }
+
+  function revisionOf(text, last, ctx) {
+    const direct = match(text);
+    if (direct) return { text: text, skill: direct };
+    const steps = last && Array.isArray(last.steps) ? last.steps : [];
+    const prev = steps.length ? steps[steps.length - 1] : null;
+    const prevSkill = prev ? match(prev.text) : null;
+    if (!prevSkill) return null;
+    const tries = [];
+    if (prevSkill.op === "build") {
+      tries.push("build " + text);
+      tries.push(prev.text + " " + text);
+    } else if (prevSkill.op === "math.binary") {
+      const verb = String(prev.text || "").split(/\s+/)[0];
+      tries.push(verb + " " + text);
+      // A rewritten correction is stored as its own words ("13 plus 30"), so
+      // the first token is a number. Try the four math verbs as well.
+      ["add", "subtract", "multiply", "divide"].forEach(function (v) {
+        tries.push(v + " " + text);
+      });
+    } else if (prevSkill.op === "edit.apply") {
+      tries.push("make it " + text);
+      tries.push(prev.text + " " + text);
+    }
+    for (let i = 0; i < tries.length; i++) {
+      const hit = match(tries[i]);
+      if (hit) return { text: tries[i], skill: hit };
+    }
+    return null;
+  }
+
+  function conversationBefore(query, ctx) {
+    const hit = match(query);
+    if (!hit || String(hit.op).indexOf("conversation.") !== 0) return null;
+    const state = conversationState(ctx);
+
+    if (hit.op === "conversation.confirm") {
+      if (!state.pending) {
+        return { reply: {
+          text: "Nothing is pending, so I didn't run anything. Tell me the action you want to confirm.",
+          via: "conversation.confirm" } };
+      }
+      if (state.pending.kind === "clarify") {
+        return { reply: {
+          text: "Nothing has been applied yet. I still need " + state.pending.need,
+          via: "conversation.confirm" }, keepPending: true };
+      }
+      if (state.pending.kind !== "action" || !state.pending.text) {
+        return { reply: {
+          text: "The pending action is not runnable. Tell me the action again.",
+          via: "conversation.confirm" } };
+      }
+      const pending = state.pending;
+      // Clear before running: one confirmation applies the action at most once,
+      // even if the action itself fails.
+      state.pending = null;
+      conversationSave(ctx, state);
+      return { confirm: pending };
+    }
+
+    if (hit.op === "conversation.reject") {
+      if (!state.pending) {
+        return { reply: { text: "Nothing to cancel — no action is pending.",
+                          via: "conversation.reject" } };
+      }
+      const pending = state.pending;
+      state.pending = null;
+      conversationSave(ctx, state);
+      return { reply: {
+        text: 'Cancelled "' + (pending.text || "the pending action")
+          + '" — nothing was run.',
+        via: "conversation.reject" } };
+    }
+
+    if (hit.op === "conversation.repair") {
+      if (!state.last) {
+        return { reply: {
+          text: "There is no previous action to repair. Give me the command again.",
+          via: "conversation.repair" } };
+      }
+      return { reply: {
+        text: 'The last action was "' + state.last.text + '" (via '
+          + (state.last.via || "?") + '). Tell me what to change: "no, I meant …" '
+          + 'or "actually …". Nothing was re-run.',
+        via: "conversation.repair" }, keepPending: true };
+    }
+
+    if (hit.op === "conversation.correct") {
+      const candidate = String(hit.args.text || "").trim();
+      const revised = revisionOf(candidate, state.last, ctx);
+      if (!revised) {
+        const need = conversationNeed();
+        state.pending = { kind: "clarify", text: candidate, need: need,
+                          n: (state.turnsSeen || 0) + 1 };
+        conversationSave(ctx, state);
+        return { reply: {
+          text: 'I couldn\'t map "' + candidate + '" to a command. I need '
+            + need + ' Nothing was changed.',
+          via: "conversation.correct" }, keepPending: true };
+      }
+      if (revised.skill.op === "build") {
+        state.pending = { kind: "action", text: revised.text,
+                          op: revised.skill.op, steps: [revised.text],
+                          n: (state.turnsSeen || 0) + 1 };
+        conversationSave(ctx, state);
+        return { reply: {
+          text: 'I read that as "' + revised.text
+            + '". Say yes to build it once, or no to keep the current project.',
+          via: "conversation.correct" }, keepPending: true };
+      }
+      return { rewrite: revised.text, revisedFrom: String(query) };
+    }
+
+    if (hit.op === "conversation.show") {
+      return { reply: { text: conversationText(ctx), via: "conversation.show" },
+               keepPending: true };
+    }
+
+    if (hit.op === "conversation.clear") {
+      return { reply: { text: conversationClear(ctx), via: "conversation.clear" } };
+    }
+    return null;
   }
 
   /* The previous step feeds a page build. Keep the title and source from the
@@ -2212,6 +2503,25 @@
     "memory.list": function (a, ctx) { return memoryList(a, ctx); },
     "memory.forget": function (a, ctx) { return memoryForget(a, ctx); },
     "memory.context": function (a, ctx) { return memoryContext(a, ctx); },
+    // runPrompt intercepts these before dispatch so a confirmation can run the
+    // staged action. Direct exec keeps the same honest answers.
+    "conversation.show": function (a, ctx) { return conversationText(ctx); },
+    "conversation.clear": function (a, ctx) { return conversationClear(ctx); },
+    "conversation.confirm": function () {
+      return "Nothing is pending, so I didn't run anything. Tell me the action you want to confirm.";
+    },
+    "conversation.reject": function () {
+      return "Nothing to cancel — no action is pending.";
+    },
+    "conversation.repair": function (a, ctx) {
+      const state = conversationState(ctx);
+      return state.last
+        ? 'The last action was "' + state.last.text + '". Tell me what to change.'
+        : "There is no previous action to repair. Give me the command again.";
+    },
+    "conversation.correct": function () {
+      return "Tell me the full corrected request, for example \"build a platformer\" or \"add 13 and 30\".";
+    },
     "chat": function (a, ctx) {
       const text = chatReply((a && a.text) || (ctx && ctx.step) || "", ctx);
       return { text: text || "I'm here. Say a little more.", chat: true };
@@ -2306,6 +2616,8 @@
       ["extractChars", "extractor input"],
       ["extractItems", "extractor output lines"],
       ["diffLines", "diff lines per side"],
+      ["conversationTurns", "stored conversation turns"],
+      ["conversationBytes", "conversation state"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
       + L.version + ")"];
@@ -2708,11 +3020,52 @@
 
   async function runPrompt(query, ctx) {
     const base = ctx || {};
+    const original = String(query == null ? "" : query);
+    let revisedFrom = null;
+    const finish = function (list, keepPending, actionText) {
+      if (base.conversationRecord !== false) {
+        conversationRecord(base, original, list, {
+          keepPending: !!keepPending,
+          actionText: actionText || (revisedFrom ? query : original),
+        });
+      }
+      if (revisedFrom) {
+        list.forEach(function (r) { r.revised = revisedFrom; });
+      }
+      return list;
+    };
+    if (!base.conversationSkip) {
+      const conv = conversationBefore(original, base);
+      if (conv) {
+        if (conv.reply) {
+          const result = Object.assign({ step: original, planLength: 1 },
+                                       conv.reply);
+          return finish([result], conv.keepPending);
+        }
+        if (conv.confirm) {
+          // The staged action runs through the normal plan path, but with
+          // conversation interception and recording off. The confirmation
+          // itself is the turn that gets recorded, so a second "yes" finds
+          // nothing pending and cannot re-run the build.
+          const inner = await runPrompt(conv.confirm.text,
+            Object.assign({}, base, {
+              conversationSkip: true,
+              conversationRecord: false,
+            }));
+          inner.forEach(function (r) { r.confirmed = conv.confirm.text; });
+          return finish(inner, false, conv.confirm.text);
+        }
+        if (conv.rewrite) {
+          query = conv.rewrite;
+          revisedFrom = conv.revisedFrom || original;
+        }
+      }
+    }
     const block = blockCapture(query);
     if (block) {
       const blockResult = runBlockWrite(block, base);
       blockResult.planLength = 1;
-      return [blockResult];
+      return finish([blockResult]);
     }
     const limits = base.limits || {};
     const stepMs = numberLimit(limits.stepMs, LIMITS.stepMs);
@@ -2721,8 +3074,8 @@
     if (preview.blocked) {
       const via = /^plan wall budget/.test(String(preview.reason || ""))
         ? "budget.plan" : "limit";
-      return [{ step: String(query), text: preview.reason, error: true,
-                via: via, planLength: 1 }];
+      return finish([{ step: String(query), text: preview.reason, error: true,
+                       via: via, planLength: 1 }]);
     }
     const steps = preview.steps.map(function (s) { return s.text; });
     const results = [];
@@ -2806,7 +3159,7 @@
       // A failed step stops the plan; later steps may depend on its result.
       if (result && result.error) break;
     }
-    return results;
+    return finish(results);
   }
 
   root.toolrxSkills = {

@@ -18,5 +18,7 @@
   "bundleBytes": 2097152,
   "extractChars": 8000,
   "extractItems": 200,
-  "diffLines": 400
+  "diffLines": 400,
+  "conversationTurns": 12,
+  "conversationBytes": 4096
 }

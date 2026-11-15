@@ -1,0 +1,351 @@
+{
+  "version": 1,
+  "count": 55,
+  "kinds": {
+    "ack": 12,
+    "clear": 4,
+    "confirm": 14,
+    "correct": 3,
+    "reject": 9,
+    "repair": 8,
+    "show": 5
+  },
+  "cases": [
+    {
+      "kind": "ack",
+      "text": "cool",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "good job",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "got it",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "great",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "makes sense",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "nice",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "nice one",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "ok thanks",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "perfect",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "sounds good",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "that works",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "ack",
+      "text": "well done",
+      "op": "chat",
+      "args": {}
+    },
+    {
+      "kind": "clear",
+      "text": "clear conversation",
+      "op": "conversation.clear",
+      "args": {}
+    },
+    {
+      "kind": "clear",
+      "text": "clear the conversation",
+      "op": "conversation.clear",
+      "args": {}
+    },
+    {
+      "kind": "clear",
+      "text": "reset conversation",
+      "op": "conversation.clear",
+      "args": {}
+    },
+    {
+      "kind": "clear",
+      "text": "reset the conversation",
+      "op": "conversation.clear",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "alright",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "confirm",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "do it",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "go ahead",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "go for it",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "ok",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "okay",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "proceed",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "sure",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "yeah",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "yep",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "yes",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "yes please",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "confirm",
+      "text": "yup",
+      "op": "conversation.confirm",
+      "args": {}
+    },
+    {
+      "kind": "correct",
+      "text": "actually make it 3d",
+      "op": "conversation.correct",
+      "args": {
+        "text": "make it 3d"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "no, i meant 13 plus 30",
+      "op": "conversation.correct",
+      "args": {
+        "text": "13 plus 30"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "sorry, i meant 13 plus 30",
+      "op": "conversation.correct",
+      "args": {
+        "text": "13 plus 30"
+      }
+    },
+    {
+      "kind": "reject",
+      "text": "cancel",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "cancel that",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "do not",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "don't",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "nah",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "never mind",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "no",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "nope",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "reject",
+      "text": "stop that",
+      "op": "conversation.reject",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "not what i asked for",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "not what i meant",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "that is wrong",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "that's incorrect",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "that's not right",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "that's wrong",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "try again",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "repair",
+      "text": "you got that wrong",
+      "op": "conversation.repair",
+      "args": {}
+    },
+    {
+      "kind": "show",
+      "text": "conversation",
+      "op": "conversation.show",
+      "args": {}
+    },
+    {
+      "kind": "show",
+      "text": "show conversation",
+      "op": "conversation.show",
+      "args": {}
+    },
+    {
+      "kind": "show",
+      "text": "show the conversation",
+      "op": "conversation.show",
+      "args": {}
+    },
+    {
+      "kind": "show",
+      "text": "what is in the conversation",
+      "op": "conversation.show",
+      "args": {}
+    },
+    {
+      "kind": "show",
+      "text": "what's in the conversation",
+      "op": "conversation.show",
+      "args": {}
+    }
+  ]
+}

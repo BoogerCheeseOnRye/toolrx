@@ -5,12 +5,14 @@
     "steps": 32,
     "sha256": "c1ea344c34f35e9415a2a1b00916f6d20c2169cbb8d2b5bcedceca3dc7cd785c"
   },
-  "catalog": 11875,
+  "catalog": 11930,
   "limits": {
     "blockBytes": 8000,
     "buildMs": 4000,
     "bundleBytes": 2097152,
     "contextBytes": 8192,
+    "conversationBytes": 4096,
+    "conversationTurns": 12,
     "diffLines": 400,
     "extractChars": 8000,
     "extractItems": 200,
@@ -28,7 +30,7 @@
     "undoDepth": 16,
     "version": 1
   },
-  "limitsText": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side",
+  "limitsText": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state",
   "plan": {
     "chars": 3367,
     "steps": 32,
@@ -66,7 +68,7 @@
     "ms": 0,
     "bytes": 54823,
     "written": 54247,
-    "emitted": 18094,
+    "emitted": 18199,
     "files": 22,
     "filesTouched": [
       "ARCHITECTURE.md",
@@ -530,9 +532,9 @@
       "confidence": null,
       "margin": null,
       "ms": 0,
-      "bytes": 925,
-      "sha": "65fe24dbec7faf270c2afdedec5f39fc1ac9a6ed0152942f1aacf041f3bbaa93",
-      "text": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side"
+      "bytes": 1030,
+      "sha": "55dbb69345c8158e622b2d56ef05fee50213b3a54815e145c3173a2df7aecc3c",
+      "text": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state"
     },
     {
       "n": 32,

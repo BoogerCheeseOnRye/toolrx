@@ -1060,7 +1060,7 @@ a table/catalog mismatch, a shadowed case, or a README/pitch count that no
 longer matches the build; its Node harness runs the same 541 through the real
 browser `planPreview` and gets 541 exact hits.
 
-### 47. Conversational glue and soft intents — planned
+### 47. Conversational glue and soft intents — done
 
 Handle greetings, acknowledgements, corrections, confirmations, and short
 multi-turn repair deterministically. `no, I meant …` and `actually make it …`
@@ -1072,6 +1072,23 @@ Conversation memory stays small, capped, inspectable, and local.
 fixtures; an ambiguous confirmation changes nothing and says what it needs; the
 conversation-memory cap is explicit; and the same transcript produces the same
 replies on every run.
+
+Landed with 55 exact routes across seven kinds (`confirm`, `reject`, `correct`,
+`repair`, `ack`, `show`, `clear`) in `toolrx/conversation.py`, feeding both the
+catalog and `tests/fixtures/conversation.json`. The previous turn lives beside
+facts and notes in the same local memory and is capped by two new envelope
+keys: `conversationTurns` (12) and `conversationBytes` (4,096). `show
+conversation` prints both caps, the stored bytes, the dropped-turn count, the
+last action, the pending action, and every retained turn; `clear conversation`
+resets only that state. `no, I meant …` and `actually …` either revise the last
+action immediately (`no, I meant 13 plus 30` → 43) or, for a build, stage one
+action and ask a single yes/no. A confirmation runs the staged action at most
+once and never repeats the previous build; a second `yes`, or a `yes` with
+nothing staged, changes nothing and says so. An unmappable correction asks one
+bounded question and leaves the project untouched. `tests/test_conversation.py`
+pins the fixture, the exact routes, the once-only confirmation, the ambiguous
+cases, the caps, and a byte-identical replay of the same transcript. The catalog
+is 11,930 patterns.
 
 ### 48. Synonym and paraphrase tables — planned
 
@@ -1231,7 +1248,7 @@ claims.
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
-8. 46 (paraphrase) — done; 47 (glue) → 48 (tables) → 49 (language coverage) →
+8. 46 (paraphrase) → 47 (glue) — done; 48 (tables) → 49 (language coverage) →
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) → 53 (think) →
    54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
    58 (style) → 59 (scorecard) — planned
@@ -1263,7 +1280,7 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–46 are complete. 14 remains deferred. Steps 47–59 are
+- Steps 11–13, 15–47 are complete. 14 remains deferred. Steps 48–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
