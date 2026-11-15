@@ -393,13 +393,29 @@ capture, an unused capture, a duplicate phrase, and an over-long knowledge
 list; `python3 toolrx/paraphrase.py --check` fails on fixture drift and
 `--measure` rebuilds both models in separate temporary directories.
 
-The locked next batch (steps 49–59) keeps the same rules. An everyday-language
-coverage dashboard comes next, measured by a new coverage family. Then the
-envelope gets a live budget bar, explicit compaction, and budget-aware plan
-rewriting. Finally `think`/reason becomes a deterministic program with bounded
-self-critique, stored traces, a per-project journal, mid-plan recovery, response
-styles that never change tool choice, and an honest LLM-parity scorecard. Steps
-46–48 are shipped; the rest is not yet. The acceptance criteria live in
+Step 49 makes that language surface measurable in the same report as the
+long-form families. `toolrx/coverage.py` now carries an `everyday` family built
+from the 541 everyday phrasings plus the 32-prompt paraphrase evaluation set,
+deduplicated by normalized query so a repeated case fails the build instead of
+inflating the score. The family reports 573 cases: 563 exact (541 everyday plus
+22 paraphrase-exact), 10 router-lane paraphrase prompts, 0 fallbacks, and 0
+refusals; the router-lane margin is min 0.025 / median 0.225 / max 0.403, and
+every case resolves to its expected lane with the expected op and arguments.
+`coverage.json` records the per-subfamily lanes, the confidence and margin
+distributions, the declared floors (exact ≥ 98%, router hits ≥ 90%, zero
+fallback, minimum margin ≥ 0.019), and whether the measurement meets them;
+`coverage.py --check` fails on fixture or threshold drift. The Command Center
+gains a Language coverage panel that reads the same `web/coverage.json` shipped
+by `docs/build.py` and shows the identical numbers, so the dashboard cannot
+recompute a friendlier version. `tests/test_coverage.py` pins the deduplication,
+the subfamily arithmetic, the summary, and the threshold-drift refusal.
+
+The locked next batch (steps 50–59) keeps the same rules. The envelope gets a
+live budget bar, explicit compaction, and budget-aware plan rewriting. Finally
+`think`/reason becomes a deterministic program with bounded self-critique,
+stored traces, a per-project journal, mid-plan recovery, response styles that
+never change tool choice, and an honest LLM-parity scorecard. Steps 46–49 are
+shipped; the rest is not yet. The acceptance criteria live in
 `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,

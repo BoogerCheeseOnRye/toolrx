@@ -275,6 +275,25 @@ class DashboardTest(unittest.TestCase):
         self.assertEqual(open(model, "rb").read(), open(out, "rb").read(),
                          "docs/web/model.json is stale")
 
+    def test_pages_coverage_report_matches(self):
+        src = os.path.join(ROOT, "toolrx", "coverage.json")
+        out = os.path.join(ROOT, "docs", "web", "coverage.json")
+        self.assertTrue(os.path.exists(out), "run python3 docs/build.py")
+        self.assertEqual(open(src, "rb").read(), open(out, "rb").read(),
+                         "docs/web/coverage.json is stale")
+
+    def test_command_center_shows_language_coverage(self):
+        for marker in ('id="cmCoverageSummary"', 'id="cmCoverageTable"',
+                       'id="cmCoverageNote"', "function loadCoverage",
+                       "web/coverage.json", "meetsThresholds",
+                       "fixtures.everyday", "loadCoverage();"):
+            self.assertIn(marker, self.html)
+
+    def test_server_serves_the_coverage_report(self):
+        src = open(os.path.join(ROOT, "toolrx", "server.py"),
+                   encoding="utf-8").read()
+        self.assertIn('rel == "coverage.json"', src)
+
     def test_engine_embed_matches_source(self):
         for name, var in (("engine2d", "toolrxEngine2dSource"),
                           ("engine3d", "toolrxEngine3dSource"),

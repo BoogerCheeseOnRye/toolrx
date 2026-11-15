@@ -1,0 +1,807 @@
+{
+  "audit": {
+    "dead_literals": 0,
+    "examples": [],
+    "mode": "full"
+  },
+  "catalog": {
+    "categories": {
+      "build": 8312,
+      "chat": 122,
+      "color": 10,
+      "context": 89,
+      "data": 15,
+      "date": 32,
+      "edit": 242,
+      "encoding": 30,
+      "facts": 2,
+      "generate": 19,
+      "lang": 45,
+      "library": 43,
+      "llm": 33,
+      "math": 249,
+      "memory": 98,
+      "misc": 55,
+      "plan": 18,
+      "project": 164,
+      "regex": 3,
+      "text": 384,
+      "units": 1990,
+      "web": 32
+    },
+    "count": 11987,
+    "dead_literals": 0,
+    "duplicate_ids": 0,
+    "duplicate_patterns": 0,
+    "model_bytes": 494381,
+    "pure_literals": 7019
+  },
+  "fixtures": {
+    "builds": {
+      "cases": 8,
+      "confidence": null,
+      "lanes": {
+        "exact": 8,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 0
+      },
+      "margin": null,
+      "subfamilies": {
+        "build": {
+          "cases": 8,
+          "confidence": null,
+          "lanes": {
+            "exact": 8,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 8
+        }
+      },
+      "units": 8
+    },
+    "context": {
+      "cases": 3,
+      "confidence": {
+        "max": 0.4707,
+        "median": 0.4103,
+        "min": 0.1008,
+        "n": 3,
+        "p10": 0.1008
+      },
+      "lanes": {
+        "exact": 11,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 3
+      },
+      "margin": {
+        "max": 0.1965,
+        "median": 0.0407,
+        "min": 0.0199,
+        "n": 3,
+        "p10": 0.0199
+      },
+      "subfamilies": {
+        "base": {
+          "cases": 3,
+          "confidence": null,
+          "lanes": {
+            "exact": 3,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 3
+        },
+        "continue": {
+          "cases": 2,
+          "confidence": null,
+          "lanes": {
+            "exact": 2,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 2
+        },
+        "edit": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "expand": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "otherProject": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "plan": {
+          "cases": 2,
+          "confidence": {
+            "max": 0.4707,
+            "median": 0.4103,
+            "min": 0.1008,
+            "n": 3,
+            "p10": 0.1008
+          },
+          "lanes": {
+            "exact": 2,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 3
+          },
+          "margin": {
+            "max": 0.1965,
+            "median": 0.0407,
+            "min": 0.0199,
+            "n": 3,
+            "p10": 0.0199
+          },
+          "units": 5
+        },
+        "returnCommand": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        }
+      },
+      "units": 14
+    },
+    "everyday": {
+      "cases": 573,
+      "confidence": {
+        "max": 0.676,
+        "median": 0.5536,
+        "min": 0.4608,
+        "n": 10,
+        "p10": 0.4641
+      },
+      "correct": 573,
+      "expected": {
+        "exact": 563,
+        "refusal": 0,
+        "router": 10
+      },
+      "lanes": {
+        "exact": 563,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 10
+      },
+      "margin": {
+        "max": 0.4026,
+        "median": 0.2247,
+        "min": 0.0253,
+        "n": 10,
+        "p10": 0.1254
+      },
+      "misses": [],
+      "subfamilies": {
+        "build": {
+          "cases": 108,
+          "confidence": null,
+          "correct": 108,
+          "expected": {
+            "exact": 108,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 108,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 108
+        },
+        "context": {
+          "cases": 42,
+          "confidence": null,
+          "correct": 42,
+          "expected": {
+            "exact": 42,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 42,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 42
+        },
+        "edit": {
+          "cases": 54,
+          "confidence": null,
+          "correct": 54,
+          "expected": {
+            "exact": 54,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 54,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 54
+        },
+        "extract": {
+          "cases": 56,
+          "confidence": null,
+          "correct": 56,
+          "expected": {
+            "exact": 56,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 56,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 56
+        },
+        "growth": {
+          "cases": 60,
+          "confidence": null,
+          "correct": 60,
+          "expected": {
+            "exact": 60,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 60,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 60
+        },
+        "math": {
+          "cases": 52,
+          "confidence": null,
+          "correct": 52,
+          "expected": {
+            "exact": 52,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 52,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 52
+        },
+        "memory": {
+          "cases": 45,
+          "confidence": null,
+          "correct": 45,
+          "expected": {
+            "exact": 45,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 45,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 45
+        },
+        "paraphrase-exact": {
+          "cases": 22,
+          "confidence": null,
+          "correct": 22,
+          "expected": {
+            "exact": 22,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 22,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 22
+        },
+        "paraphrase-router": {
+          "cases": 10,
+          "confidence": {
+            "max": 0.676,
+            "median": 0.5536,
+            "min": 0.4608,
+            "n": 10,
+            "p10": 0.4641
+          },
+          "correct": 10,
+          "expected": {
+            "exact": 0,
+            "refusal": 0,
+            "router": 10
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 10
+          },
+          "margin": {
+            "max": 0.4026,
+            "median": 0.2247,
+            "min": 0.0253,
+            "n": 10,
+            "p10": 0.1254
+          },
+          "misses": [],
+          "units": 10
+        },
+        "projects": {
+          "cases": 36,
+          "confidence": null,
+          "correct": 36,
+          "expected": {
+            "exact": 36,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 36,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 36
+        },
+        "system": {
+          "cases": 40,
+          "confidence": null,
+          "correct": 40,
+          "expected": {
+            "exact": 40,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 40,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 40
+        },
+        "text": {
+          "cases": 48,
+          "confidence": null,
+          "correct": 48,
+          "expected": {
+            "exact": 48,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 48,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 48
+        }
+      },
+      "summary": {
+        "exactHits": 563,
+        "exactRate": 1.0,
+        "exactTotal": 563,
+        "fallback": 0,
+        "meetsThresholds": true,
+        "minMargin": 0.0253,
+        "refusal": 0,
+        "routerHitRate": 1.0,
+        "routerHits": 10,
+        "routerTotal": 10
+      },
+      "thresholds": {
+        "exactRate": 0.98,
+        "maxFallback": 0,
+        "minMargin": 0.019,
+        "routerHitRate": 0.9
+      },
+      "units": 573
+    },
+    "growth": {
+      "cases": 5,
+      "confidence": null,
+      "lanes": {
+        "exact": 12,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 0
+      },
+      "margin": null,
+      "subfamilies": {
+        "base": {
+          "cases": 5,
+          "confidence": null,
+          "lanes": {
+            "exact": 5,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 5
+        },
+        "growth-module": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "growth-modules": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 1,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 1
+        },
+        "growth-patches": {
+          "cases": 1,
+          "confidence": null,
+          "lanes": {
+            "exact": 2,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 2
+        },
+        "growth-systems": {
+          "cases": 2,
+          "confidence": null,
+          "lanes": {
+            "exact": 3,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "units": 3
+        }
+      },
+      "units": 12
+    },
+    "plans": {
+      "cases": 6,
+      "confidence": {
+        "max": 0.6105,
+        "median": 0.5197,
+        "min": 0.3959,
+        "n": 38,
+        "p10": 0.4018
+      },
+      "lanes": {
+        "exact": 0,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 38
+      },
+      "margin": {
+        "max": 0.3756,
+        "median": 0.1524,
+        "min": 0.0511,
+        "n": 38,
+        "p10": 0.1229
+      },
+      "subfamilies": {
+        "plan-chunked": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.453,
+            "median": 0.4524,
+            "min": 0.4518,
+            "n": 2,
+            "p10": 0.4518
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 2
+          },
+          "margin": {
+            "max": 0.0528,
+            "median": 0.0519,
+            "min": 0.0511,
+            "n": 2,
+            "p10": 0.0511
+          },
+          "units": 2
+        },
+        "plan-connector": {
+          "cases": 2,
+          "confidence": {
+            "max": 0.6105,
+            "median": 0.5214,
+            "min": 0.3969,
+            "n": 16,
+            "p10": 0.4493
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 16
+          },
+          "margin": {
+            "max": 0.3756,
+            "median": 0.2016,
+            "min": 0.1229,
+            "n": 16,
+            "p10": 0.1452
+          },
+          "units": 16
+        },
+        "plan-long": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.5969,
+            "median": 0.5261,
+            "min": 0.3959,
+            "n": 8,
+            "p10": 0.4458
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 8
+          },
+          "margin": {
+            "max": 0.3711,
+            "median": 0.1951,
+            "min": 0.1209,
+            "n": 8,
+            "p10": 0.1406
+          },
+          "units": 8
+        },
+        "plan-numbered": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.6105,
+            "median": 0.5214,
+            "min": 0.3969,
+            "n": 8,
+            "p10": 0.4493
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 8
+          },
+          "margin": {
+            "max": 0.3756,
+            "median": 0.2016,
+            "min": 0.1229,
+            "n": 8,
+            "p10": 0.1452
+          },
+          "units": 8
+        },
+        "plan-sentences": {
+          "cases": 1,
+          "confidence": {
+            "max": 0.5657,
+            "median": 0.4907,
+            "min": 0.4018,
+            "n": 4,
+            "p10": 0.4018
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 4
+          },
+          "margin": {
+            "max": 0.2481,
+            "median": 0.1465,
+            "min": 0.1463,
+            "n": 4,
+            "p10": 0.1463
+          },
+          "units": 4
+        }
+      },
+      "units": 38
+    },
+    "refusals": {
+      "cases": 4,
+      "confidence": null,
+      "lanes": {
+        "exact": 0,
+        "fallback": 0,
+        "refusal": 4,
+        "router": 0
+      },
+      "margin": null,
+      "reasons": {
+        "disallowed character": 1,
+        "injection": 1,
+        "query too long": 1,
+        "traversal": 1
+      },
+      "subfamilies": {
+        "refusals": {
+          "cases": 4,
+          "confidence": null,
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 4,
+            "router": 0
+          },
+          "margin": null,
+          "units": 4
+        }
+      },
+      "units": 4
+    },
+    "routing": {
+      "cases": 33,
+      "confidence": {
+        "max": 0.7878,
+        "median": 0.6642,
+        "min": 0.5398,
+        "n": 33,
+        "p10": 0.5907
+      },
+      "lanes": {
+        "exact": 0,
+        "fallback": 0,
+        "refusal": 0,
+        "router": 33
+      },
+      "margin": {
+        "max": 0.2921,
+        "median": 0.1734,
+        "min": 0.0353,
+        "n": 33,
+        "p10": 0.0652
+      },
+      "subfamilies": {
+        "routing": {
+          "cases": 27,
+          "confidence": {
+            "max": 0.7878,
+            "median": 0.6702,
+            "min": 0.5588,
+            "n": 27,
+            "p10": 0.6189
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 27
+          },
+          "margin": {
+            "max": 0.2921,
+            "median": 0.1734,
+            "min": 0.0353,
+            "n": 27,
+            "p10": 0.0693
+          },
+          "units": 27
+        },
+        "routing-long": {
+          "cases": 6,
+          "confidence": {
+            "max": 0.6737,
+            "median": 0.5936,
+            "min": 0.5398,
+            "n": 6,
+            "p10": 0.5398
+          },
+          "lanes": {
+            "exact": 0,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 6
+          },
+          "margin": {
+            "max": 0.2858,
+            "median": 0.1945,
+            "min": 0.0652,
+            "n": 6,
+            "p10": 0.0652
+          },
+          "units": 6
+        }
+      },
+      "units": 33
+    }
+  },
+  "version": 1
+}

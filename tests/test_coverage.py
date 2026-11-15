@@ -22,6 +22,8 @@ import coverage  # noqa: E402
 
 REPORT = os.path.join(CORE, "coverage.json")
 COMMANDS = os.path.join(CORE, "web", "commands.json")
+EVERYDAY = os.path.join(HERE, "fixtures", "everyday.json")
+PARAPHRASE_EVAL = os.path.join(HERE, "fixtures", "paraphrase_eval.json")
 
 
 class CoverageReportTest(unittest.TestCase):
@@ -56,7 +58,7 @@ class CoverageReportTest(unittest.TestCase):
         self.assertEqual(self.saved["catalog"]["dead_literals"], 0)
 
     def test_every_fixture_family_is_reported(self):
-        for family in coverage.FAMILIES:
+        for family in coverage.REPORT_FAMILIES:
             self.assertIn(family, self.saved["fixtures"])
             row = self.saved["fixtures"][family]
             self.assertGreater(row["cases"], 0)
@@ -67,12 +69,12 @@ class CoverageReportTest(unittest.TestCase):
                 self.assertEqual(sum(sub["lanes"].values()), sub["units"], label)
 
     def test_no_family_falls_to_chat_fallback(self):
-        for family in coverage.FAMILIES:
+        for family in coverage.REPORT_FAMILIES:
             lanes = self.saved["fixtures"][family]["lanes"]
             self.assertEqual(lanes["fallback"], 0, family)
 
     def test_router_margins_stay_above_the_step_34_floor(self):
-        for family in coverage.FAMILIES:
+        for family in coverage.REPORT_FAMILIES:
             for label, sub in self.saved["fixtures"][family]["subfamilies"].items():
                 stats = sub["margin"]
                 if stats is None:
@@ -93,6 +95,57 @@ class CoverageReportTest(unittest.TestCase):
             self.assertEqual(row["lanes"]["exact"], row["units"], family)
             self.assertEqual(row["lanes"]["router"], 0, family)
             self.assertEqual(row["lanes"]["fallback"], 0, family)
+
+    def test_everyday_family_counts_each_case_once(self):
+        with open(EVERYDAY, encoding="utf-8") as handle:
+            everyday = json.load(handle)
+        with open(PARAPHRASE_EVAL, encoding="utf-8") as handle:
+            evaluation = json.load(handle)
+        expected_exact = len(everyday["cases"]) + sum(
+            1 for case in evaluation["prompts"] if case["lane"] == "exact")
+        expected_router = sum(
+            1 for case in evaluation["prompts"] if case["lane"] == "router")
+        row = self.saved["fixtures"]["everyday"]
+        self.assertEqual(row["cases"],
+                         len(everyday["cases"]) + len(evaluation["prompts"]))
+        self.assertEqual(row["units"], row["cases"])
+        self.assertEqual(row["expected"],
+                         {"exact": expected_exact, "router": expected_router,
+                          "refusal": 0})
+        self.assertEqual(row["correct"], row["units"])
+        self.assertEqual(row["misses"], [])
+        # Every case belongs to exactly one subfamily, so the subfamily units
+        # must add up to the family total. A case counted twice would show up
+        # as a larger sum.
+        self.assertEqual(
+            sum(sub["units"] for sub in row["subfamilies"].values()),
+            row["units"])
+        self.assertEqual(len(coverage._everyday_cases()), row["cases"])
+
+    def test_everyday_summary_meets_its_declared_floors(self):
+        row = self.saved["fixtures"]["everyday"]
+        summary = row["summary"]
+        self.assertEqual(row["thresholds"], coverage.EVERYDAY_FLOORS)
+        self.assertTrue(summary["meetsThresholds"])
+        self.assertEqual(summary["exactRate"], 1.0)
+        self.assertEqual(summary["routerHitRate"], 1.0)
+        self.assertEqual(summary["fallback"], 0)
+        self.assertEqual(summary["refusal"], 0)
+        self.assertIsNotNone(summary["minMargin"])
+        self.assertGreaterEqual(summary["minMargin"],
+                                coverage.EVERYDAY_FLOORS["minMargin"])
+
+    def test_check_fails_when_everyday_floors_drift(self):
+        original = dict(coverage.EVERYDAY_FLOORS)
+        try:
+            coverage.EVERYDAY_FLOORS["exactRate"] = 1.01
+            ok, problems = coverage.check(full=False)
+        finally:
+            coverage.EVERYDAY_FLOORS.clear()
+            coverage.EVERYDAY_FLOORS.update(original)
+        self.assertFalse(ok)
+        self.assertTrue(any("everyday" in problem or "fixture coverage" in problem
+                            for problem in problems), problems)
 
     def test_dead_literal_audit_finds_a_shadow(self):
         commands = [

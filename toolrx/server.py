@@ -2806,6 +2806,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 if rel == "model.json":   # shipped from the router model itself
                     full = os.path.realpath(os.path.join(HERE, "micro_model.json"))
+                elif rel == "coverage.json":  # generated report, not a web asset
+                    full = os.path.realpath(os.path.join(HERE, "coverage.json"))
                 else:
                     full = os.path.realpath(os.path.join(root, rel))
                     if not full.startswith(root + os.sep):

@@ -29,6 +29,8 @@ ROOT = HERE.parent
 COMMANDS = HERE / "web" / "commands.json"
 MODEL = HERE / "micro_model.json"
 FIXTURES = ROOT / "tests" / "fixtures" / "longform.json"
+EVERYDAY = ROOT / "tests" / "fixtures" / "everyday.json"
+PARAPHRASE_EVAL = ROOT / "tests" / "fixtures" / "paraphrase_eval.json"
 REPORT = HERE / "coverage.json"
 
 sys.path.insert(0, str(HERE))
@@ -38,8 +40,21 @@ import router  # noqa: E402
 import security  # noqa: E402
 
 FAMILIES = ("routing", "plans", "builds", "growth", "context", "refusals")
+EVERYDAY_FAMILY = "everyday"
+REPORT_FAMILIES = FAMILIES + (EVERYDAY_FAMILY,)
 DEFAULT_CONFIDENCE = 0.50
 DEFAULT_MARGIN = 0.02
+
+# Step 49: the everyday family is measured against its own floors. The fixture
+# and the paraphrase evaluation set are deduplicated by normalized query, so a
+# phrasing that appears in both sources is counted once and the build fails
+# rather than silently double-counting it.
+EVERYDAY_FLOORS = {
+    "exactRate": 0.98,
+    "routerHitRate": 0.90,
+    "maxFallback": 0,
+    "minMargin": 0.019,
+}
 _METACHARS = ".^$*+?()[]{}|"
 _NUMBER_WORDS = (
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
@@ -439,6 +454,196 @@ def _finalize(bucket):
     }
 
 
+# ---------------------------------------------------------------- everyday ---
+def _fill_args(command, query):
+    """Expand ``$n`` arguments exactly like web/skills.js applyArgs()."""
+    match = re.match(command["re"], normalize_query(query), re.I)
+    if not match:
+        return None
+    out = {}
+    for key, value in command.get("args", {}).items():
+        if not isinstance(value, str):
+            out[key] = value
+        elif re.fullmatch(r"\$\d+", value):
+            out[key] = match.group(int(value[1:]))
+        else:
+            out[key] = re.sub(r"\$(\d+)",
+                              lambda hit: match.group(int(hit.group(1))),
+                              value)
+    return out
+
+
+def _everyday_cases():
+    """Return the deduplicated everyday case set, with its expected lane.
+
+    Two checked-in sources feed this family: the 541-case everyday fixture and
+    the 32-prompt paraphrase evaluation set. They must not overlap, because a
+    repeated phrasing would be counted twice and inflate the exact-hit rate.
+    """
+    everyday = json.loads(EVERYDAY.read_text(encoding="utf-8"))
+    eval_doc = json.loads(PARAPHRASE_EVAL.read_text(encoding="utf-8"))
+    cases = everyday.get("cases", [])
+    if everyday.get("count") != len(cases):
+        raise ValueError("everyday fixture count %r does not match %d cases"
+                         % (everyday.get("count"), len(cases)))
+    declared = everyday.get("families", {})
+    counted = {}
+    for case in cases:
+        counted[case["family"]] = counted.get(case["family"], 0) + 1
+    if counted != declared:
+        raise ValueError("everyday fixture families %r do not match the cases %r"
+                         % (declared, counted))
+
+    out = []
+    seen = {}
+    for case in cases:
+        query = case["text"]
+        key = normalize_query(query).lower()
+        if key in seen:
+            raise ValueError("everyday case %r appears twice (%s and everyday)"
+                             % (query, seen[key]))
+        seen[key] = "everyday"
+        out.append({
+            "source": "everyday",
+            "family": case["family"],
+            "query": query,
+            "expected": "exact",
+            "op": case["op"],
+            "args": case["args"],
+            "tool": None,
+        })
+    for case in eval_doc.get("prompts", []):
+        query = case["query"]
+        key = normalize_query(query).lower()
+        if key in seen:
+            raise ValueError("paraphrase case %r also appears in %s"
+                             % (query, seen[key]))
+        seen[key] = "paraphrase"
+        out.append({
+            "source": "paraphrase",
+            "family": "paraphrase-" + case["lane"],
+            "query": query,
+            "expected": case["lane"],
+            "op": case.get("op"),
+            "args": case.get("args"),
+            "tool": case.get("tool"),
+        })
+    return out
+
+
+def _new_everyday_bucket():
+    bucket = _new_bucket()
+    bucket.update({
+        "correct": 0,
+        "exactHits": 0,
+        "routerHits": 0,
+        "expected": {"exact": 0, "router": 0, "refusal": 0},
+        "misses": [],
+    })
+    return bucket
+
+
+def _finalize_everyday(bucket):
+    row = _finalize(bucket)
+    row["correct"] = bucket["correct"]
+    row["expected"] = dict(bucket["expected"])
+    row["misses"] = list(bucket["misses"])
+    return row
+
+
+def _resolve_everyday(case, index, model, policy):
+    """Return ``(lane, decision, correct, reason)`` for one case."""
+    query = case["query"]
+    expected = case["expected"]
+    if expected == "refusal":
+        return "refusal", None, True, ""
+    if expected == "exact":
+        hit = index.first_match(query)
+        if hit is not None:
+            correct = (hit.get("op") == case.get("op")
+                       and _fill_args(hit, query) == case.get("args"))
+            return "exact", None, correct, (
+                "" if correct else "exact route matched the wrong op or args")
+        decision = router.route(policy.normalize(query), model)
+        correct = decision["tool"] == case.get("tool")
+        lane = "router" if correct else "fallback"
+        return lane, decision, False, "expected an exact route"
+    # The paraphrase evaluation set marks router-lane prompts explicitly.
+    decision = router.route(policy.normalize(query), model)
+    correct = decision["tool"] == case.get("tool")
+    lane = "router" if correct else "fallback"
+    return lane, decision, correct, (
+        "" if correct else "router chose %r" % decision["tool"])
+
+
+def _everyday_summary(bucket):
+    expected = bucket["expected"]
+    exact_total = expected.get("exact", 0)
+    router_total = expected.get("router", 0)
+    margin = _stats(bucket["margin"])
+    summary = {
+        "exactTotal": exact_total,
+        "exactHits": bucket["exactHits"],
+        "exactRate": round(bucket["exactHits"] / exact_total, 4)
+        if exact_total else 1.0,
+        "routerTotal": router_total,
+        "routerHits": bucket["routerHits"],
+        "routerHitRate": round(bucket["routerHits"] / router_total, 4)
+        if router_total else 1.0,
+        "fallback": bucket["lanes"]["fallback"],
+        "refusal": bucket["lanes"]["refusal"],
+        "minMargin": margin["min"] if margin else None,
+    }
+    summary["meetsThresholds"] = bool(
+        summary["exactRate"] >= EVERYDAY_FLOORS["exactRate"]
+        and summary["routerHitRate"] >= EVERYDAY_FLOORS["routerHitRate"]
+        and summary["fallback"] <= EVERYDAY_FLOORS["maxFallback"]
+        and (margin is None
+             or margin["min"] >= EVERYDAY_FLOORS["minMargin"]))
+    return summary
+
+
+def everyday_coverage(commands, model, policy, index=None):
+    """Measure the everyday-language family from both checked-in sources."""
+    index = index or PrefixIndex(commands)
+    bucket = _new_everyday_bucket()
+    sub = {}
+    for case in _everyday_cases():
+        family = case["family"]
+        sub.setdefault(family, _new_everyday_bucket())["cases"] += 1
+        bucket["cases"] += 1
+        lane, decision, correct, reason = _resolve_everyday(
+            case, index, model, policy)
+        for target in (bucket, sub[family]):
+            target["units"] += 1
+            target["lanes"][lane] += 1
+            target["expected"][case["expected"]] += 1
+            if decision is not None:
+                target["confidence"].append(decision["confidence"])
+                target["margin"].append(decision["margin"])
+            if correct:
+                target["correct"] += 1
+                if case["expected"] == "exact":
+                    target["exactHits"] += 1
+                elif case["expected"] == "router":
+                    target["routerHits"] += 1
+            else:
+                target["misses"].append({
+                    "query": case["query"],
+                    "source": case["source"],
+                    "expected": case["expected"],
+                    "actual": lane,
+                    "reason": reason,
+                })
+    row = _finalize_everyday(bucket)
+    row["subfamilies"] = {
+        label: _finalize_everyday(bucket) for label, bucket in sorted(sub.items())
+    }
+    row["thresholds"] = dict(EVERYDAY_FLOORS)
+    row["summary"] = _everyday_summary(bucket)
+    return row
+
+
 def fixture_coverage(fixtures, commands, model, policy, index=None):
     index = index or PrefixIndex(commands)
     report = {}
@@ -497,11 +702,13 @@ def fixture_coverage(fixtures, commands, model, policy, index=None):
 # ------------------------------------------------------------------ report ---
 def build_report(full=True):
     commands = json.loads(COMMANDS.read_text(encoding="utf-8"))["commands"]
-    fixtures = json.loads(FIXTURES.read_text(encoding="utf-8"))
+    longform_fixtures = json.loads(FIXTURES.read_text(encoding="utf-8"))
     model = router.load(str(MODEL))
     policy = security.SecurityPolicy.load()
     index = PrefixIndex(commands)
     catalog = catalog_stats(commands)
+    fixtures = fixture_coverage(longform_fixtures, commands, model, policy, index)
+    fixtures[EVERYDAY_FAMILY] = everyday_coverage(commands, model, policy, index)
     if full:
         dead = dead_literal_audit(commands, index)
         catalog["dead_literals"] = len(dead)
@@ -513,7 +720,7 @@ def build_report(full=True):
     return {
         "version": 1,
         "catalog": catalog,
-        "fixtures": fixture_coverage(fixtures, commands, model, policy, index),
+        "fixtures": fixtures,
         "audit": audit,
     }
 
@@ -540,6 +747,11 @@ def check(full=True, path=REPORT):
         problems.append("catalog section drifted; run --write")
     if saved.get("fixtures") != current.get("fixtures"):
         problems.append("fixture coverage drifted; run --write")
+    everyday = saved.get("fixtures", {}).get(EVERYDAY_FAMILY)
+    if everyday is None:
+        problems.append("everyday coverage missing; run --write")
+    elif not everyday.get("summary", {}).get("meetsThresholds"):
+        problems.append("everyday coverage is below its declared floors")
     if saved_dead not in (0, None):
         problems.append(f"checked-in report has {saved_dead} dead literal(s)")
     if full:
@@ -559,12 +771,22 @@ def print_table(report):
           f"{catalog['duplicate_ids']} duplicate ids, "
           f"{catalog['duplicate_patterns']} duplicate patterns, "
           f"{dead_text} dead literals")
-    for family in FAMILIES:
+    for family in REPORT_FAMILIES:
         row = report["fixtures"][family]
         lanes = row["lanes"]
         print(f"\n{family}: {row['cases']} cases, {row['units']} units "
               f"(exact {lanes['exact']}, router {lanes['router']}, "
               f"fallback {lanes['fallback']}, refusal {lanes['refusal']})")
+        if family == EVERYDAY_FAMILY:
+            summary = row["summary"]
+            stats = row["margin"]
+            margin = "" if stats is None else (
+                f" margin min {stats['min']:.3f} / median {stats['median']:.3f}")
+            print(f"  exact {summary['exactHits']}/{summary['exactTotal']} · "
+                  f"router {summary['routerHits']}/{summary['routerTotal']}"
+                  f"{margin} · "
+                  + ("meets floors" if summary["meetsThresholds"]
+                     else "BELOW FLOORS"))
         for label, sub in row["subfamilies"].items():
             lanes = sub["lanes"]
             stats = sub["margin"]

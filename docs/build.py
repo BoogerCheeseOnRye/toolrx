@@ -18,6 +18,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "toolrx" / "dashboard.html"
 MODEL = ROOT / "toolrx" / "micro_model.json"
+COVERAGE = ROOT / "toolrx" / "coverage.json"
 WEB_SRC = ROOT / "toolrx" / "web"
 DOCS = ROOT / "docs"
 WEB_OUT = DOCS / "web"
@@ -30,6 +31,10 @@ def main():
                    check=True)
     (DOCS / "index.html").write_text(SRC.read_text(encoding="utf-8"), encoding="utf-8")
     shutil.copyfile(MODEL, WEB_OUT / "model.json")
+    # The coverage report is a test artifact, but the Command Center shows the
+    # same everyday numbers. Ship it beside the other web assets so the panel
+    # reads one source rather than recomputing the metrics in JavaScript.
+    shutil.copyfile(COVERAGE, WEB_OUT / "coverage.json")
     names = ("blake2b.js", "router.js", "limits.js", "context.js", "sandbox.js", "skills.js",
              "templates.js", "patches.js", "llm.js", "lang.js", "i18n.json",
              "engine2d.js", "engine2d.embed.js",
@@ -43,6 +48,7 @@ def main():
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     print(f"wrote {DOCS / 'index.html'} ({SRC.stat().st_size} bytes)")
     print(f"wrote {WEB_OUT}/model.json ({MODEL.stat().st_size} bytes) + {len(names)} web assets")
+    print(f"wrote {WEB_OUT}/coverage.json ({COVERAGE.stat().st_size} bytes)")
     print(f"wrote {len(pwa)} offline assets (sw.js, manifest.webmanifest, icon.svg)")
 
 

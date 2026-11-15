@@ -501,6 +501,14 @@
   .cm-btn:hover{filter:brightness(1.1)}
   .cm-btn.gh{background:#24292f;color:#fff}
   .cm-ghinfo{font-size:11px;color:var(--muted);margin-top:8px}
+  .cm-cov{display:flex;flex-direction:column;gap:0;margin-top:6px}
+  .cm-cov-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 0;
+    border-bottom:1px solid var(--border);font-size:12px}
+  .cm-cov-row:last-child{border-bottom:none}
+  .cm-cov-row b{color:var(--text);font-weight:600;text-align:right}
+  .cm-cov-row em{grid-column:1 / -1;color:var(--muted);font-style:normal;font-size:11px}
+  .cm-cov-good{color:#34d399}
+  .cm-cov-bad{color:#f87171}
 
   /* projects */
   #projBtn,#cmdBtn,#libBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;max-width:230px;
@@ -738,6 +746,12 @@
       <div class="cm-row"><span>panel radius</span><input type="range" id="cmRadius" min="0" max="24" value="12"></div>
       <div class="cm-row"><span>compact drawer</span><label class="cm-sw"><input type="checkbox" id="cmCompact" checked><i></i></label></div>
       <div class="cm-row cm-client"><span>workspace</span><button class="cm-btn" id="cmReset">Reset virtual files</button></div>
+    </section>
+    <section>
+      <h4>Language coverage</h4>
+      <div class="cm-ghinfo" id="cmCoverageSummary">loading coverage report…</div>
+      <div class="cm-cov" id="cmCoverageTable"></div>
+      <div class="cm-ghinfo" id="cmCoverageNote">measured by python3 toolrx/coverage.py</div>
     </section>
     <section>
       <h4>Models / Providers</h4>
@@ -1089,6 +1103,7 @@ function openCmdCenter(){
   cmBot.style.transform='scale(0.6)';
   openDialog(modal, '#cmClose');
   loadLocalModels();
+  loadCoverage();
   if(window.__cmLlmRefresh) window.__cmLlmRefresh();
   wgPoll();
   requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
@@ -1145,6 +1160,52 @@ async function loadLocalModels(){
     info.textContent=staticMode
       ? 'open the local server to probe Ollama / llama.cpp / llama-swap'
       : String(e);
+  }
+}
+
+// ---- language coverage panel ----
+// Reads the checked-in coverage report rather than recomputing the metrics in
+// JavaScript, so the Command Center and `python3 toolrx/coverage.py` always
+// show the same everyday numbers.
+async function loadCoverage(){
+  const summary=document.getElementById('cmCoverageSummary');
+  const table=document.getElementById('cmCoverageTable');
+  const note=document.getElementById('cmCoverageNote');
+  if(!summary||!table||!note) return;
+  summary.textContent='loading coverage report…';
+  note.className='cm-ghinfo';
+  note.textContent='measured by python3 toolrx/coverage.py';
+  try{
+    const r=await fetch('web/coverage.json',{cache:'no-cache'});
+    if(!r.ok) throw new Error('coverage '+r.status);
+    const d=await r.json();
+    const row=d.fixtures&&d.fixtures.everyday;
+    if(!row) throw new Error('no everyday family in the report');
+    const lanes=row.lanes||{}, s=row.summary||{};
+    summary.textContent=row.cases+' cases · '+row.units+' units · exact '
+      +(lanes.exact||0)+' · router '+(lanes.router||0)+' · fallback '
+      +(lanes.fallback||0)+' · refusal '+(lanes.refusal||0);
+    table.innerHTML=Object.keys(row.subfamilies||{}).sort().map(function(label){
+      const sub=row.subfamilies[label], l=sub.lanes||{};
+      return '<div class="cm-cov-row"><span>'+label+'</span><b>'+sub.units
+        +'</b><em>exact '+(l.exact||0)+' · router '+(l.router||0)
+        +' · fallback '+(l.fallback||0)+' · refusal '+(l.refusal||0)+'</em></div>';
+    }).join('');
+    const margin=row.margin
+      ? 'margin min '+row.margin.min.toFixed(3)+' · median '
+        +row.margin.median.toFixed(3)+' · max '+row.margin.max.toFixed(3)
+      : 'no router-lane margins';
+    const ok=s.meetsThresholds!==false;
+    note.className='cm-ghinfo '+(ok?'cm-cov-good':'cm-cov-bad');
+    note.textContent=margin+' · exact '+Math.round((s.exactRate||0)*100)
+      +'% · router '+Math.round((s.routerHitRate||0)*100)+'% · '
+      +(ok?'meets floors':'below floors')+' · measured by python3 toolrx/coverage.py';
+  }catch(e){
+    summary.textContent='coverage report not available in this tab yet';
+    table.innerHTML='';
+    note.className='cm-ghinfo';
+    note.textContent='run python3 toolrx/coverage.py --write and python3 docs/build.py · '
+      +String(e.message||e);
   }
 }
 

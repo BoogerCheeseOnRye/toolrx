@@ -1117,7 +1117,7 @@ duplicated across intents, and an over-long knowledge list. `--check` fails on
 fixture drift, and `--measure` rebuilds the baseline and expanded models in
 separate temporary directories so one build cannot overwrite the other.
 
-### 49. Everyday-language coverage dashboard — planned
+### 49. Everyday-language coverage dashboard — done
 
 Add an `everyday` family to `coverage.py` and the coverage report. Track exact
 hits, router hits, chat fallbacks, refusals, and the confidence/margin
@@ -1128,6 +1128,23 @@ small dashboard panel.
 margin buckets, `coverage.py --check` fails when the fixture set or thresholds
 drift, the dashboard shows the same numbers, and no everyday case is counted
 twice.
+
+Landed with an `everyday` family built from the 541 everyday phrasings and the
+32-prompt paraphrase evaluation set, deduplicated by normalized query so a
+repeated case fails the build instead of inflating the score. The family reports
+573 cases: 563 exact (541 everyday plus 22 paraphrase-exact), 10 router-lane
+paraphrase prompts, 0 fallbacks, and 0 refusals; the router-lane margin is min
+0.025 / median 0.225 / max 0.403, and every case resolves to its expected lane
+with the expected op and arguments. `coverage.json` carries the per-subfamily
+lanes, the confidence and margin distributions, the declared floors (exact ≥
+98%, router hits ≥ 90%, zero fallback, minimum margin ≥ 0.019), and a summary
+that says whether the measurement meets them. `coverage.py --check` fails on
+fixture or threshold drift. The Command Center's Language coverage panel reads
+the same `web/coverage.json` shipped by `docs/build.py` and renders the report's
+own lanes, subfamilies, margins, and summary, so the dashboard cannot recompute
+a friendlier version; the local server serves the same file at
+`/web/coverage.json`. `tests/test_coverage.py` pins the deduplication, the
+subfamily arithmetic, the summary, and the threshold-drift refusal.
 
 ### 50. Visual budget bar — planned
 
@@ -1263,7 +1280,7 @@ claims.
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
-8. 46 (paraphrase) → 47 (glue) → 48 (tables) — done; 49 (language coverage) →
+8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) — done;
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) → 53 (think) →
    54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
    58 (style) → 59 (scorecard) — planned
@@ -1295,7 +1312,7 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–48 are complete. 14 remains deferred. Steps 49–59 are
+- Steps 11–13, 15–49 are complete. 14 remains deferred. Steps 50–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
