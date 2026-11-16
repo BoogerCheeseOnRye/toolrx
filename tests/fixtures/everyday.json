@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "count": 541,
+  "count": 547,
   "families": {
     "build": 108,
-    "context": 42,
+    "context": 48,
     "edit": 54,
     "extract": 56,
     "growth": 60,
@@ -886,6 +886,12 @@
     },
     {
       "family": "context",
+      "text": "can you compact context",
+      "op": "context.compact",
+      "args": {}
+    },
+    {
+      "family": "context",
       "text": "can you continue from previous",
       "op": "context.continue",
       "args": {}
@@ -924,6 +930,12 @@
       "family": "context",
       "text": "could you clear context",
       "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "could you compact context",
+      "op": "context.compact",
       "args": {}
     },
     {
@@ -970,6 +982,12 @@
     },
     {
       "family": "context",
+      "text": "go ahead and compact context",
+      "op": "context.compact",
+      "args": {}
+    },
+    {
+      "family": "context",
       "text": "go ahead and continue from previous",
       "op": "context.continue",
       "args": {}
@@ -1008,6 +1026,12 @@
       "family": "context",
       "text": "i'd like you to clear context",
       "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "i'd like you to compact context",
+      "op": "context.compact",
       "args": {}
     },
     {
@@ -1054,6 +1078,12 @@
     },
     {
       "family": "context",
+      "text": "please compact context",
+      "op": "context.compact",
+      "args": {}
+    },
+    {
+      "family": "context",
       "text": "please continue from previous",
       "op": "context.continue",
       "args": {}
@@ -1092,6 +1122,12 @@
       "family": "context",
       "text": "would you clear context",
       "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "would you compact context",
+      "op": "context.compact",
       "args": {}
     },
     {

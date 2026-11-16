@@ -632,8 +632,8 @@
   function restoreProjectContext(slug, context, plan) {
     const C = contextModule();
     if (!C) return;
-    if (context && context.length) C.setMany(slug, context);
-    if (plan) C.set(slug, "plan", "last", C.stable(plan));
+    if (context && context.length) C.setMany(slug, context, contextOptions());
+    if (plan) C.set(slug, "plan", "last", C.stable(plan), contextOptions());
   }
 
   function installProject(staged) {
@@ -1728,6 +1728,19 @@
 
   function contextScope() { return projects.active || "scratch"; }
 
+  /* Compaction uses the same step-44 extractor as `extract key facts`, so the
+   * summary is inspectable and deterministic rather than a second algorithm. */
+  function contextSummary(text) {
+    const skills = root.toolrxSkills;
+    if (!skills || !skills.keyFacts) return [];
+    try { return skills.keyFacts(String(text == null ? "" : text)); }
+    catch (e) { return []; }
+  }
+
+  function contextOptions(extra) {
+    return Object.assign({ summarize: contextSummary }, extra || {});
+  }
+
   function firstMeaningfulLine(text) {
     const lines = String(text == null ? "" : text).split(/\n/);
     for (const raw of lines) {
@@ -1759,7 +1772,7 @@
     const t = root.toolrxTemplates;
     if (p.spec) {
       const line = t && t.specLine ? t.specLine(p.spec) : C.stable(p.spec);
-      C.set(p.slug, "spec", "active", line);
+      C.set(p.slug, "spec", "active", line, contextOptions());
     } else {
       C.remove(p.slug, "spec", "active");
     }
@@ -1767,17 +1780,18 @@
     const items = Object.keys(fileMap).sort().map(function (name) {
       return { kind: "file", key: name, text: fileSummary(name, fileMap[name]) };
     });
-    C.setMany(p.slug, items, { kind: "file" });
+    C.setMany(p.slug, items, contextOptions({ kind: "file" }));
   }
 
   function setEditContext(slug, record) {
     const C = contextModule();
     if (!C) return;
-    C.set(slug, "edit", "last", C.stable(record || {}));
+    C.set(slug, "edit", "last", C.stable(record || {}), contextOptions());
   }
 
   function isContextMeta(via) {
-    return /^context\.(?:show|clear|clear\.all|expand|continue)$/.test(String(via || ""));
+    return /^context\.(?:show|clear|clear\.all|expand|continue|compact)$/
+      .test(String(via || ""));
   }
 
   function notePromptContext(query, results) {
@@ -1790,12 +1804,13 @@
     // Meta commands describe or move the plan; storing their own output as
     // `result/last` would evict the plan they just edited. The session rows
     // below already skip the same set.
-    const quiet = /^context\.(?:show|clear|clear\.all|expand|continue)$/.test(via);
+    const quiet = /^context\.(?:show|clear|clear\.all|expand|continue|compact)$/
+      .test(via);
 
     if (last && !quiet) {
       const head = "query: " + String(query).replace(/\s+/g, " ").slice(0, 240)
         + "\nvia: " + (last.via || "router");
-      C.set(slug, "result", "last", head + "\n" + last.text);
+      C.set(slug, "result", "last", head + "\n" + last.text, contextOptions());
       // The rolling session keeps the last dozen steps, newest at the bottom.
       if (!isContextMeta(via)) {
         const previous = C.get(slug, "session", "rolling");
@@ -1804,7 +1819,8 @@
           const mark = r.error ? "✗" : "✓";
           rows.push(mark + " " + String(r.step || "").replace(/\s+/g, " ").slice(0, 160));
         });
-        C.set(slug, "session", "rolling", rows.slice(-12).join("\n"));
+        C.set(slug, "session", "rolling", rows.slice(-12).join("\n"),
+          contextOptions());
       }
     }
 
@@ -1821,7 +1837,7 @@
           return r ? (r.error ? "error" : "done") : "pending";
         }),
       };
-      C.set(slug, "plan", "last", C.stable(plan));
+      C.set(slug, "plan", "last", C.stable(plan), contextOptions());
     }
   }
 
@@ -1900,6 +1916,14 @@
     return C.diff(contextScope()).text;
   }
 
+  function contextCompact() {
+    const C = contextModule();
+    if (!C || !C.compact) {
+      return "context compaction is unavailable in this browser";
+    }
+    return C.compact(contextScope(), { summarize: contextSummary }).text;
+  }
+
   function contextClear(all) {
     const C = contextModule();
     if (!C) return "context is unavailable in this browser";
@@ -1939,13 +1963,14 @@
     results.forEach(function (r, i) {
       plan.status[indexes[i]] = r.error ? "error" : "done";
     });
-    C.set(slug, "plan", "last", C.stable(plan));
+    C.set(slug, "plan", "last", C.stable(plan), contextOptions());
     const prior = C.get(slug, "session", "rolling");
     const rows = prior ? prior.split("\n").filter(Boolean) : [];
     results.forEach(function (r) {
       rows.push((r.error ? "✗ " : "✓ ") + String(r.step || "").slice(0, 160));
     });
-    C.set(slug, "session", "rolling", rows.slice(-12).join("\n"));
+    C.set(slug, "session", "rolling", rows.slice(-12).join("\n"),
+      contextOptions());
     const remaining = plan.status.filter(function (s) { return s !== "done"; }).length;
     const lines = ["continued the last plan · " + results.length + " step"
       + (results.length === 1 ? "" : "s") + " run · " + remaining + " still pending"];
@@ -1977,7 +2002,7 @@
       plan.steps.push(step);
       plan.status.push("pending");
     });
-    C.set(slug, "plan", "last", C.stable(plan));
+    C.set(slug, "plan", "last", C.stable(plan), contextOptions());
     return ["expanded the last plan · " + info.steps.length + " new step"
       + (info.steps.length === 1 ? "" : "s") + " · " + plan.steps.length + " total"]
       .concat(planLines(plan))
@@ -2284,6 +2309,7 @@
       contextRaw: contextRaw,
       contextSnapshot: contextSnapshot,
       contextDiff: contextDiff,
+      contextCompact: contextCompact,
       contextClear: contextClear,
       contextContinue: contextContinue,
       contextExpand: contextExpand,
@@ -2763,6 +2789,7 @@
     contextRaw: contextRaw,
     contextSnapshot: contextSnapshot,
     contextDiff: contextDiff,
+    contextCompact: contextCompact,
     contextClear: contextClear,
     reset: function () {
       files = Object.assign({}, SEED);

@@ -1179,7 +1179,7 @@ while the plan runs; single-step builds keep their existing progress sequence.
 bar number with the preview and last-run reports, then compares the caps with
 the Python envelope.
 
-### 51. Deterministic compaction engine — planned
+### 51. Deterministic compaction engine — done
 
 Add explicit context compaction. Keep the active plan, build spec, last N
 results, and critical file hashes; summarize older results with the step-44
@@ -1190,6 +1190,26 @@ before the byte cap.
 **Done when** compaction is byte-identical across runs, the plan and spec
 survive, every dropped or summarized entry appears in the notes, automatic
 compaction never evicts the active plan, and the cap stays enforced.
+
+Landed with one fixed policy order in `toolrx/web/context.js`: summarize older
+session rows while keeping the newest `contextKeep` (4), summarize
+`result/last` through the step-44 `keyFactsOf` extractor, drop `session`,
+`result`, and `edit`, drop non-critical files, then critical files
+(`index.html`, `app.js`), then trim the largest remaining entry. The active
+plan and build spec are never dropped. Automatic compaction runs at
+`contextAutoAt` (85%) of the context cap before the following `fit`, so a full
+store compacts instead of evicting the plan. `contextSummary` (6) bounds each
+summary line, and every action is recorded in a dedicated
+`toolrx.context.v1.<slug>.compact` report with kind, key, before/after bytes,
+and why (`summarized`, `dropped`, `trimmed`, `evicted`); `notes()` merges that
+report into the visible context listing so the three-note eviction ring cannot
+hide what compaction did. A second run reports
+`nothing to compact · already at its compacted form` and leaves the stored
+bytes and report untouched. The catalog is 12,004 patterns and the everyday
+fixture is 547 cases; `tests/test_compaction.py` drives the engine directly in
+Node for idempotence, plan/spec survival, cap enforcement, tiny caps, and
+byte-identical replay, while `tests/test_skills_js.py` runs the same path
+through chat.
 
 ### 52. Budget-aware plan rewriting — planned
 
@@ -1301,7 +1321,7 @@ claims.
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
-   50 (budget bar) — done; 51 (compaction) → 52 (plan rewrite) → 53 (think) →
+   50 (budget bar) → 51 (compaction) — done; 52 (plan rewrite) → 53 (think) →
    54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
    58 (style) → 59 (scorecard) — planned
 
@@ -1311,9 +1331,10 @@ to two places. Steps 39–44 may be reordered within the batch if a measurement
 justifies it; step 45 is last.
 
 Steps 46–49 come first because everyday language must be measured before the
-budget UI claims to help it. Steps 50–52 land as one envelope batch. Steps
-53–55 are the thinking program. Steps 56–59 close the remaining parity gaps;
-they may be reordered within the batch when a measurement justifies it.
+budget UI claims to help it. Steps 50–52 land as one envelope batch; 50 and 51
+are done. Steps 53–55 are the thinking program. Steps 56–59 close the
+remaining parity gaps; they may be reordered within the batch when a
+measurement justifies it.
 
 ## Open questions
 
@@ -1332,7 +1353,7 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–50 are complete. 14 remains deferred. Steps 51–59 are
+- Steps 11–13, 15–51 are complete. 14 remains deferred. Steps 52–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after

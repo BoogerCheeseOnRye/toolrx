@@ -9,7 +9,7 @@
       "build": 8312,
       "chat": 122,
       "color": 10,
-      "context": 89,
+      "context": 106,
       "data": 15,
       "date": 32,
       "edit": 242,
@@ -29,12 +29,12 @@
       "units": 1990,
       "web": 32
     },
-    "count": 11987,
+    "count": 12004,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7019
+    "pure_literals": 7036
   },
   "fixtures": {
     "builds": {
@@ -186,7 +186,7 @@
       "units": 14
     },
     "everyday": {
-      "cases": 573,
+      "cases": 579,
       "confidence": {
         "max": 0.676,
         "median": 0.5536,
@@ -194,14 +194,14 @@
         "n": 10,
         "p10": 0.4641
       },
-      "correct": 573,
+      "correct": 579,
       "expected": {
-        "exact": 563,
+        "exact": 569,
         "refusal": 0,
         "router": 10
       },
       "lanes": {
-        "exact": 563,
+        "exact": 569,
         "fallback": 0,
         "refusal": 0,
         "router": 10
@@ -235,23 +235,23 @@
           "units": 108
         },
         "context": {
-          "cases": 42,
+          "cases": 48,
           "confidence": null,
-          "correct": 42,
+          "correct": 48,
           "expected": {
-            "exact": 42,
+            "exact": 48,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 42,
+            "exact": 48,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 42
+          "units": 48
         },
         "edit": {
           "cases": 54,
@@ -457,9 +457,9 @@
         }
       },
       "summary": {
-        "exactHits": 563,
+        "exactHits": 569,
         "exactRate": 1.0,
-        "exactTotal": 563,
+        "exactTotal": 569,
         "fallback": 0,
         "meetsThresholds": true,
         "minMargin": 0.0253,
@@ -474,7 +474,7 @@
         "minMargin": 0.019,
         "routerHitRate": 0.9
       },
-      "units": 573
+      "units": 579
     },
     "growth": {
       "cases": 5,

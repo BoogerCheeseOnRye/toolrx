@@ -1284,6 +1284,16 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     notes: self.toolrxContext.notes('top-down-shooter'),
     stored: self.toolrxWeb.context().stored,
     cap: self.toolrxContext.cap(),
+    plan: (() => {
+      const entry = contextEntry('plan', 'last');
+      try { return entry ? JSON.parse(entry.text) : null; } catch (e) { return null; }
+    })(),
+    report: (() => {
+      try {
+        return JSON.parse(localStorage.getItem(
+          'toolrx.context.v1.top-down-shooter.compact') || 'null');
+      } catch (e) { return null; }
+    })(),
   };
   try { localStorage.removeItem('toolrx.context.cap'); } catch (e) { /* ignore */ }
 
@@ -1362,10 +1372,47 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     rawBytes: self.toolrxContext.byteLength(capRaw),
     cap: self.toolrxContext.cap(),
     evicted: capReport.evicted,
-    visible: /evicted \(oldest first\):/.test(capShow[0].text),
+    visible: /context notes \(oldest first\):/.test(capShow[0].text),
     hasTrimmed: /trimmed/.test(capShow[0].text),
   };
   try { localStorage.removeItem('toolrx.context.cap'); } catch (e) { /* ignore */ }
+
+  // Step 51: explicit compaction is deterministic and idempotent, keeps the
+  // plan and spec, and records every summarized or dropped entry.
+  self.toolrxWeb.reset();
+  await pRun('build a platformer game');
+  await pRun('add double jump');
+  await pRun('add sound');
+  await pRun('add a boss');
+  await pRun('add sound; add a boss; add a quest');
+  const compactSlug = self.toolrxWeb.project().slug;
+  const compactBefore = self.toolrxWeb.contextRaw();
+  const compactPlan = self.toolrxContext.get(compactSlug, 'plan', 'last');
+  const compactSpec = self.toolrxContext.get(compactSlug, 'spec', 'active');
+  const compactOne = await pRun('compact context');
+  const compactRawOne = self.toolrxWeb.contextRaw();
+  const compactNotesOne = self.toolrxContext.notes(compactSlug);
+  const compactReport = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(
+        'toolrx.context.v1.' + compactSlug + '.compact') || 'null');
+    } catch (e) { return null; }
+  })();
+  const compactTwo = await pRun('compact context');
+  const compactRawTwo = self.toolrxWeb.contextRaw();
+  out.context.compact = {
+    via: compactOne[0].via,
+    text: compactOne[0].text,
+    secondText: compactTwo[0].text,
+    changed: compactBefore !== compactRawOne,
+    sameAfterSecond: compactRawOne === compactRawTwo,
+    plan: compactPlan === self.toolrxContext.get(compactSlug, 'plan', 'last'),
+    spec: compactSpec === self.toolrxContext.get(compactSlug, 'spec', 'active'),
+    notes: compactNotesOne,
+    report: compactReport,
+    stored: self.toolrxContext.byteLength(compactRawTwo),
+    cap: self.toolrxContext.cap(),
+  };
 
   out.context.network = {
     calls: netCalls.length,
@@ -2953,7 +3000,28 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(c["stored"], c["rawBytes"])
         self.assertGreater(c["evicted"], 0)
         self.assertTrue(c["visible"])
-        self.assertIn("evicted (oldest first):", c["text"])
+        self.assertIn("context notes (oldest first):", c["text"])
+
+    def test_explicit_compaction_is_idempotent_and_keeps_the_plan(self):
+        c = self.out["context"]["compact"]
+        self.assertEqual(c["via"], "context.compact")
+        self.assertIn("context compact", c["text"])
+        self.assertTrue(c["changed"], c["text"])
+        self.assertTrue(c["sameAfterSecond"],
+                        "a second compaction must be byte-identical")
+        self.assertIn("nothing to compact", c["secondText"])
+        self.assertTrue(c["plan"], "compaction must keep the plan")
+        self.assertTrue(c["spec"], "compaction must keep the build spec")
+        self.assertIsNotNone(c["report"], "compaction writes a report")
+        self.assertTrue(c["report"]["actions"])
+        self.assertEqual(len(c["report"]["actions"]), len(c["notes"]))
+        for action in c["report"]["actions"]:
+            self.assertIn(action["why"], ("summarized", "dropped", "trimmed"))
+            self.assertGreaterEqual(action["bytes"], 0)
+        for note in c["notes"]:
+            self.assertIn(note["why"],
+                          ("trimmed", "evicted", "summarized", "dropped"))
+        self.assertLessEqual(c["stored"], c["cap"])
 
     def test_context_snapshot_is_stable_and_not_an_entry(self):
         s = self.out["context"]["snapshot"]
@@ -2989,15 +3057,24 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertEqual(s["final"]["status"], ["done", "error", "done"])
         self.assertEqual(s["final"]["steps"], s["after"]["steps"])
 
-    def test_evicted_plan_reports_the_loss_explicitly(self):
+    def test_automatic_compaction_keeps_the_plan_and_reports_its_actions(self):
         e = self.out["context"]["evicted"]
         self.assertEqual(e["continueVia"], "context.continue")
-        self.assertIn("the stored plan was evicted", e["continueText"])
-        self.assertIn("rebuild the plan, then continue", e["continueText"])
-        self.assertIn("evicted or trimmed", e["snapshotText"])
-        self.assertTrue(any(n["kind"] == "plan" and n["key"] == "last"
+        self.assertIn("continued the last plan", e["continueText"])
+        self.assertIsNotNone(e["plan"], "automatic compaction must keep the plan")
+        self.assertEqual(e["plan"]["steps"],
+                         ["add sound", "read missing.txt", "add a boss"])
+        self.assertIn("context notes (oldest first):", e["showText"])
+        self.assertTrue(any(n["why"] in ("summarized", "dropped")
                             for n in e["notes"]))
+        for note in e["notes"]:
+            self.assertIn(note["why"],
+                          ("trimmed", "evicted", "summarized", "dropped"))
+            self.assertGreaterEqual(note["bytes"], 0)
         self.assertLessEqual(e["stored"], e["cap"])
+        self.assertIsNotNone(e["report"], "automatic compaction writes a report")
+        self.assertTrue(e["report"]["actions"])
+        self.assertLessEqual(e["report"]["after"]["stored"], e["cap"])
 
     def test_trimmed_plan_reports_the_loss_explicitly(self):
         t = self.out["context"]["trimmed"]

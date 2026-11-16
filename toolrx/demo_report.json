@@ -5,12 +5,15 @@
     "steps": 32,
     "sha256": "c1ea344c34f35e9415a2a1b00916f6d20c2169cbb8d2b5bcedceca3dc7cd785c"
   },
-  "catalog": 11987,
+  "catalog": 12004,
   "limits": {
     "blockBytes": 8000,
     "buildMs": 4000,
     "bundleBytes": 2097152,
+    "contextAutoAt": 85,
     "contextBytes": 8192,
+    "contextKeep": 4,
+    "contextSummary": 6,
     "conversationBytes": 4096,
     "conversationTurns": 12,
     "diffLines": 400,
@@ -30,7 +33,7 @@
     "undoDepth": 16,
     "version": 1
   },
-  "limitsText": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state",
+  "limitsText": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  contextKeep             4  session rows kept raw\n  contextAutoAt          85  auto-compaction trigger percent\n  contextSummary          6  summary lines per entry\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state",
   "plan": {
     "chars": 3367,
     "steps": 32,
@@ -69,7 +72,7 @@
     "ms": 0,
     "bytes": 54823,
     "written": 54247,
-    "emitted": 18199,
+    "emitted": 18364,
     "files": 22,
     "filesTouched": [
       "ARCHITECTURE.md",
@@ -95,7 +98,7 @@
       "systems/weather.js",
       "ui/render.js"
     ],
-    "contextBytes": 8181,
+    "contextBytes": 8074,
     "undo": 8,
     "budget": {
       "files": {
@@ -125,9 +128,9 @@
         "remaining": 4633
       },
       "context": {
-        "used": 8181,
+        "used": 8074,
         "max": 8192,
-        "remaining": 11
+        "remaining": 118
       },
       "within": true,
       "over": []
@@ -533,9 +536,9 @@
       "confidence": null,
       "margin": null,
       "ms": 0,
-      "bytes": 1030,
-      "sha": "55dbb69345c8158e622b2d56ef05fee50213b3a54815e145c3173a2df7aecc3c",
-      "text": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state"
+      "bytes": 1195,
+      "sha": "04dd0b9809a5253478b563b70e6d752c0f6b424a8ac0df6aeefb5384e57dbc31",
+      "text": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  contextKeep             4  session rows kept raw\n  contextAutoAt          85  auto-compaction trigger percent\n  contextSummary          6  summary lines per entry\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state"
     },
     {
       "n": 32,
@@ -677,17 +680,18 @@
     }
   },
   "context": {
-    "snapshot": "context snapshot · project: top-down-shooter\n19 entries · 6885 entry bytes · stored 8181 bytes · sha 5c33b9a5fd47492d\npending plan: 0 steps\nevicted or trimmed (oldest first):\n  file/ui/render.js · 133 bytes · evicted\n  file/systems/ai.js · 124 bytes · evicted\n  file/systems/audio.js · 130 bytes · evicted\nsaved as the previous context snapshot",
+    "snapshot": "context snapshot · project: top-down-shooter\n23 entries · 6556 entry bytes · stored 8074 bytes · sha 255c9fbb7608dd27\npending plan: 0 steps\ncontext notes (oldest first):\n  session/rolling · 900 -> 202 bytes · summarized\n  session/rolling · 202 bytes · dropped\n  result/last · 267 bytes · dropped\n  edit/last · 47 bytes · dropped\n  file/content.js · 142 bytes · dropped\nsaved as the previous context snapshot",
     "report": {
-      "text": "context · project: top-down-shooter\ncap 8192 bytes · 19 entries · 6625 entry bytes\nstored: 7942 bytes · sha 3232e00f6c026221\nfile engine2d.js · 91 bytes · seq 61\n  engine2d.js · 12572 bytes · 430 lines · sha eacbc87b4cfc540d · toolrx shared 2D engine.\nfile systems/ai.js · 124 bytes · seq 63\n  systems/ai.js · 1508 bytes · 41 lines · sha eb8db4580035d7f6 · toolrx system: ai · seeded from the build sp…\nfile systems/audio.js · 130 bytes · seq 64\n  systems/audio.js · 1894 bytes · 55 lines · sha f2d3aea75b4c2feb · toolrx system: audio · seeded from the bu…\nfile systems/combat.js · 132 bytes · seq 65\n  systems/combat.js · 1809 bytes · 53 lines · sha 393958fb6b1d22a3 · toolrx system: combat · seeded from the …\nfile ui/render.js · 133 bytes · seq 66\n  ui/render.js · 627 bytes · 23 lines · sha f68f585f2ad53457 · toolrx module: ui helpers · generated from the…\nlast plan · 3750 bytes · seq 67\n  33 steps · 33 done · 0 error · 0 pending\nfile ARCHITECTURE.md · 118 bytes · seq 69\n  ARCHITECTURE.md · 1437 bytes · 73 lines · sha 956f37be9b1a0cd6 · Architecture · Station Defense: Long Promp…\nfile README.md · 96 bytes · seq 70\n  README.md · 3105 bytes · 89 lines · sha 46fb701baeb44f0b · Station Defense: Long Prompt Demo\nfile index.html · 79 bytes · seq 71\n  index.html · 3570 bytes · 41 lines · sha fecd686df2f44ee5 · <!doctype html>\nfile systems/crafting.js · 136 bytes · seq 72\n  systems/crafting.js · 2167 bytes · 58 lines · sha f8faee7d9bc6e479 · toolrx system: crafting · seeded from …\nfile systems/dialogue.js · 136 bytes · seq 73\n  systems/dialogue.js · 1793 bytes · 49 lines · sha 2dee2e77a717a107 · toolrx system: dialogue · seeded from …\nfile systems/inventory.js · 138 bytes · seq 74\n  systems/inventory.js · 1990 bytes · 58 lines · sha c29fe04a221b2d24 · toolrx system: inventory · seeded fro…\nfile systems/particles.js · 138 bytes · seq 75\n  systems/particles.js · 1685 bytes · 50 lines · sha 160cc11aafb3e324 · toolrx system: particles · seeded fro…\nfile systems/quests.js · 132 bytes · seq 76\n  systems/quests.js · 1943 bytes · 58 lines · sha 9d66c4c02341e730 · toolrx system: quests · seeded from the …\nfile systems/save.js · 128 bytes · seq 77\n  systems/save.js · 1866 bytes · 55 lines · sha 03e04d121ad25584 · toolrx system: save · seeded from the buil…\nfile systems/ui.js · 124 bytes · seq 78\n  systems/ui.js · 1930 bytes · 58 lines · sha f80cb1d540a33d81 · toolrx system: ui · seeded from the build sp…\nfile systems/weather.js · 134 bytes · seq 79\n  systems/weather.js · 1409 bytes · 39 lines · sha d2fac28c24af0a02 · toolrx system: weather · seeded from th…\nlast result · 161 bytes · seq 80\n  query: undo\nsession plan · 745 bytes · seq 81\n  12 recent steps · last: ✓ undo\nevicted (oldest first): file/content/seed.js · 139 bytes · evicted · file/core/state.js · 134 bytes · evicted · file/data/seed.js · 134 bytes · evicted",
+      "text": "context · project: top-down-shooter\ncap 8192 bytes · 23 entries · 6619 entry bytes\nstored: 8137 bytes · sha 4142af62b5d909b2\nfile core/state.js · 134 bytes · seq 13\n  core/state.js · 640 bytes · 21 lines · sha c56b011109f7c77b · toolrx module: core state · generated from th…\nfile data/seed.js · 134 bytes · seq 14\n  data/seed.js · 760 bytes · 23 lines · sha 7076a13431773db8 · toolrx module: seeded data · generated from th…\nfile ui/render.js · 133 bytes · seq 16\n  ui/render.js · 627 bytes · 23 lines · sha f68f585f2ad53457 · toolrx module: ui helpers · generated from the…\nfile systems/ai.js · 124 bytes · seq 21\n  systems/ai.js · 1508 bytes · 41 lines · sha eb8db4580035d7f6 · toolrx system: ai · seeded from the build sp…\nfile systems/audio.js · 130 bytes · seq 22\n  systems/audio.js · 1894 bytes · 55 lines · sha f2d3aea75b4c2feb · toolrx system: audio · seeded from the bu…\nfile systems/combat.js · 132 bytes · seq 23\n  systems/combat.js · 1809 bytes · 53 lines · sha 393958fb6b1d22a3 · toolrx system: combat · seeded from the …\nfile systems/crafting.js · 136 bytes · seq 24\n  systems/crafting.js · 2167 bytes · 58 lines · sha f8faee7d9bc6e479 · toolrx system: crafting · seeded from …\nfile systems/dialogue.js · 136 bytes · seq 25\n  systems/dialogue.js · 1793 bytes · 49 lines · sha 2dee2e77a717a107 · toolrx system: dialogue · seeded from …\nfile systems/inventory.js · 138 bytes · seq 26\n  systems/inventory.js · 1990 bytes · 58 lines · sha c29fe04a221b2d24 · toolrx system: inventory · seeded fro…\nfile systems/particles.js · 138 bytes · seq 27\n  systems/particles.js · 1685 bytes · 50 lines · sha 160cc11aafb3e324 · toolrx system: particles · seeded fro…\nfile systems/quests.js · 132 bytes · seq 28\n  systems/quests.js · 1943 bytes · 58 lines · sha 9d66c4c02341e730 · toolrx system: quests · seeded from the …\nfile systems/save.js · 128 bytes · seq 29\n  systems/save.js · 1866 bytes · 55 lines · sha 03e04d121ad25584 · toolrx system: save · seeded from the buil…\nfile systems/ui.js · 124 bytes · seq 30\n  systems/ui.js · 1930 bytes · 58 lines · sha f80cb1d540a33d81 · toolrx system: ui · seeded from the build sp…\nfile systems/weather.js · 134 bytes · seq 31\n  systems/weather.js · 1409 bytes · 39 lines · sha d2fac28c24af0a02 · toolrx system: weather · seeded from th…\nfile styles.css · 143 bytes · seq 37\n  styles.css · 3218 bytes · 4 lines · sha 383637202977092e · :root{--bg:#0b1020;--bg2:#0e1730;--panel:#121a2e…\nbuild spec · 249 bytes · seq 46\n  spec · 2D top-down · shooter · pixel · title screen that lists · features sound + a title screen that lists…\nfile app.js · 98 bytes · seq 49\n  app.js · 7645 bytes · 132 lines · sha c1c0558aaf1a6612 · var cv=document.getElementById('cv');\nfile content.js · 142 bytes · seq 58\n  content.js · 574 bytes · 26 lines · sha c902f8f9ba2f1ced · toolrx content v3 · seed 3813621885 · generated …\nlast plan · 3750 bytes · seq 60\n  33 steps · 33 done · 0 error · 0 pending\nfile ARCHITECTURE.md · 118 bytes · seq 62\n  ARCHITECTURE.md · 1437 bytes · 73 lines · sha 956f37be9b1a0cd6 · Architecture · Station Defense: Long Promp…\nfile README.md · 96 bytes · seq 63\n  README.md · 3105 bytes · 89 lines · sha 46fb701baeb44f0b · Station Defense: Long Prompt Demo\nfile engine2d.js · 91 bytes · seq 64\n  engine2d.js · 12572 bytes · 430 lines · sha eacbc87b4cfc540d · toolrx shared 2D engine.\nfile index.html · 79 bytes · seq 65\n  index.html · 3570 bytes · 41 lines · sha fecd686df2f44ee5 · <!doctype html>\ncontext notes (oldest first): session/rolling · 8 bytes · dropped",
       "project": "top-down-shooter",
-      "entries": 19,
-      "bytes": 6625,
-      "stored": 7942,
-      "sha": "3232e00f6c026221",
-      "evicted": 3
+      "entries": 23,
+      "bytes": 6619,
+      "stored": 8137,
+      "sha": "4142af62b5d909b2",
+      "evicted": 1,
+      "compacted": 1
     },
-    "afterContinue": "context snapshot · project: top-down-shooter\n19 entries · 6891 entry bytes · stored 8152 bytes · sha 9525671ee9552ea2\npending plan: 0 steps\nevicted or trimmed (oldest first):\n  file/systems/save.js · 128 bytes · evicted\n  file/systems/ui.js · 124 bytes · evicted\n  file/systems/weather.js · 134 bytes · evicted\nsaved as the previous context snapshot"
+    "afterContinue": "context snapshot · project: top-down-shooter\n23 entries · 6651 entry bytes · stored 8173 bytes · sha 2a2a36b22ce0ab88\npending plan: 0 steps\ncontext notes (oldest first):\n  session/rolling · 54 bytes · dropped\nsaved as the previous context snapshot"
   },
   "continuation": {
     "expand": {

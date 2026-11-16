@@ -89,6 +89,7 @@ CONTEXT_CORES = [
     ("continue from previous", {}),
     ("diff against previous context", {}),
     ("show the context diff", {}),
+    ("compact context", {}),
 ]
 
 PROJECT_CORES = [
@@ -316,7 +317,8 @@ def _all():
         + _literal("context", "context.snapshot", CONTEXT_CORES[2:3], IMPERATIVE, "context")
         + _literal("context", "context.clear", CONTEXT_CORES[3:4], IMPERATIVE, "context")
         + _literal("context", "context.continue", CONTEXT_CORES[4:5], IMPERATIVE, "context")
-        + _literal("context", "context.diff", CONTEXT_CORES[5:], IMPERATIVE, "context")
+        + _literal("context", "context.diff", CONTEXT_CORES[5:7], IMPERATIVE, "context")
+        + _literal("context", "context.compact", CONTEXT_CORES[7:], IMPERATIVE, "context")
         + _literal("projects", "project.list", PROJECT_CORES[:2], IMPERATIVE, "project")
         + _literal("projects", "project.files", PROJECT_CORES[2:3], IMPERATIVE, "project")
         + _literal("projects", "project.export", PROJECT_CORES[3:4], IMPERATIVE, "project")

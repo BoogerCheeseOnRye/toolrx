@@ -238,7 +238,7 @@
       </div>
       <div class="hero-stats" aria-label="Highlights">
         <span class="pill"><b>27</b> tools</span>
-        <span class="pill"><b>11,987</b> commands</span>
+        <span class="pill"><b>12,004</b> commands</span>
         <span class="pill"><b>1</b> browser tab</span>
         <span class="pill"><b>0</b> network calls by default</span>
       </div>
@@ -278,7 +278,7 @@
       <div class="flow" aria-label="Request pipeline">
         <span class="node">prompt</span><span class="arrow">→</span>
         <span class="node hot">normalize</span><span class="arrow">→</span>
-        <span class="node hot">11,987 exact commands</span><span class="arrow">→</span>
+        <span class="node hot">12,004 exact commands</span><span class="arrow">→</span>
         <span class="node">hashed n-gram router</span><span class="arrow">→</span>
         <span class="node">allow-listed tool</span><span class="arrow">→</span>
         <span class="node end">real result</span>
@@ -342,10 +342,10 @@
       <div class="kicker">by the numbers</div>
       <h2>Small enough to inspect. <span class="quiet">Useful enough to keep.</span></h2>
       <div class="stats">
-        <div class="stat"><div class="v">11,987</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
+        <div class="stat"><div class="v">12,004</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
         <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
         <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
-        <div class="stat"><div class="v">406</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope and the five-budget bar.</div></div>
+        <div class="stat"><div class="v">415</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope, the five-budget bar, and context compaction.</div></div>
         <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
         <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
       </div>
@@ -492,7 +492,7 @@
       <div class="kicker">roadmap</div>
       <h2>Ship the next useful thing.</h2>
       <div class="stack">
-        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, 11,987 patterns, chained steps, confidence and margin.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, 12,004 patterns, chained steps, confidence and margin.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Builds and composable edits.</b> 16 genre starters, 20 RPG packs, named-function patches, lossless undo.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Optional LLM adapter.</b> Off by default, strict JSON, pending diffs, budgets, cache, local key.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Longer input and verified plans (steps 26–27).</b> 2,000-character routes, 8,000-character / 40-step plans, preview before execution, stop at the first failed step — still no LLM.</p></div>
@@ -513,7 +513,8 @@
         <div class="row"><span class="tag done">done</span><p><b>Synonym and paraphrase tables (step 48).</b> One checked-in table expands into 57 exact routes and the router's training text; a fixed 32-prompt set shows the exact lane at 22/22 and a higher router median margin.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Everyday-language coverage (step 49).</b> A deduplicated 573-case family covers 541 everyday phrasings plus 32 paraphrase prompts; the checked-in report shows 563 exact, 10 router, zero fallback, and the Command Center renders the same numbers.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Visual budget bar (step 50).</b> Five live bars — characters, steps, context, project, and time — share one model with the plan preview and last-run report; warning and limit levels are announced in text, not just color.</p></div>
-        <div class="row"><span class="tag next">next</span><p><b>Compaction and deterministic thinking (steps 51–59).</b> Explicit context compaction and budget-aware plan rewriting, a first-class <code>think</code> program with bounded self-critique, a project journal, recovery, response styles, and an honest parity scorecard — still no model.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Context compaction (step 51).</b> <code>compact context</code> summarizes older steps, drops in one fixed order, keeps the plan and build spec, records every action, and is byte-identical on a second run.</p></div>
+        <div class="row"><span class="tag next">next</span><p><b>Deterministic thinking (steps 52–59).</b> Budget-aware plan rewriting, a first-class <code>think</code> program with bounded self-critique, a project journal, recovery, response styles, and an honest parity scorecard — still no model.</p></div>
         <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
       </div>
       <p class="note">Roadmap, not promises. Every item has to stay testable offline and honest about failure.</p>

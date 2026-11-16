@@ -879,6 +879,13 @@ for pat in ("diff against previous context", "diff against the previous context"
     add(f"context.diff.{len(COMMANDS)}", "context.diff",
         "^" + re.escape(pat) + "$", {}, pat, "context")
 
+for pat in ("compact context", "compact the context", "compact my context",
+            "compress context", "compress the context", "shrink context",
+            "shrink the context", "summarize context", "summarize the context",
+            "condense context", "condense the context"):
+    add(f"context.compact.{len(COMMANDS)}", "context.compact",
+        "^" + re.escape(pat) + "$", {}, pat, "context")
+
 for pat in ("clear context", "clear the context", "clear my context",
             "forget context", "reset context", "wipe the context"):
     add(f"context.clear.{len(COMMANDS)}", "context.clear", "^" + re.escape(pat) + "$",

@@ -18,6 +18,9 @@ Ranges (the human-facing contract):
   readFileBytes    256–1,000,000
   readTotalBytes   1,000–2,000,000
   contextBytes     256–65,536
+  contextKeep      1–16  session rows kept raw by compaction
+  contextAutoAt    50–100  automatic compaction trigger percent
+  contextSummary   1–20  summary lines per compacted entry
   undoDepth        1–64
   outputChars      1,000–100,000
   bundleBytes      65,536–8,388,608
@@ -48,6 +51,9 @@ _RANGES = {
     "readFileBytes": (256, 1_000_000),
     "readTotalBytes": (1_000, 2_000_000),
     "contextBytes": (256, 65_536),
+    "contextKeep": (1, 16),
+    "contextAutoAt": (50, 100),
+    "contextSummary": (1, 20),
     "undoDepth": (1, 64),
     "outputChars": (1_000, 100_000),
     "bundleBytes": (65_536, 8_388_608),

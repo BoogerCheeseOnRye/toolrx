@@ -2371,6 +2371,10 @@
       if (!ctx.contextDiff) throw new Error("context needs the browser workspace");
       return ctx.contextDiff();
     },
+    "context.compact": function (a, ctx) {
+      if (!ctx.contextCompact) throw new Error("context needs the browser workspace");
+      return ctx.contextCompact();
+    },
     "context.clear": function (a, ctx) {
       if (!ctx.contextClear) throw new Error("context needs the browser workspace");
       return ctx.contextClear(false);
@@ -2610,6 +2614,9 @@
       ["readFileBytes", "one file read"],
       ["readTotalBytes", "all reads combined"],
       ["contextBytes", "context store"],
+      ["contextKeep", "session rows kept raw"],
+      ["contextAutoAt", "auto-compaction trigger percent"],
+      ["contextSummary", "summary lines per entry"],
       ["undoDepth", "undo history"],
       ["outputChars", "one chat reply"],
       ["bundleBytes", "one export bundle"],
@@ -3208,6 +3215,7 @@
     runPrompt: runPrompt,
     chat: chatReply,
     summarize: summarizeText,
+    keyFacts: keyFactsOf,
     reply: function () { return replyLang(); },
     setReply: function (code) { return setReplyLang(code); },
     help: function () { return helpText("", null); },

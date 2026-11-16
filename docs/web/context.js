@@ -30,6 +30,13 @@
   })();
   var NOTE_MAX = 3;
   var OVERHEAD = 300;
+  var REPORT_VERSION = 1;
+  var KEEP = Math.max(1, Math.min(16,
+    parseInt(root.toolrxLimits.contextKeep, 10) || 4));
+  var AUTO_AT = Math.max(0.5, Math.min(1,
+    (parseInt(root.toolrxLimits.contextAutoAt, 10) || 85) / 100));
+  var SUMMARY = Math.max(1, Math.min(20,
+    parseInt(root.toolrxLimits.contextSummary, 10) || 6));
 
   function cap() {
     var n = LIMIT;
@@ -218,6 +225,13 @@
 
   function notesKey(slug) { return keyFor(slug) + ".notes"; }
 
+  function cleanWhy(why) {
+    if (why === "trimmed" || why === "summarized" || why === "dropped") {
+      return why;
+    }
+    return "evicted";
+  }
+
   function readNotes(slug) {
     try {
       var raw = root.localStorage && root.localStorage.getItem(notesKey(slug));
@@ -230,7 +244,7 @@
           kind: String(note.kind).slice(0, 40),
           key: String(note.key).slice(0, 80),
           bytes: Math.max(0, parseInt(note.bytes, 10) || 0),
-          why: note.why === "trimmed" ? "trimmed" : "evicted"
+          why: cleanWhy(note.why)
         };
       });
     } catch (e) {
@@ -252,7 +266,7 @@
         kind: entry.kind,
         key: entry.key,
         bytes: entry.bytes != null ? entry.bytes : byteLength(entry.text),
-        why: entry.why || "evicted"
+        why: cleanWhy(entry.why)
       };
     }));
     writeNotes(slug, notes);
@@ -262,16 +276,318 @@
     return byteLength(stable(state));
   }
 
-  function fit(state, limit) {
+  function isProtected(entry) {
+    return (entry.kind === "plan" && entry.key === "last")
+      || (entry.kind === "spec" && entry.key === "active");
+  }
+
+  function isCriticalFile(entry) {
+    if (entry.kind !== "file") return false;
+    return entry.key === "index.html" || entry.key === "app.js";
+  }
+
+  function isDroppable(entry) {
+    return !isProtected(entry) && !isCriticalFile(entry);
+  }
+
+  /* When `protect` is set, the active plan and build spec are skipped until
+   * they are the only entries left. Automatic compaction always protects
+   * them; an ordinary write keeps the older oldest-first behaviour. */
+  function fit(state, limit, protect) {
     var evicted = [];
     while (serializedBytes(state) > limit && state.entries.length) {
-      var oldest = 0;
-      for (var i = 1; i < state.entries.length; i++) {
-        if (state.entries[i].seq < state.entries[oldest].seq) oldest = i;
+      var oldest = -1;
+      for (var i = 0; i < state.entries.length; i++) {
+        if (protect && !isDroppable(state.entries[i])) continue;
+        if (oldest < 0 || state.entries[i].seq < state.entries[oldest].seq) {
+          oldest = i;
+        }
       }
+      if (oldest < 0) break;
       evicted.push(state.entries.splice(oldest, 1)[0]);
     }
     return evicted;
+  }
+
+  function findEntry(state, kind, key) {
+    for (var i = 0; i < state.entries.length; i++) {
+      if (state.entries[i].kind === kind && state.entries[i].key === key) {
+        return state.entries[i];
+      }
+    }
+    return null;
+  }
+
+  function snapshotCounts(state) {
+    return {
+      entries: state.entries.length,
+      bytes: entryBytes(state.entries),
+      stored: serializedBytes(state)
+    };
+  }
+
+  function actionFor(entry, why, afterText) {
+    var action = {
+      kind: entry.kind,
+      key: entry.key,
+      bytes: byteLength(entry.text),
+      why: cleanWhy(why)
+    };
+    if (afterText != null) action.to = byteLength(afterText);
+    return action;
+  }
+
+  function summaryFacts(text, opts) {
+    if (!opts || typeof opts.summarize !== "function") return [];
+    try {
+      var facts = opts.summarize(String(text == null ? "" : text));
+      if (!Array.isArray(facts)) return [];
+      return facts.map(function (line) {
+        return String(line).replace(/\s+/g, " ").trim();
+      }).filter(Boolean);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function summaryRows(rows, opts) {
+    var ok = 0, failed = 0;
+    rows.forEach(function (row) {
+      if (row.charAt(0) === "✓") ok++;
+      else if (row.charAt(0) === "✗") failed++;
+    });
+    var lines = ["~ " + rows.length + " older steps summarized · " + ok
+      + " ok · " + failed + " failed"];
+    summaryFacts(rows.join("\n"), opts).slice(0, Math.max(0, SUMMARY - 1))
+      .forEach(function (fact) {
+        var line = fact.length > 160 ? fact.slice(0, 157) + "…" : fact;
+        // Every summary line starts with "~", so the next compaction can tell
+        // it apart from a raw session row and stays idempotent.
+        lines.push("~ " + line);
+      });
+    return lines;
+  }
+
+  function compactSession(state, opts, actions) {
+    var session = findEntry(state, "session", "rolling");
+    if (!session) return;
+    var rows = session.text.split("\n").filter(Boolean);
+    var raw = rows.filter(function (row) { return row.charAt(0) !== "~"; });
+    if (raw.length <= KEEP) return;
+    var older = raw.slice(0, raw.length - KEEP);
+    var kept = raw.slice(raw.length - KEEP);
+    var text = summaryRows(older, opts).concat(kept).join("\n");
+    if (text === session.text || byteLength(text) >= byteLength(session.text)) {
+      return;
+    }
+    actions.push(actionFor(session, "summarized", text));
+    session.text = text;
+    state.seq += 1;
+    session.seq = state.seq;
+  }
+
+  function compactResult(state, opts, actions) {
+    var result = findEntry(state, "result", "last");
+    if (!result) return;
+    if (/(^|\n)~ compacted\b/.test(result.text)) return;
+    var head = [], body = [];
+    result.text.split("\n").forEach(function (line) {
+      if (/^(?:query|via):/.test(line) && head.length < 2) head.push(line);
+      else body.push(line);
+    });
+    var facts = summaryFacts(body.join("\n"), opts);
+    if (!facts.length) return;
+    var text = head.concat(["~ compacted · " + facts.length + " key facts"])
+      .concat(facts.slice(0, SUMMARY)).join("\n");
+    if (byteLength(text) >= byteLength(result.text)) return;
+    actions.push(actionFor(result, "summarized", text));
+    result.text = text;
+    state.seq += 1;
+    result.seq = state.seq;
+  }
+
+  function dropEntry(state, entry, actions) {
+    var at = state.entries.indexOf(entry);
+    if (at < 0) return;
+    actions.push(actionFor(entry, "dropped"));
+    state.entries.splice(at, 1);
+  }
+
+  /* The deterministic compaction policy, in order:
+   *   1. summarize older session rows, keeping the newest KEEP raw;
+   *   2. summarize the last result with the step-44 extractors;
+   *   3. drop session, result, then edit entries while the cap is exceeded;
+   *   4. drop non-critical file entries, oldest first;
+   *   5. trim the largest remaining entry instead of evicting the plan.
+   * The active plan and build spec are never dropped by compaction. */
+  function compactState(state, limit, opts, actions) {
+    opts = opts || {};
+    compactSession(state, opts, actions);
+    compactResult(state, opts, actions);
+    var order = ["session", "result", "edit"];
+    for (var o = 0; o < order.length; o++) {
+      while (serializedBytes(state) > limit) {
+        var victim = null;
+        for (var i = 0; i < state.entries.length; i++) {
+          if (state.entries[i].kind === order[o]) {
+            victim = state.entries[i];
+            break;
+          }
+        }
+        if (!victim) break;
+        dropEntry(state, victim, actions);
+      }
+    }
+    while (serializedBytes(state) > limit) {
+      var fileVictim = null;
+      for (var j = 0; j < state.entries.length; j++) {
+        var entry = state.entries[j];
+        if (entry.kind !== "file" || !isDroppable(entry)) continue;
+        if (!fileVictim || entry.seq < fileVictim.seq) fileVictim = entry;
+      }
+      if (!fileVictim) break;
+      dropEntry(state, fileVictim, actions);
+    }
+    // If even the non-critical files are gone, the cap wins over the two
+    // critical hashes, but never over the plan or spec.
+    while (serializedBytes(state) > limit) {
+      var criticalVictim = null;
+      for (var c = 0; c < state.entries.length; c++) {
+        var fileEntry = state.entries[c];
+        if (fileEntry.kind !== "file") continue;
+        if (!criticalVictim || fileEntry.seq < criticalVictim.seq) {
+          criticalVictim = fileEntry;
+        }
+      }
+      if (!criticalVictim) break;
+      dropEntry(state, criticalVictim, actions);
+    }
+    var marker = "\n… [trimmed]";
+    while (serializedBytes(state) > limit) {
+      var largest = null;
+      for (var k = 0; k < state.entries.length; k++) {
+        if (!largest
+            || byteLength(state.entries[k].text) > byteLength(largest.text)) {
+          largest = state.entries[k];
+        }
+      }
+      if (!largest) break;
+      var overflow = serializedBytes(state) - limit;
+      var textBytes = byteLength(largest.text);
+      var room = textBytes - overflow - byteLength(marker) - 8;
+      // Trim as far as the entry allows; if that still is not enough, the
+      // loop will move on to the next-largest entry.
+      if (room < 32) room = 32;
+      if (room >= textBytes) break;
+      var trimmed = trimToBytes(largest.text, room) + marker;
+      var oldBytes = serializedBytes(state);
+      actions.push(actionFor(largest, "trimmed", trimmed));
+      largest.text = trimmed;
+      state.seq += 1;
+      largest.seq = state.seq;
+      if (serializedBytes(state) >= oldBytes) break;
+    }
+    return actions;
+  }
+
+  function reportKey(slug) { return keyFor(slug) + ".compact"; }
+
+  function cleanAction(action) {
+    if (!action || typeof action.kind !== "string"
+        || typeof action.key !== "string") return null;
+    var out = {
+      kind: String(action.kind).slice(0, 40),
+      key: String(action.key).slice(0, 80),
+      bytes: Math.max(0, parseInt(action.bytes, 10) || 0),
+      why: cleanWhy(action.why)
+    };
+    if (action.to != null) {
+      out.to = Math.max(0, parseInt(action.to, 10) || 0);
+    }
+    return out;
+  }
+
+  function readReport(slug) {
+    try {
+      var raw = root.localStorage && root.localStorage.getItem(reportKey(slug));
+      var parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || parsed.version !== REPORT_VERSION
+          || !Array.isArray(parsed.actions)) return null;
+      return {
+        version: REPORT_VERSION,
+        project: String(parsed.project || ""),
+        cap: Math.max(0, parseInt(parsed.cap, 10) || 0),
+        before: parsed.before || null,
+        after: parsed.after || null,
+        actions: parsed.actions.map(cleanAction).filter(Boolean)
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeReport(slug, report) {
+    if (!report || !report.actions || !report.actions.length) return;
+    try {
+      root.localStorage.setItem(reportKey(slug), stable(report));
+    } catch (e) { /* ignore */ }
+  }
+
+  function removeReport(slug) {
+    try { root.localStorage.removeItem(reportKey(slug)); } catch (e) { /* ignore */ }
+  }
+
+  function compactText(project, limit, before, after, actions) {
+    var lines = [
+      "context compact · project: " + project,
+      "cap " + limit + " bytes · " + before.entries + " -> " + after.entries
+        + " entries · " + before.bytes + " -> " + after.bytes
+        + " entry bytes · stored " + before.stored + " -> " + after.stored
+        + " bytes"
+    ];
+    if (!actions.length) {
+      lines.push("nothing to compact · already at its compacted form");
+      return lines.join("\n");
+    }
+    lines.push("compacted (in policy order):");
+    actions.forEach(function (action) {
+      var tail = action.to == null ? "" : " -> " + action.to;
+      lines.push("  " + action.kind + "/" + action.key + " · " + action.bytes
+        + tail + " bytes · " + action.why);
+    });
+    return lines.join("\n");
+  }
+
+  /* Step 51: explicit compaction. It is idempotent: a second run has no
+   * actions and leaves both the stored state and the report untouched. */
+  function compact(slug, opts) {
+    opts = opts || {};
+    var state = read(slug);
+    var limit = cap();
+    var before = snapshotCounts(state);
+    var actions = [];
+    compactState(state, limit, opts, actions);
+    var after = snapshotCounts(state);
+    if (actions.length) {
+      write(slug, state);
+      writeReport(slug, {
+        version: REPORT_VERSION,
+        project: state.project,
+        cap: limit,
+        before: before,
+        after: after,
+        actions: actions
+      });
+    }
+    return {
+      ok: true,
+      project: state.project,
+      cap: limit,
+      before: before,
+      after: after,
+      actions: actions,
+      text: compactText(state.project, limit, before, after, actions)
+    };
   }
 
   /* setMany accepts [{kind,key,text}] and applies them in order. When
@@ -286,6 +602,9 @@
     var evicted = [];
     var notes = [];
     var trimmed = [];
+    var autoActions = [];
+    var autoRan = false;
+    var autoBefore = null;
     var wanted = {};
 
     items.forEach(function (item) {
@@ -326,13 +645,32 @@
       state.entries.push({ kind: kind, key: key, text: text, seq: state.seq });
     });
 
-    evicted = fit(state, limit);
+    // Step 51: compact before the byte cap, not after it. The trigger is a
+    // declared percentage of the cap; once it fires, the plan and spec are
+    // protected from the following fit.
+    if (serializedBytes(state) > Math.floor(limit * AUTO_AT)) {
+      autoBefore = snapshotCounts(state);
+      compactState(state, limit, opts, autoActions);
+      autoRan = true;
+    }
+    evicted = fit(state, limit, autoRan);
+    if (autoRan) {
+      evicted.forEach(function (entry) {
+        autoActions.push({
+          kind: entry.kind,
+          key: entry.key,
+          bytes: byteLength(entry.text),
+          why: "evicted"
+        });
+      });
+    }
     var ok = (items.length === 0 && state.entries.length === 0)
       ? (function () {
           try { root.localStorage.removeItem(keyFor(slug)); } catch (e) { /* ignore */ }
           writeNotes(slug, []);
           removeSnapshot(slug);
           removePlanNote(slug);
+          removeReport(slug);
           dropScope(slug);
           return true;
         })()
@@ -341,6 +679,16 @@
       return { kind: entry.kind, key: entry.key, bytes: byteLength(entry.text), why: "evicted" };
     }));
     addNotes(slug, notes);
+    if (autoActions.length) {
+      writeReport(slug, {
+        version: REPORT_VERSION,
+        project: state.project,
+        cap: limit,
+        before: autoBefore,
+        after: snapshotCounts(state),
+        actions: autoActions
+      });
+    }
     var planNote = null;
     notes.forEach(function (note) {
       if (note.kind === "plan" && note.key === "last") planNote = note;
@@ -363,8 +711,8 @@
     };
   }
 
-  function set(slug, kind, key, text) {
-    return setMany(slug, [{ kind: kind, key: key, text: text }]);
+  function set(slug, kind, key, text, opts) {
+    return setMany(slug, [{ kind: kind, key: key, text: text }], opts);
   }
 
   function get(slug, kind, key) {
@@ -397,6 +745,7 @@
     try { root.localStorage.removeItem(notesKey(slug)); } catch (e) { /* ignore */ }
     removeSnapshot(slug);
     removePlanNote(slug);
+    removeReport(slug);
     dropScope(slug);
     return true;
   }
@@ -410,6 +759,7 @@
         root.localStorage.removeItem(notesKey(slug));
         removeSnapshot(slug);
         removePlanNote(slug);
+        removeReport(slug);
         count++;
       } catch (e) { /* ignore */ }
     });
@@ -590,10 +940,9 @@
       snap.pending.forEach(function (step) { lines.push("  · " + step); });
     }
     if (snap.notes.length) {
-      lines.push("evicted or trimmed (oldest first):");
+      lines.push("context notes (oldest first):");
       snap.notes.forEach(function (note) {
-        lines.push("  " + note.kind + "/" + note.key + " · " + note.bytes
-          + " bytes · " + note.why);
+        lines.push("  " + noteLine(note));
       });
     }
     if (saved) lines.push("saved as the previous context snapshot");
@@ -684,18 +1033,21 @@
 
     var notes = notesDiff(prior.notes || [], current.notes || []);
     if (notes.added.length || notes.removed.length) {
-      lines.push("evicted or trimmed: " + notes.added.length + " added · "
+      lines.push("context notes: " + notes.added.length + " added · "
         + notes.removed.length + " removed");
       notes.added.forEach(function (note) {
-        lines.push("  + " + note.kind + "/" + note.key + " · " + note.bytes
-          + " bytes · " + note.why);
+        lines.push("  + " + noteLine(note));
       });
       notes.removed.forEach(function (note) {
-        lines.push("  - " + note.kind + "/" + note.key + " · " + note.bytes
-          + " bytes · " + note.why);
+        lines.push("  - " + noteLine(note));
       });
     }
     return { ok: true, snapshot: prior, current: current, text: lines.join("\n") };
+  }
+
+  function noteId(note) {
+    return note.kind + "\u0000" + note.key + "\u0000" + note.why
+      + "\u0000" + note.bytes + "\u0000" + (note.to == null ? "" : note.to);
   }
 
   function notes(slug) {
@@ -706,7 +1058,24 @@
     })) {
       list.push(marker);
     }
+    // The compaction report keeps every action from the last compaction, so
+    // the small eviction ring cannot hide what was dropped or summarized.
+    var report = readReport(slug);
+    if (report) {
+      report.actions.forEach(function (action) {
+        var id = noteId(action);
+        if (!list.some(function (note) { return noteId(note) === id; })) {
+          list.push(action);
+        }
+      });
+    }
     return list;
+  }
+
+  function noteLine(note) {
+    var tail = note.to == null ? "" : " -> " + note.to;
+    return note.kind + "/" + note.key + " · " + note.bytes + tail
+      + " bytes · " + note.why;
   }
 
   function label(entry) {
@@ -758,7 +1127,7 @@
   function show(slug) {
     var state = read(slug);
     var stored = raw(slug);
-    var notes = readNotes(slug);
+    var noteList = notes(slug);
     var entries = state.entries.slice().sort(function (a, b) { return a.seq - b.seq; });
     var bytes = entryBytes(entries);
     var lines = [];
@@ -774,10 +1143,8 @@
         + entry.seq);
       lines.push("  " + describe(entry));
     });
-    if (notes.length) {
-      lines.push("evicted (oldest first): " + notes.map(function (note) {
-        return note.kind + "/" + note.key + " · " + note.bytes + " bytes · " + note.why;
-      }).join(" · "));
+    if (noteList.length) {
+      lines.push("context notes (oldest first): " + noteList.map(noteLine).join(" · "));
     }
     return {
       text: lines.join("\n"),
@@ -786,7 +1153,10 @@
       bytes: bytes,
       stored: byteLength(stored),
       sha: fingerprint(stored),
-      evicted: notes.length
+      evicted: noteList.length,
+      compacted: noteList.filter(function (note) {
+        return note.why === "summarized" || note.why === "dropped";
+      }).length
     };
   }
 
@@ -812,6 +1182,7 @@
     snapshot: snapshot,
     diff: diff,
     notes: notes,
+    compact: compact,
     empty: empty
   };
 })(typeof self !== "undefined" ? self : this);
