@@ -59,7 +59,7 @@ const entries = () => ([
   { kind: 'file', key: 'styles.css',
     text: 'styles.css · 3116 bytes · 3 lines · sha fedcba9876543210 · :root{--bg:#0b1020}' },
   { kind: 'file', key: 'README.md',
-    text: 'README.md · 1424 bytes · 57 lines · sha 0011223344556677 · Top-down shooter' },
+    text: 'README.md · 1424 bytes · 57 lines · sha 9f3a1c7e5b2d4806 · Top-down shooter' },
   { kind: 'edit', key: 'last', text: '{"labels":["boss"],"ids":["boss"]}' },
   { kind: 'result', key: 'last',
     text: 'query: add a boss\nvia: edit.apply\n'

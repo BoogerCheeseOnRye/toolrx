@@ -8,6 +8,9 @@ Ranges (the human-facing contract):
   singleChars      1–100,000   one routed request
   planChars        2,000–100,000  one plan
   planSteps        2–200
+  planBuildBytes   4,096–1,048,576  estimated bytes one build writes
+  planEditBytes    256–65,536  estimated bytes one edit writes
+  planVariantBytes 1,024–32,768  stored compacted-plan variant
   blockBytes       256–64,000
   stepMs           250–30,000
   planMs           250–600,000
@@ -41,6 +44,9 @@ _RANGES = {
     "singleChars": (1, 100_000),
     "planChars": (2_000, 100_000),
     "planSteps": (2, 200),
+    "planBuildBytes": (4_096, 1_048_576),
+    "planEditBytes": (256, 65_536),
+    "planVariantBytes": (1_024, 32_768),
     "blockBytes": (256, 64_000),
     "stepMs": (250, 30_000),
     "planMs": (250, 600_000),

@@ -448,12 +448,30 @@ Node for idempotence, plan/spec survival, cap enforcement, tiny caps, and
 byte-identical replay, while `tests/test_skills_js.py` runs the same path through
 chat.
 
+Step 52 makes an over-budget plan actionable instead of only refused.
+`toolrx/web/planrewrite.js` is one pure rewrite: it keeps the highest-value
+steps (writes first, then exact commands, then router steps), restores their
+original order, and drops whole steps until the character, step, time, context,
+and project budgets all fit. Characters, steps, and time are measured directly;
+context is an upper bound built from the stored plan entry and the 12-row
+session slice; project is the explicit `planBuildBytes` (64 KB) or
+`planEditBytes` (4 KB) estimate declared in `toolrx/limits.json`. The preview
+returns one named variant (`compact-steps-time`, `compact-project`, …) with
+before and after bars and a per-step reason for every drop. The variant is
+stored beside conversation memory under `planVariantBytes` (9 KB), not inside
+the 4 KB short-turn cap. `yes` runs exactly the listed steps and re-checks them
+before writing; `no` clears it and leaves the project untouched; any other
+request is the edit path. A budget that is already over its cap is refused by
+name instead of pretending a subset can fix it. `tests/test_plan_rewrite.py`
+covers each budget kind, the stuck refusal, exact acceptance, refusal, and the
+real chat path.
+
 The locked next batch (steps 51–59) keeps the same rules. The envelope gets
 explicit compaction and budget-aware plan rewriting. Finally `think`/reason
 becomes a deterministic program with bounded self-critique, stored traces, a
 per-project journal, mid-plan recovery, response styles that never change tool
-choice, and an honest LLM-parity scorecard. Steps 46–51 are shipped; steps
-52–59 are not yet. The acceptance criteria live in
+choice, and an honest LLM-parity scorecard. Steps 46–52 are shipped; steps
+53–59 are not yet. The acceptance criteria live in
 `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,

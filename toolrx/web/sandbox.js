@@ -2369,6 +2369,13 @@
         planMs: planTimeout(),
         chars: planLimits().chars,
         steps: planLimits().steps,
+        contextBytes: contextStoredBytes() || 0,
+        contextMax: LIMITS.contextBytes,
+        projectBytes: (function () {
+          const p = activeProject();
+          return p ? projectBytes(p) : 0;
+        })(),
+        projectMax: projectBudget(),
       },
       onStep: function (done, total, elapsed) {
         const p = activeProject();

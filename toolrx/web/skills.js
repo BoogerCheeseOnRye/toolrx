@@ -1174,6 +1174,11 @@
     } else if (state.pending.kind === "action") {
       lines.push("pending: " + state.pending.text
         + " · say yes to run it once or no to cancel");
+    } else if (state.pending.kind === "variant") {
+      const variant = readVariant(ctx);
+      lines.push("pending: compacted plan " + state.pending.text
+        + (variant ? " · " + variant.steps.length + " steps" : " · no longer stored")
+        + " · say yes to run it, no to cancel, or send an edited request");
     } else {
       lines.push("pending: needs " + state.pending.need);
     }
@@ -1244,6 +1249,21 @@
           text: "Nothing has been applied yet. I still need " + state.pending.need,
           via: "conversation.confirm" }, keepPending: true };
       }
+      if (state.pending.kind === "variant") {
+        const variant = readVariant(ctx);
+        state.pending = null;
+        conversationSave(ctx, state);
+        clearVariant(ctx);
+        if (!variant) {
+          return { reply: {
+            text: "The compacted plan is no longer stored. Send the request again and I will rebuild the variant.",
+            via: "conversation.confirm" } };
+        }
+        return { confirm: { kind: "variant", text: variant.name,
+                            steps: variant.steps.map(function (step) {
+                              return step.text;
+                            }), variant: variant } };
+      }
       if (state.pending.kind !== "action" || !state.pending.text) {
         return { reply: {
           text: "The pending action is not runnable. Tell me the action again.",
@@ -1265,6 +1285,7 @@
       const pending = state.pending;
       state.pending = null;
       conversationSave(ctx, state);
+      clearVariant(ctx);
       return { reply: {
         text: 'Cancelled "' + (pending.text || "the pending action")
           + '" — nothing was run.',
@@ -2604,6 +2625,9 @@
       ["singleChars", "one routed request"],
       ["planChars", "one plan"],
       ["planSteps", "steps per plan"],
+      ["planBuildBytes", "estimated build output"],
+      ["planEditBytes", "estimated edit output"],
+      ["planVariantBytes", "stored compacted plan"],
       ["blockBytes", "verbatim block"],
       ["stepMs", "per-step wall clock"],
       ["planMs", "whole-plan wall clock"],
@@ -2912,6 +2936,7 @@
     const total = steps.length;
     return {
       steps: steps.slice(0, LIMITS.steps),
+      all: steps,
       total: total,
       truncated: total > LIMITS.steps,
       overLimit: total > LIMITS.steps,
@@ -2961,8 +2986,110 @@
     };
   }
 
+  /* Step 52: turn an over-budget plan into one named compacted variant. The
+   * rewrite module owns the selection; this function only supplies the five
+   * maxima and the two explicit project estimates from limits.json. */
+  function rewritePlan(text, info, budget, opts) {
+    const R = root.toolrxPlanRewrite;
+    if (!R) return null;
+    const o = opts || {};
+    return R.rewrite({
+      text: text,
+      steps: (info.all || info.steps || []).map(function (step) {
+        const hit = match(step);
+        return { text: step, via: hit ? hit.op : "router", exact: !!hit };
+      }),
+      stepMs: budget.stepMs,
+      planMs: budget.planMs,
+      maxChars: LIMITS.plan,
+      maxSteps: LIMITS.steps,
+      contextBytes: numberLimit(o.contextBytes, 0),
+      contextMax: numberLimit(o.contextMax, LIMITS.contextBytes),
+      projectBytes: numberLimit(o.projectBytes, 0),
+      projectMax: numberLimit(o.projectMax, LIMITS.projectBytes),
+      buildBytes: LIMITS_RAW.planBuildBytes,
+      editBytes: LIMITS_RAW.planEditBytes,
+    });
+  }
+
+  function barLine(bars) {
+    const B = root.toolrxBudget;
+    return bars.map(function (bar) {
+      const mark = bar.estimated ? "est. " : "";
+      const text = B ? B.format(bar.used, bar.unit) + " / "
+        + B.format(bar.max, bar.unit) : bar.used + " / " + bar.max;
+      return bar.label + " " + mark + text;
+    }).join(" · ");
+  }
+
+  function variantText(v) {
+    const lines = [
+      "plan variant · " + v.name + " (" + v.over.join(" + ") + " over budget)",
+      "before: " + barLine(v.beforeBars),
+      "after:  " + barLine(v.afterBars),
+      "kept " + v.steps.length + " of " + (v.steps.length + v.dropped.length)
+        + " steps in their original order"
+    ];
+    if (v.dropped.length) {
+      lines.push("dropped (lower value under the named budget):");
+      v.dropped.slice(0, 8).forEach(function (drop) {
+        lines.push("  · " + String(drop.text).slice(0, 120) + " · " + drop.why);
+      });
+      if (v.dropped.length > 8) {
+        lines.push("  · … " + (v.dropped.length - 8) + " more");
+      }
+    }
+    lines.push('say yes to run exactly these steps, no to keep the project '
+      + 'untouched, or send an edited request');
+    return lines.join("\n");
+  }
+
+  /* The variant lives beside conversation memory, not inside it: a full plan
+   * can be larger than the short-turn cap. `planVariantBytes` bounds it. */
+  const VARIANT_KEY = "planVariant";
+  const VARIANT_VERSION = 1;
+
+  function readVariant(ctx) {
+    const mem = memoryStore(ctx);
+    const raw = mem ? mem.get(VARIANT_KEY) : null;
+    if (!raw || typeof raw !== "object" || raw.version !== VARIANT_VERSION
+        || !Array.isArray(raw.steps)) return null;
+    return raw;
+  }
+
+  function stageVariant(ctx, variant, original) {
+    const mem = memoryStore(ctx);
+    if (!mem) return null;
+    const R = root.toolrxPlanRewrite;
+    const record = R ? R.variantRecord(variant, original, {
+      maxText: LIMITS.single,
+      maxBytes: LIMITS_RAW.planVariantBytes,
+    }) : null;
+    if (!record) return null;
+    mem.set(VARIANT_KEY, record);
+    return record;
+  }
+
+  function clearVariant(ctx) {
+    const mem = memoryStore(ctx);
+    if (mem) mem.set(VARIANT_KEY, null);
+  }
+
+  function stagePendingVariant(ctx, variant, original) {
+    const state = conversationState(ctx);
+    state.pending = {
+      kind: "variant",
+      text: String(variant.name || "compact"),
+      over: variant.over.slice(),
+      n: (state.turnsSeen || 0) + 1,
+    };
+    conversationSave(ctx, state);
+  }
+
   /* Preview a plan without executing anything. Exact command matches are
-   * labelled with their operation; the rest will use the hashed router. */
+   * labelled with their operation; the rest will use the hashed router. When a
+   * budget would be exceeded, the preview carries one deterministic compacted
+   * variant instead of only a refusal (step 52). */
   function planPreview(q, opts) {
     const text = String(q == null ? "" : q);
     const block = blockCapture(text);
@@ -2971,32 +3098,32 @@
       if (!block.ok) {
         return { blocked: true, reason: block.reason, steps: [], total: 0,
                  truncated: false, overLimit: false, plan: false, block: true,
-                 budget: budget };
+                 budget: budget, variant: null };
       }
       return { blocked: false, reason: null, total: 1, truncated: false,
                overLimit: false, plan: false, block: true, budget: budget,
+               variant: null,
                steps: [{ text: block.header, via: "block.write", exact: true }] };
-    }
-    if (text.length > LIMITS.plan) {
-      return { blocked: true, reason: "query too long (" + text.length + " > "
-        + LIMITS.plan + "); split it into fewer steps", steps: [], total: 0,
-        truncated: false, overLimit: false, plan: false,
-        budget: previewBudget(text.length, 0, opts) };
     }
     const info = splitPromptInfo(text);
     const budget = previewBudget(text.length, info.total, opts);
-    if (info.overLimit) {
-      return { blocked: true, reason: "plan too long (" + info.total + " > "
-        + LIMITS.steps + " steps)", steps: [], total: info.total,
-        truncated: true, overLimit: true, plan: true, budget: budget };
-    }
-    if (budget.steps > 0 && !budget.timeFits) {
-      return { blocked: true, reason: "plan wall budget " + budget.planMs
-        + " ms is below the worst case (" + budget.steps + " steps × "
-        + budget.stepMs + " ms = " + budget.worstCaseMs
-        + " ms); raise toolrx.plan.timeout or split the plan",
-        steps: [], total: info.total, truncated: false, overLimit: false,
-        plan: info.plan, budget: budget };
+    const rewrite = rewritePlan(text, info, budget, opts);
+    const over = rewrite ? rewrite.over : [];
+    if (over.length) {
+      const reason = over.indexOf("chars") >= 0
+        ? "query too long (" + text.length + " > " + LIMITS.plan
+          + "); split it into fewer steps"
+        : over.indexOf("steps") >= 0
+          ? "plan too long (" + info.total + " > " + LIMITS.steps + " steps)"
+          : over.indexOf("time") >= 0
+            ? "plan wall budget " + budget.planMs
+              + " ms is below the worst case (" + budget.steps + " steps × "
+              + budget.stepMs + " ms = " + budget.worstCaseMs
+              + " ms); raise toolrx.plan.timeout or split the plan"
+            : "plan would exceed the " + over.join(" and ") + " budget";
+      return { blocked: true, reason: reason, steps: [], total: info.total,
+               truncated: info.overLimit, overLimit: info.overLimit,
+               plan: info.plan, budget: budget, variant: rewrite };
     }
     const steps = info.steps.map(function (step) {
       const hit = match(step);
@@ -3004,7 +3131,7 @@
     });
     return { blocked: false, reason: null, steps: steps, total: info.total,
              truncated: false, overLimit: false, plan: steps.length > 1,
-             budget: budget };
+             budget: budget, variant: rewrite };
   }
 
   async function exec(skill, ctx) {
@@ -3069,13 +3196,20 @@
           // conversation interception and recording off. The confirmation
           // itself is the turn that gets recorded, so a second "yes" finds
           // nothing pending and cannot re-run the build.
-          const inner = await runPrompt(conv.confirm.text,
+          const variant = conv.confirm.kind === "variant"
+            ? conv.confirm : null;
+          const inner = await runPrompt(variant
+            ? variant.steps.join("\n") : conv.confirm.text,
             Object.assign({}, base, {
               conversationSkip: true,
               conversationRecord: false,
+              forcedSteps: variant ? variant.steps : null,
+              forcedVariant: variant,
             }));
           inner.forEach(function (r) { r.confirmed = conv.confirm.text; });
-          return finish(inner, false, conv.confirm.text);
+          return finish(inner, false,
+            variant ? (variant.variant.original || variant.text)
+              : conv.confirm.text);
         }
         if (conv.rewrite) {
           query = conv.rewrite;
@@ -3092,14 +3226,67 @@
     const limits = base.limits || {};
     const stepMs = numberLimit(limits.stepMs, LIMITS.stepMs);
     const planMs = numberLimit(limits.planMs, LIMITS.planMs);
-    const preview = planPreview(query, { stepMs: stepMs, planMs: planMs });
-    if (preview.blocked) {
-      const via = /^plan wall budget/.test(String(preview.reason || ""))
-        ? "budget.plan" : "limit";
-      return finish([{ step: String(query), text: preview.reason, error: true,
-                       via: via, planLength: 1 }]);
+    const budgetOpts = {
+      stepMs: stepMs, planMs: planMs,
+      contextBytes: limits.contextBytes,
+      contextMax: limits.contextMax,
+      projectBytes: limits.projectBytes,
+      projectMax: limits.projectMax,
+    };
+    let steps;
+    if (Array.isArray(base.forcedSteps) && base.forcedSteps.length) {
+      // An accepted variant runs exactly the listed steps; nothing is
+      // re-split. If the project or context changed since it was staged, the
+      // variant is re-checked before anything writes.
+      steps = base.forcedSteps.map(function (step) { return String(step); });
+      const forcedBudget = previewBudget(steps.join("\n").length, steps.length,
+                                         budgetOpts);
+      const forcedInfo = { all: steps, steps: steps, total: steps.length,
+                           plan: true, overLimit: steps.length > LIMITS.steps };
+      const forcedRewrite = rewritePlan(steps.join("\n"), forcedInfo,
+                                        forcedBudget, limits);
+      if (forcedRewrite && forcedRewrite.over.length) {
+        return finish([{
+          step: original, error: true, via: "plan.variant", planLength: 1,
+          text: "the compacted plan no longer fits ("
+            + forcedRewrite.over.join(" and ") + "); send the request again "
+            + "to rebuild the variant — nothing was run",
+        }]);
+      }
+    } else {
+      const preview = planPreview(query, budgetOpts);
+      if (preview.blocked) {
+        const v = preview.variant;
+        if (v && v.fits) {
+          const staged = stageVariant(base, v, original);
+          if (staged) {
+            stagePendingVariant(base, v, original);
+            return finish([{
+              step: String(query), text: variantText(v), via: "plan.variant",
+              planLength: 1,
+              variant: { name: v.name, steps: v.steps.length,
+                         dropped: v.dropped.length, over: v.over },
+            }], true);
+          }
+          return finish([{
+            step: String(query), error: true, via: "plan.variant",
+            planLength: 1,
+            text: "the compacted plan is too large to stage ("
+              + v.steps.length + " steps > " + LIMITS_RAW.planVariantBytes
+              + " bytes); nothing was run — split the request into smaller plans",
+          }]);
+        }
+        const via = v ? "plan.variant"
+          : /^plan wall budget/.test(String(preview.reason || ""))
+            ? "budget.plan" : "limit";
+        const text = v && !v.fits
+          ? preview.reason + "\n" + v.reason
+          : preview.reason;
+        return finish([{ step: String(query), text: text, error: true,
+                         via: via, planLength: 1 }]);
+      }
+      steps = preview.steps.map(function (s) { return s.text; });
     }
-    const steps = preview.steps.map(function (s) { return s.text; });
     const results = [];
     let prev = "";
     let prevResult = null;

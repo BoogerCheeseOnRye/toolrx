@@ -35,6 +35,7 @@ global.dispatchEvent = () => {};
 global.toolrxRouter = { load: () => ({}), route: () => ({ tool: 'none', args: {}, confidence: 0 }) };
 const WEB = require('path').dirname(process.argv[4]);
 eval(fs.readFileSync(require('path').join(WEB, 'limits.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'planrewrite.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 eval(fs.readFileSync(process.argv[3], 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.js'), 'utf8'));
@@ -116,7 +117,7 @@ eval(fs.readFileSync(process.argv[4], 'utf8'));
     return res.map(r => ({
       step: r.step, text: r.text, error: !!r.error, via: r.via || '',
       tool: r.tool || '', args: r.args || null, source: r.source || '',
-      ms: r.ms,
+      variant: r.variant || null, ms: r.ms,
     }));
   };
   const out = {};
@@ -2222,14 +2223,21 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertFalse(preview["single"]["plan"])
         self.assertTrue(preview["tooLong"]["blocked"])
         self.assertIn("8000", preview["tooLong"]["reason"])
+        self.assertTrue(preview["tooLong"]["variant"]["fits"])
         self.assertTrue(preview["tooMany"]["blocked"])
         self.assertIn("40", preview["tooMany"]["reason"])
+        self.assertTrue(preview["tooMany"]["variant"]["fits"])
+        self.assertEqual(len(preview["tooMany"]["variant"]["steps"]), 40)
 
-    def test_over_cap_prompt_returns_one_limit_error(self):
+    def test_over_cap_prompt_returns_one_named_variant(self):
         self.assertEqual(len(self.out["limitRun"]), 1)
-        self.assertEqual(self.out["limitRun"][0]["via"], "limit")
-        self.assertTrue(self.out["limitRun"][0]["error"])
-        self.assertIn("8000", self.out["limitRun"][0]["text"])
+        run = self.out["limitRun"][0]
+        self.assertEqual(run["via"], "plan.variant")
+        self.assertFalse(run["error"])
+        self.assertIn("plan variant", run["text"])
+        self.assertIn("say yes to run exactly these steps", run["text"])
+        self.assertTrue(run["variant"]["over"])
+        self.assertLessEqual(run["variant"]["steps"], 40)
 
     def test_plan_stops_at_the_first_failed_step(self):
         steps = self.out["planStop"]
@@ -3138,7 +3146,10 @@ class SkillsBridgeTest(unittest.TestCase):
         self.assertIn("budget", r["text"])
         self.assertTrue(r["kept"], "a refused build must not touch the previous project")
         self.assertEqual(r["slug"], "platformer")
-        self.assertEqual(r["last"], "error")
+        self.assertIn(r["via"], ("plan.variant", "limit"))
+        # Step 52 refuses before the build starts, so the previous build's
+        # progress phase stays the last one; no new build event is emitted.
+        self.assertEqual(r["last"], "done")
 
     def test_cancelled_build_keeps_the_previous_project(self):
         c = self.out["budgets"]["cancel"]

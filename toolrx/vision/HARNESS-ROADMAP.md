@@ -1211,7 +1211,7 @@ Node for idempotence, plan/spec survival, cap enforcement, tiny caps, and
 byte-identical replay, while `tests/test_skills_js.py` runs the same path
 through chat.
 
-### 52. Budget-aware plan rewriting — planned
+### 52. Budget-aware plan rewriting — done
 
 When a long request would exceed the character, step, time, context, or
 project budget, produce a deterministic compacted plan variant: keep the
@@ -1221,6 +1221,22 @@ bars. The user can accept, edit, or refuse; nothing is truncated silently.
 **Done when** an over-budget plan yields a named variant with exact before and
 after numbers, accepting it runs only the listed steps, refusing leaves the
 project untouched, and a test covers each budget kind.
+
+Landed with one pure module, `toolrx/web/planrewrite.js`. It scores each step
+(writes 3, exact commands 2, router 1), keeps the highest-value steps that fit,
+restores original order, and reports every dropped step with the budget that
+forced it out. Characters, steps, and time are measured directly; context is an
+upper bound from the stored plan entry and the 12-row session slice; project
+uses the explicit `planBuildBytes` (65,536) and `planEditBytes` (4,096)
+estimates in `limits.json`. The preview returns one named variant
+(`compact-steps-time`, `compact-project`, …) with before/after bars. The variant
+is stored beside conversation memory under `planVariantBytes` (9,216), not
+inside the 4 KB short-turn cap; `yes` runs exactly the listed steps and
+re-checks them, `no` clears it without touching the project, and any other
+request is the edit path. A budget already over its cap is refused by name.
+`tests/test_plan_rewrite.py` covers each budget kind, the stuck refusal, exact
+acceptance, refusal, and the real chat path; `tests/test_skills_js.py` and
+`tests/test_budget_bar.py` keep the existing preview and bar contracts.
 
 ### 53. `think` and `reason` as deterministic skills — planned
 
@@ -1321,9 +1337,9 @@ claims.
    44 (extractors) → 45 (demo) — done
 7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
 8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
-   50 (budget bar) → 51 (compaction) — done; 52 (plan rewrite) → 53 (think) →
-   54 (critique) → 55 (traces) → 56 (journal) → 57 (recovery) →
-   58 (style) → 59 (scorecard) — planned
+   50 (budget bar) → 51 (compaction) → 52 (plan rewrite) — done;
+   53 (think) → 54 (critique) → 55 (traces) → 56 (journal) →
+   57 (recovery) → 58 (style) → 59 (scorecard) — planned
 
 Steps 36–37 come first because they define the budget and the gate every later
 step measures against. Step 38 lands immediately after so no new limit is added
@@ -1331,10 +1347,9 @@ to two places. Steps 39–44 may be reordered within the batch if a measurement
 justifies it; step 45 is last.
 
 Steps 46–49 come first because everyday language must be measured before the
-budget UI claims to help it. Steps 50–52 land as one envelope batch; 50 and 51
-are done. Steps 53–55 are the thinking program. Steps 56–59 close the
-remaining parity gaps; they may be reordered within the batch when a
-measurement justifies it.
+budget UI claims to help it. Steps 50–52 landed as one envelope batch. Steps
+53–55 are the thinking program. Steps 56–59 close the remaining parity gaps;
+they may be reordered within the batch when a measurement justifies it.
 
 ## Open questions
 
@@ -1353,7 +1368,7 @@ measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–51 are complete. 14 remains deferred. Steps 52–59 are
+- Steps 11–13, 15–52 are complete. 14 remains deferred. Steps 53–59 are
   planned; none of that subset is started.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
