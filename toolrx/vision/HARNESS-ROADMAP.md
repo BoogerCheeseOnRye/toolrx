@@ -1252,6 +1252,37 @@ produces byte-identical output, every claim in the output is traceable to the
 input or a checked-in rule, empty input returns a clear message, and no
 thinking route touches the network.
 
+Plan:
+
+* One checked-in table, `toolrx/thinking.json`, expanded by the step-48
+  template machinery into exact routes. Four intents — `decompose`, `reason`,
+  `tradeoff`, `critique` — map to `think.decompose`, `think.reason`,
+  `think.tradeoff`, and `think.critique`. The same table exports
+  `tests/fixtures/thinking.json`, so routes and fixture cannot drift.
+* One pure module, `toolrx/web/thinking.js`. Its rules are an ordered,
+  checked-in table with stable ids (`r.steps-cap`, `r.duplicate`, …). Every
+  output line names the rule id that produced it, or quotes the input it came
+  from. No DOM, no fetch, no caps of its own.
+* The handler resolves the topic in this order: an existing file (bounded by
+  `readFileBytes`), the previous result, the active plan, the context, then a
+  literal. An empty topic returns one clear message naming those four sources.
+* Decomposition uses the planner's own `splitPromptInfo`, so the goals are the
+  steps a plan would actually run. Each goal carries its real exact route when
+  one exists, otherwise `router`.
+* Three explicit limits: `thinkChars` (4,000), `thinkGoals` (8), `thinkRules`
+  (12). An over-long input is analyzed up to the cap and the output says so;
+  goals beyond the cap are counted but not listed; critique evaluates at most
+  `thinkRules` rules and names any it skipped.
+* A trade-off verdict is emitted only when a keyword rule matches an option.
+  Unmatched criteria are listed as unmatched, and when no rule matches at all
+  the recommendation is "none" with the reason — no invented preference.
+* Critique checks the active plan against a fixed rule list (plan exists, step
+  cap, character cap, time cap, duplicates, exact routes, failed step, pending
+  step, project cap, context cap, file cap) and returns the smallest repair in
+  a fixed priority order, or `none`.
+* No network: `thinking.js` contains no fetch/XHR, and the test runs all four
+  routes with a fetch spy that must record zero calls.
+
 ### 54. Self-critique and plan repair loop — planned
 
 After a plan preview or a failed step, offer a bounded critique pass: identify
