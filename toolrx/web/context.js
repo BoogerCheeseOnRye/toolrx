@@ -413,18 +413,39 @@
     state.entries.splice(at, 1);
   }
 
+  /* Step 55: a trace is only useful beside the plan it examined. If the plan
+   * is gone or changed, the trace is dropped with a named note rather than
+   * left to imply a plan that no longer exists. A trace of a literal has no
+   * planSha and stays independent. */
+  function enforceTracePlan(state, actions) {
+    var plan = findEntry(state, "plan", "last");
+    var planSha = plan ? fingerprint(plan.text) : "";
+    state.entries.slice().forEach(function (entry) {
+      if (entry.kind !== "trace") return;
+      var doc = null;
+      try { doc = JSON.parse(entry.text); } catch (e) { doc = null; }
+      var tied = doc && doc.planSha;
+      if (!doc || (tied && (!plan || doc.planSha !== planSha))) {
+        dropEntry(state, entry, actions);
+      }
+    });
+  }
+
   /* The deterministic compaction policy, in order:
-   *   1. summarize older session rows, keeping the newest KEEP raw;
+   *   1. drop reasoning traces whose plan is gone, then summarize older
+   *      session rows, keeping the newest KEEP raw;
    *   2. summarize the last result with the step-44 extractors;
-   *   3. drop session, result, then edit entries while the cap is exceeded;
+   *   3. drop trace, session, result, then edit entries while the cap is
+   *      exceeded;
    *   4. drop non-critical file entries, oldest first;
    *   5. trim the largest remaining entry instead of evicting the plan.
    * The active plan and build spec are never dropped by compaction. */
   function compactState(state, limit, opts, actions) {
     opts = opts || {};
+    enforceTracePlan(state, actions);
     compactSession(state, opts, actions);
     compactResult(state, opts, actions);
-    var order = ["session", "result", "edit"];
+    var order = ["trace", "session", "result", "edit"];
     for (var o = 0; o < order.length; o++) {
       while (serializedBytes(state) > limit) {
         var victim = null;
@@ -664,6 +685,15 @@
         });
       });
     }
+    // Step 55: fit may have evicted the plan itself under extreme pressure.
+    // Any trace that pointed at it must go too, with a named note.
+    var traceActions = [];
+    enforceTracePlan(state, traceActions);
+    traceActions.forEach(function (action) {
+      if (autoRan) autoActions.push(action);
+      notes.push({ kind: action.kind, key: action.key,
+                   bytes: action.bytes, why: action.why });
+    });
     var ok = (items.length === 0 && state.entries.length === 0)
       ? (function () {
           try { root.localStorage.removeItem(keyFor(slug)); } catch (e) { /* ignore */ }
@@ -835,6 +865,24 @@
     return { steps: [], total: 0, status: [] };
   }
 
+  function traceInfo(state) {
+    var entry = findEntry(state, "trace", "last");
+    if (!entry) return null;
+    try {
+      var doc = JSON.parse(entry.text);
+      return {
+        via: String(doc.via || ""),
+        decision: String(doc.decision || ""),
+        rule: String(doc.rule || ""),
+        planSha: String(doc.planSha || ""),
+        bytes: byteLength(entry.text),
+        trimmed: !!doc.trimmed
+      };
+    } catch (e) {
+      return { broken: true, bytes: byteLength(entry.text) };
+    }
+  }
+
   function shape(state, stored) {
     var entries = sortedEntries(state).map(function (entry) {
       return {
@@ -857,6 +905,7 @@
       pending: plan.steps,
       pendingTotal: plan.total,
       planBroken: !!plan.broken,
+      trace: traceInfo(state),
       notes: notes(state.project)
     };
   }
@@ -944,6 +993,21 @@
       snap.notes.forEach(function (note) {
         lines.push("  " + noteLine(note));
       });
+    }
+    if (snap.trace) {
+      if (snap.trace.broken) {
+        lines.push("trace: unreadable · " + snap.trace.bytes + " bytes");
+      } else {
+        lines.push("trace: " + (snap.trace.via || "?") + " · "
+          + (snap.trace.decision || "?") + " · "
+          + (snap.trace.rule || "no rule")
+          + (snap.trace.planSha
+            ? " · plan " + snap.trace.planSha.slice(0, 12) : "")
+          + (snap.trace.trimmed ? " · trimmed" : "")
+          + " · " + snap.trace.bytes + " bytes");
+      }
+    } else {
+      lines.push("trace: none");
     }
     if (saved) lines.push("saved as the previous context snapshot");
     return lines.join("\n");
@@ -1084,6 +1148,7 @@
     if (entry.kind === "session") return "session plan";
     if (entry.kind === "spec") return "build spec";
     if (entry.kind === "edit") return "last edit";
+    if (entry.kind === "trace") return "last trace";
     if (entry.kind === "file") return "file " + entry.key;
     return entry.kind + "/" + entry.key;
   }
@@ -1119,6 +1184,16 @@
         var record = JSON.parse(entry.text);
         var labels = record.labels || record.ids || [];
         if (labels.length) return labels.join(" + ");
+      } catch (e) { /* fall through */ }
+    }
+    if (entry.kind === "trace") {
+      try {
+        var doc = JSON.parse(entry.text);
+        return (doc.decision || "trace") + " · " + (doc.rule || "no rule")
+          + " · via " + (doc.via || "?")
+          + (doc.planSha ? " · plan " + String(doc.planSha).slice(0, 12)
+            : doc.planSteps && doc.planSteps.length ? " · plan not stored" : "")
+          + (doc.trimmed ? " · trimmed" : "");
       } catch (e) { /* fall through */ }
     }
     return firstLine(entry.text);

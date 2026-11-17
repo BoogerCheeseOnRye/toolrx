@@ -489,12 +489,23 @@ suffix (revise), so completed steps never rerun and nothing is relabelled done.
 `r.repair-cap`. The record keeps the original full plan, so `undo` still reverts
 the files while the request remains inspectable.
 
+Every thinking and repair pass stores one bounded reasoning trace as context
+kind `trace`/`last`. The pure module `toolrx/web/trace.js` records the route,
+decision, rule, source, and the plan steps it examined; `traceBytes` (2,048) is
+the only cap, and an oversized trace is trimmed with a named note. The trace is
+stamped with the hash of the stored plan it describes, so a trace can never
+outlive its plan: compaction drops traces first, and an orphan trace is dropped
+with a note rather than left to imply a plan that no longer exists. The context
+snapshot, the `context` listing, and the dashboard last-run detail all name the
+trace (`think.critique · rerun only "divide 4 by 0" · r.repair-failed`), and a
+thinking turn updates that summary without replacing the run it inspected.
+
 The locked next batch (steps 51–59) keeps the same rules. The envelope gets
 explicit compaction and budget-aware plan rewriting. Finally `think`/reason
 becomes a deterministic program with bounded self-critique, stored traces, a
 per-project journal, mid-plan recovery, response styles that never change tool
-choice, and an honest LLM-parity scorecard. Steps 46–54 are shipped; steps
-55–59 are not yet. The acceptance criteria live in
+choice, and an honest LLM-parity scorecard. Steps 46–55 are shipped; steps
+56–59 are not yet. The acceptance criteria live in
 `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,

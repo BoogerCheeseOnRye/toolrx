@@ -10,6 +10,7 @@
   "thinkGoals": 8,
   "thinkRules": 12,
   "repairPasses": 2,
+  "traceBytes": 2048,
   "blockBytes": 8000,
   "stepMs": 4000,
   "planMs": 160000,

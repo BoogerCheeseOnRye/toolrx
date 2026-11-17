@@ -2662,6 +2662,7 @@
       ["thinkGoals", "goals listed per thinking run"],
       ["thinkRules", "rules evaluated per critique"],
       ["repairPasses", "repair passes per failed plan"],
+      ["traceBytes", "stored reasoning trace"],
       ["blockBytes", "verbatim block"],
       ["stepMs", "per-step wall clock"],
       ["planMs", "whole-plan wall clock"],
@@ -3233,7 +3234,23 @@
     const empty = mode === "critique"
       ? !input.plan || !input.plan.steps.length
       : !String(resolved.text || "").trim();
-    return empty ? { text: text, empty: true } : text;
+    if (empty) return { text: text, empty: true };
+    const TR = root.toolrxTrace;
+    const via = "think." + mode;
+    const planSteps = input.plan && Array.isArray(input.plan.steps)
+      ? input.plan.steps.map(function (step) {
+        return String(step && step.text != null ? step.text : step);
+      })
+      : (input.goals || []).map(function (goal) { return String(goal.text); });
+    const trace = TR ? TR.record({
+      via: via,
+      text: text,
+      rule: TR.decisionRuleOf(via, text),
+      decision: TR.decisionOf(via, text),
+      source: resolved.source || "",
+      planSteps: planSteps,
+    }, { maxText: LIMITS.single, maxBytes: LIMITS_RAW.traceBytes }) : null;
+    return { text: text, trace: trace };
   }
 
   /* -------------------------------------------------------------- repair ---- */
@@ -3298,7 +3315,16 @@
         && previous.original.length ? previous.original.length : plan.steps.length,
     });
     const body = R.text(out);
-    if (out.kind === "none" || out.kind === "refuse") return body;
+    const TR = root.toolrxTrace;
+    const traceFor = function (kind, rule, text) {
+      return TR ? TR.record({
+        via: "repair.plan", text: text, rule: rule, decision: kind,
+        source: "last run", planSteps: plan.steps,
+      }, { maxText: LIMITS.single, maxBytes: LIMITS_RAW.traceBytes }) : null;
+    };
+    if (out.kind === "none" || out.kind === "refuse") {
+      return { text: body, trace: traceFor(out.kind, out.rule, body) };
+    }
     const original = previous && Array.isArray(previous.original)
       && previous.original.length ? previous.original : stepInfo;
     const doc = R.record(out, {
@@ -3307,9 +3333,11 @@
       errorText: errorText,
     }, { maxText: LIMITS.single, maxBytes: LIMITS_RAW.planVariantBytes });
     if (!doc) {
-      return body + "\nrepair: none · the record is larger than "
+      const refused = body + "\nrepair: none · the record is larger than "
         + "planVariantBytes (" + LIMITS_RAW.planVariantBytes
         + " bytes); nothing was staged · r.repair-record";
+      return { text: refused, trace: traceFor("refuse", "r.repair-record",
+                                             refused) };
     }
     stageRepair(ctx, doc);
     const conv = conversationState(ctx);
@@ -3321,7 +3349,8 @@
       n: (conv.turnsSeen || 0) + 1,
     };
     conversationSave(ctx, conv);
-    return { text: body, keepPending: true };
+    return { text: body, keepPending: true,
+             trace: traceFor(out.kind, out.rule, body) };
   }
 
   /* Preview a plan without executing anything. Exact command matches are
@@ -3641,6 +3670,10 @@
     const keepPending = results.some(function (r) {
       return r && r.keepPending;
     });
+    const traced = results.slice().reverse().filter(function (r) {
+      return r && r.trace;
+    })[0];
+    if (traced) results.trace = traced.trace;
     return finish(results, keepPending);
   }
 

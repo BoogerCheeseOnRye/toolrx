@@ -32,6 +32,7 @@
   "thinkChars": 4000,
   "thinkGoals": 8,
   "thinkRules": 12,
+  "traceBytes": 2048,
   "undoDepth": 16,
   "version": 1
 });

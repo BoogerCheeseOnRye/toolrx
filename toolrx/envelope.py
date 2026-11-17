@@ -15,6 +15,7 @@ Ranges (the human-facing contract):
   thinkGoals       2–32  goals listed per thinking run
   thinkRules       4–32  rules evaluated per critique
   repairPasses     1–5  accepted repair passes per failed plan
+  traceBytes       256–16,384  stored reasoning trace
   blockBytes       256–64,000
   stepMs           250–30,000
   planMs           250–600,000
@@ -55,6 +56,7 @@ _RANGES = {
     "thinkGoals": (2, 32),
     "thinkRules": (4, 32),
     "repairPasses": (1, 5),
+    "traceBytes": (256, 16_384),
     "blockBytes": (256, 64_000),
     "stepMs": (250, 30_000),
     "planMs": (250, 600_000),

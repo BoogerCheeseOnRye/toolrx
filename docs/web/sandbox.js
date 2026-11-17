@@ -1579,16 +1579,26 @@
   function recordRun(query, results, started, meta) {
     const list = Array.isArray(results) ? results : [];
     if (!list.length) return null;
+    meta = meta || {};
     /* Step 53: a thinking route that had nothing to work on is not a run.
      * Leaving the previous run in place keeps `critique` honest. */
     if (list.every(function (r) { return r && r.empty; })) return null;
     /* Conversation replies (yes, no, show) and inspection/proposal turns
      * (think, repair) are not new runs. Keeping the last real plan lets a
-     * later repair or critique still inspect the failure. */
+     * later repair or critique still inspect the failure. Step 55: the trace
+     * of that inspection still belongs to the run it examined. */
     if (list.every(function (r) {
       return /^(?:conversation|think|repair)\./.test(String(r && r.via || ""));
-    })) return null;
-    meta = meta || {};
+    })) {
+      const TR = root.toolrxTrace;
+      if (meta.trace && lastRun && TR) {
+        lastRun.trace = TR.summary(meta.trace);
+        try {
+          root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(lastRun));
+        } catch (e) { /* keep the in-memory value */ }
+      }
+      return null;
+    }
     const text = list.map(function (r) { return r && r.text ? r.text : ""; })
       .filter(Boolean).join("\n");
     const last = list[list.length - 1] || {};
@@ -1718,6 +1728,8 @@
       ok: failed === 0,
       stepsDetail: stepsDetail,
       plan: planRecord,
+      trace: meta.trace && root.toolrxTrace
+        ? root.toolrxTrace.summary(meta.trace) : null,
       repair: planRecord && failedAt >= 0
         && failedAt < planSteps.length - 1 ? {
           available: true,
@@ -1831,7 +1843,7 @@
 
   function notePromptContext(query, results) {
     const C = contextModule();
-    if (!C) return;
+    if (!C) return null;
     const slug = contextScope();
     const list = Array.isArray(results) ? results : [];
     const last = list.filter(function (r) { return r && r.text; }).slice(-1)[0] || null;
@@ -1841,6 +1853,33 @@
     // below already skip the same set.
     const quiet = /^context\.(?:show|clear|clear\.all|expand|continue|compact)$/
       .test(via);
+
+    // Step 55: a thinking or repair result carries a trace. Stamp it with the
+    // exact bytes of the stored plan it examined, then persist it as its own
+    // context kind so the decision survives a reload.
+    const TR = root.toolrxTrace;
+    let storedTrace = null;
+    const traced = list.slice().reverse().filter(function (r) {
+      return r && r.trace;
+    })[0];
+    if (TR && traced) {
+      let doc = traced.trace;
+      const planRaw = C.get(slug, "plan", "last");
+      if (planRaw && doc.planSteps && doc.planSteps.length) {
+        try {
+          const plan = JSON.parse(planRaw);
+          const steps = (Array.isArray(plan.steps) ? plan.steps : [])
+            .map(String);
+          const same = steps.length === doc.planSteps.length
+            && doc.planSteps.every(function (step, i) {
+              return step === steps[i];
+            });
+          if (same) doc = TR.withPlan(doc, C.fingerprint(planRaw));
+        } catch (e) { /* a broken plan is not a match */ }
+      }
+      C.set(slug, "trace", "last", C.stable(doc), contextOptions());
+      storedTrace = doc;
+    }
 
     if (last && !quiet) {
       const head = "query: " + String(query).replace(/\s+/g, " ").slice(0, 240)
@@ -1874,6 +1913,7 @@
       };
       C.set(slug, "plan", "last", C.stable(plan), contextOptions());
     }
+    return storedTrace;
   }
 
   function planNote(slug) {
@@ -2880,11 +2920,12 @@
         return results;
       }
       const results = await skills.runPrompt(String(query), promptContext(String(query)));
-      notePromptContext(String(query), results);
+      const trace = notePromptContext(String(query), results);
       recordRun(String(query), results, started, {
         beforeFiles: before.files, beforeBytes: before.bytes,
         contextBytes: contextStoredBytes(),
         plan: results.plan, failedAt: results.failedAt,
+        trace: trace || results.trace,
       });
       // Keep a lightweight transcript for the chat side of the harness.
       chatAppend("you", String(query));

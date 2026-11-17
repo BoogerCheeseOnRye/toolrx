@@ -906,6 +906,7 @@
 <script src="web/planrewrite.js"></script>
 <script src="web/thinking.js"></script>
 <script src="web/repair.js"></script>
+<script src="web/trace.js"></script>
 <script src="web/context.js"></script>
 <script src="web/engine2d.js"></script>
 <script src="web/engine2d.embed.js"></script>
@@ -1483,6 +1484,11 @@ function renderLastRunDetail(box,r){
   bits.push('margin '+lastRunStats(r.distribution&&r.distribution.margin,3));
   bits.push('context peak '+(r.peakContextBytes==null?'n/a':r.peakContextBytes)
     +' B'+(b&&b.context?' / cap '+b.context.max+' B':''));
+  if(r.trace&&r.trace.via){
+    bits.push('trace '+(r.trace.via||'?')+' · '+(r.trace.decision||'?')
+      +' · '+(r.trace.rule||'no rule')
+      +(r.trace.planSha?' · plan '+String(r.trace.planSha).slice(0,8):''));
+  }
   if(b){
     bits.push('room files '+b.files.remaining+' · bytes '+b.bytes.remaining
       +' · time '+b.ms.remaining+' ms · steps '+b.steps.remaining);
@@ -1556,6 +1562,7 @@ function refreshLastRun(){
   if(b&&b.bytes) title+=' · bytes '+b.bytes.used+'/'+b.bytes.max;
   if(b&&b.ms) title+=' · time '+b.ms.used+'/'+b.ms.max+' ms (step '+b.ms.stepMs+' ms)';
   if(r.filesTouched&&r.filesTouched.length) title+=' · touched '+r.filesTouched.join(', ');
+  if(r.trace&&r.trace.via) title+=' · trace '+(r.trace.rule||r.trace.decision||'?');
   if(b&&b.over&&b.over.length) title+=' · over budget: '+b.over.join(', ');
   el.title=title;
   el.classList.add('on');
