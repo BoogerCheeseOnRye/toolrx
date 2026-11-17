@@ -31,5 +31,8 @@
   "extractItems": 200,
   "diffLines": 400,
   "conversationTurns": 12,
-  "conversationBytes": 4096
+  "conversationBytes": 4096,
+  "journalEntries": 24,
+  "journalBytes": 4096,
+  "journalText": 240
 }

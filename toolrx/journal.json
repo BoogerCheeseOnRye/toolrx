@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "intents": {
+    "show": {
+      "op": "journal.show",
+      "summary": "show the project decision journal",
+      "example": "show journal",
+      "templates": [],
+      "bare": [
+        "show journal",
+        "show the journal",
+        "journal",
+        "show decisions",
+        "decisions so far",
+        "what did we decide",
+        "what have we decided"
+      ]
+    },
+    "query": {
+      "op": "journal.query",
+      "summary": "find a decision, rejection, or preference in the project journal",
+      "example": "art style",
+      "templates": [
+        "what did we decide about {topic}",
+        "what did we reject about {topic}",
+        "what did we decide on {topic}",
+        "why did we choose {topic}",
+        "why did we pick {topic}",
+        "what did we say about {topic}",
+        "journal about {topic}"
+      ],
+      "bare": [
+        "what did we decide about",
+        "what did we reject about"
+      ]
+    },
+    "clear": {
+      "op": "journal.clear",
+      "summary": "clear the project decision journal",
+      "example": "clear journal",
+      "templates": [],
+      "bare": [
+        "clear journal",
+        "clear the journal",
+        "clear decisions"
+      ]
+    }
+  }
+}

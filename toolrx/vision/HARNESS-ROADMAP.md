@@ -1380,7 +1380,7 @@ readers, storage and reload from raw `localStorage`, the last-run summary, the
 snapshot line, trace-first compaction, the orphan-trace invariant, and a fetch
 spy that records zero calls.
 
-### 56. Project journal and multi-turn memory — planned
+### 56. Project journal and multi-turn memory — done
 
 Add a per-project deterministic journal for decisions, rejected alternatives,
 and user preferences. It is queryable in everyday language (`what did we
@@ -1392,47 +1392,34 @@ an everyday question returns the matching entry, the bundle round-trips it,
 the cap and eviction notes are visible, and switching projects never leaks one
 journal into another.
 
-Plan:
-
-* One pure module, `toolrx/web/journal.js`, backed by one localStorage key per
-  project (`toolrx.journal.v1.<slug>`) so two projects can never share a
-  journal. Each entry is `{seq, kind, topic, text, source, n}` where `kind` is
-  exactly `decision`, `rejection`, or `preference`, and `source` is the route
-  that made it (`build`, `edit.apply`, `project.themeToggle`, `repair.plan`,
-  `plan.variant`, `memory.remember`, …). The module reads and writes storage
-  only; it never touches the network or the clock.
-* Three explicit limits in `limits.json`: `journalEntries` (24),
-  `journalBytes` (4,096), and `journalText` (240). `add()` trims one entry's
-  text to `journalText`, evicts the oldest entries beyond `journalEntries` or
-  `journalBytes`, and records a bounded note ring naming the evicted entry and
-  the reason (`entry cap`, `byte cap`, `trimmed`). A repeated identical
-  decision is not appended twice.
-* One checked-in phrase table, `toolrx/journal.json`, expanded by the step-53
-  template machinery into `journal.show` (`show journal`, `what did we
-  decide`), `journal.query` (`what did we decide about {topic}`, `what did we
-  reject about {topic}`, `why did we choose {topic}`), and `journal.clear`.
-  It also exports `tests/fixtures/journal.json`, so routes and fixture cannot
-  drift. Routes are appended after the repair layer, so a real command wins.
-* `journalAnswer()` tokenizes the topic, drops stopwords, and scores each
-  entry against its topic, text, and source; exact phrase matches win. It
-  returns the matching entries with their seq, kind, text, and source, or says
-  `nothing about "<topic>" yet` and lists the known topics. `journal.text()`
-  prints the entry counts, the caps, the stored bytes, the dropped count, the
-  entries newest first, and the eviction notes.
-* The sandbox records a decision after a successful build (topic `art style`,
-  text from the real spec line, genre, seed, and file count), after a
-  successful edit or theme/title/note change, after `undo`, after a staged
-  plan variant (topic `plan budget`, a rejection naming the dropped steps),
-  and after a repair (decision for retry/revise, rejection for refuse).
-  `memory.remember` records a preference with the fact key as its topic.
-* `projectPayload()` gains `journal`, so both the project bundle and the
-  workspace bundle carry it. `stageProject()` validates and bounds it,
-  `installProject()` and the workspace import restore it, and delete/reset
-  clear it. The bundle round-trip is byte-stable.
-* `tests/test_journal.py` covers the pure add/query/text/evict/dedupe/export
-  path, the phrase fixture, the real build → art-style question, the repair
-  rejection, the bundle round-trip, project isolation, the visible cap notes,
-  and a fetch spy that records zero calls.
+Landed with one pure module, `toolrx/web/journal.js`, backed by one localStorage
+key per project (`toolrx.journal.v1.<slug>`), so two projects can never share a
+journal. Each entry is `{seq, kind, topic, text, source, n}` where `kind` is
+exactly `decision`, `rejection`, or `preference`, and `source` names the route
+that made it (`build`, `edit.apply`, `project.themeToggle`, `repair.plan`,
+`plan.variant`, `memory.remember`, …). Three explicit limits bound the log:
+`journalEntries` (24), `journalBytes` (4,096), and `journalText` (240). `add()`
+trims one entry's text to `journalText`, evicts the oldest entries beyond either
+cap, and records a bounded note ring naming the evicted entry and the reason
+(`entry cap`, `byte cap`, `trimmed`); a repeated identical decision is not
+appended twice. One checked-in table, `toolrx/journal.json`, expands into 19
+`journal.show`, `journal.query`, and `journal.clear` routes and exports
+`tests/fixtures/journal.json`. `journal.query` tokenizes the topic, drops
+stopwords, and scores each entry against its topic, text, and source, with exact
+phrase matches winning; it returns the match with its seq, kind, text, and
+source, or says `nothing about "<topic>" yet` and lists the known topics. The
+sandbox records a decision after a successful build (topic `art style`, text
+from the real spec line, genre, seed, and file count), after an edit, theme,
+title, or note change, after `undo`, after a staged plan variant (a rejection
+naming the dropped steps), and after a repair (decision for retry/revise,
+rejection for refuse). `memory.remember` records a preference with the fact key
+as its topic. `projectPayload()` carries `journal`, so both the project and
+workspace bundles round-trip it; `stageProject()` validates and bounds it,
+`installProject()` and the workspace import restore it, and delete/reset clear
+it. `tests/test_journal.py` covers the pure add/query/text/evict/dedupe/export
+path, the phrase fixture, the real build → art-style question, the plan-variant
+and repair rejections, the preference, the bundle round-trip, project
+isolation, the visible cap notes, and a fetch spy that records zero calls.
 
 ### 57. Error recovery and partial-result continuation — planned
 

@@ -348,6 +348,8 @@
     writeFS(files);
     const C = contextModule();
     if (C) C.clear(s);
+    const J = journalModule();
+    if (J) J.clear(s);
     return "deleted " + p.name + " · " + (projects.active ? "active is now " + projects.active : "no projects left");
   }
 
@@ -456,6 +458,10 @@
       context: state ? state.entries.map(function (entry) {
         return { kind: entry.kind, key: entry.key, text: entry.text };
       }) : [],
+      journal: (function () {
+        const J = journalModule();
+        return J ? J.exportFor(p.slug) : [];
+      })(),
     };
   }
 
@@ -626,7 +632,35 @@
       files: files, bundled: "", created: Date.now(), updated: Date.now(),
     };
     if (src.spec && typeof src.spec === "object") p.spec = src.spec;
-    return { project: p, context: stageContext(src.context), plan: stagePlan(src.plan) };
+    return { project: p, context: stageContext(src.context),
+             plan: stagePlan(src.plan), journal: stageJournal(src.journal) };
+  }
+
+  /* A bundle journal is validated and bounded before anything is written. */
+  function stageJournal(list) {
+    if (!Array.isArray(list)) return [];
+    return list.slice(0, LIMITS.journalEntries).map(function (raw) {
+      if (!raw || typeof raw !== "object") return null;
+      const kind = String(raw.kind || "");
+      if (["decision", "rejection", "preference"].indexOf(kind) < 0) return null;
+      const topic = String(raw.topic || "").replace(/\s+/g, " ").trim()
+        .slice(0, 60);
+      const text = String(raw.text || "").replace(/\s+/g, " ").trim()
+        .slice(0, LIMITS.journalText);
+      if (!topic || !text) return null;
+      return {
+        kind: kind, topic: topic, text: text,
+        source: String(raw.source || "imported").slice(0, 60),
+        seq: Math.max(0, parseInt(raw.seq, 10) || 0),
+        n: Math.max(0, parseInt(raw.n, 10) || 0),
+      };
+    }).filter(Boolean);
+  }
+
+  function restoreProjectJournal(slug, entries) {
+    const J = journalModule();
+    if (!J || !Array.isArray(entries) || !entries.length) return;
+    J.importFor(slug, entries);
   }
 
   function restoreProjectContext(slug, context, plan) {
@@ -644,6 +678,7 @@
     writeProjects();
     writeProjectFiles(p);
     restoreProjectContext(p.slug, staged.context, staged.plan);
+    restoreProjectJournal(p.slug, staged.journal);
     if (p.bundled) {
       preview = {
         html: p.bundled, kind: p.kind, desc: p.desc, title: p.name,
@@ -710,6 +745,7 @@
       staged.forEach(function (s) {
         writeProjectFiles(s.project);
         restoreProjectContext(s.project.slug, s.context, s.plan);
+        restoreProjectJournal(s.project.slug, s.journal);
       });
       applySettings(parsed.doc.settings);
       const check = readProjects();
@@ -723,6 +759,8 @@
       staged.forEach(function (s) {
         const C = contextModule();
         if (C) C.clear(s.project.slug);
+        const J = journalModule();
+        if (J) J.clear(s.project.slug);
       });
       throw e;
     }
@@ -1772,6 +1810,7 @@
    * session list. Every entry is scoped by project slug in localStorage and is
    * never included in a network request. */
   function contextModule() { return root.toolrxContext || null; }
+  function journalModule() { return root.toolrxJournal || null; }
 
   function contextScope() { return projects.active || "scratch"; }
 
@@ -1914,6 +1953,74 @@
       C.set(slug, "plan", "last", C.stable(plan), contextOptions());
     }
     return storedTrace;
+  }
+
+  /* Step 56: record the decisions a turn actually made. Only mutations and
+   * proposals are logged; reads, plans, and inspection are not. The journal
+   * itself skips a repeated identical decision. */
+  function noteJournal(query, results) {
+    const J = journalModule();
+    if (!J) return 0;
+    const slug = contextScope();
+    const list = Array.isArray(results) ? results : [];
+    const line = function (text) {
+      return String(text == null ? "" : text).split("\n")[0]
+        .replace(/\s+/g, " ").trim();
+    };
+    let added = 0;
+    const put = function (entry) {
+      const res = J.add(slug, entry);
+      if (res && res.ok && !res.duplicate) added += 1;
+    };
+    list.forEach(function (r) {
+      if (!r || r.error) return;
+      const via = String(r.via || "");
+      if (via === "build") {
+        const p = activeProject();
+        const spec = (p && p.spec) || {};
+        const t = root.toolrxTemplates;
+        const specLine = t && t.specLine ? t.specLine(spec) : "";
+        const files = p && p.files ? Object.keys(p.files).length : 0;
+        const seed = spec.seed != null ? (spec.seed >>> 0) : "n/a";
+        put({
+          kind: "decision", topic: "art style",
+          text: "genre " + (p ? p.kind : "unknown")
+            + (specLine ? " · " + specLine
+              : " · seed " + seed)
+            + " · " + files + " file" + (files === 1 ? "" : "s"),
+          source: via, n: 0,
+        });
+      } else if (via === "edit.apply" || via === "edit.apply.many") {
+        put({ kind: "decision", topic: "edit",
+              text: line(r.text), source: via, n: 0 });
+      } else if (/^project\.(?:theme|themeToggle|title|rename|note)$/.test(via)) {
+        put({ kind: "decision", topic: /theme/i.test(via) ? "theme" : "project",
+              text: line(r.text), source: via, n: 0 });
+      } else if (via === "undo") {
+        put({ kind: "decision", topic: "undo",
+              text: line(r.text), source: via, n: 0 });
+      } else if (via === "plan.variant" && r.variant) {
+        const dropped = Array.isArray(r.variant.droppedTexts)
+          ? r.variant.droppedTexts : [];
+        put({
+          kind: "rejection", topic: "plan budget",
+          text: "dropped " + (dropped.length || r.variant.dropped || 0)
+            + " step(s) for " + (r.variant.over || []).join(" + ")
+            + (dropped.length ? ": " + dropped.slice(0, 3).join("; ") : ""),
+          source: via, n: 0,
+        });
+      } else if (/^repair\./.test(via)) {
+        const trace = r.trace || null;
+        const refused = trace && /refuse/.test(String(trace.decision || ""));
+        put({
+          kind: refused ? "rejection" : "decision", topic: "repair",
+          text: trace ? String(trace.decision || "") + " · " + String(trace.rule || "")
+            : line(r.text),
+          source: via, n: 0,
+        });
+      }
+    });
+    return added;
   }
 
   function planNote(slug) {
@@ -2921,6 +3028,7 @@
       }
       const results = await skills.runPrompt(String(query), promptContext(String(query)));
       const trace = notePromptContext(String(query), results);
+      noteJournal(String(query), results);
       recordRun(String(query), results, started, {
         beforeFiles: before.files, beforeBytes: before.bytes,
         contextBytes: contextStoredBytes(),
@@ -2995,6 +3103,8 @@
       memory = {};
       const C = contextModule();
       if (C) C.clearAll();
+      const J = journalModule();
+      if (J) J.clearAll();
     },
     loadedAt: function () { return loadedAt; },
     preview: snapshotPreview,

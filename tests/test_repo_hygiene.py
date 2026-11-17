@@ -142,6 +142,7 @@ class DashboardTest(unittest.TestCase):
         self.assertIn('src="web/thinking.js"', self.html)
         self.assertIn('src="web/repair.js"', self.html)
         self.assertIn('src="web/trace.js"', self.html)
+        self.assertIn('src="web/journal.js"', self.html)
         self.assertIn('src="web/context.js"', self.html)
         self.assertIn('src="web/sandbox.js"', self.html)
         # limits.js supplies the numeric envelope to context.js and sandbox.js.
@@ -160,6 +161,8 @@ class DashboardTest(unittest.TestCase):
         self.assertLess(self.html.index('src="web/repair.js"'),
                         self.html.index('src="web/trace.js"'))
         self.assertLess(self.html.index('src="web/trace.js"'),
+                        self.html.index('src="web/journal.js"'))
+        self.assertLess(self.html.index('src="web/journal.js"'),
                         self.html.index('src="web/skills.js"'))
         # context.js must load before sandbox.js, which calls into it.
         self.assertLess(self.html.index('src="web/context.js"'),
@@ -277,7 +280,7 @@ class DashboardTest(unittest.TestCase):
         self.assertIn("env(safe-area-inset-bottom)", self.html)
 
     def test_pages_web_assets_match(self):
-        for name in ("blake2b.js", "router.js", "limits.js", "budget.js", "planrewrite.js", "thinking.js", "repair.js", "trace.js", "context.js", "sandbox.js", "skills.js",
+        for name in ("blake2b.js", "router.js", "limits.js", "budget.js", "planrewrite.js", "thinking.js", "repair.js", "trace.js", "journal.js", "context.js", "sandbox.js", "skills.js",
                      "templates.js", "patches.js", "llm.js", "lang.js", "i18n.json",
                      "engine2d.js", "engine2d.embed.js",
                      "engine3d.js", "engine3d.embed.js", "worldgen.js",
@@ -393,7 +396,7 @@ class DashboardTest(unittest.TestCase):
         sw = open(os.path.join(ROOT, "toolrx", "web", "sw.js"), encoding="utf-8").read()
         for marker in ("addEventListener(\"install\"", "addEventListener(\"activate\"",
                        "addEventListener(\"fetch\"", "caches.match", "skipWaiting",
-                       "./web/budget.js", "./web/planrewrite.js", "./web/thinking.js", "./web/repair.js", "./web/trace.js", "./web/commands.json", "./web/model.json"):
+                       "./web/budget.js", "./web/planrewrite.js", "./web/thinking.js", "./web/repair.js", "./web/trace.js", "./web/journal.js", "./web/commands.json", "./web/model.json"):
             self.assertIn(marker, sw)
         self.assertIn('rel="manifest"', self.html)
         self.assertIn("registerOffline", self.html)

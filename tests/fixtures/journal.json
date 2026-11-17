@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "count": 19,
+  "ops": {
+    "journal.clear": 3,
+    "journal.query": 9,
+    "journal.show": 7
+  },
+  "cases": [
+    {
+      "text": "clear decisions",
+      "op": "journal.clear",
+      "args": {
+        "topic": ""
+      },
+      "mode": "clear"
+    },
+    {
+      "text": "clear journal",
+      "op": "journal.clear",
+      "args": {
+        "topic": ""
+      },
+      "mode": "clear"
+    },
+    {
+      "text": "clear the journal",
+      "op": "journal.clear",
+      "args": {
+        "topic": ""
+      },
+      "mode": "clear"
+    },
+    {
+      "text": "journal about art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "what did we decide about",
+      "op": "journal.query",
+      "args": {
+        "topic": ""
+      },
+      "mode": "query"
+    },
+    {
+      "text": "what did we decide about art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "what did we decide on art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "what did we reject about",
+      "op": "journal.query",
+      "args": {
+        "topic": ""
+      },
+      "mode": "query"
+    },
+    {
+      "text": "what did we reject about art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "what did we say about art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "why did we choose art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "why did we pick art style",
+      "op": "journal.query",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "query"
+    },
+    {
+      "text": "decisions so far",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "journal",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show decisions",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show journal",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show the journal",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "what did we decide",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "what have we decided",
+      "op": "journal.show",
+      "args": {
+        "topic": ""
+      },
+      "mode": "show"
+    }
+  ]
+}

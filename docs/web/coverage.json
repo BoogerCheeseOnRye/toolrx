@@ -16,6 +16,7 @@
       "encoding": 30,
       "facts": 2,
       "generate": 19,
+      "journal": 19,
       "lang": 45,
       "library": 43,
       "llm": 33,
@@ -31,12 +32,12 @@
       "units": 1990,
       "web": 32
     },
-    "count": 12047,
+    "count": 12066,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7057
+    "pure_literals": 7069
   },
   "fixtures": {
     "builds": {

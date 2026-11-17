@@ -22,6 +22,7 @@ import everyday  # noqa: E402  (step 46: one table for catalog + fixture)
 import paraphrase  # noqa: E402  (step 48: one table for catalog + centroids)
 import thinking  # noqa: E402  (step 53: one table for thinking routes)
 import repair  # noqa: E402  (step 54: one table for repair routes)
+import journal  # noqa: E402  (step 56: one table for journal routes)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1528,6 +1529,14 @@ for _entry in thinking.entries():
 # `toolrx/repair.json` table. They are added last so a real command always
 # wins; the handler stages the smallest suffix repair for the last failed plan.
 for _entry in repair.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# -------------------------------------------------------------- journal ----
+# Step 56: the per-project decision journal is queried in everyday language.
+# Routes are appended after the repair layer, so a real command always wins;
+# the handlers in web/skills.js read and write the per-project journal.
+for _entry in journal.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

@@ -39,6 +39,7 @@ eval(fs.readFileSync(require('path').join(WEB, 'planrewrite.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'thinking.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'repair.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'trace.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'journal.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 eval(fs.readFileSync(process.argv[3], 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.js'), 'utf8'));

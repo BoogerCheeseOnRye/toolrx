@@ -931,6 +931,10 @@
     facts[key] = value;
     if (key === "name") mem.set("name", value.replace(/^./, function (c) { return c.toUpperCase(); }));
     mem.set("facts", facts);
+    journalAdd(ctx, {
+      kind: "preference", topic: key, text: value, source: "memory.remember",
+      n: conversationState(ctx).turnsSeen || 0,
+    });
     const shown = key === "name" ? mem.get("name") : value;
     return "Noted — " + key + ": " + shown + ".\n\nAsk me later: what is my " + key + "?";
   }
@@ -1031,6 +1035,44 @@
       return "No active project or saved context yet.\n\nTry: build a todo list · new project notes · remember my name is Ada";
     }
     return "Here is where you left off:\n\n" + lines.join("\n");
+  }
+
+  /* -------------------------------------------------------------- journal ---- */
+  /* Step 56: a per-project decision journal, separate from the short
+   * conversation memory. The pure module owns storage and caps; these helpers
+   * only resolve the active project and shape the answer. */
+  function journalModule() { return root.toolrxJournal || null; }
+
+  function journalSlug(ctx) {
+    const p = ctx && ctx.project && typeof ctx.project.active === "function"
+      ? ctx.project.active() : null;
+    return (p && p.slug) || "scratch";
+  }
+
+  function journalAdd(ctx, entry) {
+    const J = journalModule();
+    if (!J) return null;
+    return J.add(journalSlug(ctx), entry);
+  }
+
+  function journalShow(ctx) {
+    const J = journalModule();
+    if (!J) throw new Error("the journal module is not loaded");
+    return J.text(journalSlug(ctx));
+  }
+
+  function journalQuery(a, ctx) {
+    const J = journalModule();
+    if (!J) throw new Error("the journal module is not loaded");
+    const topic = String((a && a.topic) || "").trim();
+    return topic ? J.answer(journalSlug(ctx), topic) : J.text(journalSlug(ctx));
+  }
+
+  function journalClear(ctx) {
+    const J = journalModule();
+    if (!J) throw new Error("the journal module is not loaded");
+    J.clear(journalSlug(ctx));
+    return "journal cleared · files, plan, context, and conversation are untouched";
   }
 
   /* ------------------------------------------------------- conversation ---- */
@@ -2558,6 +2600,9 @@
     "memory.list": function (a, ctx) { return memoryList(a, ctx); },
     "memory.forget": function (a, ctx) { return memoryForget(a, ctx); },
     "memory.context": function (a, ctx) { return memoryContext(a, ctx); },
+    "journal.show": function (a, ctx) { return journalShow(ctx); },
+    "journal.query": function (a, ctx) { return journalQuery(a, ctx); },
+    "journal.clear": function (a, ctx) { return journalClear(ctx); },
     // runPrompt intercepts these before dispatch so a confirmation can run the
     // staged action. Direct exec keeps the same honest answers.
     "conversation.show": function (a, ctx) { return conversationText(ctx); },
@@ -2684,6 +2729,9 @@
       ["diffLines", "diff lines per side"],
       ["conversationTurns", "stored conversation turns"],
       ["conversationBytes", "conversation state"],
+      ["journalEntries", "decisions kept per project"],
+      ["journalBytes", "serialized project journal"],
+      ["journalText", "one journal entry"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
       + L.version + ")"];
@@ -3544,7 +3592,10 @@
               step: String(query), text: variantText(v), via: "plan.variant",
               planLength: 1,
               variant: { name: v.name, steps: v.steps.length,
-                         dropped: v.dropped.length, over: v.over },
+                         dropped: v.dropped.length, over: v.over,
+                         droppedTexts: v.dropped.map(function (drop) {
+                           return String(drop.text);
+                         }) },
             }], true);
           }
           return finish([{

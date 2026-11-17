@@ -37,6 +37,9 @@ Ranges (the human-facing contract):
   diffLines        50–2,000  diff lines per side
   conversationTurns 2–64  stored conversation turns
   conversationBytes 512–65,536  serialized conversation state
+  journalEntries   4–128  decisions kept per project
+  journalBytes     512–65,536  serialized project journal
+  journalText      80–2,000  one journal entry
 """
 
 import json
@@ -78,6 +81,9 @@ _RANGES = {
     "diffLines": (50, 2_000),
     "conversationTurns": (2, 64),
     "conversationBytes": (512, 65_536),
+    "journalEntries": (4, 128),
+    "journalBytes": (512, 65_536),
+    "journalText": (80, 2_000),
 }
 
 
