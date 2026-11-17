@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "count": 9,
+  "op": "repair.plan",
+  "cases": [
+    {
+      "text": "fix the failed step",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "fix the last step",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "fix the plan",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "fix this plan",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "repair",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "repair the failed step",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "repair the plan",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "repair this plan",
+      "op": "repair.plan",
+      "args": {}
+    },
+    {
+      "text": "what went wrong",
+      "op": "repair.plan",
+      "args": {}
+    }
+  ]
+}

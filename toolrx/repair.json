@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "op": "repair.plan",
+  "summary": "critique a failed plan and stage the smallest repair",
+  "example": "repair this plan",
+  "phrases": [
+    "repair this plan",
+    "repair the plan",
+    "repair the failed step",
+    "fix this plan",
+    "fix the failed step",
+    "fix the last step",
+    "what went wrong",
+    "repair",
+    "fix the plan"
+  ]
+}

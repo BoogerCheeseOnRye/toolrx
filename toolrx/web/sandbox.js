@@ -1582,6 +1582,12 @@
     /* Step 53: a thinking route that had nothing to work on is not a run.
      * Leaving the previous run in place keeps `critique` honest. */
     if (list.every(function (r) { return r && r.empty; })) return null;
+    /* Conversation replies (yes, no, show) and inspection/proposal turns
+     * (think, repair) are not new runs. Keeping the last real plan lets a
+     * later repair or critique still inspect the failure. */
+    if (list.every(function (r) {
+      return /^(?:conversation|think|repair)\./.test(String(r && r.via || ""));
+    })) return null;
     meta = meta || {};
     const text = list.map(function (r) { return r && r.text ? r.text : ""; })
       .filter(Boolean).join("\n");
@@ -1613,12 +1619,31 @@
         margin: number(item.margin),
         bytes: bytesOf(item.text || ""),
         error: !!item.error,
+        errorText: item.error
+          ? String(item.text || "").split("\nrepair: say ")[0].slice(0, 400)
+          : "",
       };
     });
     const confidenceStats = distribution(stepsDetail.map(function (s) { return s.confidence; }));
     const marginStats = distribution(stepsDetail.map(function (s) { return s.margin; }));
     const failed = list.filter(function (r) { return r && r.error; }).length;
-    const planned = Number.isFinite(meta.planned) ? meta.planned
+    const planSteps = Array.isArray(meta.plan)
+      ? meta.plan.slice(0, plan.steps).map(function (step) {
+        return String(step).replace(/\s+/g, " ").slice(0, 240);
+      }) : [];
+    const failedAt = Number.isInteger(meta.failedAt) ? meta.failedAt : -1;
+    const planRecord = planSteps.length ? {
+      steps: planSteps,
+      failedAt: failedAt,
+      pending: failedAt >= 0
+        ? Math.max(0, planSteps.length - failedAt - 1) : 0,
+      errorText: failedAt >= 0
+        ? String((list[failedAt] && list[failedAt].text) || "")
+          .split("\nrepair: say ")[0].slice(0, 400)
+        : "",
+    } : null;
+    const planned = planSteps.length ? planSteps.length
+      : Number.isFinite(meta.planned) ? meta.planned
       : (list[0] && list[0].planLength) || list.length;
     const beforeFiles = meta.beforeFiles || {};
     const touched = Object.keys(fileMap).filter(function (name) {
@@ -1692,6 +1717,13 @@
       undo: p && p.history ? p.history.length : 0,
       ok: failed === 0,
       stepsDetail: stepsDetail,
+      plan: planRecord,
+      repair: planRecord && failedAt >= 0
+        && failedAt < planSteps.length - 1 ? {
+          available: true,
+          failedAt: failedAt,
+          pending: Math.max(0, planSteps.length - failedAt - 1),
+        } : null,
       budget: budget,
     };
     try {
@@ -2294,6 +2326,46 @@
 
   /* Step 53: one lazy snapshot for the thinking handlers. Nothing is computed
    * until a think route asks, so ordinary prompts pay nothing. */
+  function lastRunPlanRecord() {
+    if (lastRun && lastRun.plan && Array.isArray(lastRun.plan.steps)
+        && lastRun.plan.steps.length) {
+      const failedAt = Number.isInteger(lastRun.plan.failedAt)
+        ? lastRun.plan.failedAt : -1;
+      return {
+        version: 2,
+        from: "last run",
+        steps: lastRun.plan.steps.map(function (s) { return String(s); }),
+        status: lastRun.plan.steps.map(function (_, i) {
+          if (failedAt < 0) return i < (lastRun.steps || 0) ? "done" : "pending";
+          if (i < failedAt) return "done";
+          return i === failedAt ? "error" : "pending";
+        }),
+        failedAt: failedAt,
+        errorText: String(lastRun.plan.errorText || ""),
+      };
+    }
+    if (lastRun && Array.isArray(lastRun.stepsDetail)
+        && lastRun.stepsDetail.length) {
+      const failedAt = lastRun.stepsDetail.findIndex(function (s) {
+        return s && s.error;
+      });
+      return {
+        version: 2,
+        from: "last run",
+        steps: lastRun.stepsDetail.map(function (s) {
+          return String(s.step || "");
+        }),
+        status: lastRun.stepsDetail.map(function (s) {
+          return s.error ? "error" : "done";
+        }),
+        failedAt: failedAt,
+        errorText: failedAt >= 0
+          ? String(lastRun.stepsDetail[failedAt].errorText || "") : "",
+      };
+    }
+    return null;
+  }
+
   function thinkState() {
     const p = activeProject();
     const C = contextModule();
@@ -2305,24 +2377,14 @@
     }
     if (plan && Array.isArray(plan.steps)) {
       plan.from = "active plan";
+      if (!Number.isInteger(plan.failedAt)) plan.failedAt = -1;
     } else {
       plan = null;
     }
-    // A single-step run never becomes a stored plan, so the last run is the
-    // plan a critique should see when there is no multi-step plan entry.
-    if (!plan && lastRun && Array.isArray(lastRun.stepsDetail)
-        && lastRun.stepsDetail.length) {
-      plan = {
-        version: 2,
-        from: "last run",
-        steps: lastRun.stepsDetail.map(function (s) {
-          return String(s.step || "");
-        }),
-        status: lastRun.stepsDetail.map(function (s) {
-          return s.error ? "error" : "done";
-        }),
-      };
-    }
+    // Step 54: a run record carries the plan that actually ran and the index
+    // that failed, so a repair sees the pending suffix rather than only the
+    // executed prefix.
+    if (!plan) plan = lastRunPlanRecord();
     const files = p ? filesForProject(p) : [];
     const planL = planLimits();
     return {
@@ -2353,8 +2415,16 @@
         thinkChars: LIMITS.thinkChars,
         thinkGoals: LIMITS.thinkGoals,
         thinkRules: LIMITS.thinkRules,
+        repairPasses: LIMITS.repairPasses,
+        planVariantBytes: LIMITS.planVariantBytes,
       },
     };
+  }
+
+  /* Step 54: repair always reads the run record, never the active context
+   * plan, because only the run knows which step actually failed. */
+  function repairState() {
+    return Object.assign({}, thinkState(), { plan: lastRunPlanRecord() });
   }
 
   function promptContext(query) {
@@ -2446,6 +2516,7 @@
         projectMax: projectBudget(),
       },
       think: thinkState,
+      repair: repairState,
       onStep: function (done, total, elapsed) {
         const p = activeProject();
         const usedBytes = p ? projectBytes(p) : 0;
@@ -2813,6 +2884,7 @@
       recordRun(String(query), results, started, {
         beforeFiles: before.files, beforeBytes: before.bytes,
         contextBytes: contextStoredBytes(),
+        plan: results.plan, failedAt: results.failedAt,
       });
       // Keep a lightweight transcript for the chat side of the harness.
       chatAppend("you", String(query));

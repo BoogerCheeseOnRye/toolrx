@@ -14,6 +14,7 @@ Ranges (the human-facing contract):
   thinkChars       256–32,000  thinking input characters
   thinkGoals       2–32  goals listed per thinking run
   thinkRules       4–32  rules evaluated per critique
+  repairPasses     1–5  accepted repair passes per failed plan
   blockBytes       256–64,000
   stepMs           250–30,000
   planMs           250–600,000
@@ -53,6 +54,7 @@ _RANGES = {
     "thinkChars": (256, 32_000),
     "thinkGoals": (2, 32),
     "thinkRules": (4, 32),
+    "repairPasses": (1, 5),
     "blockBytes": (256, 64_000),
     "stepMs": (250, 30_000),
     "planMs": (250, 600_000),

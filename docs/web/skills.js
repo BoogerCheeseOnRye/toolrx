@@ -1153,6 +1153,10 @@
     // A normal command means the user moved on. A staged correction is the
     // exception: its reply is recorded with keepPending so "yes" can find it.
     if (!(opts && opts.keepPending)) state.pending = null;
+    if (!(opts && opts.keepRepair)
+        && String(last.via || "").indexOf("repair.") !== 0) {
+      clearRepair(ctx);
+    }
     conversationSave(ctx, state);
   }
 
@@ -1178,6 +1182,12 @@
       const variant = readVariant(ctx);
       lines.push("pending: compacted plan " + state.pending.text
         + (variant ? " · " + variant.steps.length + " steps" : " · no longer stored")
+        + " · say yes to run it, no to cancel, or send an edited request");
+    } else if (state.pending.kind === "repair") {
+      const doc = readRepair(ctx);
+      lines.push("pending: repair plan " + state.pending.text
+        + (doc ? " · " + doc.steps.length + " steps · pass "
+          + doc.passes + " of " + doc.maxPasses : " · no longer stored")
         + " · say yes to run it, no to cancel, or send an edited request");
     } else {
       lines.push("pending: needs " + state.pending.need);
@@ -1249,6 +1259,20 @@
           text: "Nothing has been applied yet. I still need " + state.pending.need,
           via: "conversation.confirm" }, keepPending: true };
       }
+      if (state.pending.kind === "repair") {
+        const doc = readRepair(ctx);
+        state.pending = null;
+        conversationSave(ctx, state);
+        if (!doc) {
+          return { reply: {
+            text: "The repair plan is no longer stored. Say \"repair this plan\" again and I will rebuild it.",
+            via: "conversation.confirm" } };
+        }
+        return { confirm: { kind: "repair", text: doc.name,
+                            steps: doc.steps.map(function (step) {
+                              return step.text;
+                            }), repair: doc } };
+      }
       if (state.pending.kind === "variant") {
         const variant = readVariant(ctx);
         state.pending = null;
@@ -1286,6 +1310,7 @@
       state.pending = null;
       conversationSave(ctx, state);
       clearVariant(ctx);
+      clearRepair(ctx);
       return { reply: {
         text: 'Cancelled "' + (pending.text || "the pending action")
           + '" — nothing was run.',
@@ -2388,6 +2413,7 @@
     "think.reason": function (a, ctx) { return thinkRun("reason", a, ctx); },
     "think.tradeoff": function (a, ctx) { return thinkRun("tradeoff", a, ctx); },
     "think.critique": function (a, ctx) { return thinkRun("critique", a, ctx); },
+    "repair.plan": function (a, ctx) { return repairPlan(a, ctx); },
     "context.snapshot": function (a, ctx) {
       if (!ctx.contextSnapshot) throw new Error("context needs the browser workspace");
       return ctx.contextSnapshot();
@@ -2635,6 +2661,7 @@
       ["thinkChars", "thinking input"],
       ["thinkGoals", "goals listed per thinking run"],
       ["thinkRules", "rules evaluated per critique"],
+      ["repairPasses", "repair passes per failed plan"],
       ["blockBytes", "verbatim block"],
       ["stepMs", "per-step wall clock"],
       ["planMs", "whole-plan wall clock"],
@@ -2700,6 +2727,7 @@
     lines.push("  remember my favorite color is teal · what do you remember · forget my favorite color");
     lines.push("  what was i working on · what did i build last");
     lines.push("  think about build a platformer · reason step by step · critique this plan");
+    lines.push("  repair this plan after a failed step · what went wrong");
     lines.push("  read notes.txt then count the words");
     lines.push("");
     lines.push('say "help math" or "help text" for a category');
@@ -3208,6 +3236,94 @@
     return empty ? { text: text, empty: true } : text;
   }
 
+  /* -------------------------------------------------------------- repair ---- */
+  /* Step 54: one bounded critique pass over the last failed plan. The pure
+   * module picks retry/revise/refuse; this handler stages the revised suffix
+   * beside conversation memory and reuses the yes/no confirmation path. */
+  const REPAIR_KEY = "planRepair";
+  const REPAIR_VERSION = 1;
+
+  function readRepair(ctx) {
+    const mem = memoryStore(ctx);
+    const raw = mem ? mem.get(REPAIR_KEY) : null;
+    if (!raw || typeof raw !== "object" || raw.version !== REPAIR_VERSION
+        || !Array.isArray(raw.steps)) return null;
+    return raw;
+  }
+
+  function stageRepair(ctx, doc) {
+    const mem = memoryStore(ctx);
+    if (!mem) return null;
+    mem.set(REPAIR_KEY, doc);
+    return doc;
+  }
+
+  function clearRepair(ctx) {
+    const mem = memoryStore(ctx);
+    if (mem) mem.set(REPAIR_KEY, null);
+  }
+
+  function repairPlan(args, ctx) {
+    const R = root.toolrxRepair;
+    if (!R) throw new Error("repair module is not loaded");
+    const state = typeof ctx.repair === "function" ? ctx.repair()
+      : typeof ctx.think === "function" ? ctx.think() : null;
+    const plan = state && state.plan;
+    if (!plan || !Array.isArray(plan.steps) || !plan.steps.length) {
+      return "repair · nothing to repair\nthe last run has no plan; run a plan first";
+    }
+    const failedAt = Number.isInteger(plan.failedAt) ? plan.failedAt : -1;
+    if (failedAt < 0) {
+      return 'repair · nothing to repair\nthe last run has no failed step · '
+        + 'say "critique this plan" to inspect it';
+    }
+    const previous = readRepair(ctx);
+    const stepInfo = plan.steps.map(function (text) {
+      const hit = match(text);
+      return { text: text, op: hit ? hit.op : "router", exact: !!hit };
+    });
+    const errorText = String(plan.errorText || "");
+    const out = R.plan({
+      steps: stepInfo,
+      failedAt: failedAt,
+      errorText: errorText,
+      passes: previous ? Number(previous.passes) || 0 : 0,
+      maxPasses: LIMITS_RAW.repairPasses,
+      limits: {
+        planSteps: LIMITS_RAW.planSteps,
+        planChars: LIMITS_RAW.planChars,
+        planVariantBytes: LIMITS_RAW.planVariantBytes,
+      },
+      originalSteps: previous && Array.isArray(previous.original)
+        && previous.original.length ? previous.original.length : plan.steps.length,
+    });
+    const body = R.text(out);
+    if (out.kind === "none" || out.kind === "refuse") return body;
+    const original = previous && Array.isArray(previous.original)
+      && previous.original.length ? previous.original : stepInfo;
+    const doc = R.record(out, {
+      steps: stepInfo,
+      originalSteps: original,
+      errorText: errorText,
+    }, { maxText: LIMITS.single, maxBytes: LIMITS_RAW.planVariantBytes });
+    if (!doc) {
+      return body + "\nrepair: none · the record is larger than "
+        + "planVariantBytes (" + LIMITS_RAW.planVariantBytes
+        + " bytes); nothing was staged · r.repair-record";
+    }
+    stageRepair(ctx, doc);
+    const conv = conversationState(ctx);
+    conv.pending = {
+      kind: "repair",
+      text: doc.name,
+      steps: doc.steps.map(function (step) { return step.text; }),
+      passes: doc.passes,
+      n: (conv.turnsSeen || 0) + 1,
+    };
+    conversationSave(ctx, conv);
+    return { text: body, keepPending: true };
+  }
+
   /* Preview a plan without executing anything. Exact command matches are
    * labelled with their operation; the rest will use the hashed router. When a
    * budget would be exceeded, the preview carries one deterministic compacted
@@ -3293,10 +3409,11 @@
     const base = ctx || {};
     const original = String(query == null ? "" : query);
     let revisedFrom = null;
-    const finish = function (list, keepPending, actionText) {
+    const finish = function (list, keepPending, actionText, extra) {
       if (base.conversationRecord !== false) {
         conversationRecord(base, original, list, {
           keepPending: !!keepPending,
+          keepRepair: !!(extra && extra.keepRepair),
           actionText: actionText || (revisedFrom ? query : original),
         });
       }
@@ -3318,20 +3435,27 @@
           // conversation interception and recording off. The confirmation
           // itself is the turn that gets recorded, so a second "yes" finds
           // nothing pending and cannot re-run the build.
-          const variant = conv.confirm.kind === "variant"
-            ? conv.confirm : null;
-          const inner = await runPrompt(variant
-            ? variant.steps.join("\n") : conv.confirm.text,
+          const staged = conv.confirm.kind === "variant"
+            || conv.confirm.kind === "repair" ? conv.confirm : null;
+          const variant = staged && staged.kind === "variant" ? staged : null;
+          const repair = staged && staged.kind === "repair" ? staged : null;
+          const inner = await runPrompt(staged
+            ? staged.steps.join("\n") : conv.confirm.text,
             Object.assign({}, base, {
               conversationSkip: true,
               conversationRecord: false,
-              forcedSteps: variant ? variant.steps : null,
+              forcedSteps: staged ? staged.steps : null,
               forcedVariant: variant,
+              forcedRepair: repair,
             }));
           inner.forEach(function (r) { r.confirmed = conv.confirm.text; });
+          if (repair && !inner.some(function (r) { return r && r.error; })) {
+            clearRepair(base);
+          }
           return finish(inner, false,
-            variant ? (variant.variant.original || variant.text)
-              : conv.confirm.text);
+            staged ? (variant ? (variant.variant.original || variant.text)
+              : repair.text) : conv.confirm.text,
+            { keepRepair: !!repair });
         }
         if (conv.rewrite) {
           query = conv.rewrite;
@@ -3368,11 +3492,15 @@
       const forcedRewrite = rewritePlan(steps.join("\n"), forcedInfo,
                                         forcedBudget, limits);
       if (forcedRewrite && forcedRewrite.over.length) {
+        const what = base.forcedRepair ? "repair" : "compacted plan";
         return finish([{
-          step: original, error: true, via: "plan.variant", planLength: 1,
-          text: "the compacted plan no longer fits ("
+          step: original, error: true,
+          via: base.forcedRepair ? "plan.repair" : "plan.variant",
+          planLength: 1,
+          text: "the " + what + " no longer fits ("
             + forcedRewrite.over.join(" and ") + "); send the request again "
-            + "to rebuild the variant — nothing was run",
+            + "to rebuild the " + (base.forcedRepair ? "repair" : "variant")
+            + " — nothing was run",
         }]);
       }
     } else {
@@ -3497,7 +3625,23 @@
       // A failed step stops the plan; later steps may depend on its result.
       if (result && result.error) break;
     }
-    return finish(results);
+    const failedAt = results.findIndex(function (r) { return r && r.error; });
+    results.plan = steps.slice();
+    results.failedAt = failedAt;
+    if (failedAt >= 0 && failedAt < steps.length - 1) {
+      const failed = results[failedAt];
+      const via = String(failed && failed.via || "");
+      if (failed && !/^(?:think|conversation|repair|plan)\./.test(via)) {
+        const pending = steps.length - failedAt - 1;
+        failed.text = String(failed.text || "")
+          + '\nrepair: say "repair this plan" for the smallest fix · '
+          + pending + " pending step(s)";
+      }
+    }
+    const keepPending = results.some(function (r) {
+      return r && r.keepPending;
+    });
+    return finish(results, keepPending);
   }
 
   root.toolrxSkills = {

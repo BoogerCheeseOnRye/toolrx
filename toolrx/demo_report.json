@@ -5,7 +5,7 @@
     "steps": 32,
     "sha256": "c1ea344c34f35e9415a2a1b00916f6d20c2169cbb8d2b5bcedceca3dc7cd785c"
   },
-  "catalog": 12038,
+  "catalog": 12047,
   "limits": {
     "blockBytes": 8000,
     "buildMs": 4000,
@@ -31,6 +31,7 @@
     "projectFiles": 32,
     "readFileBytes": 8000,
     "readTotalBytes": 24000,
+    "repairPasses": 2,
     "singleChars": 2000,
     "stepMs": 4000,
     "thinkChars": 4000,
@@ -39,7 +40,7 @@
     "undoDepth": 16,
     "version": 1
   },
-  "limitsText": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  planBuildBytes      65536  estimated build output\n  planEditBytes        4096  estimated edit output\n  planVariantBytes     9216  stored compacted plan\n  thinkChars           4000  thinking input\n  thinkGoals              8  goals listed per thinking run\n  thinkRules             12  rules evaluated per critique\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  contextKeep             4  session rows kept raw\n  contextAutoAt          85  auto-compaction trigger percent\n  contextSummary          6  summary lines per entry\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state",
+  "limitsText": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  planBuildBytes      65536  estimated build output\n  planEditBytes        4096  estimated edit output\n  planVariantBytes     9216  stored compacted plan\n  thinkChars           4000  thinking input\n  thinkGoals              8  goals listed per thinking run\n  thinkRules             12  rules evaluated per critique\n  repairPasses            2  repair passes per failed plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  contextKeep             4  session rows kept raw\n  contextAutoAt          85  auto-compaction trigger percent\n  contextSummary          6  summary lines per entry\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state",
   "plan": {
     "chars": 3367,
     "steps": 32,
@@ -78,7 +79,7 @@
     "ms": 0,
     "bytes": 54823,
     "written": 54247,
-    "emitted": 18679,
+    "emitted": 18738,
     "files": 22,
     "filesTouched": [
       "ARCHITECTURE.md",
@@ -542,9 +543,9 @@
       "confidence": null,
       "margin": null,
       "ms": 0,
-      "bytes": 1510,
-      "sha": "c20dd6f5e74741f311fa3120a11f0d9c3bd11b95f8b416575562e4b94d91b1b3",
-      "text": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  planBuildBytes      65536  estimated build output\n  planEditBytes        4096  estimated edit output\n  planVariantBytes     9216  stored compacted plan\n  thinkChars           4000  thinking input\n  thinkGoals              8  goals listed per thinking run\n  thinkRules             12  rules evaluated per critique\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  contextKeep             4  session rows kept raw\n  contextAutoAt          85  auto-compaction trigger percent\n  contextSummary          6  summary lines per entry\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state"
+      "bytes": 1569,
+      "sha": "124e52ef4f565b167037bbce7df01abfb8e83e6960dd6efe6c2efa57711178c9",
+      "text": "limits · source toolrx/limits.json → web/limits.js (version 1)\n  singleChars          2000  one routed request\n  planChars            8000  one plan\n  planSteps              40  steps per plan\n  planBuildBytes      65536  estimated build output\n  planEditBytes        4096  estimated edit output\n  planVariantBytes     9216  stored compacted plan\n  thinkChars           4000  thinking input\n  thinkGoals              8  goals listed per thinking run\n  thinkRules             12  rules evaluated per critique\n  repairPasses            2  repair passes per failed plan\n  blockBytes           8000  verbatim block\n  stepMs               4000  per-step wall clock\n  planMs             160000  whole-plan wall clock\n  projectFileBytes   131072  one project file\n  projectBytes       524288  one project\n  projectFiles           32  files per project\n  buildMs              4000  one build\n  readFileBytes        8000  one file read\n  readTotalBytes      24000  all reads combined\n  contextBytes         8192  context store\n  contextKeep             4  session rows kept raw\n  contextAutoAt          85  auto-compaction trigger percent\n  contextSummary          6  summary lines per entry\n  undoDepth              16  undo history\n  outputChars         12000  one chat reply\n  bundleBytes       2097152  one export bundle\n  extractChars         8000  extractor input\n  extractItems          200  extractor output lines\n  diffLines             400  diff lines per side\n  conversationTurns       12  stored conversation turns\n  conversationBytes     4096  conversation state"
     },
     {
       "n": 32,

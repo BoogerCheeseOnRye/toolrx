@@ -9,6 +9,7 @@
   "thinkChars": 4000,
   "thinkGoals": 8,
   "thinkRules": 12,
+  "repairPasses": 2,
   "blockBytes": 8000,
   "stepMs": 4000,
   "planMs": 160000,

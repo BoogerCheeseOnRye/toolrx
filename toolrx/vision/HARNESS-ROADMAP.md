@@ -1306,7 +1306,7 @@ Plan:
 * No network: `thinking.js` contains no fetch/XHR, and the test runs all four
   routes with a fetch spy that must record zero calls.
 
-### 54. Self-critique and plan repair loop — planned
+### 54. Self-critique and plan repair loop — done
 
 After a plan preview or a failed step, offer a bounded critique pass: identify
 the failing constraint, propose the smallest repair, and either emit a revised
@@ -1317,43 +1317,34 @@ marks a failed or skipped step as done.
 exact reason, the revised plan runs only the changed suffix, the two-pass cap
 is enforced, and the original plan remains available for undo.
 
-Plan:
-
-* One checked-in phrase table, `toolrx/repair.json`, expanded by the same
-  machinery as step 53 into `repair.plan` routes (`repair this plan`,
-  `fix the failed step`, `what went wrong`, …). The table also exports
-  `tests/fixtures/repair.json`, so routes and fixture cannot drift.
-* `runPrompt` attaches the full plan and the failed index to its results.
-  `recordRun` stores them as `lastRun.plan` (bounded by `planSteps` and 240
-  characters per step) with the failed step's error text, so a later repair
-  sees the plan that actually ran rather than only the executed prefix.
-* One pure module, `toolrx/web/repair.js`. Its ordered rules have stable ids
-  (`r.repair-cap`, `r.repair-kind`, `r.repair-missing`, `r.repair-route`,
-  `r.repair-retry`, `r.repair-suffix`, …). It returns exactly one of `retry`
-  (failed step plus pending suffix), `revise` (drop the failed step, run the
-  pending suffix), `refuse` (with the exact reason), or `none`.
-* A kind-gated patch is refused, not retried: the refusal quotes the error and
-  names the compatible starters. A missing file or a division by zero is
-  revised by dropping the failed step. An exact-route step with any other
-  error is retried once; the second failure exhausts the cap. A step with no
-  exact route is refused, because the router already tried and a repair must
-  not guess.
-* The revised plan contains only the failed step (retry) or the pending steps
-  (revise). Completed steps are never rerun, and a failed or skipped step is
-  never relabelled done. If a pending step refers to the failed result
-  (`it`, `that`, `the result`), dropping is refused as a dependency.
-* `repairPasses` (2) is explicit in `limits.json`. The staged repair record
-  lives beside conversation memory under `planRepair`, bounded by
-  `planVariantBytes`; an oversized record is refused naming the limit. `yes`
-  runs exactly the staged steps through the existing forced-step path and
-  increments the pass count; `no` clears the pending repair. A third request
-  refuses with `r.repair-cap`.
-* The record keeps the original full plan, and project undo is untouched, so
-  the user can revert the files and still inspect what was originally asked.
-  A failed mid-plan result gains one offer line naming the repair route.
-* `tests/test_repair.py` covers each rule, the suffix-only run, the pass cap,
-  the oversized-record refusal, the original-plan record, undo, and a fetch
-  spy that must record zero calls.
+Landed with one checked-in table, `toolrx/repair.json`, expanded by the step-48
+template machinery into nine `repair.plan` routes and exported to
+`tests/fixtures/repair.json`. `runPrompt` now attaches the full plan and the
+failed index to its results, and `recordRun` stores them as `lastRun.plan`
+(`steps`, `failedAt`, `pending`, stripped `errorText`) so a later repair sees
+the plan that actually ran rather than only the executed prefix. The pure
+module `toolrx/web/repair.js` returns exactly `retry`, `revise`, `refuse`, or
+`none`, with stable rule ids (`r.repair-cap`, `r.repair-kind`,
+`r.repair-missing`, `r.repair-route`, `r.repair-retry`, `r.repair-suffix`,
+`r.repair-dependency`, `r.repair-empty`, …). Classification is fixed: a
+kind-gated patch is refused with the compatible starters, a missing input or a
+division by zero is revised by dropping the failed step, a transient or unknown
+error retries the failed step plus suffix, a step with no exact route is
+refused, a pending step that depends on the failed result is refused, and
+dropping the last step is refused. A revised plan contains only the failed step
+(retry) or the pending steps (revise); completed steps are never rerun and a
+failed or skipped step is never relabelled done. `repairPasses` (2) is explicit
+in `limits.json`; the record lives under `planRepair`, bounded by
+`planVariantBytes`, `yes` increments the pass count, and a third request
+refuses with `r.repair-cap`. `repairState()` always reads `lastRun.plan`, never
+the active context plan, because only the run knows which step failed.
+Inspection and proposal turns (`conversation.*`, `think.*`, `repair.*`) do not
+replace `lastRun`, so a later repair or critique still sees the real failure. A
+failed mid-plan result gains one offer line naming the route. The record keeps
+the original full plan and project undo is untouched. `tests/test_repair.py`
+covers each rule, the suffix-only run, the two-pass cap, the oversized-record
+refusal, the original-plan record, undo, and a fetch spy that records zero
+calls.
 
 ### 55. Reasoning traces in context and observability — planned
 

@@ -26,6 +26,7 @@
   "projectFiles": 32,
   "readFileBytes": 8000,
   "readTotalBytes": 24000,
+  "repairPasses": 2,
   "singleChars": 2000,
   "stepMs": 4000,
   "thinkChars": 4000,

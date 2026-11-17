@@ -25,17 +25,18 @@
       "plan": 18,
       "project": 164,
       "regex": 3,
+      "repair": 9,
       "text": 384,
       "think": 34,
       "units": 1990,
       "web": 32
     },
-    "count": 12038,
+    "count": 12047,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7048
+    "pure_literals": 7057
   },
   "fixtures": {
     "builds": {
