@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "count": 34,
+  "modes": {
+    "critique": 5,
+    "decompose": 8,
+    "reason": 9,
+    "tradeoff": 12
+  },
+  "cases": [
+    {
+      "text": "check this plan against the limits",
+      "op": "think.critique",
+      "args": {
+        "topic": "this plan"
+      },
+      "mode": "critique"
+    },
+    {
+      "text": "critique",
+      "op": "think.critique",
+      "args": {
+        "topic": ""
+      },
+      "mode": "critique"
+    },
+    {
+      "text": "critique this plan",
+      "op": "think.critique",
+      "args": {
+        "topic": "this plan"
+      },
+      "mode": "critique"
+    },
+    {
+      "text": "review this plan",
+      "op": "think.critique",
+      "args": {
+        "topic": "this plan"
+      },
+      "mode": "critique"
+    },
+    {
+      "text": "what is wrong with this plan",
+      "op": "think.critique",
+      "args": {
+        "topic": "this plan"
+      },
+      "mode": "critique"
+    },
+    {
+      "text": "break build a platformer game into steps",
+      "op": "think.decompose",
+      "args": {
+        "topic": "build a platformer game"
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "break down build a platformer game",
+      "op": "think.decompose",
+      "args": {
+        "topic": "build a platformer game"
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "decompose",
+      "op": "think.decompose",
+      "args": {
+        "topic": ""
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "decompose build a platformer game",
+      "op": "think.decompose",
+      "args": {
+        "topic": "build a platformer game"
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "think",
+      "op": "think.decompose",
+      "args": {
+        "topic": ""
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "think about",
+      "op": "think.decompose",
+      "args": {
+        "topic": ""
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "think about build a platformer game",
+      "op": "think.decompose",
+      "args": {
+        "topic": "build a platformer game"
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "think through build a platformer game",
+      "op": "think.decompose",
+      "args": {
+        "topic": "build a platformer game"
+      },
+      "mode": "decompose"
+    },
+    {
+      "text": "explain your reasoning",
+      "op": "think.reason",
+      "args": {
+        "topic": ""
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "explain your reasoning about add a boss to the platformer",
+      "op": "think.reason",
+      "args": {
+        "topic": "add a boss to the platformer"
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "reason",
+      "op": "think.reason",
+      "args": {
+        "topic": ""
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "reason about add a boss to the platformer",
+      "op": "think.reason",
+      "args": {
+        "topic": "add a boss to the platformer"
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "reason step by step",
+      "op": "think.reason",
+      "args": {
+        "topic": ""
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "reason step by step about add a boss to the platformer",
+      "op": "think.reason",
+      "args": {
+        "topic": "add a boss to the platformer"
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "reason through add a boss to the platformer",
+      "op": "think.reason",
+      "args": {
+        "topic": "add a boss to the platformer"
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "show your reasoning about add a boss to the platformer",
+      "op": "think.reason",
+      "args": {
+        "topic": "add a boss to the platformer"
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "walk me through add a boss to the platformer step by step",
+      "op": "think.reason",
+      "args": {
+        "topic": "add a boss to the platformer"
+      },
+      "mode": "reason"
+    },
+    {
+      "text": "analyse the trade-offs of canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "analyze the trade-offs",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": ""
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "analyze the trade-offs of canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "analyze the tradeoffs of canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "compare",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": ""
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "compare canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "pros and cons",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": ""
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "pros and cons of",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": ""
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "pros and cons of canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "weigh the trade-offs",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": ""
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "weigh the trade-offs of canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    },
+    {
+      "text": "what are the trade-offs of canvas vs dom",
+      "op": "think.tradeoff",
+      "args": {
+        "topic": "canvas vs dom"
+      },
+      "mode": "tradeoff"
+    }
+  ]
+}

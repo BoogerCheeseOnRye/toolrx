@@ -1238,7 +1238,7 @@ request is the edit path. A budget already over its cap is refused by name.
 acceptance, refusal, and the real chat path; `tests/test_skills_js.py` and
 `tests/test_budget_bar.py` keep the existing preview and bar contracts.
 
-### 53. `think` and `reason` as deterministic skills — planned
+### 53. `think` and `reason` as deterministic skills — done
 
 Add first-class `think about …`, `reason step by step`, `analyze the
 trade-offs`, and `critique this plan` routes. They run a small inspectable
@@ -1251,6 +1251,29 @@ and their output can feed the next step.
 produces byte-identical output, every claim in the output is traceable to the
 input or a checked-in rule, empty input returns a clear message, and no
 thinking route touches the network.
+
+Landed with one checked-in table, `toolrx/thinking.json`, expanded by the
+step-48 template machinery into 34 exact routes across four intents
+(`think.decompose`, `think.reason`, `think.tradeoff`, `think.critique`). The
+same table exports `tests/fixtures/thinking.json`, so routes and fixture cannot
+drift. The pure program is `toolrx/web/thinking.js`: an ordered rule table with
+stable ids (`r.split`, `r.steps-cap`, `r.repair-project`, …), and every output
+line names the rule that produced it or quotes its input. The handler resolves
+a topic in this order — existing file (bounded by `readFileBytes`), previous
+result, active plan, context, literal — and an empty topic returns one message
+naming those sources. Decomposition reuses the planner's `splitPromptInfo`, so
+each goal carries its real exact route or `router`; a non-literal listing with
+no exact route is reported as "a listing, not a request". Three limits are
+explicit in `limits.json`: `thinkChars` (4,000), `thinkGoals` (8), `thinkRules`
+(12). Truncated input, unlisted goals, and skipped critique rules are all named.
+Trade-off verdicts are emitted only for matched keyword rules; an unmatched pair
+returns `none` with the reason instead of inventing a preference. Critique runs
+a fixed rule list and returns the smallest repair in priority order (failed
+step, duplicate, steps, chars, time, project, context, files, none). A
+single-step run becomes the `last run` plan when no multi-step entry exists, and
+an empty thinking route is not recorded as a run. `tests/test_thinking.py`
+covers the table, byte-identical repeats, every cap, each repair, source
+resolution, and a fetch spy that must record zero calls.
 
 Plan:
 

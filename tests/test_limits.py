@@ -167,7 +167,7 @@ global.localStorage = {
   removeItem: k => { delete store[k]; },
 };
 global.dispatchEvent = () => {};
-for (const name of ['limits.js', 'budget.js', 'planrewrite.js', 'skills.js', 'context.js', 'sandbox.js']) {
+for (const name of ['limits.js', 'budget.js', 'planrewrite.js', 'thinking.js', 'skills.js', 'context.js', 'sandbox.js']) {
   eval(fs.readFileSync(path.join(WEB, name), 'utf8'));
 }
 console.log(JSON.stringify({

@@ -36,6 +36,7 @@ global.toolrxRouter = { load: () => ({}), route: () => ({ tool: 'none', args: {}
 const WEB = require('path').dirname(process.argv[4]);
 eval(fs.readFileSync(require('path').join(WEB, 'limits.js'), 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'planrewrite.js'), 'utf8'));
+eval(fs.readFileSync(require('path').join(WEB, 'thinking.js'), 'utf8'));
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 eval(fs.readFileSync(process.argv[3], 'utf8'));
 eval(fs.readFileSync(require('path').join(WEB, 'engine2d.js'), 'utf8'));

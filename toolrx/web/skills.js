@@ -2384,6 +2384,10 @@
       if (!ctx.contextShow) throw new Error("context needs the browser workspace");
       return ctx.contextShow();
     },
+    "think.decompose": function (a, ctx) { return thinkRun("decompose", a, ctx); },
+    "think.reason": function (a, ctx) { return thinkRun("reason", a, ctx); },
+    "think.tradeoff": function (a, ctx) { return thinkRun("tradeoff", a, ctx); },
+    "think.critique": function (a, ctx) { return thinkRun("critique", a, ctx); },
     "context.snapshot": function (a, ctx) {
       if (!ctx.contextSnapshot) throw new Error("context needs the browser workspace");
       return ctx.contextSnapshot();
@@ -2628,6 +2632,9 @@
       ["planBuildBytes", "estimated build output"],
       ["planEditBytes", "estimated edit output"],
       ["planVariantBytes", "stored compacted plan"],
+      ["thinkChars", "thinking input"],
+      ["thinkGoals", "goals listed per thinking run"],
+      ["thinkRules", "rules evaluated per critique"],
       ["blockBytes", "verbatim block"],
       ["stepMs", "per-step wall clock"],
       ["planMs", "whole-plan wall clock"],
@@ -2692,6 +2699,7 @@
     lines.push("  i feel overwhelmed · tell me a joke · remember my name is ada");
     lines.push("  remember my favorite color is teal · what do you remember · forget my favorite color");
     lines.push("  what was i working on · what did i build last");
+    lines.push("  think about build a platformer · reason step by step · critique this plan");
     lines.push("  read notes.txt then count the words");
     lines.push("");
     lines.push('say "help math" or "help text" for a category');
@@ -3084,6 +3092,120 @@
       n: (state.turnsSeen || 0) + 1,
     };
     conversationSave(ctx, state);
+  }
+
+  /* ------------------------------------------------------------ thinking ---- */
+  /* Step 53: four deterministic programs. The handler resolves the topic (a
+   * file, the previous result, the active plan, the context, or a literal),
+   * splits it with the real planner, and hands everything to the pure module.
+   * Nothing here invents a claim: the module's rule ids carry the reasoning. */
+  const PLAN_REF = /^(?:the\s+|this\s+|my\s+|the\s+active\s+)?plan$/i;
+  const PREV_REF = /^(?:the\s+)?(?:previous|last|that)(?:\s+(?:step|result|answer|output))?$/i;
+  const CONTEXT_REF = /^(?:the\s+)?(?:context|active\s+context|what\s+is\s+in\s+context)$/i;
+
+  function planStepList(state) {
+    const steps = state && state.plan && Array.isArray(state.plan.steps)
+      ? state.plan.steps : [];
+    return steps.map(function (text, i) {
+      const hit = match(text);
+      return {
+        text: String(text),
+        status: (state.plan.status && state.plan.status[i]) || "pending",
+        op: hit ? hit.op : "router",
+        exact: !!hit,
+      };
+    });
+  }
+
+  function thinkResolve(args, ctx, mode) {
+    const raw = String((args && args.topic) || "").replace(/\s+/g, " ").trim();
+    const state = typeof ctx.think === "function" ? ctx.think() : null;
+    const planText = state && state.plan ? state.plan.steps.join("\n") : "";
+    if (!raw) {
+      if (mode === "critique") {
+        return { text: planText, source: planText
+                   ? (state.plan.from || "active plan") : "none",
+                 planRef: !!planText };
+      }
+      return { text: "", source: "none", planRef: false };
+    }
+    if (PLAN_REF.test(raw)) {
+      return { text: planText, source: planText
+                 ? (state.plan.from || "active plan") : "none",
+               planRef: !!planText };
+    }
+    if (PREV_REF.test(raw)) {
+      // Inside a plan, prev is the step that just ran. Outside one, the last
+      // recorded turn is the previous result.
+      const conv = conversationState(ctx);
+      const last = conv.last && conv.last.result ? conv.last.result : "";
+      return { text: String(ctx.prev || last || ""), source: "previous result",
+               planRef: false };
+    }
+    if (CONTEXT_REF.test(raw)) {
+      return { text: state ? String(state.context || "") : "",
+               source: "context", planRef: false };
+    }
+    if (ctx.fs && /^[\w./-]+$/.test(raw) && ctx.fs.exists(raw)) {
+      return { text: ctx.fs.read(raw), source: "file " + raw, planRef: false };
+    }
+    return { text: raw, source: "literal", planRef: false };
+  }
+
+  function thinkRun(mode, args, ctx) {
+    const T = root.toolrxThinking;
+    if (!T) throw new Error("thinking module is not loaded");
+    const state = typeof ctx.think === "function" ? ctx.think() : null;
+    const resolved = thinkResolve(args, ctx, mode);
+    const input = {
+      text: resolved.text,
+      source: resolved.source,
+      literal: resolved.source === "literal",
+      contextBytes: state ? state.contextBytes : 0,
+      project: state ? state.project : null,
+      limits: state ? state.limits : {},
+    };
+    if (mode === "decompose" || mode === "reason") {
+      if (resolved.text) {
+        const info = splitPromptInfo(resolved.text);
+        input.goals = (info.all || info.steps).map(function (text) {
+          const hit = match(text);
+          return { text: text, op: hit ? hit.op : "router", exact: !!hit };
+        });
+        input.sequenced = /\b(?:then|after|once|finally|next)\b/i.test(resolved.text);
+      }
+    } else if (mode === "tradeoff") {
+      const options = T.splitOptions(resolved.text);
+      const routes = options.slice(0, 2).map(function (option) {
+        return !!match(option);
+      });
+      if (routes.some(Boolean)) input.optionRoutes = routes;
+    } else if (mode === "critique") {
+      if (resolved.planRef && state && state.plan) {
+        input.plan = { steps: planStepList(state) };
+        input.text = state.plan.steps.join("\n");
+      } else if (resolved.text) {
+        const info = splitPromptInfo(resolved.text);
+        input.plan = {
+          dry: true,
+          steps: (info.all || info.steps).map(function (text) {
+            const hit = match(text);
+            return { text: text, status: "pending",
+                     op: hit ? hit.op : "router", exact: !!hit };
+          }),
+        };
+        input.text = resolved.text;
+      } else {
+        input.plan = { steps: [] };
+      }
+    }
+    const text = T.run(mode, input);
+    /* A route with nothing to work on is not a run worth remembering: it must
+     * not become the "last run" that the next critique inspects. */
+    const empty = mode === "critique"
+      ? !input.plan || !input.plan.steps.length
+      : !String(resolved.text || "").trim();
+    return empty ? { text: text, empty: true } : text;
   }
 
   /* Preview a plan without executing anything. Exact command matches are

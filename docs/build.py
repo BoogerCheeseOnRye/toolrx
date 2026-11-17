@@ -35,7 +35,7 @@ def main():
     # same everyday numbers. Ship it beside the other web assets so the panel
     # reads one source rather than recomputing the metrics in JavaScript.
     shutil.copyfile(COVERAGE, WEB_OUT / "coverage.json")
-    names = ("blake2b.js", "router.js", "limits.js", "budget.js", "planrewrite.js", "context.js", "sandbox.js", "skills.js",
+    names = ("blake2b.js", "router.js", "limits.js", "budget.js", "planrewrite.js", "thinking.js", "context.js", "sandbox.js", "skills.js",
              "templates.js", "patches.js", "llm.js", "lang.js", "i18n.json",
              "engine2d.js", "engine2d.embed.js",
              "engine3d.js", "engine3d.embed.js", "worldgen.js",

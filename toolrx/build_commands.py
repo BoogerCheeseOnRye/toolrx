@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
 import conversation  # noqa: E402  (step 47: one table for catalog + fixture)
 import everyday  # noqa: E402  (step 46: one table for catalog + fixture)
 import paraphrase  # noqa: E402  (step 48: one table for catalog + centroids)
+import thinking  # noqa: E402  (step 53: one table for thinking routes)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1509,6 +1510,15 @@ for _entry in conversation.entries():
 # expands the router's knowledge. They are appended after the everyday and
 # conversation layers, so an original exact form always wins.
 for _entry in paraphrase.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# ------------------------------------------------------------ thinking ----
+# Step 53: deterministic thinking routes come from the checked-in
+# `toolrx/thinking.json` table. They are added last so a real command always
+# wins; the handlers in web/skills.js resolve the topic and run the pure
+# program in web/thinking.js.
+for _entry in thinking.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

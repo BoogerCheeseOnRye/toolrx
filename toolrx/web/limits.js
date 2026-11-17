@@ -28,6 +28,9 @@
   "readTotalBytes": 24000,
   "singleChars": 2000,
   "stepMs": 4000,
+  "thinkChars": 4000,
+  "thinkGoals": 8,
+  "thinkRules": 12,
   "undoDepth": 16,
   "version": 1
 });

@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "intents": {
+    "decompose": {
+      "op": "think.decompose",
+      "summary": "break a request into ordered goals",
+      "example": "build a platformer game",
+      "templates": [
+        "think about {topic}",
+        "think through {topic}",
+        "break {topic} into steps",
+        "break down {topic}",
+        "decompose {topic}"
+      ],
+      "bare": [
+        "think",
+        "think about",
+        "decompose"
+      ]
+    },
+    "reason": {
+      "op": "think.reason",
+      "summary": "walk the goals with the check each one needs",
+      "example": "add a boss to the platformer",
+      "templates": [
+        "reason step by step about {topic}",
+        "reason about {topic}",
+        "reason through {topic}",
+        "walk me through {topic} step by step",
+        "explain your reasoning about {topic}",
+        "show your reasoning about {topic}"
+      ],
+      "bare": [
+        "reason",
+        "reason step by step",
+        "explain your reasoning"
+      ]
+    },
+    "tradeoff": {
+      "op": "think.tradeoff",
+      "summary": "compare two options with checked rules",
+      "example": "canvas vs dom",
+      "templates": [
+        "analyze the trade-offs of {topic}",
+        "analyse the trade-offs of {topic}",
+        "analyze the tradeoffs of {topic}",
+        "what are the trade-offs of {topic}",
+        "pros and cons of {topic}",
+        "weigh the trade-offs of {topic}",
+        "compare {topic}"
+      ],
+      "bare": [
+        "analyze the trade-offs",
+        "weigh the trade-offs",
+        "pros and cons of",
+        "pros and cons",
+        "compare"
+      ]
+    },
+    "critique": {
+      "op": "think.critique",
+      "summary": "check a plan against the limits and known rules",
+      "example": "this plan",
+      "templates": [
+        "critique {topic}",
+        "review {topic}",
+        "what is wrong with {topic}",
+        "check {topic} against the limits"
+      ],
+      "bare": [
+        "critique"
+      ]
+    }
+  }
+}

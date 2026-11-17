@@ -11,6 +11,9 @@ Ranges (the human-facing contract):
   planBuildBytes   4,096–1,048,576  estimated bytes one build writes
   planEditBytes    256–65,536  estimated bytes one edit writes
   planVariantBytes 1,024–32,768  stored compacted-plan variant
+  thinkChars       256–32,000  thinking input characters
+  thinkGoals       2–32  goals listed per thinking run
+  thinkRules       4–32  rules evaluated per critique
   blockBytes       256–64,000
   stepMs           250–30,000
   planMs           250–600,000
@@ -47,6 +50,9 @@ _RANGES = {
     "planBuildBytes": (4_096, 1_048_576),
     "planEditBytes": (256, 65_536),
     "planVariantBytes": (1_024, 32_768),
+    "thinkChars": (256, 32_000),
+    "thinkGoals": (2, 32),
+    "thinkRules": (4, 32),
     "blockBytes": (256, 64_000),
     "stepMs": (250, 30_000),
     "planMs": (250, 600_000),

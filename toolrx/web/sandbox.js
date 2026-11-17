@@ -1579,6 +1579,9 @@
   function recordRun(query, results, started, meta) {
     const list = Array.isArray(results) ? results : [];
     if (!list.length) return null;
+    /* Step 53: a thinking route that had nothing to work on is not a run.
+     * Leaving the previous run in place keeps `critique` honest. */
+    if (list.every(function (r) { return r && r.empty; })) return null;
     meta = meta || {};
     const text = list.map(function (r) { return r && r.text ? r.text : ""; })
       .filter(Boolean).join("\n");
@@ -2289,6 +2292,71 @@
     };
   }
 
+  /* Step 53: one lazy snapshot for the thinking handlers. Nothing is computed
+   * until a think route asks, so ordinary prompts pay nothing. */
+  function thinkState() {
+    const p = activeProject();
+    const C = contextModule();
+    const slug = contextScope();
+    let plan = null;
+    if (C && C.get) {
+      try { plan = JSON.parse(C.get(slug, "plan", "last") || "null"); }
+      catch (e) { plan = null; }
+    }
+    if (plan && Array.isArray(plan.steps)) {
+      plan.from = "active plan";
+    } else {
+      plan = null;
+    }
+    // A single-step run never becomes a stored plan, so the last run is the
+    // plan a critique should see when there is no multi-step plan entry.
+    if (!plan && lastRun && Array.isArray(lastRun.stepsDetail)
+        && lastRun.stepsDetail.length) {
+      plan = {
+        version: 2,
+        from: "last run",
+        steps: lastRun.stepsDetail.map(function (s) {
+          return String(s.step || "");
+        }),
+        status: lastRun.stepsDetail.map(function (s) {
+          return s.error ? "error" : "done";
+        }),
+      };
+    }
+    const files = p ? filesForProject(p) : [];
+    const planL = planLimits();
+    return {
+      project: p ? {
+        slug: p.slug,
+        kind: p.kind,
+        files: files.slice(),
+        systems: files.filter(function (n) {
+          return n.indexOf("systems/") === 0;
+        }),
+        bytes: projectBytes(p),
+      } : null,
+      plan: plan,
+      context: C ? C.report(slug).text : "",
+      contextBytes: contextStoredBytes() || 0,
+      limits: {
+        planChars: planL.chars,
+        planSteps: planL.steps,
+        stepMs: stepTimeout(),
+        planMs: planTimeout(),
+        contextMax: LIMITS.contextBytes,
+        projectMax: projectBudget(),
+        projectFiles: MAX_PROJECT_FILES,
+        buildBytes: LIMITS.planBuildBytes,
+        editBytes: LIMITS.planEditBytes,
+        readFileBytes: MAX_FILE,
+        readTotalBytes: MAX_TOTAL,
+        thinkChars: LIMITS.thinkChars,
+        thinkGoals: LIMITS.thinkGoals,
+        thinkRules: LIMITS.thinkRules,
+      },
+    };
+  }
+
   function promptContext(query) {
     const ctx = {
       prev: "",
@@ -2377,6 +2445,7 @@
         })(),
         projectMax: projectBudget(),
       },
+      think: thinkState,
       onStep: function (done, total, elapsed) {
         const p = activeProject();
         const usedBytes = p ? projectBytes(p) : 0;
