@@ -1356,6 +1356,37 @@ snapshot, and compact traces before the active plan or spec.
 chose or rejected a path, traces have a named cap and eviction note, and
 compaction never leaves a trace without its plan.
 
+Plan:
+
+* One new limit, `traceBytes` (2,048), in `limits.json`, `envelope.py`, the
+  generated `limits.js`, and `skills.limitsText()`. It is the only cap on a
+  stored trace, and an oversized trace is trimmed with a named note.
+* One pure module, `toolrx/web/trace.js`. `record()` turns a thinking or repair
+  result into `{version, kind:"trace", key:"last", via, rule, decision,
+  source, planSteps, planSha, text, bytes, trimmed}`. It trims `text` to the
+  cap, returns `null` only when even the minimum does not fit, and never reads
+  the clock or the network. `decisionOf()` and `ruleOf()` are deterministic
+  readers of the same output, so the trace names the rule that chose or
+  rejected a path instead of restating the whole answer.
+* `thinkRun` and `repairPlan` attach a trace to their result. `runPrompt`
+  exposes the last one as `results.trace`; `notePromptContext` stores it as
+  context kind `trace`/`last`, stamping `planSha` from the plan entry that is
+  actually stored; `recordRun` keeps a bounded summary on `lastRun.trace`.
+  A thinking or repair turn still does not replace the last real run.
+* Compaction order gains `trace` first: `trace`, `session`, `result`, `edit`,
+  then non-critical files. An invariant check drops any trace whose `planSha`
+  no longer matches the stored plan, and runs both inside compaction and after
+  the ordinary `fit`, so a trace can never outlive the plan it describes. Every
+  drop is recorded as a named note.
+* The context snapshot and `context` listing name the trace (`trace/last ·
+  decision · rule · via`), and the dashboard last-run detail gains one trace
+  line plus a chip-title entry, so the choice is visible without opening the
+  full context.
+* `tests/test_trace.py` covers the pure record and cap, the decision and rule
+  readers, storage and reload from raw `localStorage`, the last-run summary,
+  the snapshot line, trace-first compaction, the orphan-trace invariant, and a
+  fetch spy that must record zero calls.
+
 ### 56. Project journal and multi-turn memory — planned
 
 Add a per-project deterministic journal for decisions, rejected alternatives,
