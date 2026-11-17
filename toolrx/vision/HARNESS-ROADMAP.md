@@ -1433,6 +1433,49 @@ resuming runs only the pending steps, the project before the failure is still
 openable, and the recovery path is covered for build, patch, and context
 failures.
 
+Plan:
+
+* Extend the step-54 pure module `toolrx/web/repair.js` with `resume(input)`
+  and `resumeText(out)`. `resume` reads the last run's plan (steps, failedAt,
+  errorText, and the matched op of each step) and returns exactly `resume` or
+  `refuse`. It skips the failed step and returns only the pending suffix;
+  completed steps are never rerun and the failed step is never relabelled done.
+  Guards, in order: no plan (`r.resume-none`), no failed step
+  (`r.resume-nofail`), the failed step is last (`r.resume-last`), the shared
+  pass cap (`r.resume-cap`), a failed build (`r.resume-build`: the previous
+  project stays open, but the pending steps were meant for the new build), a
+  pending step that needs a project and none is open (`r.resume-noproject`), a
+  pending step that depends on the failed result (`r.resume-dependency`), and
+  the step/character caps (`r.resume-steps`, `r.resume-chars`). A kind-gated
+  patch is skipped and named, because continuing past it is the whole point of
+  resume.
+* One checked-in table, `toolrx/resume.json`, expanded by `toolrx/resume.py`
+  into `repair.resume` routes and exported to `tests/fixtures/resume.json`.
+  Phrases are `resume`, `resume the plan`, `continue the plan`, `run the
+  pending steps`, `run the remaining steps`, `skip the failed step`, `carry
+  on`, and `keep going`. Routes are appended after the repair layer, so a real
+  command wins.
+* `runPrompt` intercepts a standalone `resume` before the plan path, calls the
+  pure module, and on `resume` re-enters the normal plan runner with
+  `forcedSteps` equal to the pending suffix. The inner run is not recorded as
+  its own conversation turn; the outer `resume` turn is. A successful resume
+  clears the staged repair record; a failed one keeps the pass count so the cap
+  is honest. An in-plan `resume` step returns a clear refusal instead of
+  guessing.
+* The failure offer line names both recovery commands in one line:
+  `repair: say "repair this plan" for the smallest fix · or "resume" to run
+  the N pending step(s)`.
+* Resume shares `repairPasses` (2) with repair; no new limit is added, and the
+  code and docs say so. The resume record lives under the same `planRepair`
+  key with `kind: "resume"`, bounded by `planVariantBytes`, and its trace uses
+  via `repair.resume` with a `r.resume-*` rule so the step-55 invariant holds.
+* `tests/test_resume.py` covers every pure guard, the phrase fixture, a build
+  then kind-gated patch then resume (the project keeps the completed build and
+  the pending patch runs), a missing-file context failure resumed, a build
+  failure with the previous project still openable and an honest refusal, the
+  dependency and pass-cap refusals, the in-plan refusal, the failure offer
+  line, and a fetch spy that records zero calls.
+
 ### 58. Adaptive response style — planned
 
 Add a persisted `concise`, `explanatory`, or `tutorial` style that changes only
