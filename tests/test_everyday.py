@@ -222,6 +222,10 @@ eval(fs.readFileSync(SKILLS, 'utf8'));
             readme = f.read()
         with open(os.path.join(ROOT, "docs", "pitch.html"), encoding="utf-8") as f:
             pitch = f.read()
+        # Step 59 binds the quoted numbers to the generated scorecard, so the
+        # marker comments sit between the tags and the digits.
+        pitch = re.sub(r"<!-- scorecard:(?:catalog|tests):(?:start|end) -->", "",
+                       pitch)
         self.assertIn("`toolrx/build_commands.py` (`toolrx/web/commands.json`, %s patterns:"
                       % f"{count:,}", readme)
         self.assertIn("<b>%s</b> commands" % f"{count:,}", pitch)

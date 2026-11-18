@@ -157,6 +157,8 @@
   .row .tag.block{color:var(--red);border-color:rgba(248,113,113,.35)}
   .row p{font-size:13px;color:var(--soft)}
   .row p b{color:var(--text);font-weight:600}
+  .row .src{display:block;margin-top:6px;font-family:var(--mono);font-size:10px;
+    color:var(--muted);word-break:break-all}
 
   .note{margin-top:clamp(18px,3vh,28px);font-family:var(--mono);font-size:10.5px;
     line-height:1.6;color:var(--muted);letter-spacing:.02em}
@@ -238,7 +240,7 @@
       </div>
       <div class="hero-stats" aria-label="Highlights">
         <span class="pill"><b>27</b> tools</span>
-        <span class="pill"><b>12,089</b> commands</span>
+        <span class="pill"><b><!-- scorecard:catalog:start -->12,089<!-- scorecard:catalog:end --></b> commands</span>
         <span class="pill"><b>1</b> browser tab</span>
         <span class="pill"><b>0</b> network calls by default</span>
       </div>
@@ -278,7 +280,7 @@
       <div class="flow" aria-label="Request pipeline">
         <span class="node">prompt</span><span class="arrow">→</span>
         <span class="node hot">normalize</span><span class="arrow">→</span>
-        <span class="node hot">12,089 exact commands</span><span class="arrow">→</span>
+        <span class="node hot"><!-- scorecard:catalog:start -->12,089<!-- scorecard:catalog:end --> exact commands</span><span class="arrow">→</span>
         <span class="node">hashed n-gram router</span><span class="arrow">→</span>
         <span class="node">allow-listed tool</span><span class="arrow">→</span>
         <span class="node end">real result</span>
@@ -342,10 +344,10 @@
       <div class="kicker">by the numbers</div>
       <h2>Small enough to inspect. <span class="quiet">Useful enough to keep.</span></h2>
       <div class="stats">
-        <div class="stat"><div class="v">12,089</div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
+        <div class="stat"><div class="v"><!-- scorecard:catalog:start -->12,089<!-- scorecard:catalog:end --></div><div class="k">deterministic commands</div><div class="d">arithmetic, units, text, dates, colour, JSON, generators, builds, edits, lookups.</div></div>
         <div class="stat"><div class="v">27</div><div class="k">allow-listed tools</div><div class="d">Each one has a real executor, a policy check, and bounded output.</div></div>
         <div class="stat"><div class="v">36</div><div class="k">seeded game starters</div><div class="d">16 2D/3D genre starters plus 20 themed RPG packs, all reproducible from a seed.</div></div>
-        <div class="stat"><div class="v">429</div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope, the five-budget bar, context compaction, and plan rewriting.</div></div>
+        <div class="stat"><div class="v"><!-- scorecard:tests:start -->555<!-- scorecard:tests:end --></div><div class="k">automated tests</div><div class="d">Python contracts plus a Node harness that drives the real browser code, including the long-form envelope, the five-budget bar, context compaction, and plan rewriting.</div></div>
         <div class="stat"><div class="v">0<em>calls</em></div><div class="k">on the deterministic path</div><div class="d">No endpoint, no key, no telemetry, no analytics. Nothing leaves the tab.</div></div>
         <div class="stat"><div class="v">1<em>tab</em></div><div class="k">to run everything</div><div class="d">The Pages build carries the router model and assets; the Python server is optional.</div></div>
       </div>
@@ -492,7 +494,7 @@
       <div class="kicker">roadmap</div>
       <h2>Ship the next useful thing.</h2>
       <div class="stack">
-        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, 12,089 patterns, chained steps, confidence and margin.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Deterministic router and command library.</b> 27 tools, <!-- scorecard:catalog:start -->12,089<!-- scorecard:catalog:end --> patterns, chained steps, confidence and margin.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Builds and composable edits.</b> 16 genre starters, 20 RPG packs, named-function patches, lossless undo.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Optional LLM adapter.</b> Off by default, strict JSON, pending diffs, budgets, cache, local key.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Longer input and verified plans (steps 26–27).</b> 2,000-character routes, 8,000-character / 40-step plans, preview before execution, stop at the first failed step — still no LLM.</p></div>
@@ -521,10 +523,33 @@
         <div class="row"><span class="tag done">done</span><p><b>Project journal (step 56).</b> One bounded decision log per project, separate from conversation memory: builds, edits, rejections, and preferences name the route that made them, <code>what did we decide about the art style?</code> returns the match, and the bundle carries it.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Partial-result resume (step 57).</b> A failed mid-plan step offers one command that skips it and runs only the pending suffix; the completed project stays openable, the shared two-pass cap is explicit, and build, patch, and context failures each have a tested path.</p></div>
         <div class="row"><span class="tag done">done</span><p><b>Adaptive response style (step 58).</b> <code>concise</code>, <code>explanatory</code>, or <code>tutorial</code> changes only the wrapper around an exact result; tool choice, arguments, files, limits, and refusals stay byte-identical, the choice survives a reload, and the wrapper is capped.</p></div>
-        <div class="row"><span class="tag next">next</span><p><b>Parity scorecard (step 59).</b> A living, checked-in map of harness capabilities to coverage, evidence, and the honest gap — still no model.</p></div>
+        <div class="row"><span class="tag done">done</span><p><b>Parity scorecard (step 59).</b> Ten harness capabilities mapped to shipped evidence, a cited test, and an honest gap; <code>scorecard.py --check</code> fails when any claim drifts — still no model.</p></div>
         <div class="row"><span class="tag block">blocked</span><p><b>Vendored sprite pack.</b> Deliberately not shipped: the atlas licence is not settled. Procedural sprites remain the fallback.</p></div>
       </div>
       <p class="note">Roadmap, not promises. Every item has to stay testable offline and honest about failure.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="parity scorecard" aria-label="Parity scorecard">
+    <div class="inner">
+      <div class="kicker">parity scorecard</div>
+      <h2>Claims tied to tests. <span class="quiet">Gaps named out loud.</span></h2>
+      <div class="stack">
+<!-- scorecard:start -->
+<div class="row"><span class="tag done">shipped</span><p><b>Planning.</b> Multi-step plans split on connectors, preview before running, and stop at the first failure. <em>Gap:</em> Plans are linear and re-derived per turn; there is no branching, backtracking, or cross-turn goal stack. <span class="src"><code>toolrx/web/skills.js</code>, <code>tests/test_longform.py::SplitterTest.test_connectors_split_steps</code>, <code>tests/test_demo.py::DemoReportTest.test_request_and_plan_fit_the_envelope</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Tool use.</b> Allow-listed tools with deterministic routing, confidence, and margin. <em>Gap:</em> Allow-listed tools are fixed at build time; adding one needs a table entry, a centroid, and a rebuild rather than runtime discovery. <span class="src"><code>toolrx/web/router.js</code>, <code>tests/test_router.py::RouterTest.test_router_suite</code>, <code>tests/test_router.py::RouterTest.test_deterministic</code></span></p></div>
+<div class="row"><span class="tag next">partial</span><p><b>Long context.</b> Bounded long input, line-aware splitting, and named per-result caps. <em>Gap:</em> Context is bounded by named character caps and line summaries; there is no retrieval, embedding, or paging beyond the stored window. <span class="src"><code>toolrx/limits.json</code>, <code>tests/test_longform.py::SplitterTest.test_long_text_is_chunked_at_word_boundaries</code>, <code>tests/test_compaction.py::CompactionTest.test_explicit_compaction_enforces_the_cap</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Compaction.</b> Explicit compaction with before/after bars and a reason for every dropped line. <em>Gap:</em> Compaction is deterministic template summarization, so it can drop nuance that a semantic summarizer would keep. <span class="src"><code>toolrx/web/context.js</code>, <code>tests/test_compaction.py::CompactionTest.test_two_runs_from_the_same_state_are_byte_identical</code>, <code>tests/test_compaction.py::CompactionTest.test_every_compaction_action_appears_in_the_notes</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Self-correction.</b> One bounded repair or resume pass from the recorded failure. <em>Gap:</em> Repair re-runs only the failed suffix inside a two-pass cap; it cannot invent a different plan or retry a step with new arguments. <span class="src"><code>toolrx/web/repair.js</code>, <code>tests/test_repair.py::RepairTest.test_math_failure_revises_to_the_suffix</code>, <code>tests/test_resume.py::ResumeTest.test_resume_runs_only_the_pending_suffix</code></span></p></div>
+<div class="row"><span class="tag next">partial</span><p><b>Natural language.</b> Checked-in everyday phrasings and short turns resolve to exact commands. <em>Gap:</em> Language is table- and pattern-driven; an unseen phrasing falls back to the hashed router or refuses rather than being interpreted. <span class="src"><code>tests/test_everyday.py::EverydayLayerTest.test_every_case_resolves_to_its_exact_command</code>, <code>tests/test_paraphrase.py::TableTest.test_every_route_is_new_and_captures_the_right_arguments</code>, <code>tests/test_conversation.py::ConversationFixtureTest.test_every_case_resolves_to_its_own_exact_route</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Offline operation.</b> The static tab runs the router, workspace, builds, and edits with no network. <em>Gap:</em> The static tab is offline-first, but machine and socket tools still require the optional Python server. <span class="src"><code>toolrx/web/sw.js</code>, <code>tests/test_repo_hygiene.py::DashboardTest.test_offline_app_is_installable_and_cached</code>, <code>tests/test_repo_hygiene.py::DashboardTest.test_offline_cache_includes_the_engines</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Inspectability.</b> Every run, rule, limit, and decision is printable and checked in. <em>Gap:</em> Inspection is per run and per project; there is no global audit trail across sessions or devices. <span class="src"><code>toolrx/web/trace.js</code>, <code>tests/test_trace.py::TraceTest.test_trace_text_names_the_rule_and_the_cap</code>, <code>tests/test_limits.py::EnvelopeSourceTest.test_limits_json_is_valid_and_complete</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Cost.</b> The deterministic path makes zero model or network calls. <em>Gap:</em> The deterministic path costs nothing, but an enabled LLM adapter bills per call and has call and byte caps, not a money budget. <span class="src"><code>toolrx/web/llm.js</code>, <code>tests/test_llm_js.py::LlmAdapterTest.test_defaults_are_off_and_quiet</code>, <code>tests/test_llm_js.py::LlmAdapterTest.test_known_prompts_stay_deterministic</code></span></p></div>
+<div class="row"><span class="tag done">shipped</span><p><b>Reproducibility.</b> Seeded builds and checked-in fixtures reproduce byte for byte. <em>Gap:</em> Checked-in fixtures and seeds reproduce byte for byte, but wall-clock fields and host-dependent machine tools vary between runs. <span class="src"><code>toolrx/demo_report.json</code>, <code>tests/test_demo.py::DemoReportTest.test_every_step_is_deterministic_and_successful</code>, <code>tests/test_commands.py::CommandLibraryTest.test_catalog_regenerates_byte_identically</code></span></p></div>
+<p class="note"><b>Scorecard metrics: 12,089 commands · 555 tests · 36 named caps · 579 everyday cases · 33 router cases · 638 fixture cases.</b></p>
+<!-- scorecard:end -->
+      </div>
+      <p class="note">Generated from <code>toolrx/scorecard.json</code>; <code>scorecard.py --check</code> fails when a cited test, evidence path, or derived count drifts.</p>
     </div>
   </section>
 

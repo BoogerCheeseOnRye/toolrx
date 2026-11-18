@@ -195,10 +195,15 @@ class DemoReportTest(unittest.TestCase):
     def test_pitch_test_count_is_plausible(self):
         with open(PITCH, encoding="utf-8") as fh:
             pitch = fh.read()
+        # Step 59 binds this number to the generated scorecard, so the marker
+        # comments sit between the tags and the digits.
+        pitch = re.sub(r"<!-- scorecard:tests:(?:start|end) -->", "", pitch)
         match = re.search(r'<div class="v">(\d+)</div><div class="k">automated tests</div>',
                           pitch)
         self.assertIsNotNone(match)
-        self.assertGreaterEqual(int(match.group(1)), 406)
+        sys.path.insert(0, os.path.join(ROOT, "toolrx"))
+        import scorecard
+        self.assertEqual(int(match.group(1)), scorecard.count_tests())
 
 
 if __name__ == "__main__":

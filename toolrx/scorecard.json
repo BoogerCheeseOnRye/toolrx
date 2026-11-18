@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "capabilities": [
+    {
+      "id": "planning",
+      "label": "Planning",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/skills.js"
+        },
+        {
+          "path": "tests/test_longform.py",
+          "test": "SplitterTest.test_connectors_split_steps"
+        },
+        {
+          "path": "tests/test_demo.py",
+          "test": "DemoReportTest.test_request_and_plan_fit_the_envelope"
+        }
+      ],
+      "gap": "Plans are linear and re-derived per turn; there is no branching, backtracking, or cross-turn goal stack.",
+      "next": "Add branching only if a real request needs it; a linear plan stays the default.",
+      "claim": "Multi-step plans split on connectors, preview before running, and stop at the first failure."
+    },
+    {
+      "id": "tool-use",
+      "label": "Tool use",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/router.js"
+        },
+        {
+          "path": "tests/test_router.py",
+          "test": "RouterTest.test_router_suite"
+        },
+        {
+          "path": "tests/test_router.py",
+          "test": "RouterTest.test_deterministic"
+        }
+      ],
+      "gap": "Allow-listed tools are fixed at build time; adding one needs a table entry, a centroid, and a rebuild rather than runtime discovery.",
+      "next": "Keep tools allow-listed; document the cost of a new tool instead of adding discovery.",
+      "claim": "Allow-listed tools with deterministic routing, confidence, and margin."
+    },
+    {
+      "id": "long-context",
+      "label": "Long context",
+      "status": "partial",
+      "evidence": [
+        {
+          "path": "toolrx/limits.json"
+        },
+        {
+          "path": "tests/test_longform.py",
+          "test": "SplitterTest.test_long_text_is_chunked_at_word_boundaries"
+        },
+        {
+          "path": "tests/test_compaction.py",
+          "test": "CompactionTest.test_explicit_compaction_enforces_the_cap"
+        }
+      ],
+      "gap": "Context is bounded by named character caps and line summaries; there is no retrieval, embedding, or paging beyond the stored window.",
+      "next": "Measure whether real requests hit the cap before adding any retrieval layer.",
+      "claim": "Bounded long input, line-aware splitting, and named per-result caps."
+    },
+    {
+      "id": "compaction",
+      "label": "Compaction",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/context.js"
+        },
+        {
+          "path": "tests/test_compaction.py",
+          "test": "CompactionTest.test_two_runs_from_the_same_state_are_byte_identical"
+        },
+        {
+          "path": "tests/test_compaction.py",
+          "test": "CompactionTest.test_every_compaction_action_appears_in_the_notes"
+        }
+      ],
+      "gap": "Compaction is deterministic template summarization, so it can drop nuance that a semantic summarizer would keep.",
+      "next": "Keep summaries inspectable; add a field only when a test can pin it.",
+      "claim": "Explicit compaction with before/after bars and a reason for every dropped line."
+    },
+    {
+      "id": "self-correction",
+      "label": "Self-correction",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/repair.js"
+        },
+        {
+          "path": "tests/test_repair.py",
+          "test": "RepairTest.test_math_failure_revises_to_the_suffix"
+        },
+        {
+          "path": "tests/test_resume.py",
+          "test": "ResumeTest.test_resume_runs_only_the_pending_suffix"
+        }
+      ],
+      "gap": "Repair re-runs only the failed suffix inside a two-pass cap; it cannot invent a different plan or retry a step with new arguments.",
+      "next": "Keep the cap explicit; a third pass stays a refusal, not a silent retry.",
+      "claim": "One bounded repair or resume pass from the recorded failure."
+    },
+    {
+      "id": "natural-language",
+      "label": "Natural language",
+      "status": "partial",
+      "evidence": [
+        {
+          "path": "tests/test_everyday.py",
+          "test": "EverydayLayerTest.test_every_case_resolves_to_its_exact_command"
+        },
+        {
+          "path": "tests/test_paraphrase.py",
+          "test": "TableTest.test_every_route_is_new_and_captures_the_right_arguments"
+        },
+        {
+          "path": "tests/test_conversation.py",
+          "test": "ConversationFixtureTest.test_every_case_resolves_to_its_own_exact_route"
+        }
+      ],
+      "gap": "Language is table- and pattern-driven; an unseen phrasing falls back to the hashed router or refuses rather than being interpreted.",
+      "next": "Grow the checked-in phrasings from real misses; never claim open-ended understanding.",
+      "claim": "Checked-in everyday phrasings and short turns resolve to exact commands."
+    },
+    {
+      "id": "offline-operation",
+      "label": "Offline operation",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/sw.js"
+        },
+        {
+          "path": "tests/test_repo_hygiene.py",
+          "test": "DashboardTest.test_offline_app_is_installable_and_cached"
+        },
+        {
+          "path": "tests/test_repo_hygiene.py",
+          "test": "DashboardTest.test_offline_cache_includes_the_engines"
+        }
+      ],
+      "gap": "The static tab is offline-first, but machine and socket tools still require the optional Python server.",
+      "next": "Keep the static tab useful alone; the server stays optional and documented.",
+      "claim": "The static tab runs the router, workspace, builds, and edits with no network."
+    },
+    {
+      "id": "inspectability",
+      "label": "Inspectability",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/trace.js"
+        },
+        {
+          "path": "tests/test_trace.py",
+          "test": "TraceTest.test_trace_text_names_the_rule_and_the_cap"
+        },
+        {
+          "path": "tests/test_limits.py",
+          "test": "EnvelopeSourceTest.test_limits_json_is_valid_and_complete"
+        }
+      ],
+      "gap": "Inspection is per run and per project; there is no global audit trail across sessions or devices.",
+      "next": "Keep every claim tied to a named rule and a checked-in artifact.",
+      "claim": "Every run, rule, limit, and decision is printable and checked in."
+    },
+    {
+      "id": "cost",
+      "label": "Cost",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/web/llm.js"
+        },
+        {
+          "path": "tests/test_llm_js.py",
+          "test": "LlmAdapterTest.test_defaults_are_off_and_quiet"
+        },
+        {
+          "path": "tests/test_llm_js.py",
+          "test": "LlmAdapterTest.test_known_prompts_stay_deterministic"
+        }
+      ],
+      "gap": "The deterministic path costs nothing, but an enabled LLM adapter bills per call and has call and byte caps, not a money budget.",
+      "next": "Keep the adapter off by default; a money budget needs a provider contract first.",
+      "claim": "The deterministic path makes zero model or network calls."
+    },
+    {
+      "id": "reproducibility",
+      "label": "Reproducibility",
+      "status": "shipped",
+      "evidence": [
+        {
+          "path": "toolrx/demo_report.json"
+        },
+        {
+          "path": "tests/test_demo.py",
+          "test": "DemoReportTest.test_every_step_is_deterministic_and_successful"
+        },
+        {
+          "path": "tests/test_commands.py",
+          "test": "CommandLibraryTest.test_catalog_regenerates_byte_identically"
+        }
+      ],
+      "gap": "Checked-in fixtures and seeds reproduce byte for byte, but wall-clock fields and host-dependent machine tools vary between runs.",
+      "next": "Pin every fixture that can be pinned; name the fields that cannot.",
+      "claim": "Seeded builds and checked-in fixtures reproduce byte for byte."
+    }
+  ]
+}

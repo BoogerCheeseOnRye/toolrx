@@ -543,12 +543,12 @@ oversized wrapper is trimmed with a visible `r.style-trim` note and the inner
 result text is never truncated. The fourteen phrases are expanded from
 `toolrx/style.json` into `style.set` and `style.show` routes.
 
-The locked next batch (steps 51–59) keeps the same rules. The envelope gets
-explicit compaction and budget-aware plan rewriting. Finally `think`/reason
-becomes a deterministic program with bounded self-critique, stored traces, a
-per-project journal, mid-plan recovery, response styles that never change tool
-choice, and an honest LLM-parity scorecard. Steps 46–58 are shipped; step 59 is
-not yet. The acceptance criteria live in
+The locked batch (steps 51–59) is shipped and keeps the same rules. The
+envelope gained explicit compaction and budget-aware plan rewriting; then
+`think`/reason became a deterministic program with bounded self-critique,
+stored traces, a per-project journal, mid-plan recovery, response styles that
+never change tool choice, and an honest LLM-parity scorecard. Steps 46–59 are
+shipped. The acceptance criteria live in
 `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,
@@ -667,6 +667,31 @@ drawer and reacts when a device becomes active. The command center (mascot,
 or `?cmd=open`) lists the local models it finds and holds the WireGuard
 kill-switch; only the machine running the server is shown unless you add or
 attach more devices.
+
+## Parity scorecard
+
+This table is generated from `toolrx/scorecard.json` by
+`python3 toolrx/scorecard.py --write`; `--check` fails when a cited test, an
+evidence path, or a derived count drifts. It is a map of what is actually
+shipped against what a general LLM harness usually offers, not a benchmark
+against another product. The pitch quotes the same table.
+
+<!-- scorecard:start -->
+| Capability | Status | What ships | Evidence | Honest gap |
+| --- | --- | --- | --- | --- |
+| **Planning** | shipped | Multi-step plans split on connectors, preview before running, and stop at the first failure. | `toolrx/web/skills.js`, `tests/test_longform.py::SplitterTest.test_connectors_split_steps`, `tests/test_demo.py::DemoReportTest.test_request_and_plan_fit_the_envelope` | Plans are linear and re-derived per turn; there is no branching, backtracking, or cross-turn goal stack. |
+| **Tool use** | shipped | Allow-listed tools with deterministic routing, confidence, and margin. | `toolrx/web/router.js`, `tests/test_router.py::RouterTest.test_router_suite`, `tests/test_router.py::RouterTest.test_deterministic` | Allow-listed tools are fixed at build time; adding one needs a table entry, a centroid, and a rebuild rather than runtime discovery. |
+| **Long context** | partial | Bounded long input, line-aware splitting, and named per-result caps. | `toolrx/limits.json`, `tests/test_longform.py::SplitterTest.test_long_text_is_chunked_at_word_boundaries`, `tests/test_compaction.py::CompactionTest.test_explicit_compaction_enforces_the_cap` | Context is bounded by named character caps and line summaries; there is no retrieval, embedding, or paging beyond the stored window. |
+| **Compaction** | shipped | Explicit compaction with before/after bars and a reason for every dropped line. | `toolrx/web/context.js`, `tests/test_compaction.py::CompactionTest.test_two_runs_from_the_same_state_are_byte_identical`, `tests/test_compaction.py::CompactionTest.test_every_compaction_action_appears_in_the_notes` | Compaction is deterministic template summarization, so it can drop nuance that a semantic summarizer would keep. |
+| **Self-correction** | shipped | One bounded repair or resume pass from the recorded failure. | `toolrx/web/repair.js`, `tests/test_repair.py::RepairTest.test_math_failure_revises_to_the_suffix`, `tests/test_resume.py::ResumeTest.test_resume_runs_only_the_pending_suffix` | Repair re-runs only the failed suffix inside a two-pass cap; it cannot invent a different plan or retry a step with new arguments. |
+| **Natural language** | partial | Checked-in everyday phrasings and short turns resolve to exact commands. | `tests/test_everyday.py::EverydayLayerTest.test_every_case_resolves_to_its_exact_command`, `tests/test_paraphrase.py::TableTest.test_every_route_is_new_and_captures_the_right_arguments`, `tests/test_conversation.py::ConversationFixtureTest.test_every_case_resolves_to_its_own_exact_route` | Language is table- and pattern-driven; an unseen phrasing falls back to the hashed router or refuses rather than being interpreted. |
+| **Offline operation** | shipped | The static tab runs the router, workspace, builds, and edits with no network. | `toolrx/web/sw.js`, `tests/test_repo_hygiene.py::DashboardTest.test_offline_app_is_installable_and_cached`, `tests/test_repo_hygiene.py::DashboardTest.test_offline_cache_includes_the_engines` | The static tab is offline-first, but machine and socket tools still require the optional Python server. |
+| **Inspectability** | shipped | Every run, rule, limit, and decision is printable and checked in. | `toolrx/web/trace.js`, `tests/test_trace.py::TraceTest.test_trace_text_names_the_rule_and_the_cap`, `tests/test_limits.py::EnvelopeSourceTest.test_limits_json_is_valid_and_complete` | Inspection is per run and per project; there is no global audit trail across sessions or devices. |
+| **Cost** | shipped | The deterministic path makes zero model or network calls. | `toolrx/web/llm.js`, `tests/test_llm_js.py::LlmAdapterTest.test_defaults_are_off_and_quiet`, `tests/test_llm_js.py::LlmAdapterTest.test_known_prompts_stay_deterministic` | The deterministic path costs nothing, but an enabled LLM adapter bills per call and has call and byte caps, not a money budget. |
+| **Reproducibility** | shipped | Seeded builds and checked-in fixtures reproduce byte for byte. | `toolrx/demo_report.json`, `tests/test_demo.py::DemoReportTest.test_every_step_is_deterministic_and_successful`, `tests/test_commands.py::CommandLibraryTest.test_catalog_regenerates_byte_identically` | Checked-in fixtures and seeds reproduce byte for byte, but wall-clock fields and host-dependent machine tools vary between runs. |
+
+_Scorecard metrics: 12,089 commands · 555 tests · 36 named caps · 579 everyday cases · 33 router cases · 638 fixture cases._
+<!-- scorecard:end -->
 
 ## Configuration
 

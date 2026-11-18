@@ -1539,7 +1539,7 @@ the explanatory and tutorial wrappers, persistence through a simulated reload,
 identical `via` and project file bytes across all three styles, unchanged
 refusals, and a fetch spy that records zero calls.
 
-### 59. LLM-parity scorecard and gap analysis — planned
+### 59. LLM-parity scorecard and gap analysis — done
 
 Add a living, checked-in scorecard mapping common harness capabilities
 (planning, tool use, long context, compaction, self-correction, natural
@@ -1552,39 +1552,22 @@ after this batch and keeps claims tied to tests.
 the suite; and the pitch and README quote the scorecard rather than ad-hoc
 claims.
 
-Plan:
-
-* Add one checked-in table, `toolrx/scorecard.json`, with a `version` and a
-  `capabilities` list. Each entry has a stable `id`, a human `label`, a
-  `status` (`shipped`, `partial`, or `deferred`), at least one `evidence`
-  entry (`{path, test?}`), a non-empty `gap`, and a `next` step number or
-  `null`. The ten capabilities are planning, tool use, long context,
-  compaction, self-correction, natural language, offline operation,
-  inspectability, cost, and reproducibility. No capability may claim
-  `shipped` without at least one test evidence entry.
-* Add `toolrx/scorecard.py`, which derives every quoted number from the
-  repository rather than storing it twice: catalog count and per-category
-  counts from `toolrx/coverage.json`, fixture case counts from the same
-  report, named limits from `toolrx/limits.json`, and the test count from
-  `def test_` across `tests/test_*.py`. It renders one Markdown table and one
-  HTML row list from the same data.
-* `scorecard.py --write` replaces the text between `<!-- scorecard:start -->`
-  and `<!-- scorecard:end -->` in `README.md` and `docs/pitch.html`, plus the
-  inline `<!-- scorecard:catalog -->` and `<!-- scorecard:tests -->` marker
-  spans in the pitch stats. `scorecard.py --check` fails when a block is
-  stale, an id repeats, a status is unknown, a gap is empty, an evidence path
-  or named test no longer exists, or a derived metric drifted. A `shipped`
-  row with no test evidence is a failure.
-* README gets one `## Parity scorecard` section with the generated table and
-  a metrics line; the pitch gets one `parity scorecard` slide with the
-  generated rows. The ad-hoc `429 automated tests` stat becomes a generated
-  marker so the pitch can no longer drift from the suite.
-* `tests/test_scorecard.py` covers the schema, the derived metrics against
-  `coverage.json` and `limits.json`, every cited path and test, the generated
-  blocks in both files, the catalog/test marker spans, and the no-network
-  promise (the checker only reads checked-in files).
-* No new route, command, or numeric limit is added; the scorecard is a
-  document plus a drift check, so it cannot change runtime behaviour.
+Landed as one checked-in table, `toolrx/scorecard.json`, with the ten
+capabilities above. Each row has a `shipped`, `partial`, or `deferred` status,
+a short claim, at least one evidence entry (`{path, test?}`), a non-empty
+honest gap, and a next move. `toolrx/scorecard.py` derives every quoted number
+from the repository: catalog and fixture counts from `toolrx/coverage.json`,
+named caps from `toolrx/limits.json`, and the test count from `def test_`
+across `tests/test_*.py`. It renders one Markdown table and one HTML row list
+from the same data; `--write` replaces the marker-bound blocks in `README.md`
+and `docs/pitch.html`, and `--check` fails on a stale block, a duplicate id,
+an unknown status, an empty gap, a missing evidence path or test, a `shipped`
+row without a test, or any drifted metric. The pitch's catalog and test counts
+are now marker-bound, so the old ad-hoc `429 automated tests` claim is gone.
+`tests/test_scorecard.py` covers the schema, the derived metrics, every cited
+path and test, both generated blocks, the inline markers, the stale-block
+failure, and the no-network promise. No route, command, or numeric limit was
+added.
 
 ## Order
 
