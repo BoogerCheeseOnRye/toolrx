@@ -13,7 +13,12 @@
         "show decisions",
         "decisions so far",
         "what did we decide",
-        "what have we decided"
+        "what have we decided",
+        "show the project journal",
+        "open the journal",
+        "show the decision log",
+        "what is in the journal",
+        "show journal entries"
       ]
     },
     "query": {
@@ -27,7 +32,33 @@
         "why did we choose {topic}",
         "why did we pick {topic}",
         "what did we say about {topic}",
-        "journal about {topic}"
+        "journal about {topic}",
+        "what was the decision about {topic}",
+        "what was the decision on {topic}",
+        "what did we settle on {topic}",
+        "what did we agree about {topic}",
+        "remind me what we decided about {topic}",
+        "remind me what we chose for {topic}",
+        "why did we go with {topic}",
+        "what reason did we give for {topic}",
+        "what did we note about {topic}",
+        "search the journal for {topic}",
+        "find journal entries about {topic}",
+        "journal entry about {topic}",
+        "what have we decided about {topic}",
+        "what have we rejected about {topic}",
+        "what is the decision on {topic}",
+        "what's the decision on {topic}",
+        "tell me what we decided about {topic}",
+        "remind me about {topic}",
+        "what did we choose for {topic}",
+        "what did we pick for {topic}",
+        "show the journal about {topic}",
+        "what changed about {topic}",
+        "show the decision about {topic}",
+        "find the decision about {topic}",
+        "why is {topic} like that",
+        "what did we do about {topic}"
       ],
       "bare": [
         "what did we decide about",
@@ -42,7 +73,10 @@
       "bare": [
         "clear journal",
         "clear the journal",
-        "clear decisions"
+        "clear decisions",
+        "reset the journal",
+        "wipe the journal",
+        "clear the decision log"
       ]
     }
   }

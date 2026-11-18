@@ -216,6 +216,75 @@ eval(fs.readFileSync(SKILLS, 'utf8'));
         self.assertEqual(result["exact"], result["total"])
         self.assertFalse(result["bad"], result["bad"])
 
+    @unittest.skipUnless(NODE, "node is not installed")
+    def test_js_file_pack_executes_in_the_tab(self):
+        """A catalog route is only real if the tab has a handler for its op.
+
+        Step 60 added file phrasings that resolve to `fs.read_file` and
+        `fs.list_dir`. The Python executor already had both; the static tab did
+        not, so an exact route would have matched and then failed. Pin the two
+        handlers against the virtual workspace, including the honest refusal
+        for a missing file.
+        """
+        script = r"""
+const fs = require('fs');
+const COMMANDS = process.argv[1], LIMITS = process.argv[2], SKILLS = process.argv[3];
+global.self = global;
+global.fetch = () => Promise.resolve({
+  ok: true,
+  json: () => Promise.resolve(JSON.parse(fs.readFileSync(COMMANDS, 'utf8'))),
+});
+const store = {};
+global.localStorage = {
+  getItem: k => Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null,
+  setItem: (k, v) => { store[k] = String(v); },
+  removeItem: k => { delete store[k]; },
+};
+global.CustomEvent = class { constructor(type, opts) { this.type = type; this.detail = opts && opts.detail; } };
+global.dispatchEvent = () => {};
+global.toolrxRouter = { load: () => ({}), route: () => ({ tool: 'none', args: {}, confidence: 0 }) };
+eval(fs.readFileSync(LIMITS, 'utf8'));
+eval(fs.readFileSync(SKILLS, 'utf8'));
+const files = { 'notes.md': 'one two three', 'data.csv': 'a,b' };
+const ctx = {
+  fs: {
+    exists: p => Object.prototype.hasOwnProperty.call(files, p),
+    read: p => files[p],
+    write: (p, c) => { files[p] = String(c); return 'wrote ' + p; },
+    list: () => Object.keys(files).sort().join('\n'),
+  },
+};
+(async () => {
+  await self.toolrxSkills.init('commands.json');
+  const run = async q => {
+    const rows = await self.toolrxSkills.runPrompt(q, Object.assign({}, ctx));
+    return { text: rows[0].text, via: rows[0].via, error: !!rows[0].error };
+  };
+  console.log(JSON.stringify({
+    open: await run('open notes.md'),
+    peek: await run('peek at data.csv'),
+    list: await run('list this folder'),
+    missing: await run('open missing.md'),
+  }));
+})().catch(e => { console.error(e.stack || e); process.exit(1); });
+"""
+        proc = subprocess.run(
+            [NODE, "-e", script, COMMANDS,
+             os.path.join(ROOT, "toolrx", "web", "limits.js"),
+             os.path.join(ROOT, "toolrx", "web", "skills.js")],
+            capture_output=True, text=True, timeout=120)
+        self.assertEqual(proc.returncode, 0, proc.stderr[-3000:])
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["open"]["text"], "one two three")
+        self.assertEqual(out["open"]["via"], "fs.read_file")
+        self.assertFalse(out["open"]["error"])
+        self.assertEqual(out["peek"]["text"], "a,b")
+        self.assertFalse(out["peek"]["error"])
+        self.assertEqual(out["list"]["text"], "data.csv\nnotes.md")
+        self.assertEqual(out["list"]["via"], "fs.list_dir")
+        self.assertTrue(out["missing"]["error"])
+        self.assertIn("no such file", out["missing"]["text"])
+
     def test_docs_quote_the_current_catalog_count(self):
         count = self.catalog["count"]
         with open(os.path.join(ROOT, "README.md"), encoding="utf-8") as f:

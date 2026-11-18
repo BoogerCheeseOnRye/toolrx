@@ -6,39 +6,40 @@
   },
   "catalog": {
     "categories": {
-      "build": 8312,
-      "chat": 122,
+      "build": 8340,
+      "chat": 129,
       "color": 10,
-      "context": 106,
+      "context": 120,
       "data": 15,
       "date": 32,
-      "edit": 242,
+      "edit": 351,
       "encoding": 30,
       "facts": 2,
+      "files": 80,
       "generate": 19,
-      "journal": 19,
+      "journal": 53,
       "lang": 45,
       "library": 43,
       "llm": 33,
-      "math": 249,
-      "memory": 98,
+      "math": 285,
+      "memory": 116,
       "misc": 55,
       "plan": 18,
-      "project": 164,
+      "project": 180,
       "regex": 3,
       "repair": 18,
       "style": 14,
-      "text": 384,
+      "text": 434,
       "think": 34,
       "units": 1990,
       "web": 32
     },
-    "count": 12089,
+    "count": 12481,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7084
+    "pure_literals": 7305
   },
   "fixtures": {
     "builds": {
@@ -190,7 +191,7 @@
       "units": 14
     },
     "everyday": {
-      "cases": 579,
+      "cases": 930,
       "confidence": {
         "max": 0.676,
         "median": 0.5536,
@@ -198,14 +199,14 @@
         "n": 10,
         "p10": 0.4641
       },
-      "correct": 579,
+      "correct": 930,
       "expected": {
-        "exact": 569,
+        "exact": 920,
         "refusal": 0,
         "router": 10
       },
       "lanes": {
-        "exact": 569,
+        "exact": 920,
         "fallback": 0,
         "refusal": 0,
         "router": 10
@@ -220,137 +221,156 @@
       "misses": [],
       "subfamilies": {
         "build": {
-          "cases": 108,
+          "cases": 136,
           "confidence": null,
-          "correct": 108,
+          "correct": 136,
           "expected": {
-            "exact": 108,
+            "exact": 136,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 108,
+            "exact": 136,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 108
+          "units": 136
         },
         "context": {
-          "cases": 48,
+          "cases": 62,
           "confidence": null,
-          "correct": 48,
+          "correct": 62,
           "expected": {
-            "exact": 48,
+            "exact": 62,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 48,
+            "exact": 62,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 48
+          "units": 62
         },
         "edit": {
-          "cases": 54,
+          "cases": 84,
           "confidence": null,
-          "correct": 54,
+          "correct": 84,
           "expected": {
-            "exact": 54,
+            "exact": 84,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 54,
+            "exact": 84,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 54
+          "units": 84
         },
         "extract": {
-          "cases": 56,
+          "cases": 106,
           "confidence": null,
-          "correct": 56,
+          "correct": 106,
           "expected": {
-            "exact": 56,
+            "exact": 106,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 56,
+            "exact": 106,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 56
+          "units": 106
+        },
+        "files": {
+          "cases": 80,
+          "confidence": null,
+          "correct": 80,
+          "expected": {
+            "exact": 80,
+            "refusal": 0,
+            "router": 0
+          },
+          "lanes": {
+            "exact": 80,
+            "fallback": 0,
+            "refusal": 0,
+            "router": 0
+          },
+          "margin": null,
+          "misses": [],
+          "units": 80
         },
         "growth": {
-          "cases": 60,
+          "cases": 139,
           "confidence": null,
-          "correct": 60,
+          "correct": 139,
           "expected": {
-            "exact": 60,
+            "exact": 139,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 60,
+            "exact": 139,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 60
+          "units": 139
         },
         "math": {
-          "cases": 52,
+          "cases": 88,
           "confidence": null,
-          "correct": 52,
+          "correct": 88,
           "expected": {
-            "exact": 52,
+            "exact": 88,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 52,
+            "exact": 88,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 52
+          "units": 88
         },
         "memory": {
-          "cases": 45,
+          "cases": 63,
           "confidence": null,
-          "correct": 45,
+          "correct": 63,
           "expected": {
-            "exact": 45,
+            "exact": 63,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 45,
+            "exact": 63,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 45
+          "units": 63
         },
         "paraphrase-exact": {
           "cases": 22,
@@ -403,23 +423,23 @@
           "units": 10
         },
         "projects": {
-          "cases": 36,
+          "cases": 52,
           "confidence": null,
-          "correct": 36,
+          "correct": 52,
           "expected": {
-            "exact": 36,
+            "exact": 52,
             "refusal": 0,
             "router": 0
           },
           "lanes": {
-            "exact": 36,
+            "exact": 52,
             "fallback": 0,
             "refusal": 0,
             "router": 0
           },
           "margin": null,
           "misses": [],
-          "units": 36
+          "units": 52
         },
         "system": {
           "cases": 40,
@@ -461,9 +481,9 @@
         }
       },
       "summary": {
-        "exactHits": 569,
+        "exactHits": 920,
         "exactRate": 1.0,
-        "exactTotal": 569,
+        "exactTotal": 920,
         "fallback": 0,
         "meetsThresholds": true,
         "minMargin": 0.0253,
@@ -478,7 +498,7 @@
         "minMargin": 0.019,
         "routerHitRate": 0.9
       },
-      "units": 579
+      "units": 930
     },
     "growth": {
       "cases": 5,

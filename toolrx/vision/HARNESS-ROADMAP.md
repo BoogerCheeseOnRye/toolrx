@@ -1588,7 +1588,7 @@ network call, an external test runner, or a real shell.
    derived from checked-in fixtures and tests, and a drift check fails when a
    quoted number changes.
 
-### 60. Broader everyday and domain language packs
+### 60. Broader everyday and domain language packs — done
 
 Grow the existing paraphrase, synonym, and everyday tables only where the
 coverage report or scorecard shows a gap. Add focused packs for the domains
@@ -1608,6 +1608,26 @@ resolves to its own exact command with exact arguments and zero chat/router
 fallback, the exact-hit rate stays at or above the current 90% floor, the
 correction fixtures cover at least three "I meant…" forms, and the catalog
 rebuild is byte-identical with zero duplicate ids or regexes.
+
+Landed as one `DEPTH` table in `toolrx/everyday.py`: 351 new phrasings across
+nine domains (math and units, files, project growth, extractors, builds,
+edits, projects, context, and memory), each a full display phrase
+with placeholders, fixed args, and expected captured args. One capture
+vocabulary (`_rx`, `_sample`, `_expect`, `_generated`) expands them, so a pack
+cannot introduce a second regex dialect. The base catalog is the authority on
+coverage: every row was matched against it before it landed, and a phrase an
+earlier command already owns was dropped rather than shipped as a route that can
+never win. `entries(exclude=...)` re-applies that rule at build time for exact
+pattern duplicates, and `tests/test_everyday.py` fails if any row becomes
+shadowed later. The everyday fixture grew from 547 to 898 cases; all eleven
+families carry at least 30 cases, every case resolves to its own exact command
+with exact arguments, and there are zero chat or router fallbacks. The
+conversation table gained seven specific correction routes (`no, the other
+one`, `i meant the project one`, `i meant the first one`, `i meant the second
+one`, `try the other one`, `use the same seed`) ahead of the generic capture,
+and `toolrx/journal.json` grew to 33 query templates, 12 show phrases, and six
+clear phrases, exported as a 53-case fixture. The catalog rebuilds at 12,481
+patterns with 199 duplicate patterns skipped and no duplicate ids or regexes.
 
 ### 61. Deterministic explain this project / this plan
 

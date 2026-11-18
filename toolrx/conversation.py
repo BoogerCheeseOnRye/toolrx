@@ -35,6 +35,29 @@ REJECT = [
 # Corrections carry the replacement text. The handler either revises the last
 # action, stages a build for confirmation, or asks one bounded question.
 CORRECT = [
+    # Step 60: specific "I meant ..." forms come before the generic capture so
+    # each one has its own exact route and its own fixture case.
+    ("i meant the other one",
+     r"^(?:no[, ]+)?i\s+meant\s+(the\s+other\s+one)$",
+     "i meant the other one", "the other one"),
+    ("i meant the project one",
+     r"^(?:no[, ]+)?i\s+meant\s+(the\s+project\s+one)$",
+     "i meant the project one", "the project one"),
+    ("i meant the first one",
+     r"^(?:no[, ]+)?i\s+meant\s+(the\s+first\s+one)$",
+     "i meant the first one", "the first one"),
+    ("i meant the second one",
+     r"^(?:no[, ]+)?i\s+meant\s+(the\s+second\s+one)$",
+     "i meant the second one", "the second one"),
+    ("no, the other one",
+     r"^(?:no[, ]+)?(the\s+other\s+one)$",
+     "no, the other one", "the other one"),
+    ("try the other one",
+     r"^try\s+(the\s+other\s+one)$",
+     "try the other one", "the other one"),
+    ("use the same seed",
+     r"^(?:use|keep)\s+(the\s+same\s+seed)$",
+     "use the same seed", "the same seed"),
     ("i meant {text}",
      r"^(?:no[, ]+)?(?:i\s+meant|i\s+mean)\s+(.+)$",
      "no, i meant 13 plus 30", "13 plus 30"),

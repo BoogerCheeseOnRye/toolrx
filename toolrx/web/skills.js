@@ -1875,6 +1875,27 @@
 
   /* -------------------------------------------------------------- ops ---- */
   const OPS = {
+    /* Step 60: the everyday file pack resolves to the same two ops the Python
+     * executor already ships. The tab has no real filesystem, so these read the
+     * virtual workspace through ctx.fs and refuse plainly when it is absent
+     * instead of claiming a file was opened. */
+    "fs.read_file": function (a, ctx) {
+      const p = String(a.path || "").trim();
+      if (!p) throw new Error("no file name given");
+      if (!ctx || !ctx.fs || typeof ctx.fs.read !== "function") {
+        throw new Error("file reads need the browser workspace");
+      }
+      if (typeof ctx.fs.exists === "function" && !ctx.fs.exists(p)) {
+        throw new Error("no such file: " + p);
+      }
+      return ctx.fs.read(p);
+    },
+    "fs.list_dir": function (a, ctx) {
+      if (!ctx || !ctx.fs || typeof ctx.fs.list !== "function") {
+        throw new Error("folder listings need the browser workspace");
+      }
+      return ctx.fs.list(a.path || "");
+    },
     "library.stats": function () {
       return libStats();
     },

@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "count": 55,
+  "count": 62,
   "kinds": {
     "ack": 12,
     "clear": 4,
     "confirm": 14,
-    "correct": 3,
+    "correct": 10,
     "reject": 9,
     "repair": 8,
     "show": 5
@@ -201,6 +201,38 @@
     },
     {
       "kind": "correct",
+      "text": "i meant the first one",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the first one"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "i meant the other one",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the other one"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "i meant the project one",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the project one"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "i meant the second one",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the second one"
+      }
+    },
+    {
+      "kind": "correct",
       "text": "no, i meant 13 plus 30",
       "op": "conversation.correct",
       "args": {
@@ -209,10 +241,34 @@
     },
     {
       "kind": "correct",
+      "text": "no, the other one",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the other one"
+      }
+    },
+    {
+      "kind": "correct",
       "text": "sorry, i meant 13 plus 30",
       "op": "conversation.correct",
       "args": {
         "text": "13 plus 30"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "try the other one",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the other one"
+      }
+    },
+    {
+      "kind": "correct",
+      "text": "use the same seed",
+      "op": "conversation.correct",
+      "args": {
+        "text": "the same seed"
       }
     },
     {

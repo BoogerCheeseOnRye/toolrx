@@ -1,15 +1,16 @@
 {
   "version": 1,
-  "count": 547,
+  "count": 898,
   "families": {
-    "build": 108,
-    "context": 48,
-    "edit": 54,
-    "extract": 56,
-    "growth": 60,
-    "math": 52,
-    "memory": 45,
-    "projects": 36,
+    "build": 136,
+    "context": 62,
+    "edit": 84,
+    "extract": 106,
+    "files": 80,
+    "growth": 139,
+    "math": 88,
+    "memory": 63,
+    "projects": 52,
     "system": 40,
     "text": 48
   },
@@ -160,6 +161,54 @@
     },
     {
       "family": "build",
+      "text": "can you build me a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build me a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build me a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build me a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you build me an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "can you make a calculator",
+      "op": "build",
+      "args": {
+        "kind": "calculator"
+      }
+    },
+    {
+      "family": "build",
       "text": "could you build a calculator",
       "op": "build",
       "args": {
@@ -300,6 +349,22 @@
       "op": "build",
       "args": {
         "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "generate a memory game",
+      "op": "build",
+      "args": {
+        "kind": "memory game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "give me a tower defense",
+      "op": "build",
+      "args": {
+        "kind": "tower defense"
       }
     },
     {
@@ -448,6 +513,78 @@
     },
     {
       "family": "build",
+      "text": "i need a timer",
+      "op": "build",
+      "args": {
+        "kind": "timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i want a notes app",
+      "op": "build",
+      "args": {
+        "kind": "notes"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i want to build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i want to build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i want to build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i want to build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i want to build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like a clock",
+      "op": "build",
+      "args": {
+        "kind": "clock"
+      }
+    },
+    {
+      "family": "build",
+      "text": "i'd like to build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
       "text": "i'd like you to build a calculator",
       "op": "build",
       "args": {
@@ -592,6 +729,62 @@
     },
     {
       "family": "build",
+      "text": "let's build a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "let's build a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "let's build a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "let's build a shooter",
+      "op": "build",
+      "args": {
+        "kind": "shooter"
+      }
+    },
+    {
+      "family": "build",
+      "text": "let's build an rpg",
+      "op": "build",
+      "args": {
+        "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "make a pomodoro timer",
+      "op": "build",
+      "args": {
+        "kind": "pomodoro timer"
+      }
+    },
+    {
+      "family": "build",
+      "text": "make me a platformer",
+      "op": "build",
+      "args": {
+        "kind": "platformer"
+      }
+    },
+    {
+      "family": "build",
       "text": "please build a calculator",
       "op": "build",
       "args": {
@@ -732,6 +925,38 @@
       "op": "build",
       "args": {
         "kind": "rpg"
+      }
+    },
+    {
+      "family": "build",
+      "text": "please create a snake game",
+      "op": "build",
+      "args": {
+        "kind": "snake game"
+      }
+    },
+    {
+      "family": "build",
+      "text": "set up a dashboard",
+      "op": "build",
+      "args": {
+        "kind": "dashboard"
+      }
+    },
+    {
+      "family": "build",
+      "text": "spin up a landing page",
+      "op": "build",
+      "args": {
+        "kind": "landing page"
+      }
+    },
+    {
+      "family": "build",
+      "text": "start a new racing game",
+      "op": "build",
+      "args": {
+        "kind": "racing game"
       }
     },
     {
@@ -928,6 +1153,18 @@
     },
     {
       "family": "context",
+      "text": "compare context with the previous snapshot",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "context please",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
       "text": "could you clear context",
       "op": "context.clear",
       "args": {}
@@ -972,6 +1209,18 @@
       "family": "context",
       "text": "could you take a context snapshot",
       "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "erase the context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "give me the context",
+      "op": "context.show",
       "args": {}
     },
     {
@@ -1072,6 +1321,12 @@
     },
     {
       "family": "context",
+      "text": "make the context smaller",
+      "op": "context.compact",
+      "args": {}
+    },
+    {
+      "family": "context",
       "text": "please clear context",
       "op": "context.clear",
       "args": {}
@@ -1116,6 +1371,60 @@
       "family": "context",
       "text": "please take a context snapshot",
       "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "print the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "reduce the context",
+      "op": "context.compact",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "run the rest",
+      "op": "context.continue",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "show me the context",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "show what changed in context",
+      "op": "context.diff",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "take a snapshot of the context",
+      "op": "context.snapshot",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "throw away the context",
+      "op": "context.clear",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "what does the context say",
+      "op": "context.show",
+      "args": {}
+    },
+    {
+      "family": "context",
+      "text": "wipe context",
+      "op": "context.clear",
       "args": {}
     },
     {
@@ -1165,6 +1474,94 @@
       "text": "would you take a context snapshot",
       "op": "context.snapshot",
       "args": {}
+    },
+    {
+      "family": "edit",
+      "text": "add a big boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add a boss enemy",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add a day and night cycle",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add a new quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add a new world",
+      "op": "edit.apply",
+      "args": {
+        "patch": "world"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add a side quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add another world",
+      "op": "edit.apply",
+      "args": {
+        "patch": "world"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add audio effects",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add game audio",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add more enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "add sound to the game",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
     },
     {
       "family": "edit",
@@ -1240,6 +1637,14 @@
     },
     {
       "family": "edit",
+      "text": "change it to isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
       "text": "could you add a boss",
       "op": "edit.apply",
       "args": {
@@ -1308,6 +1713,38 @@
       "op": "edit.apply",
       "args": {
         "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "enable double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "expand the world",
+      "op": "edit.apply",
+      "args": {
+        "patch": "world"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "give it a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "give it a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
       }
     },
     {
@@ -1456,6 +1893,86 @@
     },
     {
       "family": "edit",
+      "text": "include a boss",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "include a quest",
+      "op": "edit.apply",
+      "args": {
+        "patch": "quest"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "include multiple enemy types",
+      "op": "edit.apply",
+      "args": {
+        "patch": "enemy-types"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "include sound effects",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "let the player double jump",
+      "op": "edit.apply",
+      "args": {
+        "patch": "double-jump"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "make it change from day to night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "make it day and night",
+      "op": "edit.apply",
+      "args": {
+        "patch": "day-night"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "make it harder to play",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "make the game more difficult",
+      "op": "edit.apply",
+      "args": {
+        "patch": "harder"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "make the view isometric",
+      "op": "edit.apply",
+      "args": {
+        "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
       "text": "please add a boss",
       "op": "edit.apply",
       "args": {
@@ -1524,6 +2041,38 @@
       "op": "edit.apply",
       "args": {
         "patch": "isometric"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "put a boss in it",
+      "op": "edit.apply",
+      "args": {
+        "patch": "boss"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "switch it to 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "turn on sound",
+      "op": "edit.apply",
+      "args": {
+        "patch": "sound"
+      }
+    },
+    {
+      "family": "edit",
+      "text": "upgrade it to 3d",
+      "op": "edit.apply",
+      "args": {
+        "patch": "three-d"
       }
     },
     {
@@ -1734,6 +2283,102 @@
     },
     {
       "family": "extract",
+      "text": "count words in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "extract all emails from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "extract all links from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "extract all numbers from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "numbers",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "get the emails from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "get the links from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "get the numbers from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "numbers",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "get the urls out of notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "give me a short summary of notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "give me a summary of notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "give me an outline of notes.md",
+      "op": "text.code",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
       "text": "go ahead and count the words in notes.md",
       "op": "text.count",
       "args": {
@@ -1801,6 +2446,129 @@
     },
     {
       "family": "extract",
+      "text": "grab all the emails from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab all the links from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab all the numbers from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "numbers",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab the key facts from notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab the list from notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab the numbers from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "numbers",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "grab the urls from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "how many characters are in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "chars",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "how many lines are in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "lines",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "how many lines does notes.md have",
+      "op": "text.count",
+      "args": {
+        "what": "lines",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "how many words are in notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "how many words does notes.md contain",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "how many words does notes.md have",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
       "text": "i want you to count the words in notes.md",
       "op": "text.count",
       "args": {
@@ -1861,6 +2629,30 @@
     {
       "family": "extract",
       "text": "i want you to summarize notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "list all the headings in notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "list all the key facts in notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "make a summary of notes.md",
       "op": "text.summarize",
       "args": {
         "text": "notes.md"
@@ -1935,6 +2727,101 @@
     },
     {
       "family": "extract",
+      "text": "print the first 5 lines of notes.md",
+      "op": "text.firstlines",
+      "args": {
+        "n": "5",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull out the emails from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull out the headings from notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull out the links from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull out the numbers from notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "numbers",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull the emails out of notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull the headings out of notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull the key facts out of notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull the links out of notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull the list out of notes.md",
+      "op": "text.list",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "pull the numbers out of notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "numbers",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
       "text": "quickly count the words in notes.md",
       "op": "text.count",
       "args": {
@@ -1997,6 +2884,94 @@
       "text": "quickly summarize notes.md",
       "op": "text.summarize",
       "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "show me the emails in notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "show me the headings in notes.md",
+      "op": "text.headings",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "show me the key facts in notes.md",
+      "op": "text.facts",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "show me the links in notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "tell me the line count of notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "lines",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "tell me the word count of notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "what emails are in notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "emails",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "what links are in notes.md",
+      "op": "text.extract",
+      "args": {
+        "what": "urls",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "what's the character count of notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "chars",
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "what's the word count of notes.md",
+      "op": "text.count",
+      "args": {
+        "what": "words",
         "text": "notes.md"
       }
     },
@@ -2065,6 +3040,782 @@
       "op": "text.summarize",
       "args": {
         "text": "notes.md"
+      }
+    },
+    {
+      "family": "extract",
+      "text": "write a summary of notes.md",
+      "op": "text.summarize",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "browse this directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "cat notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "display notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "display the contents of notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "dump notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "fetch notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "give me notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "give me the contents of notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "let me read notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "let me see notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "list all files",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list everything here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list files",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the contents",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the contents of this folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the current directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the current folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the files here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list the folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "list this folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "load notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "open notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "open the document notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "open the file notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "open up notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "output notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "peek at notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "print notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "print out notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "print out the contents of notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "print the contents of notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "print the file notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "pull up notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "read me notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "read out notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "read the document notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "read the file notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show all files",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show files",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show folder contents",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show me notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show me the current folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show me the file notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show me the files",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show me the files here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show me the text in notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show me the text of notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show me what's here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show me what's in notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show the contents",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show the contents of notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show the contents of this folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show the document notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show the file notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show the files",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show the folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show the text in notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "show the working directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "show this directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "view notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "what does notes.md say",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "what files are here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what files are in this directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what files are in this folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what files are there",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what files do i have here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what is here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what is in notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "what is in the current folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what is in this directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what is in this folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what is inside notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "what's here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what's in here",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what's in notes.md",
+      "op": "fs.read_file",
+      "args": {
+        "path": "notes.md"
+      }
+    },
+    {
+      "family": "files",
+      "text": "what's in the current directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what's in the directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what's in the working directory",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "files",
+      "text": "what's in this folder",
+      "op": "fs.list_dir",
+      "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "add a combat system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a crafting system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "crafting"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a dialogue system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a particle system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "particles"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a quest system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "quests"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a save system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a ui system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add a weather system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "weather"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add ai mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "ai"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add an ai system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "ai"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add an audio system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "audio"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add an inventory system to the project",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add audio mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "audio"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add combat mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add crafting mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "crafting"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add dialogue mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add inventory mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add particle mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "particles"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add quest mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "quests"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add save mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add to the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add to the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add to the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add to the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add ui mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "add weather mechanics to the project",
+      "op": "system.add",
+      "args": {
+        "system": "weather"
       }
     },
     {
@@ -2221,6 +3972,278 @@
     },
     {
       "family": "growth",
+      "text": "develop the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "develop the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "develop the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "develop the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "extend the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "extend the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "extend the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "extend the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "flesh out the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "flesh out the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "flesh out the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "flesh out the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a ai system",
+      "op": "system.add",
+      "args": {
+        "system": "ai"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a audio system",
+      "op": "system.add",
+      "args": {
+        "system": "audio"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a crafting system",
+      "op": "system.add",
+      "args": {
+        "system": "crafting"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a particles system",
+      "op": "system.add",
+      "args": {
+        "system": "particles"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a quests system",
+      "op": "system.add",
+      "args": {
+        "system": "quests"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a ui system",
+      "op": "system.add",
+      "args": {
+        "system": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give it a weather system",
+      "op": "system.add",
+      "args": {
+        "system": "weather"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a crafting system",
+      "op": "system.add",
+      "args": {
+        "system": "crafting"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a particle system",
+      "op": "system.add",
+      "args": {
+        "system": "particles"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a quest system",
+      "op": "system.add",
+      "args": {
+        "system": "quests"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a ui system",
+      "op": "system.add",
+      "args": {
+        "system": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project a weather system",
+      "op": "system.add",
+      "args": {
+        "system": "weather"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project an ai system",
+      "op": "system.add",
+      "args": {
+        "system": "ai"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project an audio system",
+      "op": "system.add",
+      "args": {
+        "system": "audio"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "give the project an inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
       "text": "go ahead and add a combat system",
       "op": "system.add",
       "args": {
@@ -2373,6 +4396,126 @@
     },
     {
       "family": "growth",
+      "text": "include a ai system",
+      "op": "system.add",
+      "args": {
+        "system": "ai"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a audio system",
+      "op": "system.add",
+      "args": {
+        "system": "audio"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a combat system",
+      "op": "system.add",
+      "args": {
+        "system": "combat"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a crafting system",
+      "op": "system.add",
+      "args": {
+        "system": "crafting"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a dialogue system",
+      "op": "system.add",
+      "args": {
+        "system": "dialogue"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a inventory system",
+      "op": "system.add",
+      "args": {
+        "system": "inventory"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a particles system",
+      "op": "system.add",
+      "args": {
+        "system": "particles"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a quests system",
+      "op": "system.add",
+      "args": {
+        "system": "quests"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a save system",
+      "op": "system.add",
+      "args": {
+        "system": "save"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a ui system",
+      "op": "system.add",
+      "args": {
+        "system": "ui"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "include a weather system",
+      "op": "system.add",
+      "args": {
+        "system": "weather"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "make the content module bigger",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "make the core module bigger",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "make the data module bigger",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "make the ui module bigger",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
+    },
+    {
+      "family": "growth",
       "text": "please add a combat system",
       "op": "system.add",
       "args": {
@@ -2446,6 +4589,38 @@
       "text": "please split the project into modules",
       "op": "project.grow",
       "args": {}
+    },
+    {
+      "family": "growth",
+      "text": "work on the content module",
+      "op": "module.expand",
+      "args": {
+        "module": "content"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "work on the core module",
+      "op": "module.expand",
+      "args": {
+        "module": "core"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "work on the data module",
+      "op": "module.expand",
+      "args": {
+        "module": "data"
+      }
+    },
+    {
+      "family": "growth",
+      "text": "work on the ui module",
+      "op": "module.expand",
+      "args": {
+        "module": "ui"
+      }
     },
     {
       "family": "growth",
@@ -2725,6 +4900,113 @@
     },
     {
       "family": "math",
+      "text": "find the average of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "mean",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "find the factors of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "factors",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "find the median of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "median",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "find the square root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "sqrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me 16 plus 4",
+      "op": "math.expr",
+      "args": {
+        "expr": "16+4"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the average of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "mean",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the cube root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "cbrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the factors of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "factors",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the median of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "median",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the prime factors of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "primefactors",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the square root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "sqrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "give me the total of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "sum",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
       "text": "how much is 12 divided by 30",
       "op": "math.binary",
       "args": {
@@ -2765,6 +5047,14 @@
     },
     {
       "family": "math",
+      "text": "how much is 16 percent of 4",
+      "op": "math.expr",
+      "args": {
+        "expr": "16/100*4"
+      }
+    },
+    {
+      "family": "math",
       "text": "i need 12 divided by 30",
       "op": "math.binary",
       "args": {
@@ -2801,6 +5091,15 @@
         "op": "mul",
         "a": "12",
         "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "list the prime factors of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "primefactors",
+        "a": "16"
       }
     },
     {
@@ -2885,6 +5184,15 @@
     },
     {
       "family": "math",
+      "text": "tell me the square root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "sqrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
       "text": "tell me what 12 divided by 30 is",
       "op": "math.binary",
       "args": {
@@ -2921,6 +5229,33 @@
         "op": "mul",
         "a": "12",
         "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what are the factors of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "factors",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what are the prime factors of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "primefactors",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what do 4, 8, 15 add up to",
+      "op": "math.list",
+      "args": {
+        "op": "sum",
+        "list": "4, 8, 15"
       }
     },
     {
@@ -2965,6 +5300,139 @@
     },
     {
       "family": "math",
+      "text": "what is 16 plus 4 exactly",
+      "op": "math.expr",
+      "args": {
+        "expr": "16+4"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is 16 rounded",
+      "op": "math.unary",
+      "args": {
+        "op": "round",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is 16 to the power of 4",
+      "op": "math.expr",
+      "args": {
+        "expr": "16^4"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is half of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "half",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the absolute value of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "abs",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the average of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "mean",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the average value of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "mean",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the cube root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "cbrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the factorial of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "fact",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the mean of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "mean",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the median of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "median",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the middle value of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "median",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the range of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "range",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the standard deviation of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "stdev",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what is the sum of 4, 8, 15",
+      "op": "math.list",
+      "args": {
+        "op": "sum",
+        "list": "4, 8, 15"
+      }
+    },
+    {
+      "family": "math",
       "text": "what's 12 divided by 30",
       "op": "math.binary",
       "args": {
@@ -3005,6 +5473,24 @@
     },
     {
       "family": "math",
+      "text": "what's the cube root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "cbrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
+      "text": "what's the square root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "sqrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "math",
       "text": "whats 12 divided by 30",
       "op": "math.binary",
       "args": {
@@ -3041,6 +5527,23 @@
         "op": "mul",
         "a": "12",
         "b": "30"
+      }
+    },
+    {
+      "family": "math",
+      "text": "whats the square root of 16",
+      "op": "math.unary",
+      "args": {
+        "op": "sqrt",
+        "a": "16"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "add a note that notes.md",
+      "op": "memory.note",
+      "args": {
+        "text": "notes.md"
       }
     },
     {
@@ -3181,6 +5684,39 @@
     },
     {
       "family": "memory",
+      "text": "delete my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "delete the note about my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "don't forget that favourite colour is blue",
+      "op": "memory.remember",
+      "args": {
+        "key": "favourite colour",
+        "value": "blue"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "drop my favourite colour from memory",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
       "text": "i'd like to know what my favourite colour is",
       "op": "memory.recall",
       "args": {
@@ -3246,6 +5782,34 @@
       "text": "just show your memory",
       "op": "memory.list",
       "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "keep a note that notes.md",
+      "op": "memory.note",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "list what you remember",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "list your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "note that notes.md",
+      "op": "memory.note",
+      "args": {
+        "text": "notes.md"
+      }
     },
     {
       "family": "memory",
@@ -3384,6 +5948,68 @@
       }
     },
     {
+      "family": "memory",
+      "text": "remember the note notes.md",
+      "op": "memory.note",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "remove the memory of my favourite colour",
+      "op": "memory.forget",
+      "args": {
+        "key": "favourite colour"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "save a note about notes.md",
+      "op": "memory.note",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
+      "family": "memory",
+      "text": "show me what you remember",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "show me your memory",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "show your saved notes",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "what facts do you have",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "what notes do you have",
+      "op": "memory.list",
+      "args": {}
+    },
+    {
+      "family": "memory",
+      "text": "write down that notes.md",
+      "op": "memory.note",
+      "args": {
+        "text": "notes.md"
+      }
+    },
+    {
       "family": "projects",
       "text": "can you export this project",
       "op": "project.export",
@@ -3457,6 +6083,18 @@
     },
     {
       "family": "projects",
+      "text": "download this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "export this project as a bundle",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
       "text": "go ahead and export this project",
       "op": "project.export",
       "args": {}
@@ -3490,6 +6128,14 @@
       "text": "go ahead and show project files",
       "op": "project.files",
       "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "go to project demo",
+      "op": "project.open",
+      "args": {
+        "slug": "demo"
+      }
     },
     {
       "family": "projects",
@@ -3529,6 +6175,30 @@
     },
     {
       "family": "projects",
+      "text": "list all projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "list the files in this project",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "list this project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "package this project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
       "text": "please export this project",
       "op": "project.export",
       "args": {}
@@ -3561,6 +6231,60 @@
       "family": "projects",
       "text": "please show project files",
       "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "save the project",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "save this project as a bundle",
+      "op": "project.export",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "show all projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "show me my projects",
+      "op": "project.list",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "show me the project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "show the files of this project",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "show this project files",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "what is in this project",
+      "op": "project.files",
+      "args": {}
+    },
+    {
+      "family": "projects",
+      "text": "which projects do i have",
+      "op": "project.list",
       "args": {}
     },
     {

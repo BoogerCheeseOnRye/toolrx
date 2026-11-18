@@ -1497,7 +1497,7 @@ for pat in ("echo {text}", "say {text}"):
 # Step 46: everyday phrasings live in one checked-in table. They are appended
 # last so every original exact form still wins, and the same table produces
 # `tests/fixtures/everyday.json` so the catalog and the fixture cannot drift.
-for _entry in everyday.entries():
+for _entry in everyday.entries(exclude=set(_SEEN)):
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 
