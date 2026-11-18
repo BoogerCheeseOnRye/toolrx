@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "count": 14,
+  "ops": {
+    "style.set": 8,
+    "style.show": 6
+  },
+  "cases": [
+    {
+      "text": "be explanatory",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "make your replies explanatory",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "reply style explanatory",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "response style explanatory",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "style explanatory",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "switch to explanatory style",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "use explanatory style",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "use the explanatory style",
+      "op": "style.set",
+      "args": {
+        "style": "explanatory"
+      },
+      "mode": "set"
+    },
+    {
+      "text": "response style",
+      "op": "style.show",
+      "args": {},
+      "mode": "show"
+    },
+    {
+      "text": "show style",
+      "op": "style.show",
+      "args": {},
+      "mode": "show"
+    },
+    {
+      "text": "show the style",
+      "op": "style.show",
+      "args": {},
+      "mode": "show"
+    },
+    {
+      "text": "style",
+      "op": "style.show",
+      "args": {},
+      "mode": "show"
+    },
+    {
+      "text": "what response style",
+      "op": "style.show",
+      "args": {},
+      "mode": "show"
+    },
+    {
+      "text": "what style are you using",
+      "op": "style.show",
+      "args": {},
+      "mode": "show"
+    }
+  ]
+}

@@ -2608,6 +2608,24 @@
     "journal.show": function (a, ctx) { return journalShow(ctx); },
     "journal.query": function (a, ctx) { return journalQuery(a, ctx); },
     "journal.clear": function (a, ctx) { return journalClear(ctx); },
+    "style.show": function (a, ctx) {
+      const S = root.toolrxStyle;
+      const name = ctx && typeof ctx.style === "function" ? ctx.style() : "concise";
+      if (!S) return "style · " + name + "\nthe style module is not loaded";
+      return S.showText(name, { maxChars: LIMITS_RAW.styleChars });
+    },
+    "style.set": function (a, ctx) {
+      const S = root.toolrxStyle;
+      if (!S) throw new Error("the style module is not loaded");
+      const name = S.normalize(a && a.style);
+      if (!name) {
+        throw new Error("unknown style: " + String(a && a.style || "")
+          + " — use concise, explanatory, or tutorial");
+      }
+      const applied = ctx && typeof ctx.setStyle === "function"
+        ? ctx.setStyle(name) : name;
+      return S.setText(applied, { maxChars: LIMITS_RAW.styleChars });
+    },
     // runPrompt intercepts these before dispatch so a confirmation can run the
     // staged action. Direct exec keeps the same honest answers.
     "conversation.show": function (a, ctx) { return conversationText(ctx); },
@@ -2737,6 +2755,7 @@
       ["journalEntries", "decisions kept per project"],
       ["journalBytes", "serialized project journal"],
       ["journalText", "one journal entry"],
+      ["styleChars", "response wrapper per result"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
       + L.version + ")"];
@@ -3774,6 +3793,7 @@
             const out = await exec(skill, local);
             out.via = skill.op;
             out.desc = skill.desc;
+            out.exact = true;
             return out;
           } catch (e) {
             return { text: String(e.message || e), error: true,

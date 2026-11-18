@@ -34,5 +34,6 @@
   "conversationBytes": 4096,
   "journalEntries": 24,
   "journalBytes": 4096,
-  "journalText": 240
+  "journalText": 240,
+  "styleChars": 600
 }

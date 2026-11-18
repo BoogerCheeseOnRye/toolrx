@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "intents": {
+    "set": {
+      "op": "style.set",
+      "summary": "set the response style to concise, explanatory, or tutorial",
+      "example": "explanatory",
+      "styles": ["concise", "explanatory", "tutorial"],
+      "templates": [
+        "style {style}",
+        "response style {style}",
+        "reply style {style}",
+        "use the {style} style",
+        "use {style} style",
+        "be {style}",
+        "make your replies {style}",
+        "switch to {style} style"
+      ]
+    },
+    "show": {
+      "op": "style.show",
+      "summary": "show the active response style and its wrapper cap",
+      "example": "show style",
+      "templates": [],
+      "bare": [
+        "show style",
+        "show the style",
+        "what style are you using",
+        "what response style",
+        "response style",
+        "style"
+      ]
+    }
+  }
+}

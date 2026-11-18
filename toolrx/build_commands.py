@@ -24,6 +24,7 @@ import thinking  # noqa: E402  (step 53: one table for thinking routes)
 import repair  # noqa: E402  (step 54: one table for repair routes)
 import journal  # noqa: E402  (step 56: one table for journal routes)
 import resume  # noqa: E402  (step 57: one table for resume routes)
+import style  # noqa: E402  (step 58: one table for response-style routes)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1547,6 +1548,14 @@ for _entry in resume.entries():
 # Routes are appended after the repair layer, so a real command always wins;
 # the handlers in web/skills.js read and write the per-project journal.
 for _entry in journal.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# ---------------------------------------------------------------- style ----
+# Step 58: adaptive response style. The checked-in `toolrx/style.json` table
+# is expanded last, so a real command always wins; the handlers in
+# web/skills.js persist the choice and sandbox.prompt wraps exact results.
+for _entry in style.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

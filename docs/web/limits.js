@@ -32,6 +32,7 @@
   "repairPasses": 2,
   "singleChars": 2000,
   "stepMs": 4000,
+  "styleChars": 600,
   "thinkChars": 4000,
   "thinkGoals": 8,
   "thinkRules": 12,

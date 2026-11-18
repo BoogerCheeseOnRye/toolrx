@@ -17,6 +17,7 @@
   const MEMORY_KEY = "toolrx.memory.v1";
   const LASTRUN_KEY = "toolrx.lastRun.v1";
   const BUNDLE_KEY = "toolrx.bundles.v1";
+  const STYLE_KEY = "toolrx.reply.style";
   /* All numeric caps come from toolrx/limits.json via web/limits.js. Read/cat
    * caps are for chat-sized output; project write caps are separate and
    * deliberately larger. Loading without the limits file is a wiring bug. */
@@ -123,6 +124,35 @@
       if (!isNaN(parsed)) n = parsed;
     } catch (e) { /* private mode */ }
     return Math.max(16384, Math.min(2097152, n));
+  }
+
+  /* Step 58: the response style is a presentation preference, never a planner
+   * input. Read it on every prompt so a reload or another tab sees the stored
+   * choice; default to concise, which adds no wrapper at all. */
+  function styleName() {
+    const S = root.toolrxStyle;
+    let stored = null;
+    try {
+      stored = root.localStorage && root.localStorage.getItem(STYLE_KEY);
+    } catch (e) { /* private mode */ }
+    return (S && S.normalize && S.normalize(stored)) || "concise";
+  }
+
+  function setStyleName(value) {
+    const S = root.toolrxStyle;
+    const next = (S && S.normalize && S.normalize(value)) || "concise";
+    try {
+      if (root.localStorage) root.localStorage.setItem(STYLE_KEY, next);
+    } catch (e) { /* private mode */ }
+    return next;
+  }
+
+  /* Wrap after the whole plan has run, so chained steps, context, journal, and
+   * the stored plan all keep the raw result. Errors are left untouched. */
+  function styledResults(results) {
+    const S = root.toolrxStyle;
+    if (!S || typeof S.apply !== "function") return results;
+    return S.apply(results, styleName(), { maxChars: LIMITS.styleChars });
   }
 
   function configMs(key, fallback, min, max) {
@@ -2666,6 +2696,8 @@
       },
       think: thinkState,
       repair: repairState,
+      style: styleName,
+      setStyle: setStyleName,
       onStep: function (done, total, elapsed) {
         const p = activeProject();
         const usedBytes = p ? projectBytes(p) : 0;
@@ -3012,7 +3044,7 @@
       const skills = root.toolrxSkills;
       if (!skills || !skills.count()) {
         const r = await api.run(query);
-        const results = [{
+        const raw = [{
           step: String(query),
           text: r.blocked ? r.reason : r.output,
           error: !!r.blocked,
@@ -3022,15 +3054,19 @@
           margin: r.margin,
           ms: r.ms,
         }];
+        const results = styledResults(raw);
         recordRun(String(query), results, started, {
           beforeFiles: before.files, beforeBytes: before.bytes,
           contextBytes: contextStoredBytes(),
         });
         return results;
       }
-      const results = await skills.runPrompt(String(query), promptContext(String(query)));
-      const trace = notePromptContext(String(query), results);
-      noteJournal(String(query), results);
+      const raw = await skills.runPrompt(String(query), promptContext(String(query)));
+      // Context, journal, and the trace always see the unwrapped result, so a
+      // style can never change a later turn or the stored plan.
+      const trace = notePromptContext(String(query), raw);
+      noteJournal(String(query), raw);
+      const results = styledResults(raw);
       recordRun(String(query), results, started, {
         beforeFiles: before.files, beforeBytes: before.bytes,
         contextBytes: contextStoredBytes(),
@@ -3081,6 +3117,8 @@
     renameProject: function (slug, name) { return renameProject(slug, name); },
     chatHistory: chatHistory,
     memory: function (k, v) { return remember(k, v); },
+    style: styleName,
+    setStyle: setStyleName,
     context: function () {
       const C = contextModule();
       return C ? C.report(contextScope()) : null;
@@ -3142,6 +3180,7 @@
         readFile: MAX_FILE, readTotal: MAX_TOTAL,
         stepTimeout: plan.stepMs, planTimeout: plan.planMs,
         planChars: plan.chars, planSteps: plan.steps, block: plan.block,
+        style: LIMITS.styleChars,
       };
     },
     planPreview: function (query) {

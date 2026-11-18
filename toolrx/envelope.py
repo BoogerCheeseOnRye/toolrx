@@ -40,6 +40,7 @@ Ranges (the human-facing contract):
   journalEntries   4–128  decisions kept per project
   journalBytes     512–65,536  serialized project journal
   journalText      80–2,000  one journal entry
+  styleChars       80–8,000  response wrapper added to one exact result
 """
 
 import json
@@ -84,6 +85,7 @@ _RANGES = {
     "journalEntries": (4, 128),
     "journalBytes": (512, 65_536),
     "journalText": (80, 2_000),
+    "styleChars": (80, 8_000),
 }
 
 
