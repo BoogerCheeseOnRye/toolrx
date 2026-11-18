@@ -1587,7 +1587,7 @@ added.
 8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) — done;
    53 (think) → 54 (critique) → 55 (traces) → 56 (journal) →
-   57 (recovery) → 58 (style) → 59 (scorecard) — planned
+   57 (recovery) → 58 (style) → 59 (scorecard) — done
 
 Steps 36–37 come first because they define the budget and the gate every later
 step measures against. Step 38 lands immediately after so no new limit is added
@@ -1616,8 +1616,8 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–52 are complete. 14 remains deferred. Steps 53–59 are
-  planned; none of that subset is started.
+- Steps 11–13, 15–59 are complete. 14 remains deferred; the 46–59 batch
+  is shipped.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
   the step-37 suite proves the margin.
