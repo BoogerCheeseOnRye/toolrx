@@ -122,9 +122,9 @@ RPG builds ship two more real files: `worldgen.js` (seeded biomes, rivers, roads
 3–5 towns with houses, a multi-room dungeon, NPCs, enemies, pickups, and 4–5
 quests) and `rpg2.js` (isometric explorer with camera follow, fogged minimap,
 dialogue, shops, action combat, XP/levels, quest log, and three save slots).
-Small worlds are 64×64 and `large` / `huge` requests reach 96×96. Sprites stay
-procedural; the optional sprite-pack pipeline (step 14) is still blocked on a
-licence-compatible atlas and is not shipped yet.
+Small worlds are 64×64 and `large` / `huge` requests reach 96×96. Sprites,
+tiles, palettes, and names are procedural and seeded, so a project has no
+external asset dependency and reproduces from its prompt and seed alone.
 
 `build an rpg` picks its starting pack from the seed (twenty packs, from
 Camelot, Bharata, Derelict, Neon, Rain City, Olympus, Sakura, Nile, Abyss, and
@@ -138,8 +138,8 @@ Every result in the chat shows measured throughput as `tok/s` (estimated output
 tokens = characters ÷ 4 over wall-clock time, with the step's token count and
 milliseconds). It is a real measurement of the deterministic step, not model
 inference, and the generated files are unchanged. The roadmap for build specs,
-shared 2D/3D engines, a larger RPG world, sprite packs, and an optional LLM
-adapter lives in `toolrx/vision/HARNESS-ROADMAP.md`. Steps 26–27 now accept a
+shared 2D/3D engines, a larger RPG world, and an optional LLM adapter lives in
+`toolrx/vision/HARNESS-ROADMAP.md`. Steps 26–27 now accept a
 2,000-character single route and plans up to 8,000 characters or 40 steps,
 preview the ordered plan before running it, and stop at the first failed step.
 Step 28 widened the generated library to 12,425 patterns with compositional
@@ -543,12 +543,19 @@ oversized wrapper is trimmed with a visible `r.style-trim` note and the inner
 result text is never truncated. The fourteen phrases are expanded from
 `toolrx/style.json` into `style.set` and `style.show` routes.
 
-The locked batch (steps 51–59) is shipped and keeps the same rules. The
-envelope gained explicit compaction and budget-aware plan rewriting; then
-`think`/reason became a deterministic program with bounded self-critique,
-stored traces, a per-project journal, mid-plan recovery, response styles that
-never change tool choice, and an honest LLM-parity scorecard. Steps 46–59 are
-shipped. The acceptance criteria live in
+The 46–59 batch is shipped and keeps the same rules. The envelope gained
+explicit compaction and budget-aware plan rewriting; then `think`/reason became
+a deterministic program with bounded self-critique, stored traces, a
+per-project journal, mid-plan recovery, response styles that never change tool
+choice, and an honest LLM-parity scorecard.
+
+Steps 60–69 are the locked next batch and stay `planned` until buildout starts:
+broader everyday and domain language packs, a deterministic project/plan
+explainer, more seeded starters, one bounded pure-compute tool, a workspace
+journal, dashboard events with replay and export, verification helpers, named
+plan macros, accessibility and mobile polish, and a public evaluation and
+comparison kit. No step may require a model, a network call, an external test
+runner, or a real shell. The acceptance criteria live in
 `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,

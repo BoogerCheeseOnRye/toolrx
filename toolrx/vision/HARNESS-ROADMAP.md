@@ -10,10 +10,13 @@ model: longer prompts become verified multi-step plans, and larger builds become
 seeded, composable projects. Steps 36–45 harden that envelope: one limit table,
 a larger long-form suite, stricter budgets, safer continuation, richer modules,
 coverage metrics, portable workspaces, and a demo that proves the whole path.
-Steps 46–59 are the locked next batch: everyday language becomes a measured
-surface, the envelope becomes a visible bar with explicit compaction, and
-thinking becomes its own deterministic program. The LLM stays optional and off
-by default.
+Steps 46–59 shipped as everyday language became a measured surface, the
+envelope became a visible bar with explicit compaction, and thinking became its
+own deterministic program. Steps 60–69 are the locked next batch: deeper
+everyday and domain language, deterministic explain and verification helpers,
+richer starters, one bounded pure-compute tool, a workspace journal, dashboard
+events with replay and export, plan macros, accessibility polish, and a public
+evaluation and comparison kit. The LLM stays optional and off by default.
 
 ## Where this plan started
 
@@ -36,8 +39,9 @@ by default.
    gameplay may still use `Math.random`.
 3. **Real files, shared engines.** Generated projects carry `engine2d.js` /
    `engine3d.js` / `worldgen.js` as real files. The LLM can patch one file later.
-4. **Assets are optional and pinned.** A vendored sprite pack is selected by tag
-   and checksum; procedural sprites are the fallback. No runtime network.
+4. **Assets are procedural and seeded.** Sprites, tiles, palettes, and names
+   derive from the build seed. There is no vendored asset pack and no runtime
+   network; a project is reproducible from its seed and files alone.
 5. **The LLM is an adapter, not the engine.** It fills a strict JSON spec or
    proposes an allow-listed patch. Invalid output is rejected.
 6. **Speed is visible.** Every step reports its own wall time; cached builds skip
@@ -106,20 +110,6 @@ return the closest supported options instead of falling through to chat.
 
 **Done when** 40+ phrasing tests pass, identical prompts yield identical specs,
 and the chat output names the chosen spec.
-
-### 14. Sprite pack pipeline
-
-- Vendor a pinned, licence-compatible subset of the chosen public sprite repo:
-  `assets/<pack>/LICENSE`, `manifest.json`, sheet images.
-- Manifest fields: name, sheet, frame rect, size, anchor, tags, checksum.
-- Select by tag (`hero`, `enemy`, `tile.grass`, `prop.chest`) with stable
-  tie-breaks from the build seed.
-- Copy only referenced sheets into `projects/<slug>/assets/`.
-- Include the licence in the project; fall back to procedural sprites when the
-  pack is absent or a tag is missing.
-
-**Blocked on** the repository URL and its licence. Until then, the interface and
-procedural fallback can land.
 
 ### 15. Shared 3D engine — done
 
@@ -1569,25 +1559,244 @@ path and test, both generated blocks, the inline markers, the stale-block
 failure, and the no-network promise. No route, command, or numeric limit was
 added.
 
+## Harness roadmap 4 — everyday depth, operator tools, and public evidence (steps 60–69)
+
+Steps 60–69 deepen the surface that already works instead of adding a second
+system. Language grows where coverage shows gaps; projects gain an explainer,
+more deterministic starters, a bounded compute tool, and verification helpers;
+the operator gets a workspace journal, an event stream with replay, and named
+plan macros; the batch closes with accessibility polish and a checked-in
+evaluation kit that keeps public claims honest. No step may require a model, a
+network call, an external test runner, or a real shell.
+
+### Design rules for this phase
+
+1. **Depth before breadth.** A new phrase family, starter, or helper lands only
+   where the coverage or scorecard names a concrete gap. Counts alone are not
+   progress.
+2. **Explain and verify are pure programs.** They read the active project,
+   last run, spec, journal, and limits; they never mutate files, call a model,
+   or invent state.
+3. **Compute stays bounded and pure.** The only new evaluator extends the
+   existing `math.expr` parser with named caps, no filesystem, no network, and
+   no `eval`/`Function`.
+4. **Memory stays local and scoped.** A workspace journal indexes projects; it
+   never merges their contexts or silently crosses a project boundary.
+5. **Macros are data.** Named plan fragments are checked-in step lists with a
+   bounded expansion, previewed before they run and editable after expansion.
+6. **Evidence is generated.** The evaluation report and comparison document are
+   derived from checked-in fixtures and tests, and a drift check fails when a
+   quoted number changes.
+
+### 60. Broader everyday and domain language packs
+
+Grow the existing paraphrase, synonym, and everyday tables only where the
+coverage report or scorecard shows a gap. Add focused packs for the domains
+already present: math and units, file operations, project growth, extractors,
+journal and memory, and build/edit. Add multi-turn repair phrasings and
+corrections such as "no, the other one", "I meant the project one", and "use
+the same seed" to the conversation layer.
+
+- Keep one checked-in table per layer (`everyday.py`, `paraphrase.json`,
+  `conversation.py`) and regenerate the catalog from it.
+- Extend the existing correction path instead of adding a second memory store.
+- Gate on the exact-lane floor, duplicate ids, duplicate regexes, and shadowing.
+
+**Done when** at least 250 new high-signal phrasings land across the named
+domains, every affected family keeps at least 30 cases, every fixture case
+resolves to its own exact command with exact arguments and zero chat/router
+fallback, the exact-hit rate stays at or above the current 90% floor, the
+correction fixtures cover at least three "I meant…" forms, and the catalog
+rebuild is byte-identical with zero duplicate ids or regexes.
+
+### 61. Deterministic explain this project / this plan
+
+Add a first-class pure program that walks the active project or the last plan
+and emits a structured, readable explanation: files and their roles, systems
+present, recent edits, build seed, budgets used, journal decisions, and open
+risks. It reads only state the workspace already stores.
+
+- New browser module `toolrx/web/explain.js` with a Python fixture renderer in
+  `toolrx/explain.py` for byte-pinned tests.
+- Routes such as `explain this project`, `explain the last plan`, and
+  `why did this build pick that theme`.
+- Output can be stored in context or the journal on request, but is read-only by
+  default and never rewrites a file.
+
+**Done when** the same project and plan state produce byte-identical output on
+two runs, every named file and system exists in the project, the explanation
+names the seed and each budget it reports, a missing project or plan returns an
+honest refusal naming what is absent, output is bounded by a named cap, and the
+suite proves zero network calls.
+
+### 62. Richer project templates and starter library
+
+Grow the deterministic starter library beyond games with a small set of
+high-quality, fully offline templates: a web app with an auth stub, a data
+dashboard, a note-taking app with local search, a multi-page static site, and an
+API mock. Each ships real files, an `ARCHITECTURE.md`, and seed-reproducible
+content.
+
+- Keep the build-spec parser in charge: a new starter is a kind plus a fixed
+  file plan, not a second prose parser.
+- Reuse the existing module, patch, undo, and budget paths.
+- Seed names, sample rows, and copy from `hash(prompt + seed)`.
+
+**Done when** at least five new starters build offline, the same prompt and seed
+produce byte-identical files, each starter has a previewable entry point and an
+`ARCHITECTURE.md`, every file stays inside the existing size and count caps,
+and the catalog, README, and pitch counts are regenerated from the build.
+
+### 63. Bounded pure-compute tool
+
+Extend the existing safe `math.expr` parser into one bounded compute surface for
+short pure expressions and tiny scripts: local assignments, string transforms,
+and simple shaping over literal values. It is not a shell and adds no new
+allow-listed tool.
+
+- Hard caps in `limits.json` for source characters, operations, local variables,
+  and wall time; refusal names the cap that was hit.
+- Default-deny any identifier or call that could touch the filesystem, network,
+  timers, storage, or the DOM.
+- No `eval`, `Function`, `import`, or dynamic property access. Python and
+  JavaScript share the same grammar, caps, and refusal text.
+
+**Done when** pure expressions and the documented statement forms evaluate
+identically twice, an over-cap script refuses with the named cap, every
+filesystem/network/DOM attempt refuses before evaluation, the Python and
+JavaScript fixtures agree on results and errors, and the tests prove no network
+or file access.
+
+### 64. Cross-project memory and workspace journal
+
+Extend the per-project journal into an optional workspace-level journal and a
+light cross-project index. It stays fully local, capped, and inspectable, and it
+never merges one project's context into another's.
+
+- Index project slug, theme, seed, last build, and decision topics; keep the
+  full entries in their per-project journals.
+- Queries such as `what themes have I used across projects` and
+  `show decisions about art style in the last three builds`.
+- Workspace bundles may carry the index on request, never silently.
+
+**Done when** cross-project queries are deterministic and bounded by named
+caps, a project switch cannot leak another project's context, the index is
+exported and re-imported byte-identically, a deleted project is removed from
+the index, and tests cover the capped and empty cases.
+
+### 65. Operator dashboard upgrades
+
+Make the existing last-run, trace, journal, compaction, and rewrite data
+visible as one event stream, and add the operator actions that data already
+supports.
+
+- A live event stream for compaction, rewrite, repair, resume, and refusal,
+  rendered from stored records rather than ad-hoc strings.
+- One-click replay of the last successful plan, guarded so it runs once.
+- Clearer headroom warnings and a "why this was compacted or rewritten" detail
+  that quotes the recorded reasons.
+- An export action for the last run plus the journal snapshot, validated on
+  import.
+
+**Done when** every event in the stream comes from a stored record with a
+timestamp and route, replay runs exactly the recorded steps once and refuses
+when none exist, the headroom detail names the cap and the reason, the export
+round-trips through the existing bundle validator, and the panel is keyboard
+reachable with text alternatives for every status.
+
+### 66. Deterministic verification helpers
+
+Add a small family of exact commands that answer "did this build produce what it
+said it would?" without an external test runner or an unconstrained shell.
+
+- List expected versus actual files after a build, naming missing and extra
+  files.
+- Run a project-local smoke check such as "does `index.html` contain the
+  expected title" or "does `app.js` define the expected entry point".
+- Produce a short verification report that can be stored in context or the
+  journal.
+
+**Done when** the expected file list derives from the build spec and the actual
+list from the project, a missing or extra file is named exactly, each smoke
+check is a pure predicate over project files, the report is deterministic and
+bounded, and tests cover pass, fail, and empty-project cases.
+
+### 67. Plan composition and named macros
+
+Allow named, reusable plan fragments that expand deterministically into step
+lists. A user can invoke, preview, and edit the expanded plan, while the macro
+itself stays immutable.
+
+- One checked-in table, `toolrx/macros.json`, generated by `toolrx/macros.py`
+  and expanded by a small pure function.
+- Examples: `standard shooter growth`, `add inventory + save + ui`.
+- Expansion is literal, non-recursive, and capped by the existing step limit.
+
+**Done when** each macro expands byte-identically twice, preview shows the exact
+steps before running, the user can edit the expanded list without changing the
+macro, recursion or an over-cap expansion refuses with a named reason, and no
+new allow-listed tool is added.
+
+### 68. Accessibility and mobile polish
+
+Tighten the installed-app and small-screen experience around the paths that
+already exist.
+
+- Better composer behaviour on small screens, including keyboard and safe-area
+  handling.
+- Clearer budget bars and headroom text, with status announced in words as well
+  as colour.
+- Focus management for drawers, dialogs, and the last-run detail.
+- Reduced-motion respect across the shell, mascot, and animations.
+- Make the offline install path and the "airplane mode still works" story
+  obvious in the empty state.
+
+**Done when** every interactive control is keyboard reachable with a visible
+focus ring, the shell has no horizontal scroll at 360 px, reduced-motion
+disables non-essential animation, every status has a text alternative, the
+offline state is explained in the UI, and the HTML and smoke checks cover these
+paths.
+
+### 69. Public evaluation suite and comparison kit
+
+Ship a checked-in, offline-evaluable suite and a short, honest comparison
+document so public claims stay tied to measurements.
+
+- The suite measures everyday exact-hit rate, long-form plan success and undo
+  fidelity, compaction and rewrite correctness, and think/repair determinism.
+- `toolrx/evaluation.json` is the one source of numbers; a text and HTML render
+  feed the pitch and the comparison document through marker-bound blocks.
+- The comparison document covers toolrx versus pure rule chatbots and LLM
+  coding agents, naming real files, budgets, offline operation, and
+  inspectability as strengths and conversational breadth and general terminal
+  work as gaps.
+
+**Done when** one offline command regenerates the evaluation report from the
+fixtures, every quoted number in the report and comparison document matches the
+checked-in source, the drift check fails on a stale block or a missing fixture,
+the comparison document names at least three honest gaps, and the suite proves
+zero network calls.
+
 ## Order
 
 1. 12 (spec) → 13 (2D engine) → 15 (3D engine) — done
 2. 16 (RPG world) → 17 (themes/titles) → 18 (library) → 19 (patches) — done
 3. 21 (archive catalog) → 22 (language recognition) → 23 (archive search) →
    24 (localized intents) → 25 (Library panel) — done
-4. 20 (LLM adapter) — done; 14 (sprites) deferred until a licence-compatible
-   subset is pinned
+4. 20 (LLM adapter) — done
 5. 26 (ceiling) → 27 (hierarchical routing) → 28 (catalog) → 29 (build specs) →
    30 (project growth) → 31 (context) → 32 (output budgets) → 33 (argument
    capture) → 34 (vocab/centroids) → 35 (gate) — done
 6. 36 (budgets) → 37 (suite) → 38 (limit source) → 39 (continuation) →
    40 (systems) → 41 (coverage) → 42 (observability) → 43 (workspaces) →
    44 (extractors) → 45 (demo) — done
-7. Step 14 stays independent; it can land whenever the sprite subset is chosen.
-8. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
+7. 46 (paraphrase) → 47 (glue) → 48 (tables) → 49 (language coverage) →
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) — done;
    53 (think) → 54 (critique) → 55 (traces) → 56 (journal) →
    57 (recovery) → 58 (style) → 59 (scorecard) — done
+8. 60 (domain language) → 61 (explain) → 62 (starters) → 63 (pure compute) →
+   64 (workspace journal) → 65 (dashboard events) → 66 (verify helpers) →
+   67 (plan macros) → 68 (accessibility) → 69 (evaluation kit) — planned
 
 Steps 36–37 come first because they define the budget and the gate every later
 step measures against. Step 38 lands immediately after so no new limit is added
@@ -1599,11 +1808,15 @@ budget UI claims to help it. Steps 50–52 landed as one envelope batch. Steps
 53–55 are the thinking program. Steps 56–59 close the remaining parity gaps;
 they may be reordered within the batch when a measurement justifies it.
 
+Steps 60–62 come first because language, explanation, and starters are the most
+visible daily improvements. Step 63 lands before the operator surface because
+compute needs its caps settled first. Steps 64–67 add memory, events, and
+verification, and may be reordered within the batch when a measurement
+justifies it. Steps 68–69 are last: accessibility needs the final UI, and the
+evaluation kit needs every earlier measurement.
+
 ## Open questions
 
-- Step 14 source is known: `huggingface.co/datasets/Angais/pixel-art-atlas-1.4m`,
-  CC0-1.0, native 16×16 RGBA. Vendoring a pinned subset with a manifest and
-  checksums is deferred; procedural sprites remain the fallback.
 - The v1 envelope is settled by the step-35 measurements: 2,000 / 8,000 / 40
   steps, 32 files, 512 KB, 16 undo, 8 KB context. v2 changes only from step-37
   evidence, never from optimism.
@@ -1616,8 +1829,8 @@ they may be reordered within the batch when a measurement justifies it.
 - Multi-file patches install atomically only. The LLM path may stage a pending
   diff; the deterministic path does not.
 - 3D leads with low-poly WebGL and a Canvas/isometric fallback (decided).
-- Steps 11–13, 15–59 are complete. 14 remains deferred; the 46–59 batch
-  is shipped.
+- Steps 11–13 and 15–59 are complete. Steps 60–69 are planned and stay
+  `planned` until buildout starts.
 - Which defaults should v2 change, if any: keep 2,000 / 8,000 / 40 / 32 files /
   512 KB, or raise one dimension at a time from measurements? Raise only after
   the step-37 suite proves the margin.
@@ -1639,3 +1852,18 @@ they may be reordered within the batch when a measurement justifies it.
   the docs and the drift test read the same numbers.
 - This batch covers English paraphrases only. Localized intents stay in the
   existing language packs.
+- Domain language packs stay in the existing per-layer tables until a family
+  needs its own review cadence; a second table would split the exact matcher.
+- The project and plan explainer emits one structured record with a text
+  renderer, so chat, context, and the journal read the same explanation.
+- Bounded compute starts at 400 source characters, 200 operations, 16 locals,
+  and 50 ms, and rises only from a measured need. The grammar stays pure: no
+  filesystem, network, timer, storage, DOM, `eval`, or `Function`.
+- The workspace journal keeps an index across projects and never merges their
+  entries. Cross-project queries read the index; full entries stay scoped.
+- Plan macros expand literally with no recursion and a 40-step cap, matching the
+  existing plan limit. The macro table is data, not a new tool.
+- The evaluation report and comparison document are generated from checked-in
+  fixtures; `evaluation.json` is the one source of quoted numbers.
+- Dashboard events are rendered from stored last-run, trace, and journal
+  records, so an event stream can never claim something the run did not record.
