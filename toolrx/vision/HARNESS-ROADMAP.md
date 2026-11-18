@@ -1515,6 +1515,46 @@ choices, arguments, and file bytes; the style persists across reloads; the
 wrapper stays within a named character cap; and tests compare the three
 outputs.
 
+Plan:
+
+* Add one pure module, `toolrx/web/style.js`, with `normalize(value)`,
+  `apply(results, style, opts)`, `showText(style, opts)`, and
+  `setText(style, opts)`. `concise` adds nothing; `explanatory` adds a prefix
+  naming the exact route and description plus one honest `why:` line;
+  `tutorial` adds the same prefix plus one deterministic `try next:`
+  suggestion chosen from the route family. The module never reads or writes
+  storage.
+* Apply the wrapper in `sandbox.prompt` **after** `skills.runPrompt` returns,
+  so chained steps, `prev`, context, journal, and the run plan all see the raw
+  result. `result.via`, `result.exact`, arguments, project files, limits, and
+  every `result.error` stay byte-identical; only `result.text` gains the
+  prefix and suffix. A style never reaches the planner or the matcher.
+* Wrap only exact, non-error command results. `chat`, `conversation.*`,
+  `think.*`, `repair.*`, `plan.*`, `budget.*`, and `style.*` are skipped, so
+  refusals and shell replies do not change. Mark exact matches in `runOne`
+  with `exact: true`; fallback results stay `exact: false`.
+* Add `styleChars` (600) to `toolrx/limits.json` and regenerate
+  `toolrx/web/limits.js`; it is the maximum wrapper added to one result. An
+  oversized wrapper is truncated with a visible `r.style-trim` note, and the
+  inner result text is never truncated. `show style` prints the cap.
+* Persist the preference under `toolrx.reply.style` in `localStorage`, read on
+  every `sandbox.prompt`, default `concise`. Expose `toolrxWeb.style()` and
+  `toolrxWeb.setStyle(value)` so the choice survives a reload and can be
+  inspected without chat.
+* One checked-in table, `toolrx/style.json`, expanded by `toolrx/style.py`
+  into `style.set` and `style.show` routes and exported to
+  `tests/fixtures/style.json`. Set phrases include `style explanatory`,
+  `response style tutorial`, `use the concise style`, and `be concise`; show
+  phrases include `show style`, `what style are you using`, and `style`.
+  Only the three known style names match `style.set`.
+* Add `toolrx/web/style.js` to `dashboard.html`, `toolrx/web/sw.js`, and
+  `docs/sw.js`, and bump the cache name.
+* `tests/test_style.py` covers the pure normalize/apply/trim/skip path, the
+  phrase fixture, the default concise output, the explanatory and tutorial
+  wrappers, persistence through a simulated reload, identical `via` and
+  project file bytes across all three styles, unchanged refusals, and a fetch
+  spy that records zero calls.
+
 ### 59. LLM-parity scorecard and gap analysis — planned
 
 Add a living, checked-in scorecard mapping common harness capabilities
