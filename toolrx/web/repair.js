@@ -32,7 +32,21 @@
     "r.repair-chars": "the revised plan fits planChars",
     "r.repair-suffix": "only the failed step and later steps are in the revised plan",
     "r.repair-record": "the stored repair record fits planVariantBytes",
-    "r.repair-none": "no repair is staged"
+    "r.repair-none": "no repair is staged",
+    /* Step 57: one-command partial-result continuation. */
+    "r.resume-none": "there is no last-run plan to resume",
+    "r.resume-nofail": "the last run has no failed step to skip",
+    "r.resume-last": "the failed step is the last step, so nothing is pending",
+    "r.resume-cap": "resume and repair share the repairPasses cap",
+    "r.resume-build": "a failed build is retried, not skipped",
+    "r.resume-noproject": "a pending step needs a project and none is open",
+    "r.resume-dependency": "a pending step depends on the failed result",
+    "r.resume-steps": "the pending suffix fits planSteps",
+    "r.resume-chars": "the pending suffix fits planChars",
+    "r.resume-pending": "only the pending suffix is resumed",
+    "r.resume-suffix": "only the pending steps are resumed",
+    "r.resume-skip": "the failed step is skipped, not relabelled done",
+    "r.resume-record": "the resume record fits planVariantBytes"
   };
 
   function rule(id) { return "· " + id; }
@@ -84,15 +98,16 @@
       : "router (no exact route)";
   }
 
-  function overLimits(steps, lim) {
+  function overLimits(steps, lim, prefix) {
+    var head = prefix || "r.repair-";
     if (steps.length > lim.steps) {
-      return { rule: "r.repair-steps", why: steps.length + " steps > "
+      return { rule: head + "steps", why: steps.length + " steps > "
         + lim.steps + " planSteps" };
     }
     var chars = byteLength(steps.map(function (s) { return s.text; })
       .join("\n"));
     if (chars > lim.chars) {
-      return { rule: "r.repair-chars", why: chars + " characters > "
+      return { rule: head + "chars", why: chars + " characters > "
         + lim.chars + " planChars" };
     }
     return null;
@@ -307,8 +322,146 @@
     return lines.join("\n");
   }
 
+  /* Step 57: partial-result continuation. `resume` is deliberately narrower
+   * than `repair`: it never retries and never guesses. It skips the failed
+   * step and returns only the pending suffix, after the same safety checks a
+   * human would apply before continuing a half-finished plan. */
+  function resume(input) {
+    var safe = input || {};
+    var raw = Array.isArray(safe.steps) ? safe.steps : [];
+    var steps = raw.map(normalizeStep);
+    var failedAt = Number.isInteger(safe.failedAt) ? safe.failedAt : -1;
+    var passes = number(safe.passes, 0);
+    var maxPasses = number(safe.maxPasses, 2) || 2;
+    var lim = limitsOf(safe);
+    var error = oneLine(safe.errorText);
+    var original = number(safe.originalSteps, steps.length);
+    var hasProject = !!safe.hasProject;
+    var pendingNeedsProject = !!safe.pendingNeedsProject;
+
+    if (!steps.length) {
+      return result("refuse", "r.resume-none",
+        "the last run has no plan; run a plan first", {
+          passes: passes, maxPasses: maxPasses, originalSteps: original
+        });
+    }
+    if (failedAt < 0 || failedAt >= steps.length) {
+      return result("refuse", "r.resume-nofail",
+        "the last run did not fail; there is nothing to resume", {
+          passes: passes, maxPasses: maxPasses, originalSteps: original
+        });
+    }
+    var failed = steps[failedAt];
+    var pending = steps.slice(failedAt + 1);
+    var base = {
+      failedStep: failed.text,
+      errorText: error,
+      failedAt: failedAt,
+      passes: passes,
+      maxPasses: maxPasses,
+      pending: pending.length,
+      originalSteps: original
+    };
+    if (!pending.length) {
+      return result("refuse", "r.resume-last",
+        "the failed step is the last step, so there is no pending suffix "
+        + "to resume", base);
+    }
+    if (passes >= maxPasses) {
+      return result("refuse", "r.resume-cap",
+        "the resume/repair pass cap (" + maxPasses + ") is reached; send a "
+        + "new request or say undo", base);
+    }
+    if (failed.op === "build" || /^build\b/i.test(failed.text)) {
+      return result("refuse", "r.resume-build",
+        "the build step failed; the previous project is still open, but the "
+        + "pending steps were meant for the new build — say repair this plan "
+        + "to retry the build, or send the build request again", base);
+    }
+    if (pendingNeedsProject && !hasProject) {
+      return result("refuse", "r.resume-noproject",
+        "a pending step needs a project and none is open; build a starter "
+        + "first", base);
+    }
+    var dependency = pending.filter(function (step) {
+      return dependsOnFailed(step.text);
+    })[0];
+    if (dependency) {
+      return result("refuse", "r.resume-dependency",
+        "the pending step " + quote(dependency.text)
+        + " depends on the failed result, so skipping the failure would "
+        + "produce a wrong answer", base);
+    }
+    var over = overLimits(pending, lim, "r.resume-");
+    if (over) {
+      return result("refuse", over.rule,
+        "the pending suffix does not fit: " + over.why, base);
+    }
+    return result("resume", "r.resume-pending",
+      "skip the failed step and run the " + pending.length
+      + " pending step(s)", {
+        steps: pending,
+        skipped: [failed.text],
+        failedStep: failed.text,
+        errorText: error,
+        failedAt: failedAt,
+        passes: passes,
+        maxPasses: maxPasses,
+        pending: pending.length,
+        originalSteps: original
+      });
+  }
+
+  function resumeText(out) {
+    var shownPass = Math.min(out.passes + 1, out.maxPasses);
+    var head = "resume · pass " + shownPass + " of " + out.maxPasses
+      + (out.rule === "r.resume-cap" ? " · cap reached" : "")
+      + " · " + (out.kind === "resume"
+        ? "run the pending suffix" : "nothing resumed")
+      + " · source last run";
+    if (out.kind === "refuse") {
+      var lines = [head];
+      if (out.failedStep) {
+        lines.push("failed: step " + (out.failedAt + 1) + " · "
+          + quote(out.failedStep)
+          + (out.errorText ? " · " + shortError(out.errorText) : "")
+          + " " + rule(out.rule));
+      }
+      lines.push("reason: " + out.reason + " " + rule(out.rule));
+      lines.push("resume: none · nothing was run " + rule("r.resume-none"));
+      if (out.rule === "r.resume-build") {
+        lines.push("the previous project is still open · say repair this plan "
+          + "to retry the build");
+      } else if (out.rule === "r.resume-cap") {
+        lines.push("send a new request or say undo to move on");
+      } else {
+        lines.push("send a new request to move on");
+      }
+      return lines.join("\n");
+    }
+    var lines2 = [head];
+    lines2.push("skipped: step " + (out.failedAt + 1) + " · "
+      + quote(out.failedStep)
+      + (out.errorText ? " · " + shortError(out.errorText) : "")
+      + " " + rule("r.resume-skip"));
+    lines2.push("pending plan (" + out.steps.length + " step"
+      + (out.steps.length === 1 ? "" : "s") + "): "
+      + rule("r.resume-suffix"));
+    out.steps.forEach(function (step, i) {
+      lines2.push("  " + (i + 1) + ". " + step.text + " · "
+        + routeLabel(step) + " " + rule("r.resume-suffix"));
+    });
+    lines2.push("completed: the " + out.failedAt + " step(s) before the "
+      + "failure are not rerun " + rule("r.resume-suffix"));
+    lines2.push("original: " + out.originalSteps + " step(s) kept · completed "
+      + "files stay written " + rule("r.resume-record"));
+    lines2.push("running now · say undo to revert files");
+    return lines2.join("\n");
+  }
+
   function record(out, input, opts) {
     var o = opts || {};
+    var kind = o.kind === "resume" ? "resume" : "repair";
     var maxText = number(o.maxText, 2000) || 2000;
     var maxBytes = number(o.maxBytes, 9216);
     var safe = input || {};
@@ -318,8 +471,8 @@
       });
     var doc = {
       version: 1,
-      kind: "repair",
-      name: "repair-" + (out.passes + 1),
+      kind: kind,
+      name: kind + "-" + (out.passes + 1),
       rule: out.rule,
       reason: oneLine(out.reason).slice(0, 240),
       failedAt: out.failedAt,
@@ -334,10 +487,15 @@
         return { text: step.text.slice(0, maxText), op: step.op,
                  exact: step.exact };
       }),
-      dropped: out.dropped.slice(0, 40).map(function (s) {
+      dropped: (out.dropped || []).slice(0, 40).map(function (s) {
         return String(s).slice(0, 240);
       })
     };
+    if (kind === "resume") {
+      doc.skipped = (out.skipped || []).slice(0, 40).map(function (s) {
+        return String(s).slice(0, 240);
+      });
+    }
     if (byteLength(JSON.stringify(doc)) > maxBytes) return null;
     return doc;
   }
@@ -346,6 +504,8 @@
     RULES: RULES,
     plan: plan,
     text: text,
+    resume: resume,
+    resumeText: resumeText,
     record: record
   };
 })(typeof self !== "undefined" ? self : this);

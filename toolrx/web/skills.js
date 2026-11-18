@@ -2456,6 +2456,11 @@
     "think.tradeoff": function (a, ctx) { return thinkRun("tradeoff", a, ctx); },
     "think.critique": function (a, ctx) { return thinkRun("critique", a, ctx); },
     "repair.plan": function (a, ctx) { return repairPlan(a, ctx); },
+    "repair.resume": function () {
+      return "resume · only works as its own turn\n"
+        + "the failed step and pending suffix come from the last run; "
+        + "say resume on its own";
+    },
     "context.snapshot": function (a, ctx) {
       if (!ctx.contextSnapshot) throw new Error("context needs the browser workspace");
       return ctx.contextSnapshot();
@@ -3540,6 +3545,109 @@
         }
       }
     }
+    /* Step 57: one-command partial-result continuation. A standalone resume
+     * reads the last run's plan, skips the failed step, and runs only the
+     * pending suffix. It never re-plans and never reruns completed steps. */
+    if (!base.conversationSkip) {
+      const hit = match(original);
+      if (hit && hit.op === "repair.resume") {
+        const R = root.toolrxRepair;
+        if (!R || typeof R.resume !== "function") {
+          return finish([{
+            step: original, error: true, via: "repair.resume",
+            planLength: 1,
+            text: "resume · the repair module is not loaded",
+          }]);
+        }
+        const state = typeof base.repair === "function" ? base.repair() : null;
+        const plan = state && state.plan;
+        const stepInfo = plan && Array.isArray(plan.steps)
+          ? plan.steps.map(function (text) {
+            const m = match(text);
+            return { text: text, op: m ? m.op : "router", exact: !!m };
+          }) : [];
+        const failedAt = plan && Number.isInteger(plan.failedAt)
+          ? plan.failedAt : -1;
+        const previous = readRepair(base);
+        const projectApi = base.project;
+        const hasProject = !!(projectApi
+          && typeof projectApi.active === "function" && projectApi.active());
+        const pendingTexts = failedAt >= 0
+          ? stepInfo.slice(failedAt + 1) : [];
+        const pendingNeedsProject = pendingTexts.some(function (step) {
+          return /^(?:project\.|edit\.)/.test(step.op);
+        });
+        const out = R.resume({
+          steps: stepInfo,
+          failedAt: failedAt,
+          errorText: plan ? String(plan.errorText || "") : "",
+          passes: previous ? Number(previous.passes) || 0 : 0,
+          maxPasses: LIMITS_RAW.repairPasses,
+          limits: {
+            planSteps: LIMITS_RAW.planSteps,
+            planChars: LIMITS_RAW.planChars,
+            planVariantBytes: LIMITS_RAW.planVariantBytes,
+          },
+          hasProject: hasProject,
+          pendingNeedsProject: pendingNeedsProject,
+          originalSteps: previous && Array.isArray(previous.original)
+            && previous.original.length ? previous.original.length
+            : stepInfo.length,
+        });
+        const body = R.resumeText(out);
+        const TR = root.toolrxTrace;
+        const trace = TR ? TR.record({
+          via: "repair.resume", text: body, rule: out.rule,
+          decision: out.kind, source: "last run",
+          planSteps: stepInfo.map(function (step) { return step.text; }),
+        }, { maxText: LIMITS.single, maxBytes: LIMITS_RAW.traceBytes }) : null;
+        if (out.kind !== "resume") {
+          return finish([{
+            step: original, text: body, via: "repair.resume",
+            error: true, planLength: 1, trace: trace,
+          }]);
+        }
+        const doc = R.record(out, {
+          steps: stepInfo,
+          originalSteps: stepInfo,
+          errorText: plan ? String(plan.errorText || "") : "",
+        }, { kind: "resume", maxText: LIMITS.single,
+             maxBytes: LIMITS_RAW.planVariantBytes });
+        if (!doc) {
+          const refused = body + "\nresume: none · the record is larger than "
+            + "planVariantBytes (" + LIMITS_RAW.planVariantBytes
+            + " bytes); nothing was run · r.resume-record";
+          return finish([{
+            step: original, text: refused, via: "repair.resume",
+            error: true, planLength: 1, trace: trace,
+          }]);
+        }
+        stageRepair(base, doc);
+        const pending = out.steps.map(function (step) { return step.text; });
+        const inner = await runPrompt(pending.join("\n"), Object.assign({},
+          base, {
+            conversationSkip: true,
+            conversationRecord: false,
+            forcedSteps: pending,
+            forcedResume: out,
+          }));
+        const failed = inner.some(function (r) { return r && r.error; });
+        if (!failed) clearRepair(base);
+        inner.forEach(function (r) { r.resumed = true; });
+        // Show what was skipped and what is running, but keep the first
+        // step's real error separate so the run record does not quote the
+        // resume header as the failure.
+        if (inner.length) {
+          if (inner[0].error && inner[0].errorText == null) {
+            inner[0].errorText = String(inner[0].text || "");
+          }
+          inner[0].text = body + "\n\n" + String(inner[0].text || "");
+        }
+        const last = inner[inner.length - 1];
+        if (last && trace) last.trace = trace;
+        return finish(inner, false, original, { keepRepair: failed });
+      }
+    }
     const block = blockCapture(query);
     if (block) {
       const blockResult = runBlockWrite(block, base);
@@ -3569,15 +3677,16 @@
       const forcedRewrite = rewritePlan(steps.join("\n"), forcedInfo,
                                         forcedBudget, limits);
       if (forcedRewrite && forcedRewrite.over.length) {
-        const what = base.forcedRepair ? "repair" : "compacted plan";
+        const what = base.forcedResume ? "resume"
+          : base.forcedRepair ? "repair" : "compacted plan";
         return finish([{
           step: original, error: true,
-          via: base.forcedRepair ? "plan.repair" : "plan.variant",
+          via: base.forcedResume ? "repair.resume"
+            : base.forcedRepair ? "plan.repair" : "plan.variant",
           planLength: 1,
           text: "the " + what + " no longer fits ("
             + forcedRewrite.over.join(" and ") + "); send the request again "
-            + "to rebuild the " + (base.forcedRepair ? "repair" : "variant")
-            + " — nothing was run",
+            + "to rebuild it — nothing was run",
         }]);
       }
     } else {
@@ -3714,8 +3823,8 @@
       if (failed && !/^(?:think|conversation|repair|plan)\./.test(via)) {
         const pending = steps.length - failedAt - 1;
         failed.text = String(failed.text || "")
-          + '\nrepair: say "repair this plan" for the smallest fix · '
-          + pending + " pending step(s)";
+          + '\nrepair: say "repair this plan" for the smallest fix · or '
+          + '"resume" to run the ' + pending + " pending step(s)";
       }
     }
     const keepPending = results.some(function (r) {

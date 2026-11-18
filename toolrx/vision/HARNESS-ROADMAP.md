@@ -1421,7 +1421,7 @@ path, the phrase fixture, the real build → art-style question, the plan-varian
 and repair rejections, the preference, the bundle round-trip, project
 isolation, the visible cap notes, and a fetch spy that records zero calls.
 
-### 57. Error recovery and partial-result continuation — planned
+### 57. Error recovery and partial-result continuation — done
 
 Make a mid-plan failure recoverable without a rebuild: isolate the failing
 step, name the smallest fix or compatible starter, and offer one command to
@@ -1475,6 +1475,34 @@ Plan:
   failure with the previous project still openable and an honest refusal, the
   dependency and pass-cap refusals, the in-plan refusal, the failure offer
   line, and a fetch spy that records zero calls.
+
+Landed by extending the step-54 module rather than adding a second one:
+`toolrx/web/repair.js` now exports `resume(input)` and `resumeText(out)`, and
+`record()` accepts `kind: "resume"` with the skipped step named. Resume reads the
+last run's plan, skips `failedAt`, and returns only the suffix after it; the
+matched op of each step decides whether a pending step needs a project, and a
+pending step that names the failed result (`it`, `that`, `the result`, …) is
+refused instead of guessed. The guard order is exactly the plan: no plan
+(`r.resume-none`), no failure (`r.resume-nofail`), failed step last
+(`r.resume-last`), shared `repairPasses` cap (`r.resume-cap`), failed build
+(`r.resume-build`), pending step needs a project and none is open
+(`r.resume-noproject`), dependency (`r.resume-dependency`), then `planSteps` and
+`planChars` (`r.resume-steps`, `r.resume-chars`). No new limit is added. One
+checked-in table, `toolrx/resume.json`, expands into nine `repair.resume` routes
+and `tests/fixtures/resume.json`. `runPrompt` intercepts a standalone resume
+before the plan path, calls the pure module, and on `resume` re-enters the plan
+runner with `forcedSteps` equal to the suffix; the inner run is not a separate
+conversation turn. A successful resume clears the staged record, a failed one
+keeps the pass count, and the resume record stays under `planRepair` with
+`kind: "resume"` bounded by `planVariantBytes`. The trace uses via
+`repair.resume` with the `r.resume-*` rule. The first inner result carries the
+resume header, while `errorText` keeps the real first-step error so `recordRun`
+never quotes the header as the failure. The failure offer line names both
+commands. `tests/test_resume.py` covers every pure guard, the fixture, the
+build → kind-gated patch → resume path, a missing-file context failure, the
+build-cancel refusal with the previous project still openable, the dependency
+and cap refusals, the in-plan refusal, the real-error preservation, and zero
+fetches.
 
 ### 58. Adaptive response style — planned
 

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "op": "repair.resume",
+  "summary": "skip the failed step and run only the pending suffix",
+  "example": "resume the plan",
+  "phrases": [
+    "resume",
+    "resume the plan",
+    "resume plan",
+    "continue the plan",
+    "run the pending steps",
+    "run the remaining steps",
+    "skip the failed step",
+    "carry on",
+    "keep going"
+  ]
+}

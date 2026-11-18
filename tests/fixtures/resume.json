@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "count": 9,
+  "op": "repair.resume",
+  "cases": [
+    {
+      "text": "carry on",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "continue the plan",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "keep going",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "resume",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "resume plan",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "resume the plan",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "run the pending steps",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "run the remaining steps",
+      "op": "repair.resume",
+      "args": {}
+    },
+    {
+      "text": "skip the failed step",
+      "op": "repair.resume",
+      "args": {}
+    }
+  ]
+}

@@ -1668,7 +1668,8 @@
         bytes: bytesOf(item.text || ""),
         error: !!item.error,
         errorText: item.error
-          ? String(item.text || "").split("\nrepair: say ")[0].slice(0, 400)
+          ? String(item.errorText != null ? item.errorText : item.text || "")
+            .split("\nrepair: say ")[0].slice(0, 400)
           : "",
       };
     });
@@ -1686,7 +1687,8 @@
       pending: failedAt >= 0
         ? Math.max(0, planSteps.length - failedAt - 1) : 0,
       errorText: failedAt >= 0
-        ? String((list[failedAt] && list[failedAt].text) || "")
+        ? String(list[failedAt] && list[failedAt].errorText != null
+          ? list[failedAt].errorText : (list[failedAt] && list[failedAt].text) || "")
           .split("\nrepair: say ")[0].slice(0, 400)
         : "",
     } : null;

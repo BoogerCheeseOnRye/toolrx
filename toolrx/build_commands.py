@@ -23,6 +23,7 @@ import paraphrase  # noqa: E402  (step 48: one table for catalog + centroids)
 import thinking  # noqa: E402  (step 53: one table for thinking routes)
 import repair  # noqa: E402  (step 54: one table for repair routes)
 import journal  # noqa: E402  (step 56: one table for journal routes)
+import resume  # noqa: E402  (step 57: one table for resume routes)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1529,6 +1530,15 @@ for _entry in thinking.entries():
 # `toolrx/repair.json` table. They are added last so a real command always
 # wins; the handler stages the smallest suffix repair for the last failed plan.
 for _entry in repair.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# --------------------------------------------------------------- resume ----
+# Step 57: one-command partial-result continuation. The checked-in
+# `toolrx/resume.json` table is expanded after the repair layer, so a real
+# command always wins; the handler skips the failed step and runs only the
+# pending suffix.
+for _entry in resume.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 
