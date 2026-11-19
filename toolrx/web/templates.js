@@ -2754,6 +2754,46 @@
       steps: ["keep the fetched text separate from presentation", "escape the text before rendering", "show the source URL explicitly", "add one small progressive enhancement"]
     },
     dashboard: { files: ["index.html", "styles.css", "app.js"], state: "metrics array", modules: ["cards", "chart", "refresh"], flow: "state → card + chart render", extend: "filters, time ranges, live data", steps: ["define the metric shape", "render cards from data", "draw a simple chart", "keep refresh deterministic"] },
+    authapp: {
+      files: ["index.html", "styles.css", "auth.js", "app.js"],
+      state: "a demo user, a session object, and an optional remembered session",
+      modules: ["auth.js: validate, signIn, signOut", "sign-in form handler", "session paint", "localStorage remember/forget"],
+      flow: "submit → validate → stub signIn → paint session → optionally store the session (never the password)",
+      extend: "a real identity provider, password reset, roles, and server-side sessions",
+      steps: ["render the signed-out form", "validate email and password length", "swap to the session panel on success", "persist only the session when asked", "add a sign-out that clears it"]
+    },
+    datadash: {
+      files: ["index.html", "styles.css", "data.js", "app.js"],
+      state: "seeded rows, the selected region, and the derived totals",
+      modules: ["data.js: seeded rows", "filter by region", "KPI totals", "SVG bar chart", "CSV export"],
+      flow: "data.js → filter → totals + chart + table → export the filtered rows",
+      extend: "date ranges, comparisons, more charts, a real data source",
+      steps: ["generate deterministic rows", "derive the four KPIs", "draw bars from the filtered rows", "render the table", "export the same rows as CSV"]
+    },
+    notebook: {
+      files: ["index.html", "styles.css", "seed-notes.js", "app.js"],
+      state: "notes [{id,title,body,tag}], the active id, and the search query",
+      modules: ["load/save", "local search", "list render", "editor", "create/delete"],
+      flow: "query → filter notes → pick one → edit → save → re-render the list",
+      extend: "tags, pinning, markdown, import/export, full-text ranking",
+      steps: ["seed a few notes", "render the filtered list", "open one note in the editor", "save to localStorage", "add and delete notes"]
+    },
+    multipage: {
+      files: ["index.html", "about.html", "docs.html", "contact.html", "styles.css", "site.js", "app.js"],
+      state: "seeded site copy and one local contact message",
+      modules: ["shared nav", "home page", "about page", "docs page", "contact form"],
+      flow: "one stylesheet and site.js shared by four pages; each page is static HTML",
+      extend: "more pages, a generated index, RSS, or a static-site build step",
+      steps: ["define the page list and nav", "share one stylesheet", "write each page as static HTML", "mark the active nav item", "keep the contact form local-only"]
+    },
+    apimock: {
+      files: ["index.html", "styles.css", "api.js", "openapi.json", "app.js"],
+      state: "in-memory users, the next id, and the last request/response",
+      modules: ["api.js: route table + handler", "request builder", "response renderer", "reset"],
+      flow: "method + path + body → mock handler → status, headers, and JSON → render",
+      extend: "more resources, pagination, auth headers, schema validation",
+      steps: ["seed the user table", "match method and path", "return status + JSON", "render the response", "reset the table"]
+    },
     game: {
       files: ["index.html", "styles.css", "app.js"],
       state: "one game object: positions, velocity, score, and a running flag",
@@ -2825,7 +2865,24 @@
       .join("\n");
   }
 
+  /* Step 62 starters. These are checked before the generic patterns so a
+   * specific request never falls through to `notes`, `dashboard`, `landing`,
+   * or `playground`. A generic kind such as `web app` still wins when its
+   * description names one of these starters. */
+  var STARTER_CANON = [
+    [/auth(?:entication|app)?\b|sign[\s-]?in|log[\s-]?in|login/i, "authapp"],
+    [/api[\s-]*(?:mock|stub|sandbox|playground)|apimock|mock\s*api|fake\s*api|rest[\s-]*(?:mock|stub)|json[\s-]*api/i, "apimock"],
+    [/note[\s-]*(?:taking|book|taker)|notebook|searchable\s+notes|notes?\s+(?:app\s+)?with\s+(?:local\s+)?search|local\s+search/i, "notebook"],
+    [/multi[\s-]*page|static\s*site|site\s+with\s+(?:\d+\s+)?pages|several\s+pages|multiple\s+pages/i, "multipage"],
+    [/data[\s-]*(?:dashboard|app)|datadash|analytics[\s-]*dashboard|sales[\s-]*dashboard|kpi[\s-]*dashboard|metrics[\s-]*dashboard/i, "datadash"]
+  ];
+
   var CANON = [
+    [/auth(?:entication|app)?\b|sign[\s-]?in|log[\s-]?in|login/i, "authapp"],
+    [/api[\s-]*(?:mock|stub|sandbox|playground)|apimock|mock\s*api|fake\s*api|rest[\s-]*(?:mock|stub)|json[\s-]*api/i, "apimock"],
+    [/note[\s-]*(?:taking|book|taker)|notebook|searchable\s+notes|notes?\s+(?:app\s+)?with\s+(?:local\s+)?search|local\s+search/i, "notebook"],
+    [/multi[\s-]*page|static\s*site|site\s+with\s+(?:\d+\s+)?pages|several\s+pages|multiple\s+pages/i, "multipage"],
+    [/data[\s-]*(?:dashboard|app)|datadash|analytics[\s-]*dashboard|sales[\s-]*dashboard|kpi[\s-]*dashboard|metrics[\s-]*dashboard/i, "datadash"],
     [/calc/i, "calculator"],
     [/todo|task/i, "todo"],
     [/pomodoro/i, "pomodoro"],
@@ -2878,6 +2935,13 @@
     text = text.replace(/^(?:a |an )?(?:2d|3d|isometric|top[\s-]*down|side[\s-]*(?:scroller|view)|first[\s-]*person|third[\s-]*person)\s+/, "");
     if (text === "pomodoro") return "pomodoro";
     if (text === "tictactoe" || text === "tic tac toe") return "tictactoe";
+    var generic = /^(?:web\s*app|app|program|tool|playground|website|site|page|web\s*page|landing|landing\s*page)$/.test(text);
+    if (generic && desc) {
+      var d = String(desc).toLowerCase();
+      for (var s = 0; s < STARTER_CANON.length; s++) {
+        if (STARTER_CANON[s][0].test(d)) return STARTER_CANON[s][1];
+      }
+    }
     for (var i = 0; i < CANON.length; i++) {
       if (CANON[i][0].test(text)) return CANON[i][1];
     }
@@ -2935,7 +2999,9 @@
     twinstick: "twin-stick", roguelike: "roguelike", towerdefense: "tower defense",
     merges: "merge puzzle", farmingsim: "farming sim", cardbattler: "card battler",
     rhythm: "rhythm", explore: "low-poly exploration", waveshooter: "wave shooter",
-    builder: "block builder"
+    builder: "block builder",
+    authapp: "auth app", datadash: "data dashboard", notebook: "notebook",
+    multipage: "multi-page site", apimock: "api mock"
   };
   var RPG_DEFAULT_PACKS = [
     "arthur camelot", "india bharata", "space derelict", "cyber neon",
@@ -3234,6 +3300,695 @@
     return html;
   }
 
+  /* ---------------------------------------------------- starter library -- */
+  /* Step 62 starters are ordinary templates: a fixed file plan, seeded data,
+   * and no second prose parser. The build spec still decides the kind; these
+   * helpers only turn its seed into names, rows, and copy. */
+  var STARTER_KINDS = {
+    authapp: 1, datadash: 1, notebook: 1, multipage: 1, apimock: 1
+  };
+
+  function starterSeed(opts) {
+    return (opts && opts.spec && opts.spec.seed ? opts.spec.seed : 0) >>> 0;
+  }
+
+  function seededRand(seed, salt) {
+    var h = toolrxHash(String(seed >>> 0) + "|" + salt) >>> 0;
+    return function () {
+      h += 0x6D2B79F5;
+      var t = h;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function seededInt(rand, min, max) {
+    return min + Math.floor(rand() * (max - min + 1));
+  }
+
+  var STARTER_FIRST = ["Ada", "Mira", "Jonas", "Pella", "Rook", "Tala",
+    "Ivo", "Wren", "Sable", "Koa"];
+  var STARTER_LAST = ["Vale", "Mercer", "Okafor", "Lind", "Reyes", "Sato",
+    "Bram", "Iris", "North", "Quill"];
+  var STARTER_DOMAINS = ["example.test", "demo.local", "offline.test"];
+  var STARTER_WORKSPACES = ["Harbor Works", "Quiet Studio", "Northline",
+    "Paper Kite", "Field Notes"];
+  var STARTER_ROLES = ["owner", "editor", "viewer"];
+
+  function authDemo(seed) {
+    var first = pickSeeded(STARTER_FIRST, seed, "auth-first");
+    var last = pickSeeded(STARTER_LAST, seed, "auth-last");
+    return {
+      name: first + " " + last,
+      email: (first + "." + last).toLowerCase() + "@"
+        + pickSeeded(STARTER_DOMAINS, seed, "auth-domain"),
+      password: "toolrx-demo",
+      workspace: pickSeeded(STARTER_WORKSPACES, seed, "auth-workspace"),
+      role: pickSeeded(STARTER_ROLES, seed, "auth-role")
+    };
+  }
+
+  function authapp(desc, opts) {
+    var demo = authDemo(starterSeed(opts));
+    var body = [
+      '<div class="grid auth-grid">',
+      '<div class="card">',
+      '<span class="pill">local auth stub</span>',
+      '<h2 style="margin:12px 0 4px;font-size:20px">Sign in to ' + esc(demo.workspace) + '</h2>',
+      '<p class="muted small" style="margin:0 0 14px">No network, no real account. Any valid-looking email and a 6+ character password opens the demo session.</p>',
+      '<form id="signin" autocomplete="off">',
+      '<label class="small muted" for="email">email</label>',
+      '<input id="email" type="email" value="' + esc(demo.email) + '" style="margin:4px 0 10px">',
+      '<label class="small muted" for="pass">password</label>',
+      '<input id="pass" type="password" value="' + esc(demo.password) + '" style="margin:4px 0 10px">',
+      '<label class="row small muted" style="gap:8px;margin:2px 0 12px"><input id="remember" type="checkbox" checked style="width:auto"> remember this device</label>',
+      '<button class="btn" type="submit" style="width:100%">Sign in</button>',
+      '<p id="err" class="small" style="color:var(--bad);min-height:18px;margin:10px 0 0"></p>',
+      '</form>',
+      '<p class="muted small" style="margin:12px 0 0">demo · ' + esc(demo.email) + ' · ' + esc(demo.password) + '</p>',
+      '</div>',
+      '<div class="card" id="session" hidden>',
+      '<span class="pill" style="color:var(--ok);border-color:var(--ok)">signed in</span>',
+      '<h2 style="margin:12px 0 4px;font-size:22px">Welcome back, <span id="who">' + esc(demo.name) + '</span></h2>',
+      '<p class="muted" style="margin:0 0 14px"><span id="mail">' + esc(demo.email) + '</span> · <span id="role">' + esc(demo.role) + '</span></p>',
+      '<div class="stat" style="margin-bottom:12px"><span>workspace</span><b>' + esc(demo.workspace) + '</b></div>',
+      '<p class="muted small">This session lives in memory and, if you asked, in localStorage. The password is never stored or sent.</p>',
+      '<button class="btn ghost" id="signout" type="button">Sign out</button>',
+      '</div>',
+      '</div>',
+      '<p class="muted small" style="text-align:center">auth.js is the stub · app.js is the session surface · swap the stub for a real backend later</p>'
+    ].join("");
+    var css = ".auth-grid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:start}" +
+      "#session[hidden]{display:none}";
+    var js = [
+      "var KEY='toolrx.auth.session.v1';",
+      "var demo=" + JSON.stringify(demo) + ";",
+      "var form=document.getElementById('signin'),err=document.getElementById('err'),session=document.getElementById('session');",
+      "function paint(s){form.hidden=!!s;session.hidden=!s;if(s){document.getElementById('who').textContent=s.name;document.getElementById('mail').textContent=s.email;document.getElementById('role').textContent=s.role;}}",
+      "form.addEventListener('submit',function(e){e.preventDefault();err.textContent='';",
+      "var r=window.toolrxAuth.signIn(document.getElementById('email').value,document.getElementById('pass').value);",
+      "if(!r.ok){err.textContent=r.error;return;}",
+      "if(document.getElementById('remember').checked){try{localStorage.setItem(KEY,JSON.stringify(r.user))}catch(x){}}",
+      "paint(r.user);});",
+      "document.getElementById('signout').addEventListener('click',function(){",
+      "try{localStorage.removeItem(KEY)}catch(x){}paint(null);});",
+      "var saved=null;try{saved=JSON.parse(localStorage.getItem(KEY)||'null')}catch(x){}",
+      "paint(saved&&saved.email?saved:null);"
+    ].join("\n");
+    return shell({ title: "Sign-in starter", sub: "a local auth stub with a real session surface", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  function authStubSource(seed) {
+    var demo = authDemo(seed);
+    return [
+      "/* toolrx auth stub · local only, no network. */",
+      "(function (root) {",
+      "  \"use strict\";",
+      "  var DEMO = " + JSON.stringify(demo) + ";",
+      "  function validate(email, password) {",
+      "    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(email || \"\"))) return \"enter a valid email address\";",
+      "    if (String(password || \"\").length < 6) return \"use at least 6 characters\";",
+      "    return \"\";",
+      "  }",
+      "  function signIn(email, password) {",
+      "    var error = validate(email, password);",
+      "    if (error) return { ok: false, error: error };",
+      "    return { ok: true, user: { name: DEMO.name, email: String(email).trim(), role: DEMO.role, workspace: DEMO.workspace } };",
+      "  }",
+      "  function signOut() { return { ok: true }; }",
+      "  root.toolrxAuth = { demo: DEMO, validate: validate, signIn: signIn, signOut: signOut };",
+      "})(typeof self !== \"undefined\" ? self : this);",
+      ""
+    ].join("\n");
+  }
+
+  var STARTER_REGIONS = ["North", "South", "East", "West", "Central", "Coastal"];
+  var STARTER_CHANNELS = ["direct", "search", "referral", "email"];
+
+  function dataSample(seed) {
+    var rand = seededRand(seed, "dashboard");
+    var regions = [];
+    for (var r = 0; r < 4; r++) {
+      var region = STARTER_REGIONS[(seed + r * 3) % STARTER_REGIONS.length];
+      if (regions.indexOf(region) < 0) regions.push(region);
+    }
+    var rows = [];
+    for (var d = 0; d < 14; d++) {
+      var orders = seededInt(rand, 18, 120);
+      rows.push({
+        day: "Day " + (d + 1),
+        region: regions[d % regions.length],
+        channel: STARTER_CHANNELS[seededInt(rand, 0, STARTER_CHANNELS.length - 1)],
+        orders: orders,
+        revenue: orders * seededInt(rand, 24, 68),
+        conversion: seededInt(rand, 18, 72) / 10
+      });
+    }
+    return {
+      title: pickSeeded(["Signal board", "Pulse board", "North star", "Field metrics"], seed, "dash-title"),
+      regions: regions,
+      rows: rows
+    };
+  }
+
+  function datadash(desc, opts) {
+    var sample = dataSample(starterSeed(opts));
+    var body = [
+      '<div class="grid kpis">',
+      '<div class="stat"><span>revenue</span><b id="k-rev">—</b></div>',
+      '<div class="stat"><span>orders</span><b id="k-ord">—</b></div>',
+      '<div class="stat"><span>avg conversion</span><b id="k-conv">—</b></div>',
+      '<div class="stat"><span>best day</span><b id="k-best">—</b></div>',
+      '</div>',
+      '<div class="card" style="margin-bottom:12px">',
+      '<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">',
+      '<b>' + esc(sample.title) + '</b>',
+      '<span class="row" style="gap:8px"><select id="region" style="width:auto"></select>',
+      '<button class="btn ghost" id="csv" type="button" style="padding:6px 11px;font-size:12px">export CSV</button></span>',
+      '</div>',
+      '<svg id="chart" viewBox="0 0 720 220" preserveAspectRatio="none" style="width:100%;height:200px"></svg>',
+      '<p class="muted small" style="margin:8px 2px 0">Seeded sample rows from data.js. No request, no clock, no random.</p>',
+      '</div>',
+      '<div class="card"><b>daily rows</b>',
+      '<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">',
+      '<thead><tr class="muted small"><th align="left">day</th><th align="left">region</th><th align="left">channel</th><th align="right">orders</th><th align="right">revenue</th><th align="right">conv %</th></tr></thead>',
+      '<tbody id="rows"></tbody></table></div>'
+    ].join("");
+    var css = ".kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}" +
+      "#chart rect.bar{fill:url(#barGrad)}#chart text{fill:var(--muted);font-size:11px}" +
+      "#chart text.value{fill:var(--text);font-weight:600}";
+    var js = [
+      "var D=window.toolrxData;",
+      "var sel=document.getElementById('region'),tbody=document.getElementById('rows'),chart=document.getElementById('chart');",
+      "function money(n){return '$'+n.toLocaleString('en-US');}",
+      "function filtered(){var r=sel.value;return D.rows.filter(function(x){return r==='all'||x.region===r;});}",
+      "function draw(rows){",
+      "var W=720,H=220,pad=34,max=Math.max.apply(null,rows.map(function(x){return x.revenue;}).concat([1]));",
+      "var bw=(W-pad*2)/Math.max(1,rows.length);",
+      "var out=['<defs><linearGradient id=\"barGrad\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#22d3ee\"/><stop offset=\"1\" stop-color=\"#a78bfa\"/></linearGradient></defs>'];",
+      "out.push('<line x1=\"'+pad+'\" y1=\"'+(H-pad)+'\" x2=\"'+(W-pad)+'\" y2=\"'+(H-pad)+'\" stroke=\"#22304d\"/>');",
+      "rows.forEach(function(x,i){var h=(H-pad*1.8)*(x.revenue/max);var bx=pad+i*bw+bw*0.18,by=H-pad-h,bwid=bw*0.64;",
+      "out.push('<rect class=\"bar\" x=\"'+bx.toFixed(1)+'\" y=\"'+by.toFixed(1)+'\" width=\"'+bwid.toFixed(1)+'\" height=\"'+h.toFixed(1)+'\" rx=\"5\"/>');",
+      "out.push('<text class=\"value\" x=\"'+(bx+bwid/2).toFixed(1)+'\" y=\"'+(by-6).toFixed(1)+'\" text-anchor=\"middle\">'+x.orders+'</text>');",
+      "out.push('<text x=\"'+(bx+bwid/2).toFixed(1)+'\" y=\"'+(H-pad+16)+'\" text-anchor=\"middle\">'+x.day.replace('Day ','D')+'</text>');});",
+      "chart.innerHTML=out.join('');}",
+      "function render(){var rows=filtered();",
+      "var rev=rows.reduce(function(a,x){return a+x.revenue;},0),ord=rows.reduce(function(a,x){return a+x.orders;},0);",
+      "var conv=rows.length?rows.reduce(function(a,x){return a+x.conversion;},0)/rows.length:0;",
+      "var best=rows.slice().sort(function(a,b){return b.revenue-a.revenue;})[0];",
+      "document.getElementById('k-rev').textContent=money(rev);",
+      "document.getElementById('k-ord').textContent=ord.toLocaleString('en-US');",
+      "document.getElementById('k-conv').textContent=conv.toFixed(1)+'%';",
+      "document.getElementById('k-best').textContent=best?best.day+' · '+money(best.revenue):'—';",
+      "tbody.innerHTML=rows.map(function(x){return '<tr><td>'+x.day+'</td><td>'+x.region+'</td><td>'+x.channel+'</td><td align=\"right\">'+x.orders+'</td><td align=\"right\">'+money(x.revenue)+'</td><td align=\"right\">'+x.conversion.toFixed(1)+'</td></tr>';}).join('');",
+      "draw(rows);}",
+      "sel.innerHTML='<option value=\"all\">all regions</option>'+D.regions.map(function(r){return '<option value=\"'+r+'\">'+r+'</option>';}).join('');",
+      "sel.addEventListener('change',render);",
+      "document.getElementById('csv').addEventListener('click',function(){",
+      "var rows=filtered(),head='day,region,channel,orders,revenue,conversion\\n';",
+      "var text=head+rows.map(function(x){return [x.day,x.region,x.channel,x.orders,x.revenue,x.conversion].join(',');}).join('\\n');",
+      "var b=new Blob([text],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='dashboard.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);});",
+      "render();"
+    ].join("\n");
+    return shell({ title: "Data dashboard", sub: "seeded rows, live totals, and a chart with no dependencies", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  function dataSampleSource(seed) {
+    return "/* toolrx dashboard data · seed " + seed + " · generated, not fetched */\n"
+      + "window.toolrxData = " + JSON.stringify(dataSample(seed), null, 2) + ";\n";
+  }
+
+  var NOTE_TITLES = ["Reading list", "Launch checklist", "Meeting notes",
+    "Garden plan", "Trip ideas", "Home repairs"];
+  var NOTE_TAGS = ["personal", "work", "ideas", "later"];
+  var NOTE_LINES = [
+    "Start with the smallest useful version and keep the list short.",
+    "Check the offline copy before changing anything.",
+    "Write down the decision and the reason next to it.",
+    "Leave the next step obvious for future you.",
+    "Keep one source of truth and link the rest."
+  ];
+
+  function noteSample(seed) {
+    var out = [];
+    for (var i = 0; i < 4; i++) {
+      out.push({
+        id: "n" + (i + 1),
+        title: pickSeeded(NOTE_TITLES, seed, "note-title-" + i),
+        tag: pickSeeded(NOTE_TAGS, seed, "note-tag-" + i),
+        body: pickSeeded(NOTE_LINES, seed, "note-body-" + i) + "\n\n"
+          + pickSeeded(NOTE_LINES, seed, "note-body2-" + i),
+        at: "seed " + seed
+      });
+    }
+    return out;
+  }
+
+  function notebook(desc, opts) {
+    var body = [
+      '<div class="grid nb">',
+      '<div class="card">',
+      '<div class="row" style="gap:8px"><input id="q" placeholder="search notes…" style="flex:1"><button class="btn" id="new" type="button" style="padding:8px 12px">New</button></div>',
+      '<p id="count" class="muted small" style="margin:8px 2px 0">—</p>',
+      '<div id="list" class="nb-list"></div>',
+      '</div>',
+      '<div class="card">',
+      '<label class="small muted" for="title">title</label>',
+      '<input id="title" style="margin:4px 0 8px" placeholder="untitled note">',
+      '<label class="small muted" for="tag">tag</label>',
+      '<input id="tag" style="margin:4px 0 8px" placeholder="personal">',
+      '<label class="small muted" for="body">body</label>',
+      '<textarea id="body" rows="12" style="margin:4px 0 10px;resize:vertical"></textarea>',
+      '<div class="row" style="gap:8px"><button class="btn" id="save" type="button">Save</button>',
+      '<button class="btn ghost" id="del" type="button">Delete</button></div>',
+      '<p id="msg" class="muted small" style="margin:10px 2px 0">search runs over titles, tags, and bodies — all local.</p>',
+      '</div>',
+      '</div>'
+    ].join("");
+    var css = ".nb{grid-template-columns:minmax(220px,1fr) minmax(280px,1.5fr);align-items:start}" +
+      ".nb-list{display:flex;flex-direction:column;gap:7px;margin-top:10px;max-height:420px;overflow:auto}" +
+      ".nb-item{text-align:left;border:1px solid var(--border);background:var(--panel2);color:var(--text);" +
+      "border-radius:10px;padding:9px 11px;cursor:pointer;font:inherit}" +
+      ".nb-item.on{border-color:var(--accent);background:rgba(34,211,238,.10)}" +
+      ".nb-item b{display:block;font-size:13.5px}.nb-item span{display:block;color:var(--muted);font-size:12px;margin-top:3px}" +
+      "@media(max-width:640px){.nb{grid-template-columns:1fr}}";
+    var js = [
+      "var KEY='toolrx.notebook.v1';",
+      "var seedNotes=window.toolrxSeedNotes||[];",
+      "var notes=[],active=null,query='';",
+      "try{notes=JSON.parse(localStorage.getItem(KEY)||'null')||seedNotes.slice();}catch(e){notes=seedNotes.slice();}",
+      "var q=document.getElementById('q'),list=document.getElementById('list'),count=document.getElementById('count'),",
+      "title=document.getElementById('title'),tag=document.getElementById('tag'),body=document.getElementById('body'),msg=document.getElementById('msg');",
+      "function save(){try{localStorage.setItem(KEY,JSON.stringify(notes))}catch(e){msg.textContent='storage is full; this note is only in memory.';}}",
+      "function nextId(){var n=0;notes.forEach(function(x){var m=/^n(\\d+)$/.exec(x.id);if(m)n=Math.max(n,+m[1]);});return 'n'+(n+1);}",
+      "function find(id){for(var i=0;i<notes.length;i++)if(notes[i].id===id)return notes[i];return null;}",
+      "function matches(n){var s=(n.title+' '+n.tag+' '+n.body).toLowerCase();return !query||s.indexOf(query)>=0;}",
+      "function paintList(){var shown=notes.filter(matches);count.textContent=shown.length+' of '+notes.length+' notes'+(query?' · search: '+query:'');",
+      "list.innerHTML='';shown.forEach(function(n){var b=document.createElement('button');b.type='button';b.className='nb-item'+(n.id===active?' on':'');",
+      "var t=document.createElement('b');t.textContent=n.title||'untitled note';var s=document.createElement('span');",
+      "s.textContent=(n.tag||'untagged')+' · '+(n.body||'').replace(/\\s+/g,' ').slice(0,64);b.appendChild(t);b.appendChild(s);",
+      "b.addEventListener('click',function(){open(n.id);});list.appendChild(b);});}",
+      "function paintEditor(){var n=find(active);if(!n){title.value='';tag.value='';body.value='';return;}",
+      "title.value=n.title;tag.value=n.tag;body.value=n.body;}",
+      "function open(id){collect();active=id;paintList();paintEditor();msg.textContent='editing '+(find(id)?find(id).title:'note')+'.';}",
+      "function collect(){var n=find(active);if(!n)return;n.title=title.value.trim()||'untitled note';n.tag=tag.value.trim()||'untagged';n.body=body.value;}",
+      "document.getElementById('new').addEventListener('click',function(){collect();var n={id:nextId(),title:'untitled note',tag:'personal',body:'',at:'local'};notes.unshift(n);active=n.id;save();paintList();paintEditor();title.focus();});",
+      "document.getElementById('save').addEventListener('click',function(){collect();save();paintList();msg.textContent='saved locally · no network';});",
+      "document.getElementById('del').addEventListener('click',function(){var n=find(active);if(!n)return;notes=notes.filter(function(x){return x.id!==active;});active=notes.length?notes[0].id:null;save();paintList();paintEditor();msg.textContent='deleted · '+notes.length+' notes left.';});",
+      "function autosave(){collect();save();paintList();}",
+      "[title,tag,body].forEach(function(el){el.addEventListener('input',autosave);});",
+      "q.addEventListener('input',function(){query=q.value.trim().toLowerCase();paintList();});",
+      "active=notes.length?notes[0].id:null;paintList();paintEditor();"
+    ].join("\n");
+    return shell({ title: "Notebook", sub: "local notes with instant local search", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  function noteSeedSource(seed) {
+    return "/* toolrx starter notes · seed " + seed + " · generated, not fetched */\n"
+      + "window.toolrxSeedNotes = " + JSON.stringify(noteSample(seed), null, 2) + ";\n";
+  }
+
+  var SITE_NAMES = ["Harbor Notes", "Field Guide", "Paper Trail",
+    "Northline", "Quiet Index"];
+  var SITE_TAGLINES = ["A small site with room to grow.",
+    "Plain pages, fast loads, no tracking.",
+    "Notes from the workbench, kept offline."];
+  var SITE_VALUES = [
+    ["Static by default", "Four HTML files, one stylesheet, one small script."],
+    ["No build step", "Open index.html or serve the folder; nothing is compiled."],
+    ["Honest links", "Every navigation target is a real file in this project."]
+  ];
+  var SITE_NOTES = [
+    "Start with the page a reader needs first.",
+    "Keep navigation identical on every page.",
+    "Put shared behaviour in one small script.",
+    "Write the copy before adding decoration."
+  ];
+
+  function siteSample(seed) {
+    var values = [];
+    for (var i = 0; i < SITE_VALUES.length; i++) {
+      values.push({ h: SITE_VALUES[i][0], p: SITE_VALUES[i][1] });
+    }
+    var docs = [];
+    for (var d = 0; d < 3; d++) {
+      docs.push({
+        h: pickSeeded(["Start here", "Page map", "Publishing", "Editing copy", "Adding a page"], seed, "doc-h-" + d),
+        p: pickSeeded(SITE_NOTES, seed, "doc-p-" + d),
+        code: pickSeeded([
+          "python3 -m http.server 8000",
+          "open index.html",
+          "cp index.html new-page.html"
+        ], seed, "doc-c-" + d)
+      });
+    }
+    var notes = [];
+    for (var n = 0; n < 4; n++) {
+      notes.push(pickSeeded(SITE_NOTES, seed, "site-note-" + n));
+    }
+    return {
+      name: pickSeeded(SITE_NAMES, seed, "site-name"),
+      tagline: pickSeeded(SITE_TAGLINES, seed, "site-tagline"),
+      intro: pickSeeded([
+        "A four-page static site with one stylesheet and one small script.",
+        "A quiet home for notes, docs, and a way to get in touch.",
+        "Built as plain files: read it, copy it, host it anywhere."
+      ], seed, "site-intro"),
+      values: values,
+      docs: docs,
+      notes: notes,
+      contact: {
+        email: "hello@" + pickSeeded(STARTER_DOMAINS, seed, "site-domain"),
+        place: pickSeeded(["the workbench", "the reading room", "the north desk"], seed, "site-place")
+      }
+    };
+  }
+
+  function siteNav(site, active) {
+    var pages = [["home", "index.html", "Home"], ["about", "about.html", "About"],
+      ["docs", "docs.html", "Docs"], ["contact", "contact.html", "Contact"]];
+    return '<nav class="site-nav">' + pages.map(function (p) {
+      return '<a href="' + p[1] + '" data-page="' + p[0] + '"'
+        + (p[0] === active ? ' class="active"' : '') + '>' + p[2] + '</a>';
+    }).join("") + '</nav>';
+  }
+
+  function multipage(desc, opts) {
+    var site = siteSample(starterSeed(opts));
+    var body = [
+      siteNav(site, "home"),
+      '<section class="card" style="padding:clamp(20px,5vw,40px);margin-bottom:14px;background:radial-gradient(700px 320px at 10% 0%,rgba(34,211,238,.18),transparent 65%),linear-gradient(180deg,var(--panel),var(--panel2))">',
+      '<span class="badge">' + esc(site.name) + '</span>',
+      '<h2 style="font-size:clamp(26px,5vw,44px);max-width:18ch;margin:12px 0 10px">' + esc(site.tagline) + '</h2>',
+      '<p class="sub" style="max-width:56ch">' + esc(site.intro) + '</p>',
+      '<div class="row" style="margin-top:16px"><a class="btn" href="docs.html" style="text-decoration:none">Read the docs</a>',
+      '<a class="btn ghost" href="about.html" style="text-decoration:none">About this site</a></div>',
+      '</section>',
+      '<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:14px">',
+      site.values.map(function (v) { return feature(v.h, v.p); }).join(""),
+      '</section>',
+      '<section class="card" id="notes"><b>recent notes</b>',
+      '<ul style="margin:10px 0 0;padding-left:20px">' + site.notes.map(function (n) {
+        return "<li>" + esc(n) + "</li>";
+      }).join("") + '</ul>',
+      '<button class="btn ghost" id="more" type="button" style="margin-top:12px;padding:6px 11px;font-size:12px">More about this site</button>',
+      '<p id="moreText" class="muted small" style="margin:10px 0 0" hidden>Every page shares styles.css and site.js. The contact form stores a message in localStorage only; nothing is sent.</p>',
+      '</section>',
+      '<p class="muted small" style="text-align:center">four real pages · index.html · about.html · docs.html · contact.html</p>'
+    ].join("");
+    var css = ".site-nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}" +
+      ".site-nav a{padding:7px 12px;border:1px solid var(--border);border-radius:999px;color:var(--muted);text-decoration:none;font-size:13px}" +
+      ".site-nav a.active{color:var(--text);border-color:var(--accent);background:rgba(34,211,238,.10)}" +
+      ".site-nav a:hover{color:var(--text)}";
+    var js = [
+      "var more=document.getElementById('more'),moreText=document.getElementById('moreText');",
+      "if(more&&moreText)more.addEventListener('click',function(){moreText.hidden=!moreText.hidden;more.textContent=moreText.hidden?'More about this site':'Show less';});"
+    ].join("\n");
+    return shell({ title: "Static site", sub: "four real pages, one stylesheet, one small shared script", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  function sitePageHtml(site, page, title, body, theme) {
+    return "<!doctype html>\n<html lang=\"en\" class=\"" + (theme === "light" ? "light" : "dark") + "\">\n<head>\n"
+      + "<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+      + "<title>" + esc(title) + " · " + esc(site.name) + "</title>\n"
+      + "<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body data-page=\"" + page + "\">\n"
+      + "<div class=\"wrap\">\n<header class=\"hero\"><span class=\"badge\">" + esc(site.name)
+      + "</span><h1>" + esc(title) + "</h1><p class=\"sub\">" + esc(site.tagline) + "</p>"
+      + siteNav(site, page) + "</header>\n" + body + "\n</div>\n"
+      + "<footer><span>built by <b>toolrx</b> · deterministic template · no model, no network</span>"
+      + "<span>offline · separate files</span></footer>\n"
+      + "<script src=\"site.js\"></script>\n</body>\n</html>\n";
+  }
+
+  function siteAboutBody(site) {
+    return [
+      '<section class="card" style="margin-bottom:12px">',
+      '<h2 style="margin:0 0 8px;font-size:20px">Why this site exists</h2>',
+      '<p style="margin:0 0 10px">' + esc(site.intro) + '</p>',
+      '<p class="muted" style="margin:0">It is a static starter: four pages, one stylesheet, and one shared script. ',
+      'No framework, no account, no analytics.</p></section>',
+      '<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">',
+      site.values.map(function (v) { return feature(v.h, v.p); }).join(""),
+      '</section>'
+    ].join("");
+  }
+
+  function siteDocsBody(site) {
+    return [
+      '<section class="card" style="margin-bottom:12px">',
+      '<h2 style="margin:0 0 8px;font-size:20px">How to work with it</h2>',
+      site.docs.map(function (d, i) {
+        return '<h3 style="margin:14px 0 4px;font-size:15px">' + (i + 1) + '. ' + esc(d.h) + '</h3>'
+          + '<p class="muted small" style="margin:0 0 6px">' + esc(d.p) + '</p>'
+          + '<pre style="background:var(--panel2);border:1px solid var(--border);border-radius:9px;padding:10px;overflow:auto;font-size:12.5px"><code>'
+          + esc(d.code) + '</code></pre>';
+      }).join(""),
+      '</section>',
+      '<p class="muted small" style="text-align:center">every page links the same styles.css · site.js only marks the active page and handles the contact form</p>'
+    ].join("");
+  }
+
+  function siteContactBody(site) {
+    return [
+      '<section class="card" style="max-width:560px;margin:0 auto">',
+      '<h2 style="margin:0 0 8px;font-size:20px">Get in touch</h2>',
+      '<p class="muted small" style="margin:0 0 14px">' + esc(site.contact.email) + ' · ' + esc(site.contact.place) + '</p>',
+      '<form id="contactForm" autocomplete="off">',
+      '<label class="small muted" for="cname">name</label>',
+      '<input id="cname" style="margin:4px 0 10px" placeholder="your name">',
+      '<label class="small muted" for="cmsg">message</label>',
+      '<textarea id="cmsg" rows="5" style="margin:4px 0 10px" placeholder="a short note"></textarea>',
+      '<button class="btn" type="submit">Save locally</button>',
+      '<p id="contactMsg" class="muted small" style="min-height:18px;margin:10px 0 0"></p>',
+      '</form>',
+      '<p class="muted small" style="margin:12px 0 0">This form has no endpoint. It stores the message in this browser and says so.</p>',
+      '</section>'
+    ].join("");
+  }
+
+  function siteScriptSource() {
+    return [
+      "/* toolrx static site · shared nav and the local-only contact form. */",
+      "(function () {",
+      "  \"use strict\";",
+      "  var page = document.body.getAttribute(\"data-page\") || \"home\";",
+      "  var links = document.querySelectorAll(\".site-nav a\");",
+      "  for (var i = 0; i < links.length; i++) {",
+      "    if (links[i].getAttribute(\"data-page\") === page) links[i].className = \"active\";",
+      "  }",
+      "  var form = document.getElementById(\"contactForm\");",
+      "  if (!form) return;",
+      "  form.addEventListener(\"submit\", function (e) {",
+      "    e.preventDefault();",
+      "    var msg = document.getElementById(\"contactMsg\");",
+      "    var name = document.getElementById(\"cname\").value.trim();",
+      "    var text = document.getElementById(\"cmsg\").value.trim();",
+      "    if (!name || !text) { msg.textContent = \"add a name and a message first.\"; return; }",
+      "    try { localStorage.setItem(\"toolrx.site.contact\", JSON.stringify({ name: name, text: text })); } catch (x) {}",
+      "    msg.textContent = \"saved locally — no message left this page.\";",
+      "    form.reset();",
+      "  });",
+      "})();",
+      ""
+    ].join("\n");
+  }
+
+  var API_NAMES = ["Ada Vale", "Mira Okafor", "Jonas Lind", "Pella Reyes",
+    "Rook Sato", "Tala Bram", "Ivo North", "Wren Quill"];
+  var API_ROLES = ["admin", "editor", "viewer"];
+
+  function apiSample(seed) {
+    var rand = seededRand(seed, "apimock");
+    var users = [];
+    for (var i = 0; i < 6; i++) {
+      var name = pickSeeded(API_NAMES, seed, "api-name-" + i);
+      users.push({
+        id: i + 1,
+        name: name,
+        email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@example.test",
+        role: API_ROLES[seededInt(rand, 0, API_ROLES.length - 1)],
+        active: rand() > 0.25
+      });
+    }
+    return { users: users };
+  }
+
+  function apiSource(seed) {
+    var sample = apiSample(seed);
+    return [
+      "/* toolrx mock API · in-memory routes, no network. */",
+      "(function (root) {",
+      "  \"use strict\";",
+      "  var ORIGINAL = " + JSON.stringify(sample.users, null, 2) + ";",
+      "  var USERS = JSON.parse(JSON.stringify(ORIGINAL));",
+      "  function clone(x) { return JSON.parse(JSON.stringify(x)); }",
+      "  function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }",
+      "  function ms(method, path) { return 4 + (hash(method + \" \" + path) % 25); }",
+      "  function reply(status, body, method, path) {",
+      "    return { status: status, headers: { \"content-type\": \"application/json\", \"x-mock\": \"toolrx\" }, body: body, ms: ms(method, path) };",
+      "  }",
+      "  function find(id) { for (var i = 0; i < USERS.length; i++) if (USERS[i].id === id) return USERS[i]; return null; }",
+      "  function handle(method, path, body) {",
+      "    method = String(method || \"GET\").toUpperCase();",
+      "    path = String(path || \"/api/health\").split(\"?\")[0].replace(/\\/+$/, \"\") || \"/\";",
+      "    if (method === \"GET\" && path === \"/api/health\") return reply(200, { status: \"ok\", service: \"toolrx-mock\", users: USERS.length }, method, path);",
+      "    if (method === \"GET\" && path === \"/api/users\") return reply(200, { data: clone(USERS), total: USERS.length }, method, path);",
+      "    if (method === \"GET\" && path === \"/api/stats\") {",
+      "      var byRole = {}; USERS.forEach(function (u) { byRole[u.role] = (byRole[u.role] || 0) + 1; });",
+      "      return reply(200, { total: USERS.length, active: USERS.filter(function (u) { return u.active; }).length, byRole: byRole }, method, path);",
+      "    }",
+      "    var m = /^\\/api\\/users\\/(\\d+)$/.exec(path);",
+      "    if (m && method === \"GET\") {",
+      "      var one = find(+m[1]);",
+      "      return one ? reply(200, clone(one), method, path) : reply(404, { error: \"user not found\" }, method, path);",
+      "    }",
+      "    if (m && method === \"DELETE\") {",
+      "      var at = -1; for (var i = 0; i < USERS.length; i++) if (USERS[i].id === +m[1]) at = i;",
+      "      if (at < 0) return reply(404, { error: \"user not found\" }, method, path);",
+      "      var gone = USERS.splice(at, 1)[0];",
+      "      return reply(200, { deleted: gone }, method, path);",
+      "    }",
+      "    if (method === \"POST\" && path === \"/api/users\") {",
+      "      body = body || {};",
+      "      if (!body.name || !body.email) return reply(422, { error: \"name and email are required\" }, method, path);",
+      "      var next = USERS.reduce(function (n, u) { return Math.max(n, u.id); }, 0) + 1;",
+      "      var made = { id: next, name: String(body.name), email: String(body.email), role: body.role || \"viewer\", active: true };",
+      "      USERS.push(made);",
+      "      return reply(201, clone(made), method, path);",
+      "    }",
+      "    return reply(404, { error: \"no mock route for \" + method + \" \" + path }, method, path);",
+      "  }",
+      "  root.toolrxMockApi = {",
+      "    handle: handle,",
+      "    reset: function () { USERS = JSON.parse(JSON.stringify(ORIGINAL)); },",
+      "    routes: [",
+      "      { method: \"GET\", path: \"/api/health\", note: \"service status\" },",
+      "      { method: \"GET\", path: \"/api/users\", note: \"list users\" },",
+      "      { method: \"GET\", path: \"/api/users/1\", note: \"one user\" },",
+      "      { method: \"POST\", path: \"/api/users\", note: \"create a user\" },",
+      "      { method: \"DELETE\", path: \"/api/users/1\", note: \"delete a user\" },",
+      "      { method: \"GET\", path: \"/api/stats\", note: \"counts by role\" }",
+      "    ]",
+      "  };",
+      "})(typeof self !== \"undefined\" ? self : this);",
+      ""
+    ].join("\n");
+  }
+
+  function apiOpenApi(seed) {
+    var doc = {
+      openapi: "3.0.0",
+      info: {
+        title: "toolrx mock API",
+        version: "1.0.0",
+        description: "Generated locally from seed " + seed + ". No server is involved."
+      },
+      servers: [{ url: "local://mock" }],
+      paths: {
+        "/api/health": { get: { summary: "Service status" } },
+        "/api/users": {
+          get: { summary: "List users" },
+          post: { summary: "Create a user" }
+        },
+        "/api/users/{id}": {
+          get: { summary: "Read one user" },
+          delete: { summary: "Delete one user" }
+        },
+        "/api/stats": { get: { summary: "Counts by role" } }
+      }
+    };
+    return JSON.stringify(doc, null, 2) + "\n";
+  }
+
+  function apimock(desc, opts) {
+    var body = [
+      '<div class="grid api">',
+      '<div class="card">',
+      '<b>routes</b>',
+      '<div id="routes" class="api-routes"></div>',
+      '<p class="muted small" style="margin:10px 0 0">Click a route to load it. The handler is in api.js; nothing is fetched.</p>',
+      '</div>',
+      '<div class="card">',
+      '<div class="row" style="gap:8px;flex-wrap:wrap">',
+      '<select id="method" style="width:auto"><option>GET</option><option>POST</option><option>DELETE</option></select>',
+      '<input id="path" value="/api/health" style="flex:1;min-width:160px">',
+      '<button class="btn" id="send" type="button">Send</button>',
+      '<button class="btn ghost" id="reset" type="button">Reset data</button>',
+      '</div>',
+      '<label class="small muted" for="reqbody" style="display:block;margin:10px 0 4px">request body (JSON, for POST)</label>',
+      '<textarea id="reqbody" rows="4" style="font-family:ui-monospace,monospace;font-size:12.5px" placeholder="{&quot;name&quot;:&quot;New User&quot;,&quot;email&quot;:&quot;new@example.test&quot;}"></textarea>',
+      '<div class="row" style="justify-content:space-between;margin:12px 0 6px"><b>response</b><span id="meta" class="pill">—</span></div>',
+      '<pre id="out" style="background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px;overflow:auto;max-height:320px;font-size:12.5px;margin:0"><code>—</code></pre>',
+      '<p id="msg" class="muted small" style="margin:10px 0 0">in-memory only · reset restores the seeded users.</p>',
+      '</div>',
+      '</div>'
+    ].join("");
+    var css = ".api{grid-template-columns:minmax(220px,.9fr) minmax(300px,1.4fr);align-items:start}" +
+      ".api-routes{display:flex;flex-direction:column;gap:7px;margin-top:10px}" +
+      ".api-route{text-align:left;border:1px solid var(--border);background:var(--panel2);color:var(--text);" +
+      "border-radius:9px;padding:8px 10px;cursor:pointer;font:inherit;font-size:12.5px}" +
+      ".api-route:hover{border-color:var(--accent)}.api-route b{color:var(--accent)}" +
+      ".api-route span{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}" +
+      "@media(max-width:640px){.api{grid-template-columns:1fr}}";
+    var js = [
+      "var api=window.toolrxMockApi;",
+      "var method=document.getElementById('method'),path=document.getElementById('path'),",
+      "reqbody=document.getElementById('reqbody'),out=document.getElementById('out'),",
+      "meta=document.getElementById('meta'),msg=document.getElementById('msg'),routes=document.getElementById('routes');",
+      "function paintRoutes(){routes.innerHTML='';api.routes.forEach(function(r){",
+      "var b=document.createElement('button');b.type='button';b.className='api-route';",
+      "b.innerHTML='<b>'+r.method+'</b> '+r.path+'<span>'+r.note+'</span>';",
+      "b.addEventListener('click',function(){method.value=r.method;path.value=r.path;send();});routes.appendChild(b);});}",
+      "function send(){var body=null;",
+      "if(method.value!=='GET'&&reqbody.value.trim()){try{body=JSON.parse(reqbody.value)}catch(e){msg.textContent='request body is not valid JSON.';return;}}",
+      "var r=api.handle(method.value,path.value,body);",
+      "meta.textContent=r.status+' · '+r.ms+' ms · mock';",
+      "out.textContent=JSON.stringify(r.body,null,2);",
+      "msg.textContent=r.status<400?'handled locally by api.js.':'the mock refused this request.';}",
+      "document.getElementById('send').addEventListener('click',send);",
+      "document.getElementById('reset').addEventListener('click',function(){api.reset();msg.textContent='seeded users restored.';send();});",
+      "paintRoutes();send();"
+    ].join("\n");
+    return shell({ title: "API mock", sub: "a real route table and JSON responses, all in memory", body: body, css: css, js: js, theme: opts.theme });
+  }
+
+  function starterExtras(real, desc, spec, theme) {
+    var seed = (spec && spec.seed ? spec.seed : 0) >>> 0;
+    var out = { files: {}, scripts: [], docs: [] };
+    if (real === "authapp") {
+      out.files["auth.js"] = authStubSource(seed);
+      out.scripts.push("auth.js");
+      out.docs.push({ file: "auth.js", role: "local auth stub: validate, sign in, and sign out" });
+    } else if (real === "datadash") {
+      out.files["data.js"] = dataSampleSource(seed);
+      out.scripts.push("data.js");
+      out.docs.push({ file: "data.js", role: "seeded sample rows and regions" });
+    } else if (real === "notebook") {
+      out.files["seed-notes.js"] = noteSeedSource(seed);
+      out.scripts.push("seed-notes.js");
+      out.docs.push({ file: "seed-notes.js", role: "seeded starter notes" });
+    } else if (real === "multipage") {
+      var site = siteSample(seed);
+      out.files["about.html"] = sitePageHtml(site, "about", "About", siteAboutBody(site), theme);
+      out.files["docs.html"] = sitePageHtml(site, "docs", "Docs", siteDocsBody(site), theme);
+      out.files["contact.html"] = sitePageHtml(site, "contact", "Contact", siteContactBody(site), theme);
+      out.files["site.js"] = siteScriptSource();
+      out.scripts.push("site.js");
+      out.docs.push({ file: "about.html", role: "about page with the seeded story" });
+      out.docs.push({ file: "docs.html", role: "docs page with seeded sections" });
+      out.docs.push({ file: "contact.html", role: "contact page with a local-only form" });
+      out.docs.push({ file: "site.js", role: "shared nav state and the local contact form" });
+    } else if (real === "apimock") {
+      out.files["api.js"] = apiSource(seed);
+      out.files["openapi.json"] = apiOpenApi(seed);
+      out.scripts.push("api.js");
+      out.docs.push({ file: "api.js", role: "in-memory mock routes and seeded users" });
+      out.docs.push({ file: "openapi.json", role: "the same routes described as OpenAPI" });
+    }
+    return out;
+  }
+
   var BUILDERS = {
     calculator: calculator,
     todo: todo,
@@ -3283,7 +4038,12 @@
     social: social,
     blog: blog,
     forum: forum,
-    chat: chatSite
+    chat: chatSite,
+    authapp: authapp,
+    datadash: datadash,
+    notebook: notebook,
+    multipage: multipage,
+    apimock: apimock
   };
 
   var TITLES = {
@@ -3303,7 +4063,9 @@
     towerdefense: "Tower defense", merges: "Merge garden",
     farmingsim: "Harvest days", cardbattler: "Card battler",
     rhythm: "Rhythm lanes", explore: "Low-poly island",
-    waveshooter: "Wave shooter", builder: "Block builder"
+    waveshooter: "Wave shooter", builder: "Block builder",
+    authapp: "Sign-in starter", datadash: "Data dashboard",
+    notebook: "Notebook", multipage: "Static site", apimock: "API mock"
   };
 
   function wants3d(desc) {
@@ -3403,6 +4165,7 @@
    * script, and two documents that explain the architecture. The preview keeps
    * using the bundled page, so nothing depends on file:// fetch(). */
   function wantsContent(spec) {
+    if (spec && STARTER_KINDS[spec.genre]) return false;
     var counts = spec.counts || {};
     return (spec.features && spec.features.length > 0)
       || Object.keys(counts).length > 0
@@ -3568,6 +4331,16 @@
         '<script src="content.js"></script>\n<script src="app.js"></script>');
       html = html.replace("<footer>", contentSummary(content) + "\n<footer>");
     }
+    // Step 62 starters add a fixed set of extra files. Scripts are referenced
+    // before app.js so the preview bundle inlines them in the same order the
+    // files appear on disk. Extra HTML pages share styles.css and site.js.
+    var extras = starterExtras(real, desc, spec, opts.theme);
+    extras.scripts.forEach(function (f) {
+      if (html.indexOf('src="' + f + '"') < 0) {
+        html = html.replace('<script src="app.js"></script>',
+          '<script src="' + f + '"></script>\n<script src="app.js"></script>');
+      }
+    });
     html = html.replace(/offline · self-contained/, "offline · separate files");
     var a = archFor(tpl) || archFor(real);
     var slug = opts.slug || (real === "playground" ? "app" : real);
@@ -3582,6 +4355,9 @@
     var docFiles = a.files.slice();
     shared.forEach(function (f) { if (docFiles.indexOf(f) < 0) docFiles.push(f); });
     if (content && docFiles.indexOf("content.js") < 0) docFiles.push("content.js");
+    Object.keys(extras.files).forEach(function (f) {
+      if (docFiles.indexOf(f) < 0) docFiles.push(f);
+    });
     var specTxt = specLine(spec);
     var contentReadme = "";
     if (content) {
@@ -3628,6 +4404,9 @@
         + (content ? "\n| `content.js` | seeded levels, quests, NPCs, enemies, and items |" : "")
         + shared.map(function (f) {
           return "\n| `" + f + "` | " + (SHARED_ROLE[f] || "shared runtime") + " |";
+        }).join("")
+        + extras.docs.map(function (d) {
+          return "\n| `" + d.file + "` | " + d.role + " |";
         }).join(""),
       "| `ARCHITECTURE.md` | the shape of the program and how to extend it |",
       "",
@@ -3705,6 +4484,9 @@
       });
     }
     if (content) outFiles["content.js"] = contentJs;
+    Object.keys(extras.files).forEach(function (f) {
+      outFiles[f] = extras.files[f];
+    });
     return {
       kind: real,
       slug: slug,

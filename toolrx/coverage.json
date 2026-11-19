@@ -6,7 +6,7 @@
   },
   "catalog": {
     "categories": {
-      "build": 8340,
+      "build": 9180,
       "chat": 129,
       "color": 10,
       "context": 120,
@@ -35,12 +35,12 @@
       "units": 1990,
       "web": 32
     },
-    "count": 12533,
+    "count": 13373,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7357
+    "pure_literals": 7777
   },
   "fixtures": {
     "builds": {

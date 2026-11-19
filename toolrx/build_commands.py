@@ -1031,7 +1031,13 @@ for pat in ("reply in {lang}", "respond in {lang}", "answer in {lang}",
         {"lang": "$1"}, pat, "lang")
 
 # ---------------------------------------------------------------- build ---
-BUILD_KINDS = ["calculator", "todo list", "todo", "task list", "timer", "countdown",
+BUILD_KINDS = ["web app", "auth app", "auth stub", "login page", "sign in app",
+               "data dashboard", "analytics dashboard", "sales dashboard",
+               "kpi dashboard", "note-taking app", "note taking app", "notebook",
+               "searchable notes", "multi-page site", "multi-page static site",
+               "multi page site", "static site", "api mock", "mock api",
+               "rest api mock", "fake api",
+               "calculator", "todo list", "todo", "task list", "timer", "countdown",
                "pomodoro", "stopwatch", "notes", "note pad", "notepad", "tic tac toe",
                "memory game", "unit converter", "converter", "chart", "graph",
                "dashboard", "landing page", "landing", "website", "web page", "page",

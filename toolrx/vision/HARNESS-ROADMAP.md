@@ -1667,7 +1667,7 @@ over-cap explanation is trimmed at a line boundary with a visible `r.trim`
 note. Explaining is an inspection turn, so it does not replace the last run,
 write the context result, or change the stored plan.
 
-### 62. Richer project templates and starter library
+### 62. Richer project templates and starter library — done
 
 Grow the deterministic starter library beyond games with a small set of
 high-quality, fully offline templates: a web app with an auth stub, a data
@@ -1684,6 +1684,27 @@ content.
 produce byte-identical files, each starter has a previewable entry point and an
 `ARCHITECTURE.md`, every file stays inside the existing size and count caps,
 and the catalog, README, and pitch counts are regenerated from the build.
+
+Landed as five kinds with fixed file plans in `toolrx/web/templates.js`:
+`authapp`, `datadash`, `notebook`, `multipage`, and `apimock`. The build-spec
+parser is still the only prose parser; a starter is a canonical kind plus a
+file list, and `starterExtras()` supplies the extra files that kind always
+ships. Names, sample rows, and copy are derived from `hash(prompt + seed)` by
+one seeded generator, so the same prompt and seed rebuild byte-identical files
+and a different explicit seed changes real content. Every starter ships a
+previewable `index.html`, `styles.css`, `app.js`, `README.md`, and
+`ARCHITECTURE.md`; the auth starter adds `auth.js`, the dashboard `data.js`, the
+notebook `seed-notes.js`, the static site `about.html`, `docs.html`,
+`contact.html`, and `site.js`, and the API mock `api.js` plus `openapi.json`.
+Extra scripts are referenced before `app.js`, so the existing preview bundler
+inlines them in order and the module, patch, undo, and budget paths are
+unchanged. Every generated file stays inside the existing `projectFiles` (32),
+`projectFileBytes` (131,072), and `projectBytes` (524,288) caps, and no
+generated file calls `fetch`, `XMLHttpRequest`, `WebSocket`, or `sendBeacon`.
+`tests/test_starters.py` pins the five kinds, byte-identical rebuilds, required
+files, script order, shared multi-page assets, seed variation, the caps, the
+no-network rule, and the exact catalog routes; the catalog is regenerated to
+13,373 commands.
 
 ### 63. Bounded pure-compute tool
 
