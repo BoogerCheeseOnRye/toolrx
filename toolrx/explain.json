@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "intents": {
+    "project": {
+      "op": "explain.project",
+      "target": "project",
+      "summary": "explain the active project from its stored files, seed, and budgets",
+      "example": "explain this project",
+      "bare": [
+        "explain this project",
+        "explain the project",
+        "explain my project",
+        "explain the active project",
+        "explain the current project",
+        "explain project",
+        "explain this build",
+        "explain the build",
+        "explain the current build",
+        "describe this project",
+        "describe the project",
+        "walk me through this project",
+        "walk me through the project",
+        "what does this project contain"
+      ]
+    },
+    "plan": {
+      "op": "explain.plan",
+      "target": "plan",
+      "summary": "explain the last plan from its recorded steps and status",
+      "example": "explain the last plan",
+      "bare": [
+        "explain the last plan",
+        "explain last plan",
+        "explain the plan",
+        "explain plan",
+        "explain this plan",
+        "explain the last run",
+        "explain last run",
+        "explain the run",
+        "walk me through the last plan",
+        "walk me through the plan",
+        "describe the last plan",
+        "what happened in the last plan",
+        "what did the last plan do",
+        "what did the plan do"
+      ]
+    },
+    "theme": {
+      "op": "explain.theme",
+      "target": "theme",
+      "summary": "explain why the active build picked its page and named theme",
+      "example": "why did this build pick that theme",
+      "bare": [
+        "why did this build pick that theme",
+        "why did this build pick this theme",
+        "why did the build pick that theme",
+        "why did the build pick this theme",
+        "why did it pick that theme",
+        "why did it pick this theme",
+        "why this theme",
+        "why that theme",
+        "why was this theme picked",
+        "why was that theme picked",
+        "what theme did this build pick",
+        "which theme did this build pick",
+        "explain the theme",
+        "explain this theme",
+        "explain the build theme",
+        "explain the project theme"
+      ]
+    },
+    "projectContext": {
+      "op": "explain.project.context",
+      "target": "project",
+      "summary": "explain the active project and store the explanation in context",
+      "example": "explain this project in context",
+      "bare": [
+        "explain this project in context",
+        "explain this project and store it in context",
+        "store this project explanation in context",
+        "save this project explanation in context"
+      ]
+    },
+    "projectJournal": {
+      "op": "explain.project.journal",
+      "target": "project",
+      "summary": "explain the active project and save a short entry in the journal",
+      "example": "explain this project in the journal",
+      "bare": [
+        "explain this project in the journal",
+        "explain this project and save it to the journal",
+        "save this project explanation to the journal",
+        "store this project explanation in the journal"
+      ]
+    }
+  }
+}

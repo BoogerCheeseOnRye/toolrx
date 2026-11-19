@@ -14,6 +14,7 @@
       "date": 32,
       "edit": 351,
       "encoding": 30,
+      "explain": 52,
       "facts": 2,
       "files": 80,
       "generate": 19,
@@ -34,12 +35,12 @@
       "units": 1990,
       "web": 32
     },
-    "count": 12481,
+    "count": 12533,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7305
+    "pure_literals": 7357
   },
   "fixtures": {
     "builds": {

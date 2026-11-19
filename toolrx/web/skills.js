@@ -2476,6 +2476,15 @@
     "think.reason": function (a, ctx) { return thinkRun("reason", a, ctx); },
     "think.tradeoff": function (a, ctx) { return thinkRun("tradeoff", a, ctx); },
     "think.critique": function (a, ctx) { return thinkRun("critique", a, ctx); },
+    "explain.project": function (a, ctx) { return explainRun("project", "", ctx); },
+    "explain.plan": function (a, ctx) { return explainRun("plan", "", ctx); },
+    "explain.theme": function (a, ctx) { return explainRun("theme", "", ctx); },
+    "explain.project.context": function (a, ctx) {
+      return explainRun("project", "context", ctx);
+    },
+    "explain.project.journal": function (a, ctx) {
+      return explainRun("project", "journal", ctx);
+    },
     "repair.plan": function (a, ctx) { return repairPlan(a, ctx); },
     "repair.resume": function () {
       return "resume · only works as its own turn\n"
@@ -2750,6 +2759,9 @@
       ["thinkChars", "thinking input"],
       ["thinkGoals", "goals listed per thinking run"],
       ["thinkRules", "rules evaluated per critique"],
+      ["explainChars", "one project or plan explanation"],
+      ["explainFiles", "files listed per explanation"],
+      ["explainEdits", "recent edits listed per explanation"],
       ["repairPasses", "repair passes per failed plan"],
       ["traceBytes", "stored reasoning trace"],
       ["blockBytes", "verbatim block"],
@@ -3344,6 +3356,22 @@
       planSteps: planSteps,
     }, { maxText: LIMITS.single, maxBytes: LIMITS_RAW.traceBytes }) : null;
     return { text: text, trace: trace };
+  }
+
+  /* Step 61: one pure explanation over stored state. The handler never writes
+   * a project file; only the two explicit store routes touch context or the
+   * bounded journal. */
+  function explainRun(target, store, ctx) {
+    const T = root.toolrxExplain;
+    if (!T) throw new Error("explain module is not loaded");
+    const state = typeof ctx.explain === "function" ? ctx.explain() : null;
+    if (!state) throw new Error("explain needs the browser workspace");
+    const text = T.run(target, state);
+    if (!store) return { text: text };
+    if (typeof ctx.explainStore !== "function") {
+      return { text: text + "\nstoring needs the browser workspace" };
+    }
+    return { text: ctx.explainStore(store, target, text) };
   }
 
   /* -------------------------------------------------------------- repair ---- */

@@ -25,6 +25,7 @@ import repair  # noqa: E402  (step 54: one table for repair routes)
 import journal  # noqa: E402  (step 56: one table for journal routes)
 import resume  # noqa: E402  (step 57: one table for resume routes)
 import style  # noqa: E402  (step 58: one table for response-style routes)
+import explain  # noqa: E402  (step 61: one table for explain routes)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1556,6 +1557,14 @@ for _entry in journal.entries():
 # is expanded last, so a real command always wins; the handlers in
 # web/skills.js persist the choice and sandbox.prompt wraps exact results.
 for _entry in style.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# --------------------------------------------------------------- explain ----
+# Step 61: deterministic project, plan, and theme explanations. Routes are
+# appended last, so a real command always wins; the handlers in web/skills.js
+# read stored state and run the pure program in web/explain.js.
+for _entry in explain.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

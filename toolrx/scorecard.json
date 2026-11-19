@@ -158,8 +158,15 @@
           "path": "toolrx/web/trace.js"
         },
         {
+          "path": "toolrx/web/explain.js"
+        },
+        {
           "path": "tests/test_trace.py",
           "test": "TraceTest.test_trace_text_names_the_rule_and_the_cap"
+        },
+        {
+          "path": "tests/test_explain.py",
+          "test": "BrowserExplainTest.test_every_state_is_byte_identical_on_a_second_run"
         },
         {
           "path": "tests/test_limits.py",
@@ -168,7 +175,7 @@
       ],
       "gap": "Inspection is per run and per project; there is no global audit trail across sessions or devices.",
       "next": "Keep every claim tied to a named rule and a checked-in artifact.",
-      "claim": "Every run, rule, limit, and decision is printable and checked in."
+      "claim": "Every run, rule, limit, decision, project, and plan is printable and checked in."
     },
     {
       "id": "cost",

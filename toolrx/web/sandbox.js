@@ -1656,7 +1656,7 @@
      * later repair or critique still inspect the failure. Step 55: the trace
      * of that inspection still belongs to the run it examined. */
     if (list.every(function (r) {
-      return /^(?:conversation|think|repair)\./.test(String(r && r.via || ""));
+      return /^(?:conversation|think|repair|explain)\./.test(String(r && r.via || ""));
     })) {
       const TR = root.toolrxTrace;
       if (meta.trace && lastRun && TR) {
@@ -1908,7 +1908,7 @@
   }
 
   function isContextMeta(via) {
-    return /^context\.(?:show|clear|clear\.all|expand|continue|compact)$/
+    return /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.)/
       .test(String(via || ""));
   }
 
@@ -1922,7 +1922,7 @@
     // Meta commands describe or move the plan; storing their own output as
     // `result/last` would evict the plan they just edited. The session rows
     // below already skip the same set.
-    const quiet = /^context\.(?:show|clear|clear\.all|expand|continue|compact)$/
+    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.)/
       .test(via);
 
     // Step 55: a thinking or repair result carries a trace. Stamp it with the
@@ -2606,6 +2606,193 @@
     return Object.assign({}, thinkState(), { plan: lastRunPlanRecord() });
   }
 
+  /* Step 61: one lazy snapshot for the explain handlers. Files, hashes, and
+   * journal counts are computed only when an explain route asks, and nothing
+   * here writes a file. */
+  function explainFileMeta(name, text) {
+    const body = String(text == null ? "" : text);
+    const C = contextModule();
+    const lines = body ? body.split("\n").length : 0;
+    const sha = root.blake2bHex
+      ? root.blake2bHex(body, null, 8)
+      : (C ? C.fingerprint(body) : String(bytesOf(body)));
+    return { name: String(name), bytes: bytesOf(body), lines: lines, sha: sha };
+  }
+
+  function explainThemeInfo(p, spec) {
+    const t = root.toolrxTemplates;
+    const theme = spec && spec.theme ? String(spec.theme) : "";
+    if (!theme) return { name: "", source: "default" };
+    if (t && t.rpgTheme) {
+      const explicit = t.rpgTheme(p.desc);
+      if (explicit && explicit.title) {
+        if (explicit.title.replace(/ RPG$/, "") === theme) {
+          return { name: theme, source: "prompt" };
+        }
+        if (t.rpgDefault && spec.seed != null) {
+          const seeded = t.rpgDefault(spec.seed);
+          if (seeded && seeded.title
+              && seeded.title.replace(/ RPG$/, "") === theme) {
+            return { name: theme, source: "seed" };
+          }
+        }
+        return { name: theme, source: "spec" };
+      }
+    }
+    const low = String(p.desc || "").toLowerCase();
+    const first = theme.toLowerCase().split(/\s+/)[0];
+    if (low && first && low.indexOf(first) >= 0) {
+      return { name: theme, source: "prompt" };
+    }
+    return { name: theme, source: "spec" };
+  }
+
+  function explainProjectState(p) {
+    const t = root.toolrxTemplates;
+    const spec = p.spec || {};
+    const labels = root.toolrxPatches && root.toolrxPatches.labels
+      ? root.toolrxPatches.labels() : {};
+    const files = Object.keys(p.files || {}).sort().map(function (name) {
+      return explainFileMeta(name, p.files[name]);
+    });
+    const info = explainThemeInfo(p, spec);
+    return {
+      slug: p.slug,
+      name: p.name,
+      kind: p.kind,
+      desc: p.desc,
+      theme: htmlTheme((p.files || {})["index.html"]) || "dark",
+      themeName: info.name,
+      themeSource: info.source,
+      art: spec.art || "",
+      subtheme: spec.subtheme || "",
+      seed: spec.seed != null ? (spec.seed >>> 0) : null,
+      specLine: spec && t && t.specLine ? t.specLine(spec) : "",
+      files: files,
+      edits: (p.edits || []).map(function (id) {
+        return { id: String(id), label: String(labels[id] || id) };
+      }),
+      bytes: projectBytes(p),
+    };
+  }
+
+  function explainPlanState() {
+    const record = lastRunPlanRecord();
+    if (!record) return null;
+    const skills = root.toolrxSkills;
+    return {
+      from: record.from || "last run",
+      steps: record.steps.map(function (text, i) {
+        const hit = skills && skills.match ? skills.match(text) : null;
+        return {
+          text: String(text),
+          op: hit ? hit.op : "router",
+          exact: !!hit,
+          status: record.status[i] || "pending",
+        };
+      }),
+      failedAt: Number.isInteger(record.failedAt) ? record.failedAt : -1,
+      errorText: String(record.errorText || ""),
+    };
+  }
+
+  function explainJournalState(slug) {
+    const J = journalModule();
+    const limit = {
+      entries: LIMITS.journalEntries,
+      bytes: LIMITS.journalBytes,
+      text: LIMITS.journalText,
+    };
+    if (!J) {
+      return {
+        entries: [],
+        summary: { entries: 0, decisions: 0, rejections: 0,
+                   preferences: 0, dropped: 0 },
+        limit: limit,
+      };
+    }
+    const state = J.read(slug);
+    return {
+      entries: state.entries.map(function (entry) {
+        return {
+          seq: entry.seq, kind: entry.kind, topic: entry.topic,
+          text: entry.text, source: entry.source,
+        };
+      }),
+      summary: J.summary(slug),
+      limit: limit,
+    };
+  }
+
+  function explainState() {
+    const p = activeProject();
+    const C = contextModule();
+    const slug = contextScope();
+    let stored = 0;
+    if (C && C.report) {
+      try {
+        const report = C.report(slug);
+        stored = report && typeof report.stored === "number" ? report.stored : 0;
+      } catch (e) { stored = 0; }
+    }
+    const planL = planLimits();
+    return {
+      project: p ? explainProjectState(p) : null,
+      plan: explainPlanState(),
+      journal: explainJournalState(slug),
+      context: { bytes: stored, max: LIMITS.contextBytes },
+      limits: {
+        explainChars: LIMITS.explainChars,
+        explainFiles: LIMITS.explainFiles,
+        explainEdits: LIMITS.explainEdits,
+        projectBytes: projectBudget(),
+        projectFiles: MAX_PROJECT_FILES,
+        contextBytes: LIMITS.contextBytes,
+        planChars: planL.chars,
+        planSteps: planL.steps,
+        stepMs: stepTimeout(),
+        planMs: planTimeout(),
+        journalEntries: LIMITS.journalEntries,
+        journalBytes: LIMITS.journalBytes,
+        journalText: LIMITS.journalText,
+      },
+    };
+  }
+
+  /* Storing is the only side effect an explain route can ask for, and it is
+   * never a project file write: context and the journal are bounded stores. */
+  function explainStore(where, target, text) {
+    const body = String(text == null ? "" : text);
+    const slug = contextScope();
+    if (where === "context") {
+      const C = contextModule();
+      if (!C) return body + "\ncontext is unavailable in this browser";
+      const res = C.set(slug, "explain", target, body, contextOptions());
+      return body + "\nstored in context · explain/" + target + " · "
+        + (res && res.bytes != null ? res.bytes : bytesOf(body))
+        + " bytes · older entries may be evicted";
+    }
+    if (where === "journal") {
+      const J = journalModule();
+      if (!J) return body + "\njournal is unavailable in this browser";
+      const first = body.split("\n")[0];
+      const res = J.add(slug, {
+        kind: "decision",
+        topic: "explain " + target,
+        text: first,
+        source: "explain." + target,
+      });
+      if (!res || !res.ok) {
+        return body + "\nnot stored in journal · "
+          + ((res && res.why) || "unknown reason");
+      }
+      return body + "\nstored in journal · explain/" + target + " · "
+        + (res.duplicate ? "already present" : "entry #" + res.entry.seq)
+        + " · " + LIMITS.journalText + "-char cap";
+    }
+    return body;
+  }
+
   function promptContext(query) {
     const ctx = {
       prev: "",
@@ -2696,6 +2883,8 @@
       },
       think: thinkState,
       repair: repairState,
+      explain: explainState,
+      explainStore: explainStore,
       style: styleName,
       setStyle: setStyleName,
       onStep: function (done, total, elapsed) {

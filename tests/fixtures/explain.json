@@ -1,0 +1,2060 @@
+{
+  "version": 1,
+  "count": 52,
+  "targets": {
+    "plan": 14,
+    "project": 22,
+    "theme": 16
+  },
+  "cases": [
+    {
+      "text": "describe the last plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain last plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain last run",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain the last plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain the last run",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain the plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain the run",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "explain this plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "walk me through the last plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "walk me through the plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "what did the last plan do",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "what did the plan do",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "what happened in the last plan",
+      "op": "explain.plan",
+      "args": {},
+      "target": "plan"
+    },
+    {
+      "text": "describe the project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "describe this project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain my project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain the active project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain the build",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain the current build",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain the current project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain the project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain this build",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain this project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "walk me through the project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "walk me through this project",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "what does this project contain",
+      "op": "explain.project",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain this project and store it in context",
+      "op": "explain.project.context",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain this project in context",
+      "op": "explain.project.context",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "save this project explanation in context",
+      "op": "explain.project.context",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "store this project explanation in context",
+      "op": "explain.project.context",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain this project and save it to the journal",
+      "op": "explain.project.journal",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain this project in the journal",
+      "op": "explain.project.journal",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "save this project explanation to the journal",
+      "op": "explain.project.journal",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "store this project explanation in the journal",
+      "op": "explain.project.journal",
+      "args": {},
+      "target": "project"
+    },
+    {
+      "text": "explain the build theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "explain the project theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "explain the theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "explain this theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "what theme did this build pick",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "which theme did this build pick",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why did it pick that theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why did it pick this theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why did the build pick that theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why did the build pick this theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why did this build pick that theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why did this build pick this theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why that theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why this theme",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why was that theme picked",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    },
+    {
+      "text": "why was this theme picked",
+      "op": "explain.theme",
+      "args": {},
+      "target": "theme"
+    }
+  ],
+  "states": [
+    {
+      "name": "project-basic",
+      "target": "project",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": {
+          "from": "last run",
+          "steps": [
+            {
+              "text": "build a platformer game",
+              "op": "build",
+              "exact": true,
+              "status": "done"
+            },
+            {
+              "text": "add a boss",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "error"
+            },
+            {
+              "text": "add a quest",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "pending"
+            }
+          ],
+          "failedAt": 1,
+          "errorText": "no boss in this genre"
+        },
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · project · Notes · 5 files · seed 123456789 · r.project-exists\nproject: Notes (notes) · kind notes · 15,700/524,288 bytes · r.budget-project\ntheme: dark · no named theme · default page class · r.theme-default\nfiles (5 shown of 5): · r.files-listed\n  ARCHITECTURE.md · 2,400 bytes · 70 lines · sha a1b2c3d4 · architecture · r.roles\n  README.md · 1,800 bytes · 50 lines · sha e5f6a7b8 · readme · r.roles\n  app.js · 6,400 bytes · 210 lines · sha 11223344 · behavior · r.roles\n  index.html · 4,200 bytes · 120 lines · sha 55667788 · entry page · r.roles\n  styles.css · 900 bytes · 35 lines · sha 99aabbcc · styles · r.roles\nsystems (0): none · r.systems\nedits (0): none · r.edits\nseed: 123456789 · from the build spec · r.seed\nbudgets: files 5/32 · project 15,700/524,288 bytes · context 1,024/8,192 bytes · explain cap 8,000 chars · r.limits\njournal: 3/24 entries · 1 decision · 1 rejection · 1 preference · latest #3 preference · seed · r.journal\nrisks (1):\n  · the last plan has an error at step 2 · r.risk-plan\nwrites: no file · r.no-write\nrules: r.project-exists, r.budget-project, r.theme-default, r.files-listed, r.roles, r.systems, r.edits, r.seed, r.limits, r.journal, r.risk-plan, r.no-write"
+    },
+    {
+      "name": "project-no-seed",
+      "target": "project",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": null,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "README.md",
+              "bytes": 400,
+              "lines": 12,
+              "sha": "aaaa1111"
+            },
+            {
+              "name": "index.html",
+              "bytes": 900,
+              "lines": 30,
+              "sha": "bbbb2222"
+            }
+          ],
+          "edits": [],
+          "bytes": 1300
+        },
+        "plan": null,
+        "journal": {
+          "entries": [],
+          "summary": {
+            "entries": 0,
+            "decisions": 0,
+            "rejections": 0,
+            "preferences": 0,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 0,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · project · Notes · 2 files · seed none · r.project-exists\nproject: Notes (notes) · kind notes · 1,300/524,288 bytes · r.budget-project\ntheme: dark · no named theme · default page class · r.theme-default\nfiles (2 shown of 2): · r.files-listed\n  README.md · 400 bytes · 12 lines · sha aaaa1111 · readme · r.roles\n  index.html · 900 bytes · 30 lines · sha bbbb2222 · entry page · r.roles\nsystems (0): none · r.systems\nedits (0): none · r.edits\nseed: none · no build spec seed is stored · r.seed-missing\nbudgets: files 2/32 · project 1,300/524,288 bytes · context 0/8,192 bytes · explain cap 8,000 chars · r.limits\njournal: empty · 0/24 entries · r.journal-empty\nrisks (3):\n  · no seed is stored in the build spec · r.risk-seed\n  · the project has no ARCHITECTURE.md · r.risk-architecture\n  · the journal is empty · r.risk-journal\nwrites: no file · r.no-write\nrules: r.project-exists, r.budget-project, r.theme-default, r.files-listed, r.roles, r.systems, r.edits, r.seed-missing, r.limits, r.journal-empty, r.risk-seed, r.risk-architecture, r.risk-journal, r.no-write"
+    },
+    {
+      "name": "project-missing",
+      "target": "project",
+      "input": {
+        "project": null,
+        "plan": null,
+        "journal": {
+          "entries": [],
+          "summary": {
+            "entries": 0,
+            "decisions": 0,
+            "rejections": 0,
+            "preferences": 0,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 0,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · project · no active project\nbuild something first, then ask again · r.project-exists\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "project-capped",
+      "target": "project",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Big project",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "file-00.js",
+              "bytes": 100,
+              "lines": 5,
+              "sha": "sha0000"
+            },
+            {
+              "name": "file-01.js",
+              "bytes": 101,
+              "lines": 6,
+              "sha": "sha0001"
+            },
+            {
+              "name": "file-02.js",
+              "bytes": 102,
+              "lines": 7,
+              "sha": "sha0002"
+            },
+            {
+              "name": "file-03.js",
+              "bytes": 103,
+              "lines": 8,
+              "sha": "sha0003"
+            },
+            {
+              "name": "file-04.js",
+              "bytes": 104,
+              "lines": 9,
+              "sha": "sha0004"
+            },
+            {
+              "name": "file-05.js",
+              "bytes": 105,
+              "lines": 10,
+              "sha": "sha0005"
+            },
+            {
+              "name": "file-06.js",
+              "bytes": 106,
+              "lines": 11,
+              "sha": "sha0006"
+            },
+            {
+              "name": "file-07.js",
+              "bytes": 107,
+              "lines": 12,
+              "sha": "sha0007"
+            },
+            {
+              "name": "file-08.js",
+              "bytes": 108,
+              "lines": 13,
+              "sha": "sha0008"
+            },
+            {
+              "name": "file-09.js",
+              "bytes": 109,
+              "lines": 14,
+              "sha": "sha0009"
+            },
+            {
+              "name": "file-10.js",
+              "bytes": 110,
+              "lines": 15,
+              "sha": "sha0010"
+            },
+            {
+              "name": "file-11.js",
+              "bytes": 111,
+              "lines": 16,
+              "sha": "sha0011"
+            },
+            {
+              "name": "file-12.js",
+              "bytes": 112,
+              "lines": 17,
+              "sha": "sha0012"
+            },
+            {
+              "name": "file-13.js",
+              "bytes": 113,
+              "lines": 18,
+              "sha": "sha0013"
+            },
+            {
+              "name": "file-14.js",
+              "bytes": 114,
+              "lines": 19,
+              "sha": "sha0014"
+            },
+            {
+              "name": "file-15.js",
+              "bytes": 115,
+              "lines": 20,
+              "sha": "sha0015"
+            },
+            {
+              "name": "file-16.js",
+              "bytes": 116,
+              "lines": 21,
+              "sha": "sha0016"
+            },
+            {
+              "name": "file-17.js",
+              "bytes": 117,
+              "lines": 22,
+              "sha": "sha0017"
+            },
+            {
+              "name": "file-18.js",
+              "bytes": 118,
+              "lines": 23,
+              "sha": "sha0018"
+            },
+            {
+              "name": "file-19.js",
+              "bytes": 119,
+              "lines": 24,
+              "sha": "sha0019"
+            },
+            {
+              "name": "file-20.js",
+              "bytes": 120,
+              "lines": 25,
+              "sha": "sha0020"
+            },
+            {
+              "name": "file-21.js",
+              "bytes": 121,
+              "lines": 26,
+              "sha": "sha0021"
+            },
+            {
+              "name": "file-22.js",
+              "bytes": 122,
+              "lines": 27,
+              "sha": "sha0022"
+            },
+            {
+              "name": "file-23.js",
+              "bytes": 123,
+              "lines": 28,
+              "sha": "sha0023"
+            },
+            {
+              "name": "file-24.js",
+              "bytes": 124,
+              "lines": 29,
+              "sha": "sha0024"
+            },
+            {
+              "name": "file-25.js",
+              "bytes": 125,
+              "lines": 30,
+              "sha": "sha0025"
+            },
+            {
+              "name": "file-26.js",
+              "bytes": 126,
+              "lines": 31,
+              "sha": "sha0026"
+            },
+            {
+              "name": "file-27.js",
+              "bytes": 127,
+              "lines": 32,
+              "sha": "sha0027"
+            },
+            {
+              "name": "file-28.js",
+              "bytes": 128,
+              "lines": 33,
+              "sha": "sha0028"
+            },
+            {
+              "name": "file-29.js",
+              "bytes": 129,
+              "lines": 34,
+              "sha": "sha0029"
+            }
+          ],
+          "edits": [
+            {
+              "id": "edit-0",
+              "label": "edit 0"
+            },
+            {
+              "id": "edit-1",
+              "label": "edit 1"
+            },
+            {
+              "id": "edit-2",
+              "label": "edit 2"
+            },
+            {
+              "id": "edit-3",
+              "label": "edit 3"
+            },
+            {
+              "id": "edit-4",
+              "label": "edit 4"
+            },
+            {
+              "id": "edit-5",
+              "label": "edit 5"
+            },
+            {
+              "id": "edit-6",
+              "label": "edit 6"
+            },
+            {
+              "id": "edit-7",
+              "label": "edit 7"
+            },
+            {
+              "id": "edit-8",
+              "label": "edit 8"
+            },
+            {
+              "id": "edit-9",
+              "label": "edit 9"
+            },
+            {
+              "id": "edit-10",
+              "label": "edit 10"
+            },
+            {
+              "id": "edit-11",
+              "label": "edit 11"
+            }
+          ],
+          "bytes": 12345
+        },
+        "plan": null,
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · project · Big project · 30 files · seed 123456789 · r.project-exists\nproject: Big project (notes) · kind notes · 12,345/524,288 bytes · r.budget-project\ntheme: dark · no named theme · default page class · r.theme-default\nfiles (24 shown of 30): · r.files-listed\n  file-00.js · 100 bytes · 5 lines · sha sha0000 · script · r.roles\n  file-01.js · 101 bytes · 6 lines · sha sha0001 · script · r.roles\n  file-02.js · 102 bytes · 7 lines · sha sha0002 · script · r.roles\n  file-03.js · 103 bytes · 8 lines · sha sha0003 · script · r.roles\n  file-04.js · 104 bytes · 9 lines · sha sha0004 · script · r.roles\n  file-05.js · 105 bytes · 10 lines · sha sha0005 · script · r.roles\n  file-06.js · 106 bytes · 11 lines · sha sha0006 · script · r.roles\n  file-07.js · 107 bytes · 12 lines · sha sha0007 · script · r.roles\n  file-08.js · 108 bytes · 13 lines · sha sha0008 · script · r.roles\n  file-09.js · 109 bytes · 14 lines · sha sha0009 · script · r.roles\n  file-10.js · 110 bytes · 15 lines · sha sha0010 · script · r.roles\n  file-11.js · 111 bytes · 16 lines · sha sha0011 · script · r.roles\n  file-12.js · 112 bytes · 17 lines · sha sha0012 · script · r.roles\n  file-13.js · 113 bytes · 18 lines · sha sha0013 · script · r.roles\n  file-14.js · 114 bytes · 19 lines · sha sha0014 · script · r.roles\n  file-15.js · 115 bytes · 20 lines · sha sha0015 · script · r.roles\n  file-16.js · 116 bytes · 21 lines · sha sha0016 · script · r.roles\n  file-17.js · 117 bytes · 22 lines · sha sha0017 · script · r.roles\n  file-18.js · 118 bytes · 23 lines · sha sha0018 · script · r.roles\n  file-19.js · 119 bytes · 24 lines · sha sha0019 · script · r.roles\n  file-20.js · 120 bytes · 25 lines · sha sha0020 · script · r.roles\n  file-21.js · 121 bytes · 26 lines · sha sha0021 · script · r.roles\n  file-22.js · 122 bytes · 27 lines · sha sha0022 · script · r.roles\n  file-23.js · 123 bytes · 28 lines · sha sha0023 · script · r.roles\n… 6 more file(s) not listed · r.files-cap\nsystems (0): none · r.systems\nedits (12): edit 4 · edit 5 · edit 6 · edit 7 · edit 8 · edit 9 · edit 10 · edit 11 · r.edits\n… 4 older edit(s) not listed · r.edits-cap\nseed: 123456789 · from the build spec · r.seed\nbudgets: files 30/32 · project 12,345/524,288 bytes · context 1,024/8,192 bytes · explain cap 8,000 chars · r.limits\njournal: 3/24 entries · 1 decision · 1 rejection · 1 preference · latest #3 preference · seed · r.journal\nrisks (2):\n  · files are at 94% of projectFiles · r.risk-files\n  · the project has no ARCHITECTURE.md · r.risk-architecture\nwrites: no file · r.no-write\nrules: r.project-exists, r.budget-project, r.theme-default, r.files-listed, r.roles, r.files-cap, r.systems, r.edits, r.edits-cap, r.seed, r.limits, r.journal, r.risk-files, r.risk-architecture, r.no-write"
+    },
+    {
+      "name": "project-trimmed",
+      "target": "project",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "A very long project name that should force the cap",
+          "kind": "notes",
+          "desc": "a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description a long description ",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "file-00.js",
+              "bytes": 100,
+              "lines": 5,
+              "sha": "sha0000"
+            },
+            {
+              "name": "file-01.js",
+              "bytes": 101,
+              "lines": 6,
+              "sha": "sha0001"
+            },
+            {
+              "name": "file-02.js",
+              "bytes": 102,
+              "lines": 7,
+              "sha": "sha0002"
+            },
+            {
+              "name": "file-03.js",
+              "bytes": 103,
+              "lines": 8,
+              "sha": "sha0003"
+            },
+            {
+              "name": "file-04.js",
+              "bytes": 104,
+              "lines": 9,
+              "sha": "sha0004"
+            },
+            {
+              "name": "file-05.js",
+              "bytes": 105,
+              "lines": 10,
+              "sha": "sha0005"
+            },
+            {
+              "name": "file-06.js",
+              "bytes": 106,
+              "lines": 11,
+              "sha": "sha0006"
+            },
+            {
+              "name": "file-07.js",
+              "bytes": 107,
+              "lines": 12,
+              "sha": "sha0007"
+            },
+            {
+              "name": "file-08.js",
+              "bytes": 108,
+              "lines": 13,
+              "sha": "sha0008"
+            },
+            {
+              "name": "file-09.js",
+              "bytes": 109,
+              "lines": 14,
+              "sha": "sha0009"
+            },
+            {
+              "name": "file-10.js",
+              "bytes": 110,
+              "lines": 15,
+              "sha": "sha0010"
+            },
+            {
+              "name": "file-11.js",
+              "bytes": 111,
+              "lines": 16,
+              "sha": "sha0011"
+            },
+            {
+              "name": "file-12.js",
+              "bytes": 112,
+              "lines": 17,
+              "sha": "sha0012"
+            },
+            {
+              "name": "file-13.js",
+              "bytes": 113,
+              "lines": 18,
+              "sha": "sha0013"
+            },
+            {
+              "name": "file-14.js",
+              "bytes": 114,
+              "lines": 19,
+              "sha": "sha0014"
+            },
+            {
+              "name": "file-15.js",
+              "bytes": 115,
+              "lines": 20,
+              "sha": "sha0015"
+            },
+            {
+              "name": "file-16.js",
+              "bytes": 116,
+              "lines": 21,
+              "sha": "sha0016"
+            },
+            {
+              "name": "file-17.js",
+              "bytes": 117,
+              "lines": 22,
+              "sha": "sha0017"
+            },
+            {
+              "name": "file-18.js",
+              "bytes": 118,
+              "lines": 23,
+              "sha": "sha0018"
+            },
+            {
+              "name": "file-19.js",
+              "bytes": 119,
+              "lines": 24,
+              "sha": "sha0019"
+            },
+            {
+              "name": "file-20.js",
+              "bytes": 120,
+              "lines": 25,
+              "sha": "sha0020"
+            },
+            {
+              "name": "file-21.js",
+              "bytes": 121,
+              "lines": 26,
+              "sha": "sha0021"
+            },
+            {
+              "name": "file-22.js",
+              "bytes": 122,
+              "lines": 27,
+              "sha": "sha0022"
+            },
+            {
+              "name": "file-23.js",
+              "bytes": 123,
+              "lines": 28,
+              "sha": "sha0023"
+            },
+            {
+              "name": "file-24.js",
+              "bytes": 124,
+              "lines": 29,
+              "sha": "sha0024"
+            },
+            {
+              "name": "file-25.js",
+              "bytes": 125,
+              "lines": 30,
+              "sha": "sha0025"
+            },
+            {
+              "name": "file-26.js",
+              "bytes": 126,
+              "lines": 31,
+              "sha": "sha0026"
+            },
+            {
+              "name": "file-27.js",
+              "bytes": 127,
+              "lines": 32,
+              "sha": "sha0027"
+            },
+            {
+              "name": "file-28.js",
+              "bytes": 128,
+              "lines": 33,
+              "sha": "sha0028"
+            },
+            {
+              "name": "file-29.js",
+              "bytes": 129,
+              "lines": 34,
+              "sha": "sha0029"
+            }
+          ],
+          "edits": [
+            {
+              "id": "edit-0",
+              "label": "edit 0"
+            },
+            {
+              "id": "edit-1",
+              "label": "edit 1"
+            },
+            {
+              "id": "edit-2",
+              "label": "edit 2"
+            },
+            {
+              "id": "edit-3",
+              "label": "edit 3"
+            },
+            {
+              "id": "edit-4",
+              "label": "edit 4"
+            },
+            {
+              "id": "edit-5",
+              "label": "edit 5"
+            },
+            {
+              "id": "edit-6",
+              "label": "edit 6"
+            },
+            {
+              "id": "edit-7",
+              "label": "edit 7"
+            },
+            {
+              "id": "edit-8",
+              "label": "edit 8"
+            },
+            {
+              "id": "edit-9",
+              "label": "edit 9"
+            },
+            {
+              "id": "edit-10",
+              "label": "edit 10"
+            },
+            {
+              "id": "edit-11",
+              "label": "edit 11"
+            }
+          ],
+          "bytes": 12345
+        },
+        "plan": null,
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 700,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · project · A very long project name that should force the cap · 30 files · seed 123456789 · r.project-exists\nproject: A very long project name that should force the cap (notes) · kind notes · 12,345/524,288 bytes · r.budget-project\ntheme: dark · no named theme · default page class · r.theme-default\nfiles (24 shown of 30): · r.files-listed\n  file-00.js · 100 bytes · 5 lines · sha sha0000 · script · r.roles\n  file-01.js · 101 bytes · 6 lines · sha sha0001 · script · r.roles\n  file-02.js · 102 bytes · 7 lines · sha sha0002 · script · r.roles\n… trimmed to 700 chars (explainChars) · r.trim"
+    },
+    {
+      "name": "project-at-risk",
+      "target": "project",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "index.html",
+              "bytes": 500000,
+              "lines": 10,
+              "sha": "ffff0000"
+            }
+          ],
+          "edits": [],
+          "bytes": 500000
+        },
+        "plan": {
+          "from": "last run",
+          "steps": [
+            {
+              "text": "build a platformer game",
+              "op": "build",
+              "exact": true,
+              "status": "done"
+            },
+            {
+              "text": "add a boss",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "error"
+            },
+            {
+              "text": "add a quest",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "pending"
+            }
+          ],
+          "failedAt": 1,
+          "errorText": "no boss in this genre"
+        },
+        "journal": {
+          "entries": [],
+          "summary": {
+            "entries": 0,
+            "decisions": 0,
+            "rejections": 0,
+            "preferences": 0,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 8000,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · project · Notes · 1 file · seed 123456789 · r.project-exists\nproject: Notes (notes) · kind notes · 500,000/524,288 bytes · r.budget-project\ntheme: dark · no named theme · default page class · r.theme-default\nfiles (1 shown of 1): · r.files-listed\n  index.html · 500,000 bytes · 10 lines · sha ffff0000 · entry page · r.roles\nsystems (0): none · r.systems\nedits (0): none · r.edits\nseed: 123456789 · from the build spec · r.seed\nbudgets: files 1/32 · project 500,000/524,288 bytes · context 8,000/8,192 bytes · explain cap 8,000 chars · r.limits\njournal: empty · 0/24 entries · r.journal-empty\nrisks (5):\n  · project is at 95% of projectBytes · r.risk-budget\n  · context is at 98% of contextBytes · r.risk-context\n  · the project has no ARCHITECTURE.md · r.risk-architecture\n  · the journal is empty · r.risk-journal\n  · the last plan has an error at step 2 · r.risk-plan\nwrites: no file · r.no-write\nrules: r.project-exists, r.budget-project, r.theme-default, r.files-listed, r.roles, r.systems, r.edits, r.seed, r.limits, r.journal-empty, r.risk-budget, r.risk-context, r.risk-architecture, r.risk-journal, r.risk-plan, r.no-write"
+    },
+    {
+      "name": "plan-basic",
+      "target": "plan",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": {
+          "from": "last run",
+          "steps": [
+            {
+              "text": "build a platformer game",
+              "op": "build",
+              "exact": true,
+              "status": "done"
+            },
+            {
+              "text": "add a boss",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "error"
+            },
+            {
+              "text": "add a quest",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "pending"
+            }
+          ],
+          "failedAt": 1,
+          "errorText": "no boss in this genre"
+        },
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · plan · last run · 3 steps · 1 done · 1 error · 1 pending · r.plan-exists\nplan: 3/40 steps · chars 46/8,000 · time 12 s/160 s · r.plan-steps\n  1. build a platformer game · exact build · done · r.plan-status\n  2. add a boss · exact edit.apply · error · r.plan-status\n  3. add a quest · exact edit.apply · pending · r.plan-status\nfailure: step 2 · no boss in this genre · r.plan-failure\nbudgets: steps 3/40 · chars 46/8,000 · time 12 s/160 s · explain cap 8,000 chars · r.limits\nrisks (2):\n  · step 2 failed · r.risk-plan\n  · 1 pending step not run · r.plan-status\nwrites: no file · r.no-write\nrules: r.plan-exists, r.plan-steps, r.plan-status, r.plan-failure, r.limits, r.risk-plan, r.no-write"
+    },
+    {
+      "name": "plan-missing",
+      "target": "plan",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": null,
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · plan · no plan to explain\nrun a plan first, then ask again · r.plan-exists\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "plan-router",
+      "target": "plan",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "dark",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "",
+          "subtheme": "",
+          "seed": 123456789,
+          "specLine": "spec · 2D app · notes · flat · seed 123456789",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": {
+          "from": "active plan",
+          "steps": [
+            {
+              "text": "do something unusual",
+              "op": "router",
+              "exact": false,
+              "status": "pending"
+            },
+            {
+              "text": "do something unusual",
+              "op": "router",
+              "exact": false,
+              "status": "pending"
+            }
+          ],
+          "failedAt": -1,
+          "errorText": ""
+        },
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · plan · active plan · 2 steps · 0 done · 0 error · 2 pending · r.plan-exists\nplan: 2/40 steps · chars 41/8,000 · time 8 s/160 s · r.plan-steps\n  1. do something unusual · router · pending · r.plan-router\n  2. do something unusual · router · pending · r.plan-router\nfailure: none recorded · r.plan-status\nbudgets: steps 2/40 · chars 41/8,000 · time 8 s/160 s · explain cap 8,000 chars · r.limits\nrisks (3):\n  · 2 pending steps not run · r.plan-status\n  · 2 steps have no exact route · r.plan-router\n  · repeated step \"do something unusual\" · r.plan-steps\nwrites: no file · r.no-write\nrules: r.plan-exists, r.plan-steps, r.plan-router, r.plan-status, r.limits, r.no-write"
+    },
+    {
+      "name": "theme-prompt",
+      "target": "theme",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Neon RPG",
+          "kind": "rpg",
+          "desc": "a neon cyberpunk rpg",
+          "theme": "dark",
+          "themeName": "Neon",
+          "themeSource": "prompt",
+          "art": "pixel",
+          "subtheme": "rain",
+          "seed": 987654321,
+          "specLine": "spec · 2D top-down · rpg · pixel · Neon · rain · seed 987654321",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": {
+          "from": "last run",
+          "steps": [
+            {
+              "text": "build a platformer game",
+              "op": "build",
+              "exact": true,
+              "status": "done"
+            },
+            {
+              "text": "add a boss",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "error"
+            },
+            {
+              "text": "add a quest",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "pending"
+            }
+          ],
+          "failedAt": 1,
+          "errorText": "no boss in this genre"
+        },
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · theme · Neon RPG · seed 987654321 · r.project-exists\npage: dark · the html class sets the light/dark page theme · r.theme\nnamed: \"Neon\" · from the prompt · r.theme-prompt\nwhy: the prompt named \"Neon\", so the build spec stored that theme · r.theme-prompt\nseed: 987654321 · the build spec seed chooses seeded content and can choose the theme pack · r.seed\nstyle: pixel · rain · r.theme-spec\nspec: spec · 2D top-down · rpg · pixel · Neon · rain · seed 987654321\nbudgets: project 15,700/524,288 bytes · context 1,024/8,192 bytes · explain cap 8,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.project-exists, r.theme, r.theme-prompt, r.seed, r.theme-spec, r.limits, r.no-write"
+    },
+    {
+      "name": "theme-seed",
+      "target": "theme",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Quiet Harbor RPG",
+          "kind": "rpg",
+          "desc": "an rpg with no theme words",
+          "theme": "dark",
+          "themeName": "Rain City",
+          "themeSource": "seed",
+          "art": "pixel",
+          "subtheme": "",
+          "seed": 42,
+          "specLine": "spec · 2D top-down · rpg · pixel · Rain City · seed 42",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": {
+          "from": "last run",
+          "steps": [
+            {
+              "text": "build a platformer game",
+              "op": "build",
+              "exact": true,
+              "status": "done"
+            },
+            {
+              "text": "add a boss",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "error"
+            },
+            {
+              "text": "add a quest",
+              "op": "edit.apply",
+              "exact": true,
+              "status": "pending"
+            }
+          ],
+          "failedAt": 1,
+          "errorText": "no boss in this genre"
+        },
+        "journal": {
+          "entries": [
+            {
+              "seq": 1,
+              "kind": "decision",
+              "topic": "art style",
+              "text": "use pixel art",
+              "source": "build"
+            },
+            {
+              "seq": 2,
+              "kind": "rejection",
+              "topic": "cloud api",
+              "text": "keep it offline",
+              "source": "think.tradeoff"
+            },
+            {
+              "seq": 3,
+              "kind": "preference",
+              "topic": "seed",
+              "text": "use the same seed",
+              "source": "conversation.correct"
+            }
+          ],
+          "summary": {
+            "entries": 3,
+            "decisions": 1,
+            "rejections": 1,
+            "preferences": 1,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 1024,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · theme · Quiet Harbor RPG · seed 42 · r.project-exists\npage: dark · the html class sets the light/dark page theme · r.theme\nnamed: \"Rain City\" · from the seed · r.theme-seed\nwhy: the prompt did not name a theme, so the build used the pack chosen by seed 42 · r.theme-seed\nseed: 42 · the build spec seed chooses seeded content and can choose the theme pack · r.seed\nstyle: pixel · r.theme-spec\nspec: spec · 2D top-down · rpg · pixel · Rain City · seed 42\nbudgets: project 15,700/524,288 bytes · context 1,024/8,192 bytes · explain cap 8,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.project-exists, r.theme, r.theme-seed, r.seed, r.theme-spec, r.limits, r.no-write"
+    },
+    {
+      "name": "theme-default",
+      "target": "theme",
+      "input": {
+        "project": {
+          "slug": "notes",
+          "name": "Notes",
+          "kind": "notes",
+          "desc": "a quiet place to write",
+          "theme": "light",
+          "themeName": "",
+          "themeSource": "default",
+          "art": "flat",
+          "subtheme": "",
+          "seed": 7,
+          "specLine": "spec · 2D app · notes · flat · seed 7",
+          "files": [
+            {
+              "name": "ARCHITECTURE.md",
+              "bytes": 2400,
+              "lines": 70,
+              "sha": "a1b2c3d4"
+            },
+            {
+              "name": "README.md",
+              "bytes": 1800,
+              "lines": 50,
+              "sha": "e5f6a7b8"
+            },
+            {
+              "name": "app.js",
+              "bytes": 6400,
+              "lines": 210,
+              "sha": "11223344"
+            },
+            {
+              "name": "index.html",
+              "bytes": 4200,
+              "lines": 120,
+              "sha": "55667788"
+            },
+            {
+              "name": "styles.css",
+              "bytes": 900,
+              "lines": 35,
+              "sha": "99aabbcc"
+            }
+          ],
+          "edits": [],
+          "bytes": 15700
+        },
+        "plan": null,
+        "journal": {
+          "entries": [],
+          "summary": {
+            "entries": 0,
+            "decisions": 0,
+            "rejections": 0,
+            "preferences": 0,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 0,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · theme · Notes · seed 7 · r.project-exists\npage: light · the html class sets the light/dark page theme · r.theme\nnamed: none · no theme word was stored in the build spec · r.theme-default\nwhy: no theme word was stored, so the page uses the default light class · r.theme-default\nseed: 7 · the build spec seed chooses seeded content and can choose the theme pack · r.seed\nstyle: flat · r.theme-spec\nspec: spec · 2D app · notes · flat · seed 7\nbudgets: project 15,700/524,288 bytes · context 0/8,192 bytes · explain cap 8,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.project-exists, r.theme, r.theme-default, r.seed, r.theme-spec, r.limits, r.no-write"
+    },
+    {
+      "name": "theme-missing",
+      "target": "theme",
+      "input": {
+        "project": null,
+        "plan": null,
+        "journal": {
+          "entries": [],
+          "summary": {
+            "entries": 0,
+            "decisions": 0,
+            "rejections": 0,
+            "preferences": 0,
+            "dropped": 0
+          },
+          "limit": {
+            "entries": 24,
+            "bytes": 4096,
+            "text": 240
+          }
+        },
+        "context": {
+          "bytes": 0,
+          "max": 8192
+        },
+        "limits": {
+          "explainChars": 8000,
+          "explainFiles": 24,
+          "explainEdits": 8,
+          "projectBytes": 524288,
+          "projectFiles": 32,
+          "contextBytes": 8192,
+          "planChars": 8000,
+          "planSteps": 40,
+          "stepMs": 4000,
+          "planMs": 160000,
+          "journalEntries": 24,
+          "journalBytes": 4096,
+          "journalText": 240
+        }
+      },
+      "want": "explain · theme · no active project\nbuild something first, then ask again · r.project-exists\nwrites: no file · r.no-write"
+    }
+  ]
+}

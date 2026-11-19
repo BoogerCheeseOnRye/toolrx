@@ -1629,7 +1629,7 @@ and `toolrx/journal.json` grew to 33 query templates, 12 show phrases, and six
 clear phrases, exported as a 53-case fixture. The catalog rebuilds at 12,481
 patterns with 199 duplicate patterns skipped and no duplicate ids or regexes.
 
-### 61. Deterministic explain this project / this plan
+### 61. Deterministic explain this project / this plan — done
 
 Add a first-class pure program that walks the active project or the last plan
 and emits a structured, readable explanation: files and their roles, systems
@@ -1648,6 +1648,24 @@ two runs, every named file and system exists in the project, the explanation
 names the seed and each budget it reports, a missing project or plan returns an
 honest refusal naming what is absent, output is bounded by a named cap, and the
 suite proves zero network calls.
+
+Landed as one checked-in table, `toolrx/explain.json`, expanded into 52
+`explain.*` routes for the active project, the last plan, the build theme, and
+two explicit store forms. `toolrx/web/explain.js` is the pure program and
+`toolrx/explain.py` is its byte-identical Python twin; `tests/fixtures/explain.json`
+pins 13 rendered states across all three targets. A project explanation lists
+only the project's real files with a name-derived role, its `systems/` files,
+its applied edits, the build-spec seed, the page and named theme with the rule
+that chose them, the journal counts, and the project, file, context, and
+`explainChars` budgets. A plan explanation lists each recorded step with its
+exact route or router fallback and its done/error/pending status, then names the
+failed step and every open risk. Missing state refuses by name. Two explicit
+routes store the explanation in context or as a bounded journal entry; every
+other route is read-only and prints `writes: no file`. The new caps are
+`explainChars` (8,000), `explainFiles` (24), and `explainEdits` (8); an
+over-cap explanation is trimmed at a line boundary with a visible `r.trim`
+note. Explaining is an inspection turn, so it does not replace the last run,
+write the context result, or change the stored plan.
 
 ### 62. Richer project templates and starter library
 

@@ -14,6 +14,9 @@ Ranges (the human-facing contract):
   thinkChars       256–32,000  thinking input characters
   thinkGoals       2–32  goals listed per thinking run
   thinkRules       4–32  rules evaluated per critique
+  explainChars     512–32,000  one project or plan explanation
+  explainFiles     2–128  files listed per explanation
+  explainEdits     1–32  recent edits listed per explanation
   repairPasses     1–5  accepted repair passes per failed plan
   traceBytes       256–16,384  stored reasoning trace
   blockBytes       256–64,000
@@ -59,6 +62,9 @@ _RANGES = {
     "thinkChars": (256, 32_000),
     "thinkGoals": (2, 32),
     "thinkRules": (4, 32),
+    "explainChars": (512, 32_000),
+    "explainFiles": (2, 128),
+    "explainEdits": (1, 32),
     "repairPasses": (1, 5),
     "traceBytes": (256, 16_384),
     "blockBytes": (256, 64_000),
