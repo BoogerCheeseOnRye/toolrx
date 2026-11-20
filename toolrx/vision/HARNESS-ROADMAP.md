@@ -1706,7 +1706,7 @@ files, script order, shared multi-page assets, seed variation, the caps, the
 no-network rule, and the exact catalog routes; the catalog is regenerated to
 13,373 commands.
 
-### 63. Bounded pure-compute tool
+### 63. Bounded pure-compute tool — done
 
 Extend the existing safe `math.expr` parser into one bounded compute surface for
 short pure expressions and tiny scripts: local assignments, string transforms,
@@ -1725,6 +1725,29 @@ identically twice, an over-cap script refuses with the named cap, every
 filesystem/network/DOM attempt refuses before evaluation, the Python and
 JavaScript fixtures agree on results and errors, and the tests prove no network
 or file access.
+
+Landed as one program behind the existing `math.expr` route, with no new
+allow-listed tool and no new web asset. `toolrx/web/skills.js` replaces the old
+expression parser with a two-phase tokenize, parse, then evaluate pass;
+`toolrx/compute.py` is the byte-identical Python twin. Statements are separated
+by `|`, `;`, or a newline, and `|` is the form that survives chat plan
+splitting. The grammar covers `let`/reassignment locals, numbers (including
+exponents), single- and double-quoted strings, booleans, null, arrays,
+indexing, slicing, comparisons, `and`/`or`/`not`, and a fixed table of pure
+builtins for math, strings, and arrays. Parsing completes before evaluation, so
+a cap or a denied name refuses before any value is computed. The six caps live
+in `limits.json` and are read by both runtimes: `computeChars` (2,000),
+`computeStatements` (20), `computeOps` (200), `computeVars` (8), `computeMs`
+(50), and `computeResultChars` (4,000); each refusal names its cap, and
+`tests/test_compute.py` drives the wall clock with a deterministic fake. The
+deny list refuses `eval`, `Function`, `import`, `require`, `fetch`, storage,
+timers, the DOM, `Math`, `Date`, `Reflect`, `Proxy`, and dynamic property
+access before evaluation, and names resolve only against builtins and locals
+declared earlier in the same script. Numbers render through one fixed
+10-decimal form plus integer and exponential branches so both runtimes print
+identical bytes; `%` uses `fmod` on both sides. The fixture is 80 cases over
+results, errors, cap refusals, and operation counts, and it is replayed through
+Node and Python on every suite run.
 
 ### 64. Cross-project memory and workspace journal
 
@@ -1853,8 +1876,8 @@ zero network calls.
    50 (budget bar) → 51 (compaction) → 52 (plan rewrite) — done;
    53 (think) → 54 (critique) → 55 (traces) → 56 (journal) →
    57 (recovery) → 58 (style) → 59 (scorecard) — done
-8. 60 (domain language) → 61 (explain) → 62 (starters) → 63 (pure compute) →
-   64 (workspace journal) → 65 (dashboard events) → 66 (verify helpers) →
+8. 60 (domain language) → 61 (explain) → 62 (starters) → 63 (pure compute) — done
+9. 64 (workspace journal) → 65 (dashboard events) → 66 (verify helpers) →
    67 (plan macros) → 68 (accessibility) → 69 (evaluation kit) — planned
 
 Steps 36–37 come first because they define the budget and the gate every later
@@ -1867,9 +1890,8 @@ budget UI claims to help it. Steps 50–52 landed as one envelope batch. Steps
 53–55 are the thinking program. Steps 56–59 close the remaining parity gaps;
 they may be reordered within the batch when a measurement justifies it.
 
-Steps 60–62 come first because language, explanation, and starters are the most
-visible daily improvements. Step 63 lands before the operator surface because
-compute needs its caps settled first. Steps 64–67 add memory, events, and
+Steps 60–63 come first because language, explanation, starters, and compute are
+the most visible daily improvements. Steps 64–67 add memory, events, and
 verification, and may be reordered within the batch when a measurement
 justifies it. Steps 68–69 are last: accessibility needs the final UI, and the
 evaluation kit needs every earlier measurement.

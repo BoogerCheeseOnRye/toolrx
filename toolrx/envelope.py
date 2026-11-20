@@ -17,6 +17,12 @@ Ranges (the human-facing contract):
   explainChars     512–32,000  one project or plan explanation
   explainFiles     2–128  files listed per explanation
   explainEdits     1–32  recent edits listed per explanation
+  computeChars     16–100,000  one pure-compute script
+  computeStatements 1–200  statements in one script
+  computeOps       8–10,000  evaluated nodes in one script
+  computeVars      1–64  local variables in one script
+  computeMs        1–5,000  wall budget for one script
+  computeResultChars 16–100,000  rendered result of one script
   repairPasses     1–5  accepted repair passes per failed plan
   traceBytes       256–16,384  stored reasoning trace
   blockBytes       256–64,000
@@ -65,6 +71,12 @@ _RANGES = {
     "explainChars": (512, 32_000),
     "explainFiles": (2, 128),
     "explainEdits": (1, 32),
+    "computeChars": (16, 100_000),
+    "computeStatements": (1, 200),
+    "computeOps": (8, 10_000),
+    "computeVars": (1, 64),
+    "computeMs": (1, 5_000),
+    "computeResultChars": (16, 100_000),
     "repairPasses": (1, 5),
     "traceBytes": (256, 16_384),
     "blockBytes": (256, 64_000),

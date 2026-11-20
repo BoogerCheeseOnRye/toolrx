@@ -1,0 +1,685 @@
+{
+  "version": 1,
+  "caps": {
+    "chars": 2000,
+    "statements": 20,
+    "ops": 200,
+    "vars": 8,
+    "ms": 50,
+    "resultChars": 4000
+  },
+  "count": 80,
+  "cases": [
+    {
+      "src": "16/100*4",
+      "ok": true,
+      "text": "0.64",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "2 + 3 * 4",
+      "ok": true,
+      "text": "14",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "(2 + 3) * 4",
+      "ok": true,
+      "text": "20",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "2 ^ 3 ^ 2",
+      "ok": true,
+      "text": "512",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "-2 ^ 2",
+      "ok": true,
+      "text": "-4",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "7 % -3",
+      "ok": true,
+      "text": "1",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "-7 % 3",
+      "ok": true,
+      "text": "-1",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1/3",
+      "ok": true,
+      "text": "0.3333333333",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "2/3",
+      "ok": true,
+      "text": "0.6666666667",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "0.1 + 0.2",
+      "ok": true,
+      "text": "0.3",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "10 / 4",
+      "ok": true,
+      "text": "2.5",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "2 ^ 0.5",
+      "ok": true,
+      "text": "1.4142135624",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1e-7",
+      "ok": true,
+      "text": "1e-7",
+      "ops": 1,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1.5e3",
+      "ok": true,
+      "text": "1500",
+      "ops": 1,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "abs(-3)",
+      "ok": true,
+      "text": "3",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "round(2.5)",
+      "ok": true,
+      "text": "3",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "round(-2.5)",
+      "ok": true,
+      "text": "-3",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "floor(-2.5)",
+      "ok": true,
+      "text": "-3",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "ceil(2.1)",
+      "ok": true,
+      "text": "3",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "sqrt(16)",
+      "ok": true,
+      "text": "4",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "cbrt(27)",
+      "ok": true,
+      "text": "3",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "sign(-9)",
+      "ok": true,
+      "text": "-1",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "min(3, 1, 2)",
+      "ok": true,
+      "text": "1",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "max(3, 1, 2)",
+      "ok": true,
+      "text": "3",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "pow(2, 10)",
+      "ok": true,
+      "text": "1024",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "log(1000)",
+      "ok": true,
+      "text": "3",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "ln(1)",
+      "ok": true,
+      "text": "0",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "exp(0)",
+      "ok": true,
+      "text": "1",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "upper(\"ada\")",
+      "ok": true,
+      "text": "ADA",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "lower(\"ADA\")",
+      "ok": true,
+      "text": "ada",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "title(\"hello world\")",
+      "ok": true,
+      "text": "Hello World",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "trim(\"  hi  \")",
+      "ok": true,
+      "text": "hi",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "reverse(\"abc\")",
+      "ok": true,
+      "text": "cba",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "replace(\"a-b-a\", \"a\", \"x\")",
+      "ok": true,
+      "text": "x-b-x",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "split(\"a,b\", \",\")",
+      "ok": true,
+      "text": "[\"a\", \"b\"]",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "join([\"a\",\"b\"], \"-\")",
+      "ok": true,
+      "text": "a-b",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "slice(\"hello\", 1, 3)",
+      "ok": true,
+      "text": "el",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "slice(\"hello\", -3)",
+      "ok": true,
+      "text": "llo",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "repeat(\"ab\", 3)",
+      "ok": true,
+      "text": "ababab",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "contains(\"hello\", \"ell\")",
+      "ok": true,
+      "text": "true",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "starts(\"hello\", \"he\")",
+      "ok": true,
+      "text": "true",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "ends(\"hello\", \"lo\")",
+      "ok": true,
+      "text": "true",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "length(\"héllo\")",
+      "ok": true,
+      "text": "5",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "first(\"abc\")",
+      "ok": true,
+      "text": "a",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "last([1,2,3])",
+      "ok": true,
+      "text": "3",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "str(12)",
+      "ok": true,
+      "text": "12",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "number(\"12.5\")",
+      "ok": true,
+      "text": "12.5",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "type([1])",
+      "ok": true,
+      "text": "array",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "true and false",
+      "ok": true,
+      "text": "false",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "not true",
+      "ok": true,
+      "text": "false",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1 < 2",
+      "ok": true,
+      "text": "true",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "\"a\" < \"b\"",
+      "ok": true,
+      "text": "true",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "[1,2] == [1,2]",
+      "ok": true,
+      "text": "true",
+      "ops": 7,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "sum([1,2,3])",
+      "ok": true,
+      "text": "6",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "sort([3,1,2])",
+      "ok": true,
+      "text": "[1, 2, 3]",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "sort([\"b\",\"a\"])",
+      "ok": true,
+      "text": "[\"a\", \"b\"]",
+      "ops": 4,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "unique([1,1,2])",
+      "ok": true,
+      "text": "[1, 2]",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "count([1,2,3])",
+      "ok": true,
+      "text": "3",
+      "ops": 5,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "\"a\" + 1",
+      "ok": true,
+      "text": "a1",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "let x = 2 | x * 3",
+      "ok": true,
+      "text": "6",
+      "ops": 5,
+      "vars": 1,
+      "statements": 2
+    },
+    {
+      "src": "let a = 1 | let b = 2 | a + b",
+      "ok": true,
+      "text": "3",
+      "ops": 7,
+      "vars": 2,
+      "statements": 3
+    },
+    {
+      "src": "x = 5 | x + 1",
+      "ok": true,
+      "text": "6",
+      "ops": 5,
+      "vars": 1,
+      "statements": 2
+    },
+    {
+      "src": "# comment | 1 + 2",
+      "ok": false,
+      "error": "compute error: nothing to compute",
+      "cap": "",
+      "ops": 0,
+      "vars": 0,
+      "statements": 0
+    },
+    {
+      "src": "null",
+      "ok": true,
+      "text": "null",
+      "ops": 1,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "true",
+      "ok": true,
+      "text": "true",
+      "ops": 1,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1/0",
+      "ok": false,
+      "error": "compute error: division by zero",
+      "cap": "",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "sqrt(-1)",
+      "ok": false,
+      "error": "compute error: square root of a negative number",
+      "cap": "",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "fetch(\"x\")",
+      "ok": false,
+      "error": "compute refused: fetch is not available in compute",
+      "cap": "name",
+      "ops": 0,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "eval(\"1\")",
+      "ok": false,
+      "error": "compute refused: eval is not available in compute",
+      "cap": "name",
+      "ops": 0,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "unknownname",
+      "ok": false,
+      "error": "compute error: unknown name unknownname",
+      "cap": "",
+      "ops": 0,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "a.b",
+      "ok": false,
+      "error": "compute error: unexpected \".\"",
+      "cap": "",
+      "ops": 0,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1 +",
+      "ok": false,
+      "error": "compute error: expected a value near \"end\"",
+      "cap": "",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "let pi = 1",
+      "ok": false,
+      "error": "compute error: pi is a builtin",
+      "cap": "",
+      "ops": 0,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "let x = 1 | let x = 2",
+      "ok": false,
+      "error": "compute error: x is already declared",
+      "cap": "",
+      "ops": 2,
+      "vars": 1,
+      "statements": 2
+    },
+    {
+      "src": "not 1",
+      "ok": false,
+      "error": "compute error: not needs a boolean",
+      "cap": "",
+      "ops": 2,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "1|2|3",
+      "limits": {
+        "statements": 2
+      },
+      "ok": false,
+      "error": "compute refused: 3 statements, over computeStatements (2)",
+      "cap": "computeStatements",
+      "ops": 0,
+      "vars": 0,
+      "statements": 0
+    },
+    {
+      "src": "1+2+3",
+      "limits": {
+        "ops": 2
+      },
+      "ok": false,
+      "error": "compute refused: 3 operations, over computeOps (2)",
+      "cap": "computeOps",
+      "ops": 3,
+      "vars": 0,
+      "statements": 1
+    },
+    {
+      "src": "let a=1 | let b=2",
+      "limits": {
+        "vars": 1
+      },
+      "ok": false,
+      "error": "compute refused: 2 variables, over computeVars (1)",
+      "cap": "computeVars",
+      "ops": 2,
+      "vars": 1,
+      "statements": 2
+    },
+    {
+      "src": "1+2",
+      "limits": {
+        "chars": 2
+      },
+      "ok": false,
+      "error": "compute refused: source is 3 chars, over computeChars (2)",
+      "cap": "computeChars",
+      "ops": 0,
+      "vars": 0,
+      "statements": 0
+    },
+    {
+      "src": "repeat(\"ab\", 3)",
+      "limits": {
+        "resultChars": 4
+      },
+      "ok": false,
+      "error": "compute refused: result is 6 chars, over computeResultChars (4)",
+      "cap": "computeResultChars",
+      "ops": 0,
+      "vars": 0,
+      "statements": 0
+    }
+  ]
+}

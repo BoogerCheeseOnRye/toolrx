@@ -597,12 +597,31 @@ replays exactly and a different seed changes real content. Extra scripts
 order, seed variation, the caps, the no-network rule, and the exact catalog
 routes.
 
-Steps 63–69 remain `planned`: one bounded pure-compute tool, a workspace
-journal, dashboard events with replay and export, verification helpers, named
-plan macros, accessibility and mobile polish, and a public evaluation and
-comparison kit. No step may require a model, a network call, an external test
-runner, or a real shell. The acceptance criteria live in
-`toolrx/vision/HARNESS-ROADMAP.md`.
+Step 63 turns the arithmetic route into one bounded pure-compute program.
+`toolrx/web/skills.js` replaces the old expression parser behind `math.expr`,
+and `toolrx/compute.py` is its byte-identical Python twin. A script is a
+sequence of statements separated by `|`, `;`, or a newline; `|` is the form
+that survives chat plan splitting. It supports `let` and reassignment locals,
+numbers, quoted strings, booleans, null, arrays, indexing and slicing,
+comparisons, `and`/`or`/`not`, and a fixed table of pure builtins such as
+`upper`, `sort`, `join`, `sum`, and `sqrt`. Parsing finishes before evaluation,
+so every cap and every denied name refuses before anything runs. The six new
+caps are `computeChars` (2,000), `computeStatements` (20), `computeOps` (200),
+`computeVars` (8), `computeMs` (50), and `computeResultChars` (4,000), and each
+refusal names the cap it hit. Names resolve only against the builtin table and
+locals declared earlier in the same script, and the deny list refuses `eval`,
+`Function`, `import`, `fetch`, timers, storage, the DOM, `Math`, and dynamic
+property access, so there is no path to a file, a socket, or a host object.
+Numbers render through one fixed-decimal form so both runtimes print the same
+bytes. `tests/test_compute.py` replays 80 fixture cases through both runtimes
+and pins the caps, the deny list, the wall clock, the route, and the no-network
+rule.
+
+Steps 64–69 remain `planned`: a workspace journal, dashboard events with replay
+and export, verification helpers, named plan macros, accessibility and mobile
+polish, and a public evaluation and comparison kit. No step may require a
+model, a network call, an external test runner, or a real shell. The acceptance
+criteria live in `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
@@ -743,7 +762,7 @@ against another product. The pitch quotes the same table.
 | **Cost** | shipped | The deterministic path makes zero model or network calls. | `toolrx/web/llm.js`, `tests/test_llm_js.py::LlmAdapterTest.test_defaults_are_off_and_quiet`, `tests/test_llm_js.py::LlmAdapterTest.test_known_prompts_stay_deterministic` | The deterministic path costs nothing, but an enabled LLM adapter bills per call and has call and byte caps, not a money budget. |
 | **Reproducibility** | shipped | Seeded builds and checked-in fixtures reproduce byte for byte. | `toolrx/demo_report.json`, `tests/test_demo.py::DemoReportTest.test_every_step_is_deterministic_and_successful`, `tests/test_commands.py::CommandLibraryTest.test_catalog_regenerates_byte_identically` | Checked-in fixtures and seeds reproduce byte for byte, but wall-clock fields and host-dependent machine tools vary between runs. |
 
-_Scorecard metrics: 13,373 commands · 583 tests · 39 named caps · 930 everyday cases · 33 router cases · 989 fixture cases._
+_Scorecard metrics: 13,373 commands · 602 tests · 45 named caps · 930 everyday cases · 33 router cases · 989 fixture cases._
 <!-- scorecard:end -->
 
 ## Configuration

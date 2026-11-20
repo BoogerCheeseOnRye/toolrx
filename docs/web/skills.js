@@ -112,86 +112,825 @@
   }
 
   /* ------------------------------------------------------- expressions --- */
-  function evalExpr(src) {
-    const tokens = String(src).replace(/\s+/g, "").toLowerCase();
+  /* One bounded pure evaluator behind `math.expr` (step 63). It accepts
+   * arithmetic, quoted strings, booleans, null, arrays, local assignments,
+   * comparisons, and a fixed set of pure builtins. Statements are separated
+   * by `|`, `;`, or a newline; `|` is the form that survives chat planning.
+   *
+   * It is not a shell. Names resolve only against the builtin table and the
+   * locals declared earlier in the same script, so an unknown name refuses
+   * before anything is evaluated. Nothing here can read a file, touch the
+   * network, start a timer, use storage, or reach the DOM. Every cap comes
+   * from toolrx/limits.json and a refusal names the cap it hit. */
+
+  const COMPUTE_DENY = Object.create(null);
+  [
+    "eval", "function", "new", "import", "require", "process", "globalthis",
+    "window", "document", "localstorage", "sessionstorage", "indexeddb",
+    "fetch", "xmlhttprequest", "websocket", "worker", "sharedworker",
+    "importscripts", "sendbeacon", "navigator", "location", "history",
+    "alert", "confirm", "prompt", "settimeout", "setinterval", "cleartimeout",
+    "clearinterval", "requestanimationframe", "queuemicrotask", "fs", "os",
+    "sys", "subprocess", "child_process", "open", "exec", "execfile", "spawn",
+    "compile", "__proto__", "prototype", "constructor", "reflect", "proxy",
+    "symbol", "math", "date", "regexp", "object", "array", "string",
+    "boolean", "json", "atom", "deno", "bun", "postmessage", "crypto",
+    "this", "self", "parent", "top", "frames", "opener"
+  ].forEach(function (name) { COMPUTE_DENY[name] = true; });
+
+  const COMPUTE_BUILTINS = {
+    abs: [1, 1], round: [1, 1], floor: [1, 1], ceil: [1, 1],
+    sqrt: [1, 1], cbrt: [1, 1], sign: [1, 1],
+    sin: [1, 1], cos: [1, 1], tan: [1, 1], log: [1, 1], ln: [1, 1], exp: [1, 1],
+    min: [1, 8], max: [1, 8], pow: [2, 2],
+    upper: [1, 1], lower: [1, 1], trim: [1, 1], title: [1, 1],
+    reverse: [1, 1], replace: [3, 3], split: [2, 2], join: [2, 2],
+    slice: [2, 3], repeat: [2, 2], contains: [2, 2], starts: [2, 2],
+    ends: [2, 2], length: [1, 1], count: [1, 1], sum: [1, 1],
+    sort: [1, 1], unique: [1, 1], first: [1, 1], last: [1, 1],
+    str: [1, 1], number: [1, 1], type: [1, 1]
+  };
+  const COMPUTE_CONST = { pi: Math.PI, e: Math.E };
+
+  const COMPUTE_CAPS = {
+    chars: LIMITS_RAW.computeChars,
+    statements: LIMITS_RAW.computeStatements,
+    ops: LIMITS_RAW.computeOps,
+    vars: LIMITS_RAW.computeVars,
+    ms: LIMITS_RAW.computeMs,
+    resultChars: LIMITS_RAW.computeResultChars
+  };
+
+  function computeFail(message, capName) {
+    const e = new Error(message);
+    e.compute = true;
+    e.cap = capName || "";
+    return e;
+  }
+
+  function computeType(v) {
+    if (v === null) return "null";
+    if (Array.isArray(v)) return "array";
+    return typeof v;
+  }
+
+  /* Fixed decimal form so Python and JavaScript print the same bytes. */
+  function computeNumber(n) {
+    if (typeof n !== "number" || !isFinite(n)) {
+      throw computeFail("compute error: result is not a finite number");
+    }
+    if (n === 0) return "0";
+    if (Number.isInteger(n) && Math.abs(n) < 1e21) return String(n);
+    const abs = Math.abs(n);
+    if (abs >= 1e-6 && abs < 1e21) {
+      return n.toFixed(10).replace(/0+$/, "").replace(/\.$/, "");
+    }
+    const parts = n.toExponential(10).split("e");
+    const mant = parts[0].replace(/0+$/, "").replace(/\.$/, "");
+    const exp = parseInt(parts[1], 10);
+    return mant + "e" + (exp >= 0 ? "+" : "-") + Math.abs(exp);
+  }
+
+  function computeQuote(s) {
+    return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+      .replace(/\n/g, "\\n").replace(/\t/g, "\\t").replace(/\r/g, "\\r") + '"';
+  }
+
+  function computeRender(v, top) {
+    if (typeof v === "number") return computeNumber(v);
+    if (typeof v === "string") return top ? v : computeQuote(v);
+    if (typeof v === "boolean") return v ? "true" : "false";
+    if (v === null) return "null";
+    if (Array.isArray(v)) {
+      return "[" + v.map(function (item) {
+        return computeRender(item, false);
+      }).join(", ") + "]";
+    }
+    throw computeFail("compute error: cannot show a " + computeType(v));
+  }
+
+  function computeEqual(a, b) {
+    if (Array.isArray(a) || Array.isArray(b)) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) if (!computeEqual(a[i], b[i])) return false;
+      return true;
+    }
+    if (a === null || b === null) return a === b;
+    if (typeof a !== typeof b) return false;
+    return a === b;
+  }
+
+  function computeChars(s) { return Array.from(String(s)); }
+
+  function computeAsciiUpper(s) {
+    return s.replace(/[a-z]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) - 32);
+    });
+  }
+
+  function computeAsciiLower(s) {
+    return s.replace(/[A-Z]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) + 32);
+    });
+  }
+
+  function computeAsNumber(v, fn) {
+    if (typeof v !== "number" || !isFinite(v)) {
+      throw computeFail("compute error: " + fn + " needs a number");
+    }
+    return v;
+  }
+
+  function computeAsInt(v, fn) {
+    const n = computeAsNumber(v, fn);
+    if (!Number.isInteger(n)) throw computeFail("compute error: " + fn + " needs an integer");
+    return n;
+  }
+
+  function computeAsString(v, fn) {
+    if (typeof v !== "string") throw computeFail("compute error: " + fn + " needs a string");
+    return v;
+  }
+
+  function computeAsArray(v, fn) {
+    if (!Array.isArray(v)) throw computeFail("compute error: " + fn + " needs an array");
+    return v;
+  }
+
+  function computePow(a, b) {
+    if (a === 0 && b < 0) throw computeFail("compute error: division by zero");
+    if (a < 0 && !Number.isInteger(b)) {
+      throw computeFail("compute error: power of a negative number");
+    }
+    const v = Math.pow(a, b);
+    if (!isFinite(v)) throw computeFail("compute error: result is not a finite number");
+    return v;
+  }
+
+  function computeIndex(obj, idx) {
+    const i = computeAsInt(idx, "index");
+    if (typeof obj === "string") {
+      const chars = computeChars(obj);
+      if (i < 0 || i >= chars.length) {
+        throw computeFail("compute error: index " + i + " is out of range");
+      }
+      return chars[i];
+    }
+    const xs = computeAsArray(obj, "index");
+    if (i < 0 || i >= xs.length) {
+      throw computeFail("compute error: index " + i + " is out of range");
+    }
+    return xs[i];
+  }
+
+  function computeSliceValue(v, start, end) {
+    const isText = typeof v === "string";
+    const list = isText ? computeChars(v) : computeAsArray(v, "slice");
+    const len = list.length;
+    const norm = function (n) {
+      return n < 0 ? Math.max(len + n, 0) : Math.min(n, len);
+    };
+    const a = norm(start);
+    let b = end === undefined ? len : norm(end);
+    if (b < a) b = a;
+    const out = list.slice(a, b);
+    return isText ? out.join("") : out;
+  }
+
+  function computeCmp(a, b) {
+    const A = computeChars(a), B = computeChars(b);
+    const n = Math.min(A.length, B.length);
+    for (let i = 0; i < n; i++) {
+      const x = A[i].codePointAt(0), y = B[i].codePointAt(0);
+      if (x !== y) return x < y ? -1 : 1;
+    }
+    return A.length === B.length ? 0 : (A.length < B.length ? -1 : 1);
+  }
+
+  function computeBinary(op, a, b) {
+    if (op === "==") return computeEqual(a, b);
+    if (op === "!=") return !computeEqual(a, b);
+    if (op === "<" || op === "<=" || op === ">" || op === ">=") {
+      let c;
+      if (typeof a === "number" && typeof b === "number") {
+        c = a === b ? 0 : (a < b ? -1 : 1);
+      } else if (typeof a === "string" && typeof b === "string") {
+        c = computeCmp(a, b);
+      } else {
+        throw computeFail("compute error: cannot compare a " + computeType(a)
+          + " and a " + computeType(b));
+      }
+      if (op === "<") return c < 0;
+      if (op === "<=") return c <= 0;
+      if (op === ">") return c > 0;
+      return c >= 0;
+    }
+    if (op === "+") {
+      if (typeof a === "string" || typeof b === "string") {
+        return (typeof a === "string" ? a : computeRender(a, false))
+          + (typeof b === "string" ? b : computeRender(b, false));
+      }
+      return computeAsNumber(a, "+") + computeAsNumber(b, "+");
+    }
+    const x = computeAsNumber(a, op), y = computeAsNumber(b, op);
+    if (op === "-") return x - y;
+    if (op === "*") return x * y;
+    if (op === "/") {
+      if (y === 0) throw computeFail("compute error: division by zero");
+      return x / y;
+    }
+    if (op === "%") {
+      if (y === 0) throw computeFail("compute error: division by zero");
+      return x % y;
+    }
+    if (op === "^") return computePow(x, y);
+    throw computeFail("compute error: unknown operator " + op);
+  }
+
+  function computeCall(name, args) {
+    switch (name) {
+      case "abs": return Math.abs(computeAsNumber(args[0], name));
+      case "round": {
+        const n = computeAsNumber(args[0], name);
+        return (n < 0 ? -1 : 1) * Math.floor(Math.abs(n) + 0.5);
+      }
+      case "floor": return Math.floor(computeAsNumber(args[0], name));
+      case "ceil": return Math.ceil(computeAsNumber(args[0], name));
+      case "sqrt": {
+        const n = computeAsNumber(args[0], name);
+        if (n < 0) throw computeFail("compute error: square root of a negative number");
+        return Math.sqrt(n);
+      }
+      case "cbrt": return Math.cbrt(computeAsNumber(args[0], name));
+      case "sign": {
+        const n = computeAsNumber(args[0], name);
+        return n === 0 ? 0 : (n > 0 ? 1 : -1);
+      }
+      case "sin": return Math.sin(computeAsNumber(args[0], name));
+      case "cos": return Math.cos(computeAsNumber(args[0], name));
+      case "tan": return Math.tan(computeAsNumber(args[0], name));
+      case "log": return Math.log10(computeAsNumber(args[0], name));
+      case "ln": return Math.log(computeAsNumber(args[0], name));
+      case "exp": return Math.exp(computeAsNumber(args[0], name));
+      case "min":
+      case "max": {
+        const xs = args.map(function (v) { return computeAsNumber(v, name); });
+        return name === "min" ? Math.min.apply(null, xs) : Math.max.apply(null, xs);
+      }
+      case "pow":
+        return computePow(computeAsNumber(args[0], name), computeAsNumber(args[1], name));
+      case "upper": return computeAsciiUpper(computeAsString(args[0], name));
+      case "lower": return computeAsciiLower(computeAsString(args[0], name));
+      case "title": {
+        const s = computeAsString(args[0], name);
+        return s.replace(/[A-Za-z]+/g, function (w) {
+          return computeAsciiUpper(w[0]) + computeAsciiLower(w.slice(1));
+        });
+      }
+      case "trim":
+        return computeAsString(args[0], name)
+          .replace(/^[ \t\r\n\f\v]+/, "").replace(/[ \t\r\n\f\v]+$/, "");
+      case "reverse": {
+        const v = args[0];
+        if (typeof v === "string") return computeChars(v).reverse().join("");
+        return computeAsArray(v, name).slice().reverse();
+      }
+      case "replace": {
+        const s = computeAsString(args[0], name);
+        const from = computeAsString(args[1], name);
+        const to = computeAsString(args[2], name);
+        if (!from) throw computeFail("compute error: replace needs a non-empty search string");
+        return s.split(from).join(to);
+      }
+      case "split": {
+        const s = computeAsString(args[0], name);
+        const sep = computeAsString(args[1], name);
+        if (!sep) throw computeFail("compute error: split needs a non-empty separator");
+        return s.split(sep);
+      }
+      case "join": {
+        const xs = computeAsArray(args[0], name);
+        const sep = computeAsString(args[1], name);
+        return xs.map(function (v) {
+          return typeof v === "string" ? v : computeRender(v, false);
+        }).join(sep);
+      }
+      case "slice": {
+        const start = computeAsInt(args[1], name);
+        const end = args.length > 2 ? computeAsInt(args[2], name) : undefined;
+        return computeSliceValue(args[0], start, end);
+      }
+      case "repeat": {
+        const s = computeAsString(args[0], name);
+        const n = computeAsInt(args[1], name);
+        if (n < 0 || n > 1000) throw computeFail("compute error: repeat needs 0-1000");
+        return s.repeat(n);
+      }
+      case "contains": {
+        if (typeof args[0] === "string") {
+          return args[0].indexOf(computeAsString(args[1], name)) >= 0;
+        }
+        const xs = computeAsArray(args[0], name);
+        return xs.some(function (v) { return computeEqual(v, args[1]); });
+      }
+      case "starts":
+        return computeAsString(args[0], name)
+          .indexOf(computeAsString(args[1], name)) === 0;
+      case "ends": {
+        const s = computeAsString(args[0], name);
+        const t = computeAsString(args[1], name);
+        return s.length >= t.length && s.slice(s.length - t.length) === t;
+      }
+      case "length":
+      case "count": {
+        const v = args[0];
+        if (typeof v === "string") return computeChars(v).length;
+        if (Array.isArray(v)) return v.length;
+        throw computeFail("compute error: " + name + " needs a string or an array");
+      }
+      case "sum": {
+        const xs = computeAsArray(args[0], name);
+        let total = 0;
+        xs.forEach(function (v) { total += computeAsNumber(v, name); });
+        return total;
+      }
+      case "sort": {
+        const xs = computeAsArray(args[0], name);
+        const allNum = xs.every(function (v) { return typeof v === "number"; });
+        const allStr = xs.every(function (v) { return typeof v === "string"; });
+        if (!allNum && !allStr) {
+          throw computeFail("compute error: sort needs all numbers or all strings");
+        }
+        return xs.slice().sort(allNum
+          ? function (a, b) { return a - b; }
+          : function (a, b) { return computeCmp(a, b); });
+      }
+      case "unique": {
+        const xs = computeAsArray(args[0], name);
+        const out = [];
+        xs.forEach(function (v) {
+          if (!out.some(function (w) { return computeEqual(v, w); })) out.push(v);
+        });
+        return out;
+      }
+      case "first":
+      case "last": {
+        const v = args[0];
+        const list = typeof v === "string" ? computeChars(v) : computeAsArray(v, name);
+        if (!list.length) {
+          throw computeFail("compute error: " + name + " needs a non-empty value");
+        }
+        return name === "first" ? list[0] : list[list.length - 1];
+      }
+      case "str": return computeRender(args[0], true);
+      case "number": {
+        const v = args[0];
+        if (typeof v === "number") return v;
+        if (typeof v === "string" && /^-?\d+(?:\.\d+)?$/.test(v)) return parseFloat(v);
+        throw computeFail("compute error: number needs a numeric string");
+      }
+      case "type": return computeType(args[0]);
+      default: throw computeFail("compute error: unknown name " + name);
+    }
+  }
+
+  function computeTokens(src) {
+    const s = String(src);
+    const out = [];
     let i = 0;
+    while (i < s.length) {
+      const c = s[i];
+      if (c === " " || c === "\t" || c === "\r" || c === "\n") { i++; continue; }
+      if ((c >= "0" && c <= "9")
+          || (c === "." && s[i + 1] >= "0" && s[i + 1] <= "9")) {
+        const m = /^\d*\.?\d+(?:[eE][+-]?\d+)?/.exec(s.slice(i));
+        out.push({ t: "num", v: parseFloat(m[0]) });
+        i += m[0].length;
+        continue;
+      }
+      if (c === '"' || c === "'") {
+        const quote = c;
+        i++;
+        let v = "";
+        let closed = false;
+        while (i < s.length) {
+          const d = s[i++];
+          if (d === quote) { closed = true; break; }
+          if (d === "\\") {
+            const e = s[i++];
+            if (e === "n") v += "\n";
+            else if (e === "t") v += "\t";
+            else if (e === "r") v += "\r";
+            else if (e === "\\" || e === '"' || e === "'") v += e;
+            else {
+              throw computeFail("compute error: unknown escape \\"
+                + (e === undefined ? "" : e));
+            }
+          } else v += d;
+        }
+        if (!closed) throw computeFail("compute error: unterminated string");
+        out.push({ t: "str", v: v });
+        continue;
+      }
+      if (/[A-Za-z_]/.test(c)) {
+        const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(s.slice(i));
+        out.push({ t: "id", v: m[0] });
+        i += m[0].length;
+        continue;
+      }
+      const two = s.slice(i, i + 2);
+      if (two === "==" || two === "!=" || two === "<=" || two === ">=") {
+        out.push({ t: "op", v: two });
+        i += 2;
+        continue;
+      }
+      if ("+-*/%^=<>(),[]".indexOf(c) >= 0) {
+        out.push({ t: "op", v: c });
+        i++;
+        continue;
+      }
+      throw computeFail('compute error: unexpected "' + c + '"');
+    }
+    out.push({ t: "end", v: "" });
+    return out;
+  }
 
-    function peek() { return tokens[i]; }
-    function eat(c) { if (tokens[i] === c) { i++; return true; } return false; }
+  /* Strip comments and split statements outside strings and brackets. */
+  function computeSplit(src) {
+    const s = String(src);
+    let cleaned = "";
+    let quote = "";
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (quote) {
+        cleaned += c;
+        if (c === "\\") { cleaned += s[i + 1] || ""; i++; continue; }
+        if (c === quote) quote = "";
+        continue;
+      }
+      if (c === '"' || c === "'") { quote = c; cleaned += c; continue; }
+      if (c === "(" || c === "[") { depth++; cleaned += c; continue; }
+      if (c === ")" || c === "]") { depth = Math.max(0, depth - 1); cleaned += c; continue; }
+      if (c === "#" && depth === 0) {
+        while (i < s.length && s[i] !== "\n") i++;
+        cleaned += "\n";
+        continue;
+      }
+      cleaned += c;
+    }
+    const out = [];
+    let start = 0;
+    quote = "";
+    depth = 0;
+    for (let i = 0; i < cleaned.length; i++) {
+      const c = cleaned[i];
+      if (quote) {
+        if (c === "\\") { i++; continue; }
+        if (c === quote) quote = "";
+        continue;
+      }
+      if (c === '"' || c === "'") { quote = c; continue; }
+      if (c === "(" || c === "[") { depth++; continue; }
+      if (c === ")" || c === "]") { depth = Math.max(0, depth - 1); continue; }
+      if ((c === ";" || c === "|" || c === "\n") && depth === 0) {
+        const part = cleaned.slice(start, i).trim();
+        if (part) out.push(part);
+        start = i + 1;
+      }
+    }
+    const tail = cleaned.slice(start).trim();
+    if (tail) out.push(tail);
+    return out;
+  }
 
-    function primary() {
-      if (eat("(")) { const v = expr(); eat(")"); return v; }
-      if (eat("-")) return -primary();
-      if (eat("+")) return primary();
-      if (tokens.startsWith("pi", i)) { i += 2; return Math.PI; }
-      if (tokens.startsWith("e", i) && !/[a-z]/.test(tokens[i + 1] || "")) { i += 1; return Math.E; }
-      const m = /^\d*\.?\d+/.exec(tokens.slice(i));
-      if (m) { i += m[0].length; return parseFloat(m[0]); }
-      const fn = /^[a-z]+/.exec(tokens.slice(i));
-      if (fn) {
-        const name = fn[0];
-        if (name === "sqrt" || name === "cbrt" || name === "abs" || name === "round" ||
-            name === "floor" || name === "ceil" || name === "sin" || name === "cos" ||
-            name === "tan" || name === "log" || name === "ln" || name === "exp") {
-          i += name.length;
-          eat("(");
-          const v = expr();
-          eat(")");
-          switch (name) {
-            case "sqrt": return Math.sqrt(v);
-            case "cbrt": return Math.cbrt(v);
-            case "abs": return Math.abs(v);
-            case "round": return Math.round(v);
-            case "floor": return Math.floor(v);
-            case "ceil": return Math.ceil(v);
-            case "sin": return Math.sin(v);
-            case "cos": return Math.cos(v);
-            case "tan": return Math.tan(v);
-            case "log": return Math.log10(v);
-            case "ln": return Math.log(v);
-            case "exp": return Math.exp(v);
+  function computeRun(source, limits, clock) {
+    const caps = limits || COMPUTE_CAPS;
+    const text = String(source == null ? "" : source);
+    const totalChars = computeChars(text).length;
+    const fail = function (message, capName) {
+      return { ok: false, error: message, cap: capName || "", ops: 0,
+               vars: 0, statements: 0 };
+    };
+    if (caps.chars && totalChars > caps.chars) {
+      return fail("compute refused: source is " + totalChars
+        + " chars, over computeChars (" + caps.chars + ")", "computeChars");
+    }
+    const parts = computeSplit(text);
+    if (!parts.length) return fail("compute error: nothing to compute");
+    if (caps.statements && parts.length > caps.statements) {
+      return fail("compute refused: " + parts.length + " statements, over "
+        + "computeStatements (" + caps.statements + ")", "computeStatements");
+    }
+    const now = typeof clock === "function" ? clock : Date.now;
+    const started = now();
+    const declared = Object.create(null);
+    let ops = 0;
+    let toks = [];
+    let pos = 0;
+
+    const bump = function (n) {
+      ops += n;
+      if (caps.ops && ops > caps.ops) {
+        throw computeFail("compute refused: " + ops + " operations, over "
+          + "computeOps (" + caps.ops + ")", "computeOps");
+      }
+    };
+    const syntax = function (what) {
+      const t = toks[pos];
+      const near = !t || t.t === "end" ? "end" : String(t.v);
+      return computeFail('compute error: expected ' + what + ' near "' + near + '"');
+    };
+    const isOp = function (v) {
+      return toks[pos] && toks[pos].t === "op" && toks[pos].v === v;
+    };
+    const eat = function (v) { if (isOp(v)) { pos++; return true; } return false; };
+    const expect = function (v, what) { if (!eat(v)) throw syntax(what); };
+
+    const parseExpr = function () { return parseOr(); };
+    const parseOr = function () {
+      let node = parseAnd();
+      while (toks[pos] && toks[pos].t === "id" && toks[pos].v === "or") {
+        pos++;
+        bump(1);
+        node = { t: "bin", op: "or", a: node, b: parseAnd() };
+      }
+      return node;
+    };
+    const parseAnd = function () {
+      let node = parseNot();
+      while (toks[pos] && toks[pos].t === "id" && toks[pos].v === "and") {
+        pos++;
+        bump(1);
+        node = { t: "bin", op: "and", a: node, b: parseNot() };
+      }
+      return node;
+    };
+    const parseNot = function () {
+      if (toks[pos] && toks[pos].t === "id" && toks[pos].v === "not") {
+        pos++;
+        bump(1);
+        return { t: "not", v: parseNot() };
+      }
+      return parseComparison();
+    };
+    const parseComparison = function () {
+      const node = parseAdd();
+      const t = toks[pos];
+      if (t && t.t === "op"
+          && (t.v === "==" || t.v === "!=" || t.v === "<" || t.v === "<="
+            || t.v === ">" || t.v === ">=")) {
+        pos++;
+        bump(1);
+        return { t: "bin", op: t.v, a: node, b: parseAdd() };
+      }
+      return node;
+    };
+    const parseAdd = function () {
+      let node = parseMul();
+      for (;;) {
+        const t = toks[pos];
+        if (t && t.t === "op" && (t.v === "+" || t.v === "-")) {
+          pos++;
+          bump(1);
+          node = { t: "bin", op: t.v, a: node, b: parseMul() };
+        } else break;
+      }
+      return node;
+    };
+    const parseMul = function () {
+      let node = parseUnary();
+      for (;;) {
+        const t = toks[pos];
+        if (t && t.t === "op" && (t.v === "*" || t.v === "/" || t.v === "%")) {
+          pos++;
+          bump(1);
+          node = { t: "bin", op: t.v, a: node, b: parseUnary() };
+        } else break;
+      }
+      return node;
+    };
+    const parseUnary = function () {
+      if (eat("-")) { bump(1); return { t: "neg", v: parseUnary() }; }
+      if (eat("+")) { bump(1); return parseUnary(); }
+      return parsePower();
+    };
+    const parsePower = function () {
+      const base = parsePostfix();
+      if (eat("^")) {
+        bump(1);
+        return { t: "bin", op: "^", a: base, b: parseUnary() };
+      }
+      return base;
+    };
+    const parsePostfix = function () {
+      let node = parsePrimary();
+      for (;;) {
+        if (isOp("[")) {
+          pos++;
+          const idx = parseExpr();
+          expect("]", "]");
+          bump(1);
+          node = { t: "index", obj: node, idx: idx };
+        } else break;
+      }
+      return node;
+    };
+    const parsePrimary = function () {
+      const t = toks[pos];
+      if (!t || t.t === "end") throw syntax("a value");
+      if (t.t === "num") { pos++; bump(1); return { t: "num", v: t.v }; }
+      if (t.t === "str") { pos++; bump(1); return { t: "str", v: t.v }; }
+      if (t.t === "op" && t.v === "(") {
+        pos++;
+        const node = parseExpr();
+        expect(")", ")");
+        return node;
+      }
+      if (t.t === "op" && t.v === "[") {
+        pos++;
+        const items = [];
+        if (!isOp("]")) {
+          for (;;) {
+            items.push(parseExpr());
+            if (!eat(",")) break;
           }
         }
+        expect("]", "]");
+        bump(1);
+        return { t: "arr", items: items };
       }
-      throw new Error(`cannot parse expression near "${tokens.slice(i) || "end"}"`);
-    }
-
-    function power() {
-      let base = primary();
-      if (eat("^")) base = Math.pow(base, power());
-      return base;
-    }
-
-    function unary() {
-      if (eat("-")) return -unary();
-      if (eat("+")) return +unary();
-      return power();
-    }
-
-    function term() {
-      let v = unary();
-      while (i < tokens.length) {
-        if (eat("*")) v *= unary();
-        else if (eat("/")) v /= unary();
-        else if (eat("%")) v %= unary();
-        else break;
+      if (t.t === "id") {
+        const name = t.v;
+        if (COMPUTE_DENY[name.toLowerCase()]) {
+          throw computeFail("compute refused: " + name
+            + " is not available in compute", "name");
+        }
+        if (name === "true" || name === "false") {
+          pos++;
+          bump(1);
+          return { t: "bool", v: name === "true" };
+        }
+        if (name === "null") { pos++; bump(1); return { t: "null" }; }
+        if (Object.prototype.hasOwnProperty.call(COMPUTE_CONST, name)
+            && !declared[name]) {
+          pos++;
+          bump(1);
+          return { t: "num", v: COMPUTE_CONST[name] };
+        }
+        if (Object.prototype.hasOwnProperty.call(COMPUTE_BUILTINS, name)) {
+          pos++;
+          expect("(", "(");
+          const args = [];
+          if (!isOp(")")) {
+            for (;;) {
+              args.push(parseExpr());
+              if (!eat(",")) break;
+            }
+          }
+          expect(")", ")");
+          const ar = COMPUTE_BUILTINS[name];
+          if (args.length < ar[0] || args.length > ar[1]) {
+            const want = ar[0] === ar[1] ? String(ar[0]) : ar[0] + "-" + ar[1];
+            throw computeFail("compute error: " + name + " expects " + want
+              + " argument(s)");
+          }
+          bump(1);
+          return { t: "call", name: name, args: args };
+        }
+        if (declared[name]) { pos++; bump(1); return { t: "var", name: name }; }
+        throw computeFail("compute error: unknown name " + name);
       }
-      return v;
-    }
-
-    function expr() {
-      let v = term();
-      while (i < tokens.length) {
-        if (eat("+")) v += term();
-        else if (eat("-")) v -= term();
-        else break;
+      throw syntax("a value");
+    };
+    const parseAssign = function (explicit) {
+      const name = toks[pos].v;
+      pos++;
+      expect("=", "=");
+      if (COMPUTE_DENY[name.toLowerCase()]) {
+        throw computeFail("compute refused: " + name
+          + " is not available in compute", "name");
       }
-      return v;
-    }
+      if (Object.prototype.hasOwnProperty.call(COMPUTE_BUILTINS, name)
+          || Object.prototype.hasOwnProperty.call(COMPUTE_CONST, name)) {
+        throw computeFail("compute error: " + name + " is a builtin");
+      }
+      if (explicit && declared[name]) {
+        throw computeFail("compute error: " + name + " is already declared");
+      }
+      if (!declared[name]) {
+        const count = Object.keys(declared).length;
+        if (caps.vars && count >= caps.vars) {
+          throw computeFail("compute refused: " + (count + 1)
+            + " variables, over computeVars (" + caps.vars + ")", "computeVars");
+        }
+        declared[name] = true;
+      }
+      bump(1);
+      return { t: "assign", name: name, value: parseExpr() };
+    };
+    const parseStatement = function () {
+      if (toks[pos] && toks[pos].t === "id" && toks[pos].v === "let"
+          && toks[pos + 1] && toks[pos + 1].t === "id"
+          && toks[pos + 2] && toks[pos + 2].t === "op" && toks[pos + 2].v === "=") {
+        pos++;
+        return parseAssign(true);
+      }
+      if (toks[pos] && toks[pos].t === "id"
+          && toks[pos + 1] && toks[pos + 1].t === "op"
+          && toks[pos + 1].v === "=") {
+        return parseAssign(false);
+      }
+      return parseExpr();
+    };
 
-    const out = expr();
-    if (i !== tokens.length) throw new Error(`unexpected "${tokens.slice(i)}"`);
-    return out;
+    const evalNode = function (n, env) {
+      if (caps.ms && now() - started > caps.ms) {
+        throw computeFail("compute refused: took longer than computeMs ("
+          + caps.ms + " ms)", "computeMs");
+      }
+      switch (n.t) {
+        case "num": return n.v;
+        case "str": return n.v;
+        case "bool": return n.v;
+        case "null": return null;
+        case "arr": return n.items.map(function (x) { return evalNode(x, env); });
+        case "var": return env[n.name];
+        case "assign": {
+          const v = evalNode(n.value, env);
+          env[n.name] = v;
+          return v;
+        }
+        case "neg": return -computeAsNumber(evalNode(n.v, env), "-");
+        case "not": {
+          const v = evalNode(n.v, env);
+          if (typeof v !== "boolean") throw computeFail("compute error: not needs a boolean");
+          return !v;
+        }
+        case "index": return computeIndex(evalNode(n.obj, env), evalNode(n.idx, env));
+        case "call": {
+          const args = n.args.map(function (x) { return evalNode(x, env); });
+          return computeCall(n.name, args);
+        }
+        case "bin": {
+          if (n.op === "and" || n.op === "or") {
+            const a = evalNode(n.a, env);
+            if (typeof a !== "boolean") {
+              throw computeFail("compute error: " + n.op + " needs a boolean");
+            }
+            if (n.op === "and" && !a) return false;
+            if (n.op === "or" && a) return true;
+            const b = evalNode(n.b, env);
+            if (typeof b !== "boolean") {
+              throw computeFail("compute error: " + n.op + " needs a boolean");
+            }
+            return b;
+          }
+          return computeBinary(n.op, evalNode(n.a, env), evalNode(n.b, env));
+        }
+        default: throw computeFail("compute error: unknown node");
+      }
+    };
+
+    try {
+      const nodes = [];
+      for (let i = 0; i < parts.length; i++) {
+        toks = computeTokens(parts[i]);
+        pos = 0;
+        nodes.push(parseStatement());
+        if (toks[pos].t !== "end") {
+          throw computeFail('compute error: unexpected "' + String(toks[pos].v) + '"');
+        }
+      }
+      const env = Object.create(null);
+      let value = null;
+      for (let i = 0; i < nodes.length; i++) value = evalNode(nodes[i], env);
+      const outText = computeRender(value, true);
+      const outChars = computeChars(outText).length;
+      if (caps.resultChars && outChars > caps.resultChars) {
+        return fail("compute refused: result is " + outChars
+          + " chars, over computeResultChars (" + caps.resultChars + ")",
+          "computeResultChars");
+      }
+      return { ok: true, text: outText, value: value, ops: ops,
+               vars: Object.keys(declared).length, statements: parts.length };
+    } catch (e) {
+      if (e && e.compute) {
+        return { ok: false, error: e.message, cap: e.cap || "", ops: ops,
+                 vars: Object.keys(declared).length, statements: parts.length };
+      }
+      throw e;
+    }
+  }
+
+  function computeLimits() {
+    return Object.assign({}, COMPUTE_CAPS);
+  }
+
+  function evalExpr(src) {
+    const out = computeRun(src, COMPUTE_CAPS);
+    if (!out.ok) throw new Error(out.error);
+    return out.text;
   }
 
   /* ------------------------------------------------------------ utils --- */
@@ -2762,6 +3501,12 @@
       ["explainChars", "one project or plan explanation"],
       ["explainFiles", "files listed per explanation"],
       ["explainEdits", "recent edits listed per explanation"],
+      ["computeChars", "one pure-compute script"],
+      ["computeStatements", "statements in one script"],
+      ["computeOps", "evaluated nodes in one script"],
+      ["computeVars", "local variables in one script"],
+      ["computeMs", "wall budget for one script"],
+      ["computeResultChars", "rendered result of one script"],
       ["repairPasses", "repair passes per failed plan"],
       ["traceBytes", "stored reasoning trace"],
       ["blockBytes", "verbatim block"],
@@ -3923,6 +4668,8 @@
     catalog: catalog,
     limits: LIMITS,
     limitsText: limitsText,
+    compute: function (src, limits, clock) { return computeRun(src, limits, clock); },
+    computeLimits: computeLimits,
     splitPrompt: splitPrompt,
     splitPromptInfo: splitPromptInfo,
     planPreview: planPreview,
