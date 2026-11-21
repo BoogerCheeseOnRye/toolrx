@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "intents": {
+    "index": {
+      "op": "workspace.index",
+      "summary": "show the bounded cross-project workspace index",
+      "example": "show the workspace index",
+      "templates": [],
+      "bare": [
+        "show the workspace index",
+        "show the cross-project index",
+        "show cross-project memory",
+        "show the workspace journal",
+        "show cross project journal",
+        "workspace index",
+        "cross-project index",
+        "what is in the workspace index",
+        "what do you remember across projects",
+        "list the workspace index"
+      ]
+    },
+    "themes": {
+      "op": "workspace.themes",
+      "summary": "list the theme, kind, and seed of every indexed project",
+      "example": "what themes have i used across projects",
+      "templates": [],
+      "bare": [
+        "what themes have i used across projects",
+        "what themes have i used in this workspace",
+        "what themes are in the workspace",
+        "which themes did i use across projects",
+        "which themes have i used across projects",
+        "which themes are used across projects",
+        "list themes across projects",
+        "show themes across projects",
+        "themes across projects"
+      ]
+    },
+    "decisions": {
+      "op": "workspace.decisions",
+      "summary": "find a decision about a topic across projects or the last builds",
+      "example": "show decisions about art style in the last three builds",
+      "templates": [
+        "show decisions about {topic} across projects",
+        "show {topic} decisions across projects",
+        "what did i decide about {topic} across projects",
+        "what did we decide about {topic} across projects",
+        "what have we decided about {topic} across projects",
+        "cross-project decisions about {topic}",
+        "decisions about {topic} across projects",
+        "show decisions about {topic} in the last {limit} builds",
+        "show {topic} decisions in the last {limit} builds",
+        "what did i decide about {topic} in the last {limit} builds",
+        "what did we decide about {topic} in the last {limit} builds",
+        "decisions about {topic} in the last {limit} builds"
+      ],
+      "bare": []
+    },
+    "export": {
+      "op": "workspace.export.index",
+      "summary": "export the workspace bundle with the cross-project index included",
+      "example": "export the workspace with the index",
+      "templates": [],
+      "bare": [
+        "export the workspace with the index",
+        "export the workspace index",
+        "export the workspace including the index",
+        "include the index in the workspace bundle"
+      ]
+    }
+  }
+}

@@ -44,5 +44,10 @@
   "journalEntries": 24,
   "journalBytes": 4096,
   "journalText": 240,
+  "workspaceProjects": 24,
+  "workspaceTopics": 8,
+  "workspaceRows": 12,
+  "workspaceIndexBytes": 8192,
+  "workspaceChars": 4000,
   "styleChars": 600
 }

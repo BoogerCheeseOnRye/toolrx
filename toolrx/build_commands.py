@@ -23,6 +23,7 @@ import paraphrase  # noqa: E402  (step 48: one table for catalog + centroids)
 import thinking  # noqa: E402  (step 53: one table for thinking routes)
 import repair  # noqa: E402  (step 54: one table for repair routes)
 import journal  # noqa: E402  (step 56: one table for journal routes)
+import workspace  # noqa: E402  (step 64: cross-project workspace routes)
 import resume  # noqa: E402  (step 57: one table for resume routes)
 import style  # noqa: E402  (step 58: one table for response-style routes)
 import explain  # noqa: E402  (step 61: one table for explain routes)
@@ -1547,6 +1548,14 @@ for _entry in repair.entries():
 # command always wins; the handler skips the failed step and runs only the
 # pending suffix.
 for _entry in resume.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# ------------------------------------------------------------ workspace ----
+# Step 64: cross-project queries read the derived workspace index. The block
+# lands before the journal routes so "across projects" wins over the generic
+# journal template; a plain "what did we decide about X" still falls through.
+for _entry in workspace.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

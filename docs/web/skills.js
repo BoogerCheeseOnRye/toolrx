@@ -1814,6 +1814,20 @@
     return "journal cleared · files, plan, context, and conversation are untouched";
   }
 
+  /* ---------------------------------------------------------- workspace ---- */
+  /* Step 64: cross-project answers read the derived index, never another
+   * project's context. The sandbox builds the state; this module only renders
+   * the bounded result. */
+  function workspaceModule() { return root.toolrxWorkspace || null; }
+
+  function workspaceRender(kind, args, ctx) {
+    const W = workspaceModule();
+    if (!W) throw new Error("the workspace module is not loaded");
+    const state = ctx && typeof ctx.workspace === "function"
+      ? ctx.workspace() : null;
+    return W.render(kind, state || { projects: [] }, args || {});
+  }
+
   /* ------------------------------------------------------- conversation ---- */
   /* Step 47. Short replies are exact catalog routes, but they need the previous
    * turn. The state lives beside facts and notes in the same small memory
@@ -3377,6 +3391,13 @@
     "journal.show": function (a, ctx) { return journalShow(ctx); },
     "journal.query": function (a, ctx) { return journalQuery(a, ctx); },
     "journal.clear": function (a, ctx) { return journalClear(ctx); },
+    "workspace.index": function (a, ctx) { return workspaceRender("index", {}, ctx); },
+    "workspace.themes": function (a, ctx) { return workspaceRender("themes", {}, ctx); },
+    "workspace.decisions": function (a, ctx) { return workspaceRender("decisions", a, ctx); },
+    "workspace.export.index": function (a, ctx) {
+      if (!ctx.project) throw new Error("projects need the browser workspace");
+      return ctx.project.exportWorkspaceIndex();
+    },
     "style.show": function (a, ctx) {
       const S = root.toolrxStyle;
       const name = ctx && typeof ctx.style === "function" ? ctx.style() : "concise";
@@ -3533,6 +3554,11 @@
       ["journalEntries", "decisions kept per project"],
       ["journalBytes", "serialized project journal"],
       ["journalText", "one journal entry"],
+      ["workspaceProjects", "projects in one workspace index"],
+      ["workspaceTopics", "topics per indexed project"],
+      ["workspaceRows", "rows in one cross-project answer"],
+      ["workspaceIndexBytes", "serialized workspace index"],
+      ["workspaceChars", "one cross-project answer"],
       ["styleChars", "response wrapper per result"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "

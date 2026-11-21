@@ -47,6 +47,11 @@
   "thinkRules": 12,
   "traceBytes": 2048,
   "undoDepth": 16,
-  "version": 1
+  "version": 1,
+  "workspaceChars": 4000,
+  "workspaceIndexBytes": 8192,
+  "workspaceProjects": 24,
+  "workspaceRows": 12,
+  "workspaceTopics": 8
 });
 })(typeof self !== "undefined" ? self : this);

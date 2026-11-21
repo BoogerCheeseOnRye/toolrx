@@ -49,6 +49,11 @@ Ranges (the human-facing contract):
   journalEntries   4–128  decisions kept per project
   journalBytes     512–65,536  serialized project journal
   journalText      80–2,000  one journal entry
+  workspaceProjects 1–200  projects in one workspace index
+  workspaceTopics  1–32  journal topics per indexed project
+  workspaceRows    1–100  rows in one cross-project answer
+  workspaceIndexBytes 512–65,536  serialized workspace index
+  workspaceChars   256–32,000  one cross-project answer
   styleChars       80–8,000  response wrapper added to one exact result
 """
 
@@ -103,6 +108,11 @@ _RANGES = {
     "journalEntries": (4, 128),
     "journalBytes": (512, 65_536),
     "journalText": (80, 2_000),
+    "workspaceProjects": (1, 200),
+    "workspaceTopics": (1, 32),
+    "workspaceRows": (1, 100),
+    "workspaceIndexBytes": (512, 65_536),
+    "workspaceChars": (256, 32_000),
     "styleChars": (80, 8_000),
 }
 

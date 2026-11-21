@@ -512,8 +512,8 @@
     return JSON.stringify(projectDoc(p), null, 2);
   }
 
-  function exportWorkspace() {
-    return JSON.stringify({
+  function exportWorkspace(withIndex) {
+    const doc = {
       format: "toolrx.workspace",
       version: 1,
       exported: new Date().toISOString(),
@@ -523,7 +523,11 @@
       }),
       limits: Object.assign({}, LIMITS),
       settings: settingsSnapshot(),
-    }, null, 2);
+    };
+    // Step 64: the derived index rides along only when a route asks for it.
+    const W = workspaceModule();
+    if (withIndex && W) doc.index = W.build(workspaceState());
+    return JSON.stringify(doc, null, 2);
   }
 
   function checkBundleVersion(doc, format, low, high) {
@@ -655,11 +659,19 @@
       throw new Error("that project is too large to import (" + budget.why + ")");
     }
     const name = String(src.name || "Imported project").trim().slice(0, 60) || "Imported project";
+    // Keep the original timestamps when the bundle carries them, so a
+    // workspace index exported from this bundle rebuilds byte-identically.
+    const now = Date.now();
+    const stamp = function (value) {
+      return typeof value === "number" && isFinite(value) && value >= 0
+        ? Math.floor(value) : now;
+    };
     const p = {
       slug: slug, name: name,
       kind: String(src.kind || "imported").slice(0, 40),
       desc: String(src.desc || "").slice(0, 300),
-      files: files, bundled: "", created: Date.now(), updated: Date.now(),
+      files: files, bundled: "",
+      created: stamp(src.created), updated: stamp(src.updated),
     };
     if (src.spec && typeof src.spec === "object") p.spec = src.spec;
     return { project: p, context: stageContext(src.context),
@@ -759,6 +771,20 @@
       }
       return stageProject(src, slug);
     });
+    const want = String(parsed.doc.active || "");
+    // Step 64: an optional index must match the projects it came with, byte for
+    // byte, before anything is written. A stale or hand-edited index is refused.
+    const W = workspaceModule();
+    if (W && parsed.doc.index != null) {
+      const checked = W.importDoc(parsed.doc.index);
+      if (!checked.ok) {
+        throw new Error("that workspace index is invalid: " + checked.why);
+      }
+      const rebuilt = W.build(workspaceStateFor(staged, want));
+      if (W.exportDoc(checked.index) !== W.exportDoc(rebuilt)) {
+        throw new Error("that workspace index does not match its projects — refusing a stale index");
+      }
+    }
     // All-or-none: snapshot the workspace, then restore it on any failure.
     const before = {
       active: projects.active,
@@ -767,7 +793,6 @@
     };
     try {
       staged.forEach(function (s) { projects.items[s.project.slug] = s.project; });
-      const want = String(parsed.doc.active || "");
       projects.active = staged.some(function (s) { return s.project.slug === want; })
         ? want : staged[0].project.slug;
       staged.forEach(function (s) { s.project.bundled = bundleProject(s.project); });
@@ -829,12 +854,13 @@
       + key;
   }
 
-  function exportWorkspaceBundle() {
-    const text = exportWorkspace();
+  function exportWorkspaceBundle(withIndex) {
+    const text = exportWorkspace(withIndex);
     const key = saveBundle("workspace", text);
     const n = Object.keys(projects.items).length;
     return "exported workspace · " + n + " project" + (n === 1 ? "" : "s") + " · "
       + bytesOf(text).toLocaleString() + " B · sha " + shortSha(text)
+      + (withIndex ? " · index included" : "")
       + "\nbundle " + key + " saved in this tab"
       + "\nimport it with: import the workspace from " + key;
   }
@@ -2497,9 +2523,56 @@
       exportBundle: function (ref) { return exportProjectBundle(ref); },
       importBundle: function (name) { return importProjectNamed(name); },
       exportWorkspace: function () { return exportWorkspaceBundle(); },
+      exportWorkspaceIndex: function () { return exportWorkspaceBundle(true); },
       importWorkspace: function (name) { return importWorkspaceNamed(name); },
       bundles: function () { return bundleList(); },
+      workspace: function () { return workspaceState(); },
       active: function () { return activeProject(); },
+    };
+  }
+
+  /* Step 64: the workspace index is derived from the live project list plus
+   * each project's own journal. Context is never read, so a project switch can
+   * never leak another project's context into a cross-project answer. */
+  function workspaceModule() { return root.toolrxWorkspace || null; }
+
+  function workspaceState() {
+    const J = journalModule();
+    return {
+      active: projects.active || "",
+      projects: Object.keys(projects.items).sort().map(function (slug) {
+        const p = projects.items[slug];
+        return {
+          slug: p.slug,
+          name: p.name,
+          kind: p.kind,
+          theme: htmlTheme(p.files["index.html"]) || "dark",
+          seed: p.spec && p.spec.seed != null ? (p.spec.seed >>> 0) : null,
+          updated: p.updated || 0,
+          journal: J ? J.exportFor(slug) : [],
+        };
+      }),
+    };
+  }
+
+  /* The same shape for a workspace that is staged but not yet written, so an
+   * imported index can be compared with the index the projects would rebuild. */
+  function workspaceStateFor(staged, active) {
+    const list = Array.isArray(staged) ? staged : [];
+    return {
+      active: String(active || ""),
+      projects: list.map(function (s) {
+        const p = (s && s.project) || s || {};
+        return {
+          slug: p.slug,
+          name: p.name,
+          kind: p.kind,
+          theme: htmlTheme(p.files && p.files["index.html"]) || "dark",
+          seed: p.spec && p.spec.seed != null ? (p.spec.seed >>> 0) : null,
+          updated: p.updated || 0,
+          journal: s && Array.isArray(s.journal) ? s.journal : [],
+        };
+      }),
     };
   }
 
@@ -2853,6 +2926,7 @@
         return t.brief(kind, desc);
       },
       project: projectContext(),
+      workspace: function () { return workspaceState(); },
       chat: function (who, text) { return chatAppend(who, text); },
       history: function () { return chatHistory(); },
       memory: {

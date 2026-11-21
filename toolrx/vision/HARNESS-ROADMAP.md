@@ -1749,7 +1749,7 @@ identical bytes; `%` uses `fmod` on both sides. The fixture is 80 cases over
 results, errors, cap refusals, and operation counts, and it is replayed through
 Node and Python on every suite run.
 
-### 64. Cross-project memory and workspace journal
+### 64. Cross-project memory and workspace journal — done
 
 Extend the per-project journal into an optional workspace-level journal and a
 light cross-project index. It stays fully local, capped, and inspectable, and it
@@ -1765,6 +1765,26 @@ never merges one project's context into another's.
 caps, a project switch cannot leak another project's context, the index is
 exported and re-imported byte-identically, a deleted project is removed from
 the index, and tests cover the capped and empty cases.
+
+Landed as a derived index, not a second copy of the journals.
+`toolrx/workspace.json` is the only source of the 35 `workspace.*` routes;
+`toolrx/workspace.py` expands it into catalog entries and a 35-case,
+15-state fixture, and `toolrx/web/workspace.js` is the byte-identical twin.
+The index reads the project list plus each project's own journal and keeps only
+the newest `build` line and the sorted topic names, so full entries stay in
+their per-project journals and project context is never read. The five caps are
+`workspaceProjects` (24), `workspaceTopics` (8), `workspaceRows` (12),
+`workspaceIndexBytes` (8,192), and `workspaceChars` (4,000); drops are reported
+in the index and in the rendered answer. The routes are inserted before the
+journal block, so "what did we decide about art style across projects" wins over
+the generic journal template while "what did we decide about art style" still
+reaches `journal.query`. A workspace bundle carries the index only when
+`export the workspace with the index` asks for it; import validates the optional
+index against the staged projects and refuses a stale one, and `stageProject`
+preserves the bundle timestamps so the rebuilt index matches byte for byte.
+`tests/test_workspace.py` pins the table, the Python/JS parity, the caps, the
+empty and capped states, cross-project themes and decisions, deletion, context
+isolation, the bundle round-trip, and the no-network rule.
 
 ### 65. Operator dashboard upgrades
 

@@ -1,0 +1,4373 @@
+{
+  "version": 1,
+  "count": 35,
+  "ops": {
+    "workspace.decisions": 12,
+    "workspace.export.index": 4,
+    "workspace.index": 10,
+    "workspace.themes": 9
+  },
+  "caps": {
+    "projects": 24,
+    "topics": 8,
+    "rows": 12,
+    "bytes": 8192,
+    "chars": 4000,
+    "journalText": 240
+  },
+  "cases": [
+    {
+      "text": "cross-project decisions about art style",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "decisions about art style across projects",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "decisions about art style in the last three builds",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "show art style decisions across projects",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "show art style decisions in the last three builds",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "show decisions about art style across projects",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "show decisions about art style in the last three builds",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "what did i decide about art style across projects",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "what did i decide about art style in the last three builds",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "what did we decide about art style across projects",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "what did we decide about art style in the last three builds",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "what have we decided about art style across projects",
+      "op": "workspace.decisions",
+      "args": {
+        "topic": "art style"
+      },
+      "mode": "decisions"
+    },
+    {
+      "text": "export the workspace including the index",
+      "op": "workspace.export.index",
+      "args": {},
+      "mode": "export.index"
+    },
+    {
+      "text": "export the workspace index",
+      "op": "workspace.export.index",
+      "args": {},
+      "mode": "export.index"
+    },
+    {
+      "text": "export the workspace with the index",
+      "op": "workspace.export.index",
+      "args": {},
+      "mode": "export.index"
+    },
+    {
+      "text": "include the index in the workspace bundle",
+      "op": "workspace.export.index",
+      "args": {},
+      "mode": "export.index"
+    },
+    {
+      "text": "cross-project index",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "list the workspace index",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "show cross project journal",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "show cross-project memory",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "show the cross-project index",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "show the workspace index",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "show the workspace journal",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "what do you remember across projects",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "what is in the workspace index",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "workspace index",
+      "op": "workspace.index",
+      "args": {},
+      "mode": "index"
+    },
+    {
+      "text": "list themes across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "show themes across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "themes across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "what themes are in the workspace",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "what themes have i used across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "what themes have i used in this workspace",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "which themes are used across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "which themes did i use across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    },
+    {
+      "text": "which themes have i used across projects",
+      "op": "workspace.themes",
+      "args": {},
+      "mode": "themes"
+    }
+  ],
+  "states": [
+    {
+      "name": "empty",
+      "kind": "index",
+      "args": {},
+      "input": {
+        "active": "",
+        "projects": []
+      },
+      "want": "workspace index · empty\nno projects yet — build something first\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "empty",
+      "kind": "themes",
+      "args": {},
+      "input": {
+        "active": "",
+        "projects": []
+      },
+      "want": "workspace themes · empty\nno projects yet — build something first\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "empty",
+      "kind": "decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "input": {
+        "active": "",
+        "projects": []
+      },
+      "want": "workspace decisions · empty\nno projects yet — build something first\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "empty",
+      "kind": "decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "2"
+      },
+      "input": {
+        "active": "",
+        "projects": []
+      },
+      "want": "workspace decisions · empty\nno projects yet — build something first\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "empty",
+      "kind": "decisions",
+      "args": {
+        "topic": "nonsense",
+        "limit": "three"
+      },
+      "input": {
+        "active": "",
+        "projects": []
+      },
+      "want": "workspace decisions · empty\nno projects yet — build something first\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "three-projects",
+      "kind": "index",
+      "args": {},
+      "input": {
+        "active": "beta",
+        "projects": [
+          {
+            "slug": "alpha",
+            "name": "Alpha",
+            "kind": "platformer",
+            "theme": "dark",
+            "seed": 123,
+            "updated": 3000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre platformer · seed 123 · 5 files",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "rejection",
+                "topic": "plan budget",
+                "text": "dropped 1 step(s) for steps",
+                "source": "plan.variant"
+              }
+            ]
+          },
+          {
+            "slug": "beta",
+            "name": "Beta",
+            "kind": "notebook",
+            "theme": "light",
+            "seed": 42,
+            "updated": 2000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "preference",
+                "topic": "favorite color",
+                "text": "teal",
+                "source": "memory.remember"
+              },
+              {
+                "seq": 2,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre notebook · seed 42 · 5 files",
+                "source": "build"
+              }
+            ]
+          },
+          {
+            "slug": "gamma",
+            "name": "Gamma",
+            "kind": "datadash",
+            "theme": "dark",
+            "seed": null,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre datadash · seed 7 · 6 files",
+                "source": "build"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace index · 3 projects · 5 topics · cap 24 projects · 8192 bytes\n  alpha · Alpha · platformer · dark · seed 123 · topics art style, plan budget\n    last build: genre platformer · seed 123 · 5 files\n  beta · Beta · notebook · light · seed 42 · topics art style, favorite color\n    last build: genre notebook · seed 42 · 5 files\n  gamma · Gamma · datadash · dark · seed n/a · topics art style\n    last build: genre datadash · seed 7 · 6 files\nnotes: none\nsource: project files + per-project journals · context is never read · r.index\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "three-projects",
+      "kind": "themes",
+      "args": {},
+      "input": {
+        "active": "beta",
+        "projects": [
+          {
+            "slug": "alpha",
+            "name": "Alpha",
+            "kind": "platformer",
+            "theme": "dark",
+            "seed": 123,
+            "updated": 3000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre platformer · seed 123 · 5 files",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "rejection",
+                "topic": "plan budget",
+                "text": "dropped 1 step(s) for steps",
+                "source": "plan.variant"
+              }
+            ]
+          },
+          {
+            "slug": "beta",
+            "name": "Beta",
+            "kind": "notebook",
+            "theme": "light",
+            "seed": 42,
+            "updated": 2000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "preference",
+                "topic": "favorite color",
+                "text": "teal",
+                "source": "memory.remember"
+              },
+              {
+                "seq": 2,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre notebook · seed 42 · 5 files",
+                "source": "build"
+              }
+            ]
+          },
+          {
+            "slug": "gamma",
+            "name": "Gamma",
+            "kind": "datadash",
+            "theme": "dark",
+            "seed": null,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre datadash · seed 7 · 6 files",
+                "source": "build"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace themes · 3 projects\n  alpha · dark · platformer · seed 123\n  beta · light · notebook · seed 42\n  gamma · dark · datadash · seed n/a\ncap 12 rows · workspaceRows · r.themes"
+    },
+    {
+      "name": "three-projects",
+      "kind": "decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "input": {
+        "active": "beta",
+        "projects": [
+          {
+            "slug": "alpha",
+            "name": "Alpha",
+            "kind": "platformer",
+            "theme": "dark",
+            "seed": 123,
+            "updated": 3000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre platformer · seed 123 · 5 files",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "rejection",
+                "topic": "plan budget",
+                "text": "dropped 1 step(s) for steps",
+                "source": "plan.variant"
+              }
+            ]
+          },
+          {
+            "slug": "beta",
+            "name": "Beta",
+            "kind": "notebook",
+            "theme": "light",
+            "seed": 42,
+            "updated": 2000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "preference",
+                "topic": "favorite color",
+                "text": "teal",
+                "source": "memory.remember"
+              },
+              {
+                "seq": 2,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre notebook · seed 42 · 5 files",
+                "source": "build"
+              }
+            ]
+          },
+          {
+            "slug": "gamma",
+            "name": "Gamma",
+            "kind": "datadash",
+            "theme": "dark",
+            "seed": null,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre datadash · seed 7 · 6 files",
+                "source": "build"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace decisions · \"art style\" · last 3 builds · 3 matches\n  alpha · #1 decision · art style · genre platformer · seed 123 · 5 files · via build\n  beta · #2 decision · art style · genre notebook · seed 42 · 5 files · via build\n  gamma · #1 decision · art style · genre datadash · seed 7 · 6 files · via build\ncap 12 rows · searched 3 projects · r.decisions"
+    },
+    {
+      "name": "three-projects",
+      "kind": "decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "2"
+      },
+      "input": {
+        "active": "beta",
+        "projects": [
+          {
+            "slug": "alpha",
+            "name": "Alpha",
+            "kind": "platformer",
+            "theme": "dark",
+            "seed": 123,
+            "updated": 3000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre platformer · seed 123 · 5 files",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "rejection",
+                "topic": "plan budget",
+                "text": "dropped 1 step(s) for steps",
+                "source": "plan.variant"
+              }
+            ]
+          },
+          {
+            "slug": "beta",
+            "name": "Beta",
+            "kind": "notebook",
+            "theme": "light",
+            "seed": 42,
+            "updated": 2000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "preference",
+                "topic": "favorite color",
+                "text": "teal",
+                "source": "memory.remember"
+              },
+              {
+                "seq": 2,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre notebook · seed 42 · 5 files",
+                "source": "build"
+              }
+            ]
+          },
+          {
+            "slug": "gamma",
+            "name": "Gamma",
+            "kind": "datadash",
+            "theme": "dark",
+            "seed": null,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre datadash · seed 7 · 6 files",
+                "source": "build"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace decisions · \"art style\" · last 2 builds · 2 matches\n  alpha · #1 decision · art style · genre platformer · seed 123 · 5 files · via build\n  beta · #2 decision · art style · genre notebook · seed 42 · 5 files · via build\ncap 12 rows · searched 2 projects · r.decisions"
+    },
+    {
+      "name": "three-projects",
+      "kind": "decisions",
+      "args": {
+        "topic": "nonsense",
+        "limit": "three"
+      },
+      "input": {
+        "active": "beta",
+        "projects": [
+          {
+            "slug": "alpha",
+            "name": "Alpha",
+            "kind": "platformer",
+            "theme": "dark",
+            "seed": 123,
+            "updated": 3000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre platformer · seed 123 · 5 files",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "rejection",
+                "topic": "plan budget",
+                "text": "dropped 1 step(s) for steps",
+                "source": "plan.variant"
+              }
+            ]
+          },
+          {
+            "slug": "beta",
+            "name": "Beta",
+            "kind": "notebook",
+            "theme": "light",
+            "seed": 42,
+            "updated": 2000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "preference",
+                "topic": "favorite color",
+                "text": "teal",
+                "source": "memory.remember"
+              },
+              {
+                "seq": 2,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre notebook · seed 42 · 5 files",
+                "source": "build"
+              }
+            ]
+          },
+          {
+            "slug": "gamma",
+            "name": "Gamma",
+            "kind": "datadash",
+            "theme": "dark",
+            "seed": null,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "art style",
+                "text": "genre datadash · seed 7 · 6 files",
+                "source": "build"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace decisions · nothing about \"nonsense\" yet · 3 projects searched\nknown topics: art style, favorite color, plan budget\ncap 12 rows · r.decisions"
+    },
+    {
+      "name": "wide",
+      "kind": "index",
+      "args": {},
+      "input": {
+        "active": "",
+        "projects": [
+          {
+            "slug": "p00",
+            "name": "Project 0",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 0,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 0",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 0",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p01",
+            "name": "Project 1",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 1,
+            "updated": 999,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 1",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 1",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p02",
+            "name": "Project 2",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 2,
+            "updated": 998,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 2",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 2",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p03",
+            "name": "Project 3",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 3,
+            "updated": 997,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 3",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 3",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p04",
+            "name": "Project 4",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 4,
+            "updated": 996,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 4",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 4",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p05",
+            "name": "Project 5",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 5,
+            "updated": 995,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 5",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 5",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p06",
+            "name": "Project 6",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 6,
+            "updated": 994,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 6",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 6",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p07",
+            "name": "Project 7",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 7,
+            "updated": 993,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 7",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 7",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p08",
+            "name": "Project 8",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 8,
+            "updated": 992,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 8",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 8",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p09",
+            "name": "Project 9",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 9,
+            "updated": 991,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 9",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 9",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p10",
+            "name": "Project 10",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 10,
+            "updated": 990,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 10",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 10",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p11",
+            "name": "Project 11",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 11,
+            "updated": 989,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 11",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 11",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p12",
+            "name": "Project 12",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 12,
+            "updated": 988,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 12",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 12",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p13",
+            "name": "Project 13",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 13,
+            "updated": 987,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 13",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 13",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p14",
+            "name": "Project 14",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 14,
+            "updated": 986,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 14",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 14",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p15",
+            "name": "Project 15",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 15,
+            "updated": 985,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 15",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 15",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p16",
+            "name": "Project 16",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 16,
+            "updated": 984,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 16",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 16",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p17",
+            "name": "Project 17",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 17,
+            "updated": 983,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 17",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 17",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p18",
+            "name": "Project 18",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 18,
+            "updated": 982,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 18",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 18",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p19",
+            "name": "Project 19",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 19,
+            "updated": 981,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 19",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 19",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p20",
+            "name": "Project 20",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 20,
+            "updated": 980,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 20",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 20",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p21",
+            "name": "Project 21",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 21,
+            "updated": 979,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 21",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 21",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p22",
+            "name": "Project 22",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 22,
+            "updated": 978,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 22",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 22",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p23",
+            "name": "Project 23",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 23,
+            "updated": 977,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 23",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 23",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p24",
+            "name": "Project 24",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 24,
+            "updated": 976,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 24",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 24",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p25",
+            "name": "Project 25",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 25,
+            "updated": 975,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 25",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 25",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p26",
+            "name": "Project 26",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 26,
+            "updated": 974,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 26",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 26",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p27",
+            "name": "Project 27",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 27,
+            "updated": 973,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 27",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 27",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p28",
+            "name": "Project 28",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 28,
+            "updated": 972,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 28",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 28",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p29",
+            "name": "Project 29",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 29,
+            "updated": 971,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 29",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 29",
+                "source": "memory.remember"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace index · 24 projects · 48 topics · cap 24 projects · 8192 bytes\n  p00 · Project 0 · notes · dark · seed 0 · topics topic 0, topic 1\n    last build: decision number 0\n  p01 · Project 1 · notes · light · seed 1 · topics topic 1, topic 2\n    last build: decision number 1\n  p02 · Project 2 · notes · dark · seed 2 · topics topic 2, topic 3\n    last build: decision number 2\n  p03 · Project 3 · notes · light · seed 3 · topics topic 3, topic 4\n    last build: decision number 3\n  p04 · Project 4 · notes · dark · seed 4 · topics topic 4, topic 5\n    last build: decision number 4\n  p05 · Project 5 · notes · light · seed 5 · topics topic 5, topic 6\n    last build: decision number 5\n  p06 · Project 6 · notes · dark · seed 6 · topics topic 6, topic 7\n    last build: decision number 6\n  p07 · Project 7 · notes · light · seed 7 · topics topic 7, topic 8\n    last build: decision number 7\n  p08 · Project 8 · notes · dark · seed 8 · topics topic 8, topic 9\n    last build: decision number 8\n  p09 · Project 9 · notes · light · seed 9 · topics topic 10, topic 9\n    last build: decision number 9\n  p10 · Project 10 · notes · dark · seed 10 · topics topic 10, topic 11\n    last build: decision number 10\n  p11 · Project 11 · notes · light · seed 11 · topics topic 0, topic 11\n    last build: decision number 11\n  p12 · Project 12 · notes · dark · seed 12 · topics topic 0, topic 1\n    last build: decision number 12\n  p13 · Project 13 · notes · light · seed 13 · topics topic 1, topic 2\n    last build: decision number 13\n  p14 · Project 14 · notes · dark · seed 14 · topics topic 2, topic 3\n    last build: decision number 14\n  p15 · Project 15 · notes · light · seed 15 · topics topic 3, topic 4\n    last build: decision number 15\n  p16 · Project 16 · notes · dark · seed 16 · topics topic 4, topic 5\n    last build: decision number 16\n  p17 · Project 17 · notes · light · seed 17 · topics topic 5, topic 6\n    last build: decision number 17\n  p18 · Project 18 · notes · dark · seed 18 · topics topic 6, topic 7\n    last build: decision number 18\n  p19 · Project 19 · notes · light · seed 19 · topics topic 7, topic 8\n    last build: decision number 19\n  p20 · Project 20 · notes · dark · seed 20 · topics topic 8, topic 9\n    last build: decision number 20\n  p21 · Project 21 · notes · light · seed 21 · topics topic 10, topic 9\n    last build: decision number 21\n  p22 · Project 22 · notes · dark · seed 22 · topics topic 10, topic 11\n    last build: decision number 22\n  p23 · Project 23 · notes · light · seed 23 · topics topic 0, topic 11\n    last build: decision number 23\nnotes: 6 projects dropped at the workspaceProjects cap\nsource: project files + per-project journals · context is never read · r.index\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "wide",
+      "kind": "themes",
+      "args": {},
+      "input": {
+        "active": "",
+        "projects": [
+          {
+            "slug": "p00",
+            "name": "Project 0",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 0,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 0",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 0",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p01",
+            "name": "Project 1",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 1,
+            "updated": 999,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 1",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 1",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p02",
+            "name": "Project 2",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 2,
+            "updated": 998,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 2",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 2",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p03",
+            "name": "Project 3",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 3,
+            "updated": 997,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 3",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 3",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p04",
+            "name": "Project 4",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 4,
+            "updated": 996,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 4",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 4",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p05",
+            "name": "Project 5",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 5,
+            "updated": 995,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 5",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 5",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p06",
+            "name": "Project 6",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 6,
+            "updated": 994,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 6",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 6",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p07",
+            "name": "Project 7",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 7,
+            "updated": 993,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 7",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 7",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p08",
+            "name": "Project 8",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 8,
+            "updated": 992,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 8",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 8",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p09",
+            "name": "Project 9",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 9,
+            "updated": 991,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 9",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 9",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p10",
+            "name": "Project 10",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 10,
+            "updated": 990,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 10",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 10",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p11",
+            "name": "Project 11",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 11,
+            "updated": 989,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 11",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 11",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p12",
+            "name": "Project 12",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 12,
+            "updated": 988,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 12",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 12",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p13",
+            "name": "Project 13",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 13,
+            "updated": 987,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 13",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 13",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p14",
+            "name": "Project 14",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 14,
+            "updated": 986,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 14",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 14",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p15",
+            "name": "Project 15",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 15,
+            "updated": 985,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 15",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 15",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p16",
+            "name": "Project 16",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 16,
+            "updated": 984,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 16",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 16",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p17",
+            "name": "Project 17",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 17,
+            "updated": 983,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 17",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 17",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p18",
+            "name": "Project 18",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 18,
+            "updated": 982,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 18",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 18",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p19",
+            "name": "Project 19",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 19,
+            "updated": 981,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 19",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 19",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p20",
+            "name": "Project 20",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 20,
+            "updated": 980,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 20",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 20",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p21",
+            "name": "Project 21",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 21,
+            "updated": 979,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 21",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 21",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p22",
+            "name": "Project 22",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 22,
+            "updated": 978,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 22",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 22",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p23",
+            "name": "Project 23",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 23,
+            "updated": 977,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 23",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 23",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p24",
+            "name": "Project 24",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 24,
+            "updated": 976,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 24",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 24",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p25",
+            "name": "Project 25",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 25,
+            "updated": 975,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 25",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 25",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p26",
+            "name": "Project 26",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 26,
+            "updated": 974,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 26",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 26",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p27",
+            "name": "Project 27",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 27,
+            "updated": 973,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 27",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 27",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p28",
+            "name": "Project 28",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 28,
+            "updated": 972,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 28",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 28",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p29",
+            "name": "Project 29",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 29,
+            "updated": 971,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 29",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 29",
+                "source": "memory.remember"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace themes · 24 projects\n  p00 · dark · notes · seed 0\n  p01 · light · notes · seed 1\n  p02 · dark · notes · seed 2\n  p03 · light · notes · seed 3\n  p04 · dark · notes · seed 4\n  p05 · light · notes · seed 5\n  p06 · dark · notes · seed 6\n  p07 · light · notes · seed 7\n  p08 · dark · notes · seed 8\n  p09 · light · notes · seed 9\n  p10 · dark · notes · seed 10\n  p11 · light · notes · seed 11\n  · … 12 more projects at the workspaceRows cap\ncap 12 rows · workspaceRows · r.themes"
+    },
+    {
+      "name": "wide",
+      "kind": "decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "three"
+      },
+      "input": {
+        "active": "",
+        "projects": [
+          {
+            "slug": "p00",
+            "name": "Project 0",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 0,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 0",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 0",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p01",
+            "name": "Project 1",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 1,
+            "updated": 999,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 1",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 1",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p02",
+            "name": "Project 2",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 2,
+            "updated": 998,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 2",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 2",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p03",
+            "name": "Project 3",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 3,
+            "updated": 997,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 3",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 3",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p04",
+            "name": "Project 4",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 4,
+            "updated": 996,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 4",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 4",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p05",
+            "name": "Project 5",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 5,
+            "updated": 995,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 5",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 5",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p06",
+            "name": "Project 6",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 6,
+            "updated": 994,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 6",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 6",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p07",
+            "name": "Project 7",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 7,
+            "updated": 993,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 7",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 7",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p08",
+            "name": "Project 8",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 8,
+            "updated": 992,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 8",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 8",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p09",
+            "name": "Project 9",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 9,
+            "updated": 991,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 9",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 9",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p10",
+            "name": "Project 10",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 10,
+            "updated": 990,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 10",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 10",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p11",
+            "name": "Project 11",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 11,
+            "updated": 989,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 11",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 11",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p12",
+            "name": "Project 12",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 12,
+            "updated": 988,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 12",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 12",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p13",
+            "name": "Project 13",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 13,
+            "updated": 987,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 13",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 13",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p14",
+            "name": "Project 14",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 14,
+            "updated": 986,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 14",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 14",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p15",
+            "name": "Project 15",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 15,
+            "updated": 985,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 15",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 15",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p16",
+            "name": "Project 16",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 16,
+            "updated": 984,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 16",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 16",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p17",
+            "name": "Project 17",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 17,
+            "updated": 983,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 17",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 17",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p18",
+            "name": "Project 18",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 18,
+            "updated": 982,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 18",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 18",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p19",
+            "name": "Project 19",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 19,
+            "updated": 981,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 19",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 19",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p20",
+            "name": "Project 20",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 20,
+            "updated": 980,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 20",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 20",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p21",
+            "name": "Project 21",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 21,
+            "updated": 979,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 21",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 21",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p22",
+            "name": "Project 22",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 22,
+            "updated": 978,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 22",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 22",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p23",
+            "name": "Project 23",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 23,
+            "updated": 977,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 23",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 23",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p24",
+            "name": "Project 24",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 24,
+            "updated": 976,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 24",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 24",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p25",
+            "name": "Project 25",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 25,
+            "updated": 975,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 25",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 25",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p26",
+            "name": "Project 26",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 26,
+            "updated": 974,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 26",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 26",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p27",
+            "name": "Project 27",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 27,
+            "updated": 973,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 27",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 27",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p28",
+            "name": "Project 28",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 28,
+            "updated": 972,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 28",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 28",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p29",
+            "name": "Project 29",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 29,
+            "updated": 971,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 29",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 29",
+                "source": "memory.remember"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace decisions · nothing about \"art style\" yet · 3 projects searched\nknown topics: topic 0, topic 1, topic 2, topic 3\ncap 12 rows · r.decisions"
+    },
+    {
+      "name": "wide",
+      "kind": "decisions",
+      "args": {
+        "topic": "art style",
+        "limit": "2"
+      },
+      "input": {
+        "active": "",
+        "projects": [
+          {
+            "slug": "p00",
+            "name": "Project 0",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 0,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 0",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 0",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p01",
+            "name": "Project 1",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 1,
+            "updated": 999,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 1",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 1",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p02",
+            "name": "Project 2",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 2,
+            "updated": 998,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 2",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 2",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p03",
+            "name": "Project 3",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 3,
+            "updated": 997,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 3",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 3",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p04",
+            "name": "Project 4",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 4,
+            "updated": 996,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 4",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 4",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p05",
+            "name": "Project 5",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 5,
+            "updated": 995,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 5",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 5",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p06",
+            "name": "Project 6",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 6,
+            "updated": 994,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 6",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 6",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p07",
+            "name": "Project 7",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 7,
+            "updated": 993,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 7",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 7",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p08",
+            "name": "Project 8",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 8,
+            "updated": 992,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 8",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 8",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p09",
+            "name": "Project 9",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 9,
+            "updated": 991,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 9",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 9",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p10",
+            "name": "Project 10",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 10,
+            "updated": 990,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 10",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 10",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p11",
+            "name": "Project 11",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 11,
+            "updated": 989,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 11",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 11",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p12",
+            "name": "Project 12",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 12,
+            "updated": 988,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 12",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 12",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p13",
+            "name": "Project 13",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 13,
+            "updated": 987,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 13",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 13",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p14",
+            "name": "Project 14",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 14,
+            "updated": 986,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 14",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 14",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p15",
+            "name": "Project 15",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 15,
+            "updated": 985,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 15",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 15",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p16",
+            "name": "Project 16",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 16,
+            "updated": 984,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 16",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 16",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p17",
+            "name": "Project 17",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 17,
+            "updated": 983,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 17",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 17",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p18",
+            "name": "Project 18",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 18,
+            "updated": 982,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 18",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 18",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p19",
+            "name": "Project 19",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 19,
+            "updated": 981,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 19",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 19",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p20",
+            "name": "Project 20",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 20,
+            "updated": 980,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 20",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 20",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p21",
+            "name": "Project 21",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 21,
+            "updated": 979,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 21",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 21",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p22",
+            "name": "Project 22",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 22,
+            "updated": 978,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 22",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 22",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p23",
+            "name": "Project 23",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 23,
+            "updated": 977,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 23",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 23",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p24",
+            "name": "Project 24",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 24,
+            "updated": 976,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 24",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 24",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p25",
+            "name": "Project 25",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 25,
+            "updated": 975,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 25",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 25",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p26",
+            "name": "Project 26",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 26,
+            "updated": 974,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 26",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 26",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p27",
+            "name": "Project 27",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 27,
+            "updated": 973,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 27",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 27",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p28",
+            "name": "Project 28",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 28,
+            "updated": 972,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 28",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 28",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p29",
+            "name": "Project 29",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 29,
+            "updated": 971,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 29",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 29",
+                "source": "memory.remember"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace decisions · nothing about \"art style\" yet · 2 projects searched\nknown topics: topic 0, topic 1, topic 2\ncap 12 rows · r.decisions"
+    },
+    {
+      "name": "wide",
+      "kind": "decisions",
+      "args": {
+        "topic": "nonsense",
+        "limit": "three"
+      },
+      "input": {
+        "active": "",
+        "projects": [
+          {
+            "slug": "p00",
+            "name": "Project 0",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 0,
+            "updated": 1000,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 0",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 0",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p01",
+            "name": "Project 1",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 1,
+            "updated": 999,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 1",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 1",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p02",
+            "name": "Project 2",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 2,
+            "updated": 998,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 2",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 2",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p03",
+            "name": "Project 3",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 3,
+            "updated": 997,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 3",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 3",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p04",
+            "name": "Project 4",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 4,
+            "updated": 996,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 4",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 4",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p05",
+            "name": "Project 5",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 5,
+            "updated": 995,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 5",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 5",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p06",
+            "name": "Project 6",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 6,
+            "updated": 994,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 6",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 6",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p07",
+            "name": "Project 7",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 7,
+            "updated": 993,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 7",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 7",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p08",
+            "name": "Project 8",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 8,
+            "updated": 992,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 8",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 8",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p09",
+            "name": "Project 9",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 9,
+            "updated": 991,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 9",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 9",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p10",
+            "name": "Project 10",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 10,
+            "updated": 990,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 10",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 10",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p11",
+            "name": "Project 11",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 11,
+            "updated": 989,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 11",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 11",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p12",
+            "name": "Project 12",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 12,
+            "updated": 988,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 12",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 12",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p13",
+            "name": "Project 13",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 13,
+            "updated": 987,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 13",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 13",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p14",
+            "name": "Project 14",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 14,
+            "updated": 986,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 14",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 14",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p15",
+            "name": "Project 15",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 15,
+            "updated": 985,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 15",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 15",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p16",
+            "name": "Project 16",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 16,
+            "updated": 984,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 16",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 16",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p17",
+            "name": "Project 17",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 17,
+            "updated": 983,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 17",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 17",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p18",
+            "name": "Project 18",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 18,
+            "updated": 982,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 6",
+                "text": "decision number 18",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 7",
+                "text": "preference number 18",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p19",
+            "name": "Project 19",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 19,
+            "updated": 981,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 7",
+                "text": "decision number 19",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 8",
+                "text": "preference number 19",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p20",
+            "name": "Project 20",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 20,
+            "updated": 980,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 8",
+                "text": "decision number 20",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 9",
+                "text": "preference number 20",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p21",
+            "name": "Project 21",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 21,
+            "updated": 979,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 9",
+                "text": "decision number 21",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 10",
+                "text": "preference number 21",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p22",
+            "name": "Project 22",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 22,
+            "updated": 978,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 10",
+                "text": "decision number 22",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 11",
+                "text": "preference number 22",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p23",
+            "name": "Project 23",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 23,
+            "updated": 977,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 11",
+                "text": "decision number 23",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 0",
+                "text": "preference number 23",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p24",
+            "name": "Project 24",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 24,
+            "updated": 976,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 0",
+                "text": "decision number 24",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 1",
+                "text": "preference number 24",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p25",
+            "name": "Project 25",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 25,
+            "updated": 975,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 1",
+                "text": "decision number 25",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 2",
+                "text": "preference number 25",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p26",
+            "name": "Project 26",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 26,
+            "updated": 974,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 2",
+                "text": "decision number 26",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 3",
+                "text": "preference number 26",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p27",
+            "name": "Project 27",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 27,
+            "updated": 973,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 3",
+                "text": "decision number 27",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 4",
+                "text": "preference number 27",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p28",
+            "name": "Project 28",
+            "kind": "notes",
+            "theme": "dark",
+            "seed": 28,
+            "updated": 972,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 4",
+                "text": "decision number 28",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 5",
+                "text": "preference number 28",
+                "source": "memory.remember"
+              }
+            ]
+          },
+          {
+            "slug": "p29",
+            "name": "Project 29",
+            "kind": "notes",
+            "theme": "light",
+            "seed": 29,
+            "updated": 971,
+            "journal": [
+              {
+                "seq": 1,
+                "kind": "decision",
+                "topic": "topic 5",
+                "text": "decision number 29",
+                "source": "build"
+              },
+              {
+                "seq": 2,
+                "kind": "preference",
+                "topic": "topic 6",
+                "text": "preference number 29",
+                "source": "memory.remember"
+              }
+            ]
+          }
+        ]
+      },
+      "want": "workspace decisions · nothing about \"nonsense\" yet · 3 projects searched\nknown topics: topic 0, topic 1, topic 2, topic 3\ncap 12 rows · r.decisions"
+    }
+  ]
+}

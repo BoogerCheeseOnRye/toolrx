@@ -33,14 +33,15 @@
       "text": 434,
       "think": 34,
       "units": 1990,
-      "web": 32
+      "web": 32,
+      "workspace": 35
     },
-    "count": 13373,
+    "count": 13408,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7777
+    "pure_literals": 7800
   },
   "fixtures": {
     "builds": {
