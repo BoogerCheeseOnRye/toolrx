@@ -286,6 +286,22 @@
   #lastRunDetail th,#lastRunDetail td{text-align:left;padding:1px 8px 1px 0;white-space:nowrap}
   #lastRunDetail th{color:var(--text);font-weight:600}
   #lastRunDetail .lr-bad td{color:#ff8a8a}
+  #lastRunDetail .lr-headroom{margin:6px 0;padding:5px 7px;border:1px solid #3a2d12;
+    border-radius:6px;background:#1a150a;color:#fbbf24}
+  #lastRunDetail .lr-why{margin:4px 0 6px;color:var(--muted)}
+  #lastRunDetail .lr-events{margin-top:6px;border-top:1px solid var(--border);padding-top:6px}
+  #lastRunDetail .lr-events ol{margin:4px 0 0;padding-left:18px}
+  #lastRunDetail .lr-event{margin:2px 0;white-space:normal;overflow-wrap:anywhere}
+  #lastRunDetail .lr-event.compact{color:#fbbf24}
+  #lastRunDetail .lr-event.rewrite{color:#93c5fd}
+  #lastRunDetail .lr-event.repair,#lastRunDetail .lr-event.resume{color:#86efac}
+  #lastRunDetail .lr-event.refusal{color:#ff8a8a}
+  #lastRunDetail .lr-actions{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+  #lastRunDetail .lr-actions button{background:var(--panel2);color:var(--text);
+    border:1px solid var(--border);border-radius:6px;padding:4px 8px;font:inherit;cursor:pointer}
+  #lastRunDetail .lr-actions button:focus-visible{outline:1px solid var(--accent)}
+  #lastRunDetail .lr-actions button:disabled{opacity:.45;cursor:not-allowed}
+  #lastRunDetail .lr-status{min-height:1.2em;color:var(--text);margin-top:3px}
   #previewPane{position:relative}
   #previewPane.full{flex:1 0 100%}
 
@@ -910,6 +926,7 @@
 <script src="web/trace.js"></script>
 <script src="web/journal.js"></script>
 <script src="web/workspace.js"></script>
+<script src="web/events.js"></script>
 <script src="web/style.js"></script>
 <script src="web/context.js"></script>
 <script src="web/engine2d.js"></script>
@@ -1415,6 +1432,17 @@ function lastRunStats(stats,digits){
     +' · max '+stats.max.toFixed(digits)+' (n '+stats.n+')';
 }
 let budgetOverKey='';
+let lastActionStatus='';
+const CAP_FOR_BAR={chars:'planChars',steps:'planSteps',context:'contextBytes',
+  project:'projectBytes',time:'planMs'};
+function eventStamp(at){
+  if(!at) return 'no timestamp';
+  try{ return new Date(at).toISOString(); }catch(e){ return 'no timestamp'; }
+}
+function eventLine(e){
+  return '#'+(e.seq||0)+' · '+eventStamp(e.at)+' · '+(e.kind||'event')
+    +' · '+(e.route||'unknown route')+' · '+(e.text||'');
+}
 function budgetBarHTML(bars){
   return (bars||[]).map(function(b){
     const pct=b.max?Math.min(100,Math.round(100*b.used/b.max)):0;
@@ -1502,6 +1530,27 @@ function renderLastRunDetail(box,r){
   meta.className='lr-meta';
   meta.textContent=bits.join('\n');
   box.append(meta);
+  const near=(runBars||[]).filter(function(b){return b.level==='warn'||b.level==='over';});
+  if(near.length){
+    const head=document.createElement('div');
+    head.className='lr-headroom';
+    head.setAttribute('role','status');
+    head.textContent='headroom warning · '+near.map(function(b){
+      return b.label+' '+b.readout+' · '+b.room+' left · cap '+(CAP_FOR_BAR[b.key]||b.key);
+    }).join(' · ');
+    box.append(head);
+  }
+  const ev=(clientMode&&window.toolrxWeb&&window.toolrxWeb.events)
+    ?window.toolrxWeb.events():null;
+  const why=document.createElement('div');
+  why.className='lr-why';
+  const reasons=(ev&&ev.entries?ev.entries:[]).filter(function(e){
+    return e.kind==='compact'||e.kind==='rewrite';
+  }).slice(-3);
+  why.textContent='why compacted / rewritten · '+(reasons.length
+    ? reasons.map(eventLine).join(' · ')
+    : 'no compaction or rewrite event recorded');
+  box.append(why);
   const table=document.createElement('table');
   const thead=document.createElement('thead');
   const headRow=document.createElement('tr');
@@ -1529,6 +1578,82 @@ function renderLastRunDetail(box,r){
   });
   table.append(tbody);
   box.append(table);
+  const panel=document.createElement('div');
+  panel.className='lr-events';
+  panel.setAttribute('role','group');
+  panel.setAttribute('aria-label','operator event stream and actions');
+  const eh=document.createElement('div');
+  eh.className='lr-head';
+  eh.textContent='event stream · '+(ev?ev.count:0)+' stored'
+    +(ev?' · cap '+ev.cap.entries+' entries / '+ev.cap.bytes+' bytes':'')
+    +(ev&&ev.dropped?' · dropped '+ev.dropped+' older':'');
+  panel.append(eh);
+  const ol=document.createElement('ol');
+  ol.setAttribute('aria-label','operator events, oldest first');
+  const rows=(ev&&ev.entries)?ev.entries:[];
+  if(!rows.length){
+    const li=document.createElement('li');
+    li.className='lr-event';
+    li.textContent='no operator events yet · compaction, rewrite, repair, resume, and refusal appear here';
+    ol.append(li);
+  }else{
+    rows.forEach(function(e){
+      const li=document.createElement('li');
+      li.className='lr-event '+(e.kind||'');
+      li.textContent=eventLine(e);
+      ol.append(li);
+    });
+  }
+  panel.append(ol);
+  const acts=document.createElement('div');
+  acts.className='lr-actions';
+  const mk=function(label,aria,disabled,fn){
+    const b=document.createElement('button');
+    b.type='button'; b.textContent=label; b.setAttribute('aria-label',aria);
+    b.disabled=!!disabled; b.addEventListener('click',fn); return b;
+  };
+  const canReplay=!!(r.ok&&r.plan&&Array.isArray(r.plan.steps)
+    &&r.plan.steps.length&&!r.replayedAt);
+  const replay=mk(r.replayedAt?'replay used once':'replay last plan once',
+    canReplay?'replay the last successful plan exactly once'
+      :(r.replayedAt?'this plan was already replayed once':'no successful recorded plan to replay'),
+    !canReplay,function(){
+      replay.disabled=true;
+      lastActionStatus='replay · running the recorded steps once…';
+      const status=panel.querySelector('.lr-status');
+      if(status) status.textContent=lastActionStatus;
+      Promise.resolve(window.toolrxWeb.replayLast()).then(function(out){
+        lastActionStatus=out.text;
+        if(typeof entry==='function') entry('replay',out.text,out.ok?'stat':'err');
+        refreshLastRun();
+      }).catch(function(e){
+        lastActionStatus='replay · '+String(e&&e.message||e);
+        if(typeof entry==='function') entry('replay',lastActionStatus,'err');
+        refreshLastRun();
+      });
+    });
+  acts.append(replay);
+  const exp=mk('export last run + journal',
+    'export the last run and the project journal as a validated bundle',
+    false,function(){
+      try{
+        lastActionStatus=window.toolrxWeb.exportEventsBundle();
+        if(typeof entry==='function') entry('export',lastActionStatus,'stat');
+      }catch(e){
+        lastActionStatus='export · '+String(e&&e.message||e);
+        if(typeof entry==='function') entry('export',lastActionStatus,'err');
+      }
+      refreshLastRun();
+    });
+  acts.append(exp);
+  panel.append(acts);
+  const status=document.createElement('div');
+  status.className='lr-status';
+  status.setAttribute('role','status');
+  status.setAttribute('aria-live','polite');
+  status.textContent=lastActionStatus;
+  panel.append(status);
+  box.append(panel);
 }
 function refreshLastRun(){
   const el=document.getElementById('lastRun');

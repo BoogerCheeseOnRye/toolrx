@@ -552,13 +552,33 @@
       throw new Error("that file is not a toolrx bundle");
     }
     const format = raw.format ? String(raw.format) : "";
-    if (format && format !== "toolrx.project" && format !== "toolrx.workspace") {
+    if (format && format !== "toolrx.project" && format !== "toolrx.workspace"
+        && format !== "toolrx.events") {
       throw new Error("unsupported bundle format \"" + format
-        + "\" (this build reads toolrx.project and toolrx.workspace)");
+        + "\" (this build reads toolrx.project, toolrx.workspace, and "
+        + "toolrx.events)");
     }
     if (format === "toolrx.workspace") {
       checkBundleVersion(raw, "toolrx.workspace", 1, 1);
       return { kind: "workspace", doc: raw };
+    }
+    if (format === "toolrx.events") {
+      checkBundleVersion(raw, "toolrx.events", 1, 1);
+      if (!raw.lastRun && !Array.isArray(raw.journal)
+          && !Array.isArray(raw.events)) {
+        throw new Error("that event bundle has no last run, journal, or events");
+      }
+      if (raw.lastRun != null && (typeof raw.lastRun !== "object"
+          || Array.isArray(raw.lastRun))) {
+        throw new Error("that event bundle has an invalid last run");
+      }
+      if (raw.journal != null && !Array.isArray(raw.journal)) {
+        throw new Error("that event bundle has an invalid journal snapshot");
+      }
+      if (raw.events != null && !Array.isArray(raw.events)) {
+        throw new Error("that event bundle has an invalid event stream");
+      }
+      return { kind: "events", doc: raw };
     }
     if (format === "toolrx.project") {
       checkBundleVersion(raw, "toolrx.project", 1, 2);
@@ -863,6 +883,101 @@
       + (withIndex ? " · index included" : "")
       + "\nbundle " + key + " saved in this tab"
       + "\nimport it with: import the workspace from " + key;
+  }
+
+  /* Step 65: one bundle for the last run, the active project's journal, and
+   * the operator events. It uses the same `parseBundle` validator on import. */
+  function exportEventsBundle() {
+    const slug = contextScope();
+    const J = journalModule();
+    const E = eventsModule();
+    const doc = {
+      format: "toolrx.events",
+      version: 1,
+      exported: new Date().toISOString(),
+      project: slug,
+      lastRun: lastRun ? JSON.parse(JSON.stringify(lastRun)) : null,
+      journal: J ? J.exportFor(slug) : [],
+      events: E ? E.exportFor(slug) : [],
+      limits: Object.assign({}, LIMITS),
+    };
+    const text = JSON.stringify(doc, null, 2);
+    if (bytesOf(text) > LIMITS.bundleBytes) {
+      throw new Error("that last-run export is " + bytesOf(text)
+        + " bytes, over the " + LIMITS.bundleBytes + "-byte bundle cap");
+    }
+    const key = saveBundle("events-" + slug, text);
+    return "exported last run + journal · project " + slug + " · "
+      + (doc.lastRun ? "1 run" : "no run") + " · " + doc.events.length
+      + " event(s) · " + doc.journal.length + " journal entr"
+      + (doc.journal.length === 1 ? "y" : "ies") + " · "
+      + bytesOf(text).toLocaleString() + " B · sha " + shortSha(text)
+      + "\nbundle " + key + " saved in this tab"
+      + "\nimport it with: import events from " + key;
+  }
+
+  function stageLastRun(raw) {
+    if (raw == null) return null;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error("that event bundle has an invalid last run");
+    }
+    const at = Number(raw.at);
+    if (!isFinite(at) || at < 0) {
+      throw new Error("that event bundle has a last run without a timestamp");
+    }
+    const out = JSON.parse(JSON.stringify(raw));
+    out.version = 2;
+    out.at = Math.round(at);
+    out.ok = !!out.ok;
+    out.replayedAt = typeof out.replayedAt === "number" && isFinite(out.replayedAt)
+      ? Math.max(0, Math.round(out.replayedAt)) : null;
+    if (out.plan) {
+      const plan = stagePlan(out.plan);
+      if (!plan) throw new Error("that event bundle has an invalid recorded plan");
+      out.plan = plan;
+    }
+    if (Array.isArray(out.stepsDetail)) {
+      out.stepsDetail = out.stepsDetail.slice(0, planLimits().steps);
+    }
+    return out;
+  }
+
+  function importEvents(text) {
+    return importEventsDoc(parseBundle(text));
+  }
+
+  function importEventsDoc(parsed) {
+    if (parsed.kind !== "events") {
+      throw new Error("that is not an events bundle — say: export the last run");
+    }
+    const doc = parsed.doc;
+    const E = eventsModule();
+    if (!E) throw new Error("the event log module is not loaded");
+    const wanted = slugify(String(doc.project || ""));
+    const slug = wanted && projects.items[wanted] ? wanted : contextScope();
+    const journal = stageJournal(doc.journal);
+    const run = stageLastRun(doc.lastRun);
+    const beforeRun = lastRun;
+    try {
+      const J = journalModule();
+      if (J) J.importFor(slug, journal);
+      const res = E.importFor(slug, doc.events);
+      if (!res.ok) {
+        throw new Error("this browser did not keep the event stream (storage is full)");
+      }
+      if (run) {
+        lastRun = run;
+        try { root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(lastRun)); }
+        catch (e) { /* keep the in-memory value */ }
+      }
+      return "imported events · project " + slug + " · " + res.count
+        + " event(s) · " + journal.length + " journal entr"
+        + (journal.length === 1 ? "y" : "ies")
+        + (run ? " · last run restored" : " · no last run in the bundle");
+    } catch (e) {
+      lastRun = beforeRun;
+      throw e;
+    }
   }
 
   function importProjectNamed(name) {
@@ -1801,6 +1916,8 @@
     lastRun = {
       version: 2,
       at: Date.now(),
+      replayedAt: typeof meta.replayedAt === "number" && isFinite(meta.replayedAt)
+        ? Math.max(0, Math.round(meta.replayedAt)) : null,
       chars: String(query == null ? "" : query).length,
       planned: planned,
       steps: list.length,
@@ -1838,6 +1955,82 @@
       root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(lastRun));
     } catch (e) { /* storage full or disabled; keep the in-memory value */ }
     return lastRun;
+  }
+
+  /* Step 65: replay the last successful plan exactly once. The recorded steps
+   * are handed to the planner as `forcedSteps`, so nothing is re-split, and a
+   * stored `replayedAt` guard is written before the first step runs. A second
+   * replay refuses even if the first one failed. */
+  async function replayLast() {
+    const run = lastRun;
+    if (!run) {
+      throw new Error("replay · no run is stored · run a plan first");
+    }
+    if (!run.ok) {
+      throw new Error("replay · the last run was not successful · repair it "
+        + "or send a new request");
+    }
+    const steps = run.plan && Array.isArray(run.plan.steps)
+      ? run.plan.steps.map(function (s) { return String(s); }) : [];
+    if (!steps.length) {
+      throw new Error("replay · the last successful run has no recorded plan "
+        + "· nothing to replay");
+    }
+    if (run.replayedAt) {
+      throw new Error("replay · this plan was already replayed once at "
+        + new Date(run.replayedAt).toISOString()
+        + " · send the request again to run a new plan");
+    }
+    const skills = root.toolrxSkills;
+    if (!skills || !skills.runPrompt) {
+      throw new Error("replay · the skills module is not loaded");
+    }
+    const limit = planLimits().steps;
+    if (steps.length > limit) {
+      throw new Error("replay · the recorded plan has " + steps.length
+        + " steps, over the " + limit + "-step cap");
+    }
+    const query = steps.join("\n");
+    const started = now();
+    const before = runSnapshot();
+    const at = Date.now();
+    // Write the guard before running, so a reload or a thrown step cannot
+    // turn one click into two runs.
+    run.replayedAt = at;
+    try { root.localStorage.setItem(LASTRUN_KEY, JSON.stringify(run)); }
+    catch (e) { /* keep the in-memory guard */ }
+    const raw = await skills.runPrompt(query, Object.assign(promptContext(query), {
+      forcedSteps: steps,
+      conversationSkip: true,
+      conversationRecord: false,
+    }));
+    const trace = notePromptContext(query, raw);
+    noteJournal(query, raw);
+    noteRunEvents(raw, at);
+    const results = styledResults(raw);
+    recordRun(query, results, started, {
+      beforeFiles: before.files, beforeBytes: before.bytes,
+      contextBytes: contextStoredBytes(),
+      plan: results.plan, failedAt: results.failedAt,
+      trace: trace || results.trace,
+      replayedAt: at,
+    });
+    const failed = results.filter(function (r) { return r && r.error; }).length;
+    const lines = ["replay · ran " + results.length + " recorded step(s) once · "
+      + (failed ? failed + " failed" : "all ok")];
+    results.forEach(function (r, i) {
+      lines.push((r.error ? "✗ " : "✓ ") + (i + 1) + ". " + String(r.step || "")
+        + (r.error ? " · " + String(r.errorText || r.text || "").split("\n")[0]
+          : ""));
+    });
+    return {
+      ok: failed === 0,
+      steps: results.length,
+      failed: failed,
+      at: at,
+      text: lines.join("\n"),
+      results: results,
+    };
   }
 
   /* Snapshot of the workspace before a prompt, so the run record can name the
@@ -1974,14 +2167,14 @@
           if (same) doc = TR.withPlan(doc, C.fingerprint(planRaw));
         } catch (e) { /* a broken plan is not a match */ }
       }
-      C.set(slug, "trace", "last", C.stable(doc), contextOptions());
+      contextSet(slug, "trace", "last", C.stable(doc));
       storedTrace = doc;
     }
 
     if (last && !quiet) {
       const head = "query: " + String(query).replace(/\s+/g, " ").slice(0, 240)
         + "\nvia: " + (last.via || "router");
-      C.set(slug, "result", "last", head + "\n" + last.text, contextOptions());
+      contextSet(slug, "result", "last", head + "\n" + last.text);
       // The rolling session keeps the last dozen steps, newest at the bottom.
       if (!isContextMeta(via)) {
         const previous = C.get(slug, "session", "rolling");
@@ -1990,8 +2183,7 @@
           const mark = r.error ? "✗" : "✓";
           rows.push(mark + " " + String(r.step || "").replace(/\s+/g, " ").slice(0, 160));
         });
-        C.set(slug, "session", "rolling", rows.slice(-12).join("\n"),
-          contextOptions());
+        contextSet(slug, "session", "rolling", rows.slice(-12).join("\n"));
       }
     }
 
@@ -2008,7 +2200,7 @@
           return r ? (r.error ? "error" : "done") : "pending";
         }),
       };
-      C.set(slug, "plan", "last", C.stable(plan), contextOptions());
+      contextSet(slug, "plan", "last", C.stable(plan));
     }
     return storedTrace;
   }
@@ -2079,6 +2271,77 @@
       }
     });
     return added;
+  }
+
+  /* Step 65: turn the stored records a run produced into bounded events.
+   * Rewrites come from the stored plan variant, repairs and resumes from the
+   * stored repair record plus the trace, and refusals from the first failed
+   * step. The timestamp is the run's own `at`, never a fresh clock read. */
+  function noteRunEvents(results, at) {
+    const list = Array.isArray(results) ? results : [];
+    const stamp = typeof at === "number" && isFinite(at) ? at : Date.now();
+    const line = function (text) {
+      return String(text == null ? "" : text).split("\n")[0]
+        .replace(/\s+/g, " ").trim().slice(0, LIMITS.single);
+    };
+    let refused = false;
+    let resumed = false;
+    list.forEach(function (r) {
+      if (!r) return;
+      const via = String(r.via || "");
+      if (via === "plan.variant" && r.variant) {
+        const stored = memory && memory.planVariant ? memory.planVariant : null;
+        const over = (r.variant.over || (stored && stored.over) || []).slice();
+        const dropped = (r.variant.droppedTexts
+          || (stored && Array.isArray(stored.dropped)
+            ? stored.dropped.map(function (d) { return String(d.text || d); })
+            : [])).slice();
+        const kept = r.variant.steps
+          || (stored && Array.isArray(stored.steps) ? stored.steps.length : 0);
+        const text = "over " + (over.join(" + ") || "budget")
+          + " · kept " + kept + " step(s) · dropped " + dropped.length
+          + (dropped.length ? ": " + dropped.slice(0, 3).join("; ") : "");
+        noteEvent(r.error ? "refusal" : "rewrite", via, text, stamp);
+        if (r.error) refused = true;
+      } else if (via === "repair.plan") {
+        const rec = memory && memory.planRepair ? memory.planRepair : null;
+        const trace = r.trace || null;
+        const decision = trace ? String(trace.decision || "") : (r.error ? "refuse" : "staged");
+        const rule = trace ? String(trace.rule || "") : "no rule";
+        const reason = !r.error && rec && rec.reason
+          ? String(rec.reason) : line(r.errorText || r.text);
+        noteEvent("repair", via, decision + " · " + rule + " · " + reason, stamp);
+        if (r.error) {
+          noteEvent("refusal", via, line(r.errorText || r.text), stamp);
+          refused = true;
+        }
+      } else if (via === "repair.resume" || r.resumed) {
+        // A successful resume replaces the header result with the first
+        // pending step, so `via` is the step's route. `resumed` is the marker
+        // the skills layer sets on every inner result; record one event for
+        // the whole suffix, not one per step.
+        if (!resumed) {
+          const rec = memory && memory.planRepair ? memory.planRepair : null;
+          const trace = r.trace || null;
+          const decision = trace ? String(trace.decision || "")
+            : (r.error ? "refuse" : "resume");
+          const rule = trace ? String(trace.rule || "") : "no rule";
+          const reason = !r.error && rec && rec.reason
+            ? String(rec.reason) : line(r.errorText || r.text);
+          noteEvent("resume", "repair.resume",
+            decision + " · " + rule + " · " + reason, stamp);
+          if (r.error) {
+            noteEvent("refusal", "repair.resume", line(r.errorText || r.text), stamp);
+            refused = true;
+          }
+          resumed = true;
+        }
+      } else if (r.error && !refused) {
+        noteEvent("refusal", via || "unknown",
+          line(r.errorText || r.text), stamp);
+        refused = true;
+      }
+    });
   }
 
   function planNote(slug) {
@@ -2161,7 +2424,11 @@
     if (!C || !C.compact) {
       return "context compaction is unavailable in this browser";
     }
-    return C.compact(contextScope(), { summarize: contextSummary }).text;
+    const out = C.compact(contextScope(), { summarize: contextSummary });
+    if (out && out.actions && out.actions.length) {
+      noteEvent("compact", "context.compact", contextEventText(out));
+    }
+    return out.text;
   }
 
   function contextClear(all) {
@@ -2535,6 +2802,52 @@
    * each project's own journal. Context is never read, so a project switch can
    * never leak another project's context into a cross-project answer. */
   function workspaceModule() { return root.toolrxWorkspace || null; }
+
+  /* Step 65: the operator event log is a bounded store of the decisions the
+   * stored records already made. The sandbox supplies the timestamp; the
+   * events module never reads the clock. */
+  function eventsModule() { return root.toolrxEvents || null; }
+
+  function noteEvent(kind, route, text, at) {
+    const E = eventsModule();
+    if (!E) return null;
+    try {
+      return E.add(contextScope(), {
+        kind: kind,
+        route: String(route || "").slice(0, 80),
+        text: String(text == null ? "" : text),
+        at: typeof at === "number" && isFinite(at) ? Math.max(0, Math.round(at))
+          : Date.now(),
+      });
+    } catch (e) { return null; }
+  }
+
+  function contextEventText(report) {
+    if (!report) return "";
+    const before = report.before || {};
+    const after = report.after || {};
+    const actions = Array.isArray(report.actions) ? report.actions : [];
+    const why = actions.slice(0, 3).map(function (action) {
+      return action.kind + "/" + action.key + " · " + action.why;
+    });
+    return "cap contextBytes " + (report.cap || LIMITS.contextBytes) + " B · "
+      + (before.stored == null ? "?" : before.stored) + " -> "
+      + (after.stored == null ? "?" : after.stored) + " stored B · "
+      + actions.length + " action(s)"
+      + (why.length ? " · " + why.join("; ") : "");
+  }
+
+  /* A compaction can happen inside any context write, so the write helper
+   * records one event from the report the context module just stored. */
+  function contextSet(slug, kind, key, text) {
+    const C = contextModule();
+    if (!C) return null;
+    const res = C.set(slug, kind, key, text, contextOptions());
+    if (res && res.autoRan) {
+      noteEvent("compact", "context.auto", contextEventText(C.report(slug)));
+    }
+    return res;
+  }
 
   function workspaceState() {
     const J = journalModule();
@@ -2927,6 +3240,14 @@
       },
       project: projectContext(),
       workspace: function () { return workspaceState(); },
+      eventsShow: function () {
+        const E = eventsModule();
+        return E ? E.text(contextScope())
+          : "the event log module is not loaded";
+      },
+      eventsReplay: replayLast,
+      eventsExport: exportEventsBundle,
+      eventsImport: function (name) { return importEvents(readBundle(name)); },
       chat: function (who, text) { return chatAppend(who, text); },
       history: function () { return chatHistory(); },
       memory: {
@@ -3325,17 +3646,31 @@
         return results;
       }
       const raw = await skills.runPrompt(String(query), promptContext(String(query)));
-      // Context, journal, and the trace always see the unwrapped result, so a
-      // style can never change a later turn or the stored plan.
-      const trace = notePromptContext(String(query), raw);
-      noteJournal(String(query), raw);
-      const results = styledResults(raw);
-      recordRun(String(query), results, started, {
-        beforeFiles: before.files, beforeBytes: before.bytes,
-        contextBytes: contextStoredBytes(),
-        plan: results.plan, failedAt: results.failedAt,
-        trace: trace || results.trace,
+      // Step 65: a replay turn already recorded the detailed inner run (or
+      // refused before running). Recording the wrapper turn again would
+      // replace the replayed plan with the one-word "replay" request, so the
+      // wrapper only contributes a refusal event when the replay refused.
+      const replayTurn = raw.some(function (r) {
+        return r && String(r.via || "") === "events.replay";
       });
+      let results;
+      if (replayTurn) {
+        noteRunEvents(raw, Date.now());
+        results = styledResults(raw);
+      } else {
+        // Context, journal, and the trace always see the unwrapped result, so
+        // a style can never change a later turn or the stored plan.
+        const trace = notePromptContext(String(query), raw);
+        noteJournal(String(query), raw);
+        noteRunEvents(raw, Date.now());
+        results = styledResults(raw);
+        recordRun(String(query), results, started, {
+          beforeFiles: before.files, beforeBytes: before.bytes,
+          contextBytes: contextStoredBytes(),
+          plan: results.plan, failedAt: results.failedAt,
+          trace: trace || results.trace,
+        });
+      }
       // Keep a lightweight transcript for the chat side of the harness.
       chatAppend("you", String(query));
       const said = results.map(function (r) { return r.text; }).filter(Boolean).join("\n");
@@ -3431,6 +3766,17 @@
     lastRun: function () {
       return lastRun ? Object.assign({}, lastRun) : null;
     },
+    events: function () {
+      const E = eventsModule();
+      return E ? E.summary(contextScope()) : null;
+    },
+    eventsText: function () {
+      const E = eventsModule();
+      return E ? E.text(contextScope()) : "the event log module is not loaded";
+    },
+    replayLast: replayLast,
+    exportEventsBundle: exportEventsBundle,
+    importEvents: importEvents,
     cancelBuild: function () {
       cancelPending = true;
       return "build cancel requested — the previous project is kept";

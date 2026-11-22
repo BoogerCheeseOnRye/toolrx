@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "count": 26,
+  "ops": {
+    "events.export": 6,
+    "events.import": 4,
+    "events.replay": 7,
+    "events.show": 9
+  },
+  "cases": [
+    {
+      "text": "export events",
+      "op": "events.export",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "export"
+    },
+    {
+      "text": "export last run",
+      "op": "events.export",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "export"
+    },
+    {
+      "text": "export the event stream",
+      "op": "events.export",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "export"
+    },
+    {
+      "text": "export the last run",
+      "op": "events.export",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "export"
+    },
+    {
+      "text": "export the last run and journal",
+      "op": "events.export",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "export"
+    },
+    {
+      "text": "export the run log",
+      "op": "events.export",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "export"
+    },
+    {
+      "text": "import events from events-scratch.toolrx.json",
+      "op": "events.import",
+      "args": {
+        "bundle": "events-scratch.toolrx.json"
+      },
+      "mode": "import"
+    },
+    {
+      "text": "import the events from events-scratch.toolrx.json",
+      "op": "events.import",
+      "args": {
+        "bundle": "events-scratch.toolrx.json"
+      },
+      "mode": "import"
+    },
+    {
+      "text": "import the last run from events-scratch.toolrx.json",
+      "op": "events.import",
+      "args": {
+        "bundle": "events-scratch.toolrx.json"
+      },
+      "mode": "import"
+    },
+    {
+      "text": "import the run log from events-scratch.toolrx.json",
+      "op": "events.import",
+      "args": {
+        "bundle": "events-scratch.toolrx.json"
+      },
+      "mode": "import"
+    },
+    {
+      "text": "replay last plan",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "replay the last plan",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "replay the last run",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "replay the last successful plan",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "replay the recorded plan",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "run the last plan again",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "run the last successful plan again",
+      "op": "events.replay",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "replay"
+    },
+    {
+      "text": "list operator events",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "list the event stream",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show compaction and rewrite events",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show operator events",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show the event stream",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show the last events",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show the run events",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "show the run log",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    },
+    {
+      "text": "what events happened",
+      "op": "events.show",
+      "args": {
+        "bundle": ""
+      },
+      "mode": "show"
+    }
+  ]
+}

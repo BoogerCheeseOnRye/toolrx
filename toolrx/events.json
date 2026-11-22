@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "intents": {
+    "show": {
+      "op": "events.show",
+      "summary": "show the bounded operator event stream from stored records",
+      "example": "show the event stream",
+      "templates": [],
+      "bare": [
+        "show the event stream",
+        "show operator events",
+        "show the run log",
+        "show the run events",
+        "what events happened",
+        "show compaction and rewrite events",
+        "show the last events",
+        "list the event stream",
+        "list operator events"
+      ]
+    },
+    "replay": {
+      "op": "events.replay",
+      "summary": "replay the last successful plan exactly once",
+      "example": "replay the last plan",
+      "templates": [],
+      "bare": [
+        "replay the last plan",
+        "replay last plan",
+        "replay the last successful plan",
+        "replay the last run",
+        "run the last plan again",
+        "run the last successful plan again",
+        "replay the recorded plan"
+      ]
+    },
+    "export": {
+      "op": "events.export",
+      "summary": "export the last run plus the project journal snapshot",
+      "example": "export the last run",
+      "templates": [],
+      "bare": [
+        "export the last run",
+        "export last run",
+        "export the event stream",
+        "export events",
+        "export the run log",
+        "export the last run and journal"
+      ]
+    },
+    "import": {
+      "op": "events.import",
+      "summary": "import a validated last-run, journal, and event bundle",
+      "example": "events-scratch.toolrx.json",
+      "templates": [
+        "import events from {bundle}",
+        "import the events from {bundle}",
+        "import the run log from {bundle}",
+        "import the last run from {bundle}"
+      ],
+      "bare": []
+    }
+  }
+}

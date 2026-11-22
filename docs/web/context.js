@@ -737,7 +737,9 @@
       entries: state.entries.length,
       evicted: evicted,
       trimmed: trimmed,
-      limit: limit
+      limit: limit,
+      autoRan: autoRan,
+      compacted: autoActions.length
     };
   }
 

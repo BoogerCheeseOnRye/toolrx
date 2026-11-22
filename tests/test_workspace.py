@@ -279,7 +279,7 @@ class WorkspaceTest(unittest.TestCase):
         self.assertEqual(data["workspaceRows"], 12)
         self.assertEqual(data["workspaceIndexBytes"], 8192)
         self.assertEqual(data["workspaceChars"], 4000)
-        self.assertEqual(len(envelope._RANGES), 50)
+        self.assertEqual(len(envelope._RANGES), 53)
 
     # ------------------------------------------------------------- caps ---
     def test_the_project_and_topic_caps_are_explicit(self):

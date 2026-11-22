@@ -3398,6 +3398,27 @@
       if (!ctx.project) throw new Error("projects need the browser workspace");
       return ctx.project.exportWorkspaceIndex();
     },
+    "events.show": function (a, ctx) {
+      if (!ctx.eventsShow) throw new Error("the event log needs the browser workspace");
+      return ctx.eventsShow();
+    },
+    "events.replay": async function (a, ctx) {
+      if (!ctx.eventsReplay) throw new Error("replay needs the browser workspace");
+      const out = await ctx.eventsReplay();
+      return {
+        text: out && out.text ? out.text : "replay · nothing ran",
+        replay: out ? { ok: !!out.ok, steps: out.steps || 0,
+                        failed: out.failed || 0, at: out.at || 0 } : null,
+      };
+    },
+    "events.export": function (a, ctx) {
+      if (!ctx.eventsExport) throw new Error("the event log needs the browser workspace");
+      return ctx.eventsExport();
+    },
+    "events.import": function (a, ctx) {
+      if (!ctx.eventsImport) throw new Error("the event log needs the browser workspace");
+      return ctx.eventsImport(a.bundle);
+    },
     "style.show": function (a, ctx) {
       const S = root.toolrxStyle;
       const name = ctx && typeof ctx.style === "function" ? ctx.style() : "concise";
@@ -3559,6 +3580,9 @@
       ["workspaceRows", "rows in one cross-project answer"],
       ["workspaceIndexBytes", "serialized workspace index"],
       ["workspaceChars", "one cross-project answer"],
+      ["eventEntries", "operator events kept per project"],
+      ["eventBytes", "serialized operator event log"],
+      ["eventText", "one operator event line"],
       ["styleChars", "response wrapper per result"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "

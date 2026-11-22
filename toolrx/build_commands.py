@@ -24,6 +24,7 @@ import thinking  # noqa: E402  (step 53: one table for thinking routes)
 import repair  # noqa: E402  (step 54: one table for repair routes)
 import journal  # noqa: E402  (step 56: one table for journal routes)
 import workspace  # noqa: E402  (step 64: cross-project workspace routes)
+import events  # noqa: E402  (step 65: operator event stream routes)
 import resume  # noqa: E402  (step 57: one table for resume routes)
 import style  # noqa: E402  (step 58: one table for response-style routes)
 import explain  # noqa: E402  (step 61: one table for explain routes)
@@ -1556,6 +1557,15 @@ for _entry in resume.entries():
 # lands before the journal routes so "across projects" wins over the generic
 # journal template; a plain "what did we decide about X" still falls through.
 for _entry in workspace.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
+# --------------------------------------------------------------- events ----
+# Step 65: the operator event stream, replay, and the last-run bundle. Routes
+# are appended before the journal block so "show the run log" is an operator
+# request, not a decision-journal question; a real command still wins because
+# this whole block is late in the catalog.
+for _entry in events.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 

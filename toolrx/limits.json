@@ -49,5 +49,8 @@
   "workspaceRows": 12,
   "workspaceIndexBytes": 8192,
   "workspaceChars": 4000,
+  "eventEntries": 32,
+  "eventBytes": 8192,
+  "eventText": 240,
   "styleChars": 600
 }

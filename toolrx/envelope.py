@@ -54,6 +54,9 @@ Ranges (the human-facing contract):
   workspaceRows    1–100  rows in one cross-project answer
   workspaceIndexBytes 512–65,536  serialized workspace index
   workspaceChars   256–32,000  one cross-project answer
+  eventEntries     4–128  operator events kept per project
+  eventBytes       512–65,536  serialized operator event log
+  eventText        80–2,000  one operator event line
   styleChars       80–8,000  response wrapper added to one exact result
 """
 
@@ -113,6 +116,9 @@ _RANGES = {
     "workspaceRows": (1, 100),
     "workspaceIndexBytes": (512, 65_536),
     "workspaceChars": (256, 32_000),
+    "eventEntries": (4, 128),
+    "eventBytes": (512, 65_536),
+    "eventText": (80, 2_000),
     "styleChars": (80, 8_000),
 }
 

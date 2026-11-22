@@ -1786,7 +1786,7 @@ preserves the bundle timestamps so the rebuilt index matches byte for byte.
 empty and capped states, cross-project themes and decisions, deletion, context
 isolation, the bundle round-trip, and the no-network rule.
 
-### 65. Operator dashboard upgrades
+### 65. Operator dashboard upgrades — done
 
 Make the existing last-run, trace, journal, compaction, and rewrite data
 visible as one event stream, and add the operator actions that data already
@@ -1805,6 +1805,27 @@ timestamp and route, replay runs exactly the recorded steps once and refuses
 when none exist, the headroom detail names the cap and the reason, the export
 round-trips through the existing bundle validator, and the panel is keyboard
 reachable with text alternatives for every status.
+
+Landed as one bounded store fed only by records the sandbox already kept.
+`toolrx/events.json` is the only source of the 26 `events.*` routes, and
+`toolrx/web/events.js` is the pure store behind them. Three caps bound the
+stream: `eventEntries` (32), `eventBytes` (8,192), and `eventText` (240); the
+oldest events are dropped at a cap and the dropped count stays in the record.
+Compaction events quote the context report's actions and `why` values, rewrite
+events quote the stored variant's over-budget list and dropped steps, repair and
+resume events quote the stored repair record and trace rule, and refusal events
+quote the first failed step. Every event carries the route and the run's own
+timestamp; the store never reads the clock. `replay the last plan` hands the
+recorded steps to the planner as `forcedSteps`, writes a `replayedAt` guard
+before the first step runs, and refuses a second replay. `export the last run`
+writes a `toolrx.events` bundle with the last run, journal snapshot, and event
+stream; `parseBundle` validates the format, the version, the event list, and the
+run timestamp before `import events from <bundle>` restores it. The last-run
+panel adds a headroom warning that names the cap, a "why compacted / rewritten"
+line, keyboard-reachable replay and export buttons, and a live status with text
+alternatives. `tests/test_events.py` pins the table, both caps, all five event
+kinds, one-shot replay, the bundle round-trip, the validation refusals, and the
+no-network rule.
 
 ### 66. Deterministic verification helpers
 
