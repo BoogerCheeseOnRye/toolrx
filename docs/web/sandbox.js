@@ -1797,7 +1797,8 @@
      * later repair or critique still inspect the failure. Step 55: the trace
      * of that inspection still belongs to the run it examined. */
     if (list.every(function (r) {
-      return /^(?:conversation|think|repair|explain)\./.test(String(r && r.via || ""));
+      return /^(?:conversation|think|repair|explain|events\.(?:show|export|import))\.?/
+        .test(String(r && r.via || ""));
     })) {
       const TR = root.toolrxTrace;
       if (meta.trace && lastRun && TR) {
@@ -2127,7 +2128,7 @@
   }
 
   function isContextMeta(via) {
-    return /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.)/
+    return /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|events\.(?:show|export|import))/
       .test(String(via || ""));
   }
 
@@ -2141,7 +2142,7 @@
     // Meta commands describe or move the plan; storing their own output as
     // `result/last` would evict the plan they just edited. The session rows
     // below already skip the same set.
-    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.)/
+    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|events\.(?:show|export|import))/
       .test(via);
 
     // Step 55: a thinking or repair result carries a trace. Stamp it with the
@@ -2844,7 +2845,10 @@
     if (!C) return null;
     const res = C.set(slug, kind, key, text, contextOptions());
     if (res && res.autoRan) {
-      noteEvent("compact", "context.auto", contextEventText(C.report(slug)));
+      // `report()` is the human listing; `reportRaw()` is the stored report
+      // with the actions and before/after counts the event quotes.
+      const raw = (C.reportRaw && C.reportRaw(slug)) || C.report(slug);
+      noteEvent("compact", "context.auto", contextEventText(raw));
     }
     return res;
   }

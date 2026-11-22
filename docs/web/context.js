@@ -1256,6 +1256,7 @@
     scopes: readIndex,
     show: function (slug) { return show(slug).text; },
     report: show,
+    reportRaw: readReport,
     snapshot: snapshot,
     diff: diff,
     notes: notes,

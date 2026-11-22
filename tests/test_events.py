@@ -143,6 +143,14 @@ const ask = async q => {
   out.chat.planOk = !!(run && run.ok);
   out.chat.planSteps = run && run.plan ? run.plan.steps.length : 0;
 
+  // Inspection turns never replace the last run, so the stream can be read
+  // and the plan that produced it replayed afterwards.
+  const shown = await ask('show the event stream');
+  out.chat.streamText = shown.text;
+  const afterShow = self.toolrxWeb.lastRun();
+  out.chat.streamKeptRun = !!(afterShow && afterShow.ok
+    && afterShow.plan && afterShow.plan.steps.length === 2);
+
   const replay1 = await ask('replay the last plan');
   const afterReplay = self.toolrxWeb.lastRun();
   out.chat.replay1 = { via: replay1.via, error: replay1.error,
@@ -183,6 +191,8 @@ const ask = async q => {
   out.chat.kinds = summary.entries.map(e => e.kind);
   out.chat.routes = summary.entries.map(e => e.route);
   out.chat.hasStamp = summary.entries.every(e => e.at > 0);
+  out.chat.compactText = (summary.entries.filter(e => e.kind === 'compact')[0]
+    || {}).text || '';
   out.chat.eventsText = self.toolrxWeb.eventsText();
   out.chat.count = summary.count;
   out.chat.cap = summary.cap;
@@ -314,10 +324,26 @@ class EventsTest(unittest.TestCase):
         self.assertEqual(first["via"], "events.replay")
         self.assertTrue(first["ok"])
         self.assertTrue(first["replayedAt"])
+        # The inspection turn before the replay must not have replaced the
+        # recorded plan with the one-word stream request.
+        self.assertIn("ran 2 recorded step(s)", first["text"])
         second = self.out["chat"]["replay2"]
         self.assertTrue(second["error"])
         self.assertEqual(second["via"], "events.replay")
         self.assertIn("already replayed once", second["text"])
+
+    def test_inspection_turn_keeps_the_last_run_and_stream_is_quiet(self):
+        self.assertIn("no operator events yet",
+                      self.out["chat"]["streamText"])
+        self.assertTrue(self.out["chat"]["streamKeptRun"])
+
+    def test_compact_event_quotes_the_stored_report(self):
+        text = self.out["chat"]["compactText"]
+        self.assertIn("context.auto", self.out["chat"]["routes"])
+        self.assertIn("stored B", text)
+        self.assertNotIn("? -> ?", text)
+        self.assertNotIn("0 action(s)", text)
+        self.assertIn("action(s)", text)
 
     def test_rewrite_event_quotes_the_stored_reason(self):
         self.assertEqual(self.out["chat"]["rewrite"]["via"], "plan.variant")
@@ -380,7 +406,7 @@ class EventsTest(unittest.TestCase):
 
     def test_offline_shell_ships_the_event_module(self):
         sw = self.out["dashboard"]["sw"]
-        self.assertIn('const CACHE = "toolrx-shell-v18-r12";', sw)
+        self.assertIn('const CACHE = "toolrx-shell-v18-r13";', sw)
         self.assertIn('"./web/events.js"', sw)
 
     def test_no_network_on_the_default_path(self):
