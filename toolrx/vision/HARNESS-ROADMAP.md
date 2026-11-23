@@ -1827,7 +1827,7 @@ alternatives. `tests/test_events.py` pins the table, both caps, all five event
 kinds, one-shot replay, the bundle round-trip, the validation refusals, and the
 no-network rule.
 
-### 66. Deterministic verification helpers
+### 66. Deterministic verification helpers — done
 
 Add a small family of exact commands that answer "did this build produce what it
 said it would?" without an external test runner or an unconstrained shell.
@@ -1843,6 +1843,25 @@ said it would?" without an external test runner or an unconstrained shell.
 list from the project, a missing or extra file is named exactly, each smoke
 check is a pure predicate over project files, the report is deterministic and
 bounded, and tests cover pass, fail, and empty-project cases.
+
+Landed as one pure program with no test runner, no shell, and no new
+allow-listed tool. `toolrx/verify.json` is the only source of the 48 `verify.*`
+routes; `toolrx/verify.py` expands it into catalog entries and a 19-state
+fixture, and `toolrx/web/verify.js` is the byte-identical twin. Expected files
+derive from the stored build spec: the five base files, the RPG runtime, the
+2D or 3D engine chosen by the route, `content.js` for a long spec, the starter
+extras, and every grown module or `systems/<id>.js`. Actual files are the
+project's real names, so `verify the project files` names every missing and
+extra file exactly. Eight smoke checks are pure predicates over project text:
+index content, title, stylesheet content, entry point, script order before
+`app.js`, local links, docs, and budgets; none of them executes project code.
+`verify this project` combines the diff and the checks into one report whose
+verdict survives trimming, and the two store routes put that report in context
+or the project journal. The three caps are `verifyFiles` (32), `verifyChecks`
+(8), and `verifyReportChars` (4,000). `tests/test_verify.py` pins the table,
+Python/JavaScript parity, expected files against 52 real `templates.project()`
+builds plus growth and the 3D route, the pass/fail/empty cases, the caps, both
+stores, and the no-network rule.
 
 ### 67. Plan composition and named macros
 

@@ -1797,7 +1797,7 @@
      * later repair or critique still inspect the failure. Step 55: the trace
      * of that inspection still belongs to the run it examined. */
     if (list.every(function (r) {
-      return /^(?:conversation|think|repair|explain|events\.(?:show|export|import))\.?/
+      return /^(?:conversation|think|repair|explain|verify|events\.(?:show|export|import))\.?/
         .test(String(r && r.via || ""));
     })) {
       const TR = root.toolrxTrace;
@@ -2142,7 +2142,7 @@
     // Meta commands describe or move the plan; storing their own output as
     // `result/last` would evict the plan they just edited. The session rows
     // below already skip the same set.
-    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|events\.(?:show|export|import))/
+    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|verify\.|events\.(?:show|export|import))/
       .test(via);
 
     // Step 55: a thinking or repair result carries a trace. Stamp it with the
@@ -3183,6 +3183,65 @@
     return body;
   }
 
+  /* Step 66: the verification program reads the stored build spec and the
+   * project's real file text. Nothing here is written; the pure module in
+   * web/verify.js decides every claim. */
+  function verifyState() {
+    const p = activeProject();
+    const t = root.toolrxTemplates;
+    const limits = {
+      verifyFiles: LIMITS.verifyFiles,
+      verifyChecks: LIMITS.verifyChecks,
+      verifyReportChars: LIMITS.verifyReportChars,
+      projectBytes: projectBudget(),
+      projectFiles: MAX_PROJECT_FILES,
+    };
+    if (!p) return { project: null, limits: limits };
+    const spec = p.spec || (t && t.spec ? t.spec(p.kind, p.desc) : {});
+    return {
+      project: {
+        name: p.name,
+        slug: p.slug,
+        kind: p.kind,
+        spec: JSON.parse(JSON.stringify(spec || {})),
+        files: Object.assign({}, p.files || {}),
+      },
+      limits: limits,
+    };
+  }
+
+  function verifyStore(where, target, text) {
+    const body = String(text == null ? "" : text);
+    const slug = contextScope();
+    if (where === "context") {
+      const C = contextModule();
+      if (!C) return body + "\ncontext is unavailable in this browser";
+      const res = C.set(slug, "verify", target, body, contextOptions());
+      return body + "\nstored in context · verify/" + target + " · "
+        + (res && res.bytes != null ? res.bytes : bytesOf(body))
+        + " bytes · older entries may be evicted";
+    }
+    if (where === "journal") {
+      const J = journalModule();
+      if (!J) return body + "\njournal is unavailable in this browser";
+      const first = body.split("\n")[0];
+      const res = J.add(slug, {
+        kind: "decision",
+        topic: "verify report",
+        text: first,
+        source: "verify." + target,
+      });
+      if (!res || !res.ok) {
+        return body + "\nnot stored in journal · "
+          + ((res && res.why) || "unknown reason");
+      }
+      return body + "\nstored in journal · verify/" + target + " · "
+        + (res.duplicate ? "already present" : "entry #" + res.entry.seq)
+        + " · " + LIMITS.journalText + "-char cap";
+    }
+    return body;
+  }
+
   function promptContext(query) {
     const ctx = {
       prev: "",
@@ -3284,6 +3343,8 @@
       repair: repairState,
       explain: explainState,
       explainStore: explainStore,
+      verify: verifyState,
+      verifyStore: verifyStore,
       style: styleName,
       setStyle: setStyleName,
       onStep: function (done, total, elapsed) {

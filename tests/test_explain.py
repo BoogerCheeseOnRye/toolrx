@@ -62,7 +62,7 @@ global.dispatchEvent = () => {};
 
 for (const name of [
   'blake2b.js', 'router.js', 'limits.js', 'budget.js', 'planrewrite.js',
-  'thinking.js', 'explain.js', 'repair.js', 'trace.js', 'journal.js',
+  'thinking.js', 'explain.js', 'verify.js', 'repair.js', 'trace.js', 'journal.js',
   'style.js', 'skills.js', 'templates.js', 'context.js', 'lang.js',
   'patches.js', 'engine2d.js', 'engine2d.embed.js', 'engine3d.js',
   'engine3d.embed.js', 'worldgen.js', 'worldgen.embed.js', 'rpg2.js',

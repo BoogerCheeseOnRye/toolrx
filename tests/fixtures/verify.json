@@ -1,0 +1,1078 @@
+{
+  "version": 1,
+  "count": 48,
+  "ops": {
+    "verify.files": 14,
+    "verify.report": 11,
+    "verify.report.context": 6,
+    "verify.report.journal": 6,
+    "verify.smoke": 11
+  },
+  "cases": [
+    {
+      "text": "check project files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "check the project files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "did the build produce every file",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "did the build write every file",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "list expected and actual files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "list expected versus actual files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "list missing and extra files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "show expected and actual files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "show missing files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "verify project files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "verify the project files",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "what files should this project have",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "which files are extra",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "which files are missing",
+      "op": "verify.files",
+      "intent": "files"
+    },
+    {
+      "text": "check this project",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "did the build produce what it said",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "produce a verification report",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "run a project verification",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "show the verification report",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "verification report",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "verify the build",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "verify the last build",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "verify the project",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "verify this build",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "verify this project",
+      "op": "verify.report",
+      "intent": "report"
+    },
+    {
+      "text": "keep the verification report in context",
+      "op": "verify.report.context",
+      "intent": "context"
+    },
+    {
+      "text": "put the verification report in context",
+      "op": "verify.report.context",
+      "intent": "context"
+    },
+    {
+      "text": "save the verification report in context",
+      "op": "verify.report.context",
+      "intent": "context"
+    },
+    {
+      "text": "store the verification report in context",
+      "op": "verify.report.context",
+      "intent": "context"
+    },
+    {
+      "text": "verify the project in context",
+      "op": "verify.report.context",
+      "intent": "context"
+    },
+    {
+      "text": "verify this project in context",
+      "op": "verify.report.context",
+      "intent": "context"
+    },
+    {
+      "text": "keep the verification report in the journal",
+      "op": "verify.report.journal",
+      "intent": "journal"
+    },
+    {
+      "text": "put the verification report in the journal",
+      "op": "verify.report.journal",
+      "intent": "journal"
+    },
+    {
+      "text": "save the verification report to the journal",
+      "op": "verify.report.journal",
+      "intent": "journal"
+    },
+    {
+      "text": "store the verification report in the journal",
+      "op": "verify.report.journal",
+      "intent": "journal"
+    },
+    {
+      "text": "verify the project in the journal",
+      "op": "verify.report.journal",
+      "intent": "journal"
+    },
+    {
+      "text": "verify this project in the journal",
+      "op": "verify.report.journal",
+      "intent": "journal"
+    },
+    {
+      "text": "check that this project works",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "check the project entry point",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "check the project links",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "check the project scripts",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "does this project have the expected title",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "run smoke checks",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "run the project smoke checks",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "run the smoke checks",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "smoke test the project",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "smoke test this project",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    },
+    {
+      "text": "verify the project title",
+      "op": "verify.smoke",
+      "intent": "smoke"
+    }
+  ],
+  "states": [
+    {
+      "name": "files-pass",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Notes · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Notes</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Notes · 5 expected · 5 actual · ok · r.files\nexpected (5): ARCHITECTURE.md · README.md · app.js · index.html · styles.css · r.spec\nactual (5): ARCHITECTURE.md · README.md · app.js · index.html · styles.css · r.actual\nmissing (0): none · r.missing\nextra (0): none · r.extra\nbudgets: files 5/32 · bytes 439/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-missing-extra",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Platformer",
+          "slug": "platformer",
+          "kind": "platformer",
+          "spec": {
+            "genre": "platformer",
+            "kind": "platformer",
+            "dim": "2D",
+            "features": [
+              "double jump"
+            ],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [],
+            "systems": [],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Platformer · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Platformer</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "engine2d.js": "window.toolrxEngine2d = { create: function () { return {}; } };\n",
+            "debug.log": "/* debug.log */\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Platformer · 7 expected · 7 actual · fail · r.files\nexpected (7): ARCHITECTURE.md · README.md · app.js · content.js · engine2d.js · index.html · styles.css · r.spec\nactual (7): ARCHITECTURE.md · README.md · app.js · debug.log · engine2d.js · index.html · styles.css · r.actual\nmissing (1): content.js · r.missing\nextra (1): debug.log · r.extra\nbudgets: files 7/32 · bytes 529/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-rpg",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Verdant Wood RPG",
+          "slug": "verdant-wood-rpg",
+          "kind": "rpg",
+          "spec": {
+            "genre": "rpg",
+            "kind": "rpg",
+            "dim": "2D",
+            "features": [
+              "quests"
+            ],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [
+              "core/state.js"
+            ],
+            "systems": [
+              "inventory",
+              "save"
+            ],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Verdant Wood RPG · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Verdant Wood RPG</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "engine2d.js": "window.toolrxEngine2d = { create: function () { return {}; } };\n",
+            "worldgen.js": "window.toolrxWorldgen = { generate: function () { return {}; } };\n",
+            "rpg2.js": "window.toolrxRpg2 = { create: function () { return {}; } };\n",
+            "content.js": "window.toolrxContent = { seed: 7, levels: [] };\n",
+            "core/state.js": "/* core/state.js */\n",
+            "systems/inventory.js": "window.toolrxSystems = window.toolrxSystems || {};\n",
+            "systems/save.js": "window.toolrxSystems = window.toolrxSystems || {};\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Verdant Wood RPG · 12 expected · 12 actual · ok · r.files\nexpected (12): ARCHITECTURE.md · README.md · app.js · content.js · core/state.js · engine2d.js · index.html · rpg2.js · styles.css · systems/inventory.js · systems/save.js · worldgen.js · r.spec\nactual (12): ARCHITECTURE.md · README.md · app.js · content.js · core/state.js · engine2d.js · index.html · rpg2.js · styles.css · systems/inventory.js · systems/save.js · worldgen.js · r.actual\nmissing (0): none · r.missing\nextra (0): none · r.extra\nbudgets: files 12/32 · bytes 821/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-3d",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Platformer 3D",
+          "slug": "platformer-3d",
+          "kind": "platformer",
+          "spec": {
+            "genre": "platformer",
+            "kind": "platformer",
+            "dim": "3D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [],
+            "systems": [],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Platformer 3D · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Platformer 3D</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "engine3d.js": "window.toolrxEngine3d = { create: function () { return {}; } };\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Platformer 3D · 6 expected · 6 actual · ok · r.files\nexpected (6): ARCHITECTURE.md · README.md · app.js · engine3d.js · index.html · styles.css · r.spec\nactual (6): ARCHITECTURE.md · README.md · app.js · engine3d.js · index.html · styles.css · r.actual\nmissing (0): none · r.missing\nextra (0): none · r.extra\nbudgets: files 6/32 · bytes 519/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-auth",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Sign-in starter",
+          "slug": "authapp",
+          "kind": "authapp",
+          "spec": {
+            "genre": "authapp",
+            "kind": "authapp",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [],
+            "systems": [],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Sign-in starter · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Sign-in starter</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "auth.js": "window.toolrxAuth = { validate: function () { return \"\"; } };\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Sign-in starter · 6 expected · 6 actual · ok · r.files\nexpected (6): ARCHITECTURE.md · README.md · app.js · auth.js · index.html · styles.css · r.spec\nactual (6): ARCHITECTURE.md · README.md · app.js · auth.js · index.html · styles.css · r.actual\nmissing (0): none · r.missing\nextra (0): none · r.extra\nbudgets: files 6/32 · bytes 521/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-multipage",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Static site",
+          "slug": "multipage",
+          "kind": "multipage",
+          "spec": {
+            "genre": "multipage",
+            "kind": "multipage",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [],
+            "systems": [],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Static site · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Static site</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "about.html": "/* about.html */\n",
+            "docs.html": "/* docs.html */\n",
+            "contact.html": "/* contact.html */\n",
+            "site.js": "document.documentElement.dataset.site = \"1\";\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Static site · 9 expected · 9 actual · ok · r.files\nexpected (9): ARCHITECTURE.md · README.md · about.html · app.js · contact.html · docs.html · index.html · site.js · styles.css · r.spec\nactual (9): ARCHITECTURE.md · README.md · about.html · app.js · contact.html · docs.html · index.html · site.js · styles.css · r.actual\nmissing (0): none · r.missing\nextra (0): none · r.extra\nbudgets: files 9/32 · bytes 548/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-empty",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {}
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Notes · 5 expected · 0 actual · fail · r.files\nexpected (5): ARCHITECTURE.md · README.md · app.js · index.html · styles.css · r.spec\nactual (0): none · r.actual\nmissing (5): ARCHITECTURE.md · README.md · app.js · index.html · styles.css · r.missing\nextra (0): none · r.extra\nbudgets: files 0/32 · bytes 0/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "files-missing-project",
+      "target": "files",
+      "input": {
+        "project": null,
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · no active project\nbuild something first, then ask again · r.project-exists\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "files-capped",
+      "target": "files",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [
+              "mods/m00.js",
+              "mods/m01.js",
+              "mods/m02.js",
+              "mods/m03.js",
+              "mods/m04.js",
+              "mods/m05.js",
+              "mods/m06.js",
+              "mods/m07.js",
+              "mods/m08.js",
+              "mods/m09.js",
+              "mods/m10.js",
+              "mods/m11.js",
+              "mods/m12.js",
+              "mods/m13.js",
+              "mods/m14.js",
+              "mods/m15.js",
+              "mods/m16.js",
+              "mods/m17.js",
+              "mods/m18.js",
+              "mods/m19.js",
+              "mods/m20.js",
+              "mods/m21.js",
+              "mods/m22.js",
+              "mods/m23.js",
+              "mods/m24.js",
+              "mods/m25.js",
+              "mods/m26.js",
+              "mods/m27.js",
+              "mods/m28.js",
+              "mods/m29.js",
+              "mods/m30.js",
+              "mods/m31.js",
+              "mods/m32.js",
+              "mods/m33.js",
+              "mods/m34.js",
+              "mods/m35.js",
+              "mods/m36.js",
+              "mods/m37.js",
+              "mods/m38.js",
+              "mods/m39.js"
+            ],
+            "systems": [],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Notes · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Notes</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "mods/m00.js": "/* mods/m00.js */\n",
+            "mods/m01.js": "/* mods/m01.js */\n",
+            "mods/m02.js": "/* mods/m02.js */\n",
+            "mods/m03.js": "/* mods/m03.js */\n",
+            "mods/m04.js": "/* mods/m04.js */\n",
+            "mods/m05.js": "/* mods/m05.js */\n",
+            "mods/m06.js": "/* mods/m06.js */\n",
+            "mods/m07.js": "/* mods/m07.js */\n",
+            "mods/m08.js": "/* mods/m08.js */\n",
+            "mods/m09.js": "/* mods/m09.js */\n",
+            "mods/m10.js": "/* mods/m10.js */\n",
+            "mods/m11.js": "/* mods/m11.js */\n",
+            "mods/m12.js": "/* mods/m12.js */\n",
+            "mods/m13.js": "/* mods/m13.js */\n",
+            "mods/m14.js": "/* mods/m14.js */\n",
+            "mods/m15.js": "/* mods/m15.js */\n",
+            "mods/m16.js": "/* mods/m16.js */\n",
+            "mods/m17.js": "/* mods/m17.js */\n",
+            "mods/m18.js": "/* mods/m18.js */\n",
+            "mods/m19.js": "/* mods/m19.js */\n",
+            "mods/m20.js": "/* mods/m20.js */\n",
+            "mods/m21.js": "/* mods/m21.js */\n",
+            "mods/m22.js": "/* mods/m22.js */\n",
+            "mods/m23.js": "/* mods/m23.js */\n",
+            "mods/m24.js": "/* mods/m24.js */\n",
+            "mods/m25.js": "/* mods/m25.js */\n",
+            "mods/m26.js": "/* mods/m26.js */\n",
+            "mods/m27.js": "/* mods/m27.js */\n",
+            "mods/m28.js": "/* mods/m28.js */\n",
+            "mods/m29.js": "/* mods/m29.js */\n",
+            "mods/m30.js": "/* mods/m30.js */\n",
+            "mods/m31.js": "/* mods/m31.js */\n",
+            "mods/m32.js": "/* mods/m32.js */\n",
+            "mods/m33.js": "/* mods/m33.js */\n",
+            "mods/m34.js": "/* mods/m34.js */\n",
+            "mods/m35.js": "/* mods/m35.js */\n",
+            "mods/m36.js": "/* mods/m36.js */\n",
+            "mods/m37.js": "/* mods/m37.js */\n",
+            "mods/m38.js": "/* mods/m38.js */\n",
+            "mods/m39.js": "/* mods/m39.js */\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 4,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · files · Notes · 45 expected · 45 actual · ok · r.files\nexpected (45): ARCHITECTURE.md · README.md · app.js · index.html · r.spec\n… 41 more expected not listed · r.files-cap\nactual (45): ARCHITECTURE.md · README.md · app.js · index.html · r.actual\n… 41 more actual not listed · r.files-cap\nmissing (0): none · r.missing\nextra (0): none · r.extra\nbudgets: files 45/32 · bytes 1,159/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.files, r.spec, r.files-cap, r.actual, r.missing, r.extra, r.limits, r.no-write"
+    },
+    {
+      "name": "smoke-pass",
+      "target": "smoke",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Notes · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Notes</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · smoke · Notes · 8 checks · 8 pass · 0 fail · ok · r.smoke\n  pass · index.html exists and has content · r.check-index\n  pass · title matches the project name · r.check-title\n  pass · styles.css has content · r.check-styles\n  pass · app.js defines a function or event listener · r.check-entry\n  pass · scripts load before app.js · r.check-order\n  pass · local links resolve to real files · r.check-links\n  pass · README.md and ARCHITECTURE.md have content · r.check-docs\n  pass · files and bytes are within budget · r.check-budget\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 5/32 · bytes 439/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.smoke, r.check-index, r.check-title, r.check-styles, r.check-entry, r.check-order, r.check-links, r.check-docs, r.check-budget, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "smoke-fail",
+      "target": "smoke",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {
+            "index.html": "<!doctype html>\n<html><head><title>Wrong name</title></head><body><a href=\"missing.html\">x</a>\n<script src=\"app.js\"></script>\n<script src=\"site.js\"></script>\n</body></html>\n",
+            "styles.css": "   \n",
+            "app.js": "var x = 1;\n",
+            "README.md": "\n",
+            "ARCHITECTURE.md": "ok\n",
+            "site.js": "/* site */\n",
+            "debug.log": "noise\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 64,
+          "projectFiles": 4
+        }
+      },
+      "want": "verify · smoke · Notes · 8 checks · 1 pass · 7 fail · fail · r.smoke\n  pass · index.html exists and has content · r.check-index\n  fail · title matches the project name · found \"Wrong name\" · r.check-title\n  fail · styles.css has content · styles.css is empty · r.check-styles\n  fail · app.js defines a function or event listener · no function or event listener · r.check-entry\n  fail · scripts load before app.js · 1 script(s) load after app.js: site.js · r.check-order\n  fail · local links resolve to real files · 1 missing: missing.html · r.check-links\n  fail · README.md and ARCHITECTURE.md have content · missing or empty: README.md · r.check-docs\n  fail · files and bytes are within budget · files 7/4 · bytes 209/64 · r.check-budget\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 7/4 · bytes 209/64 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.smoke, r.check-index, r.check-title, r.check-styles, r.check-entry, r.check-order, r.check-links, r.check-docs, r.check-budget, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "smoke-empty",
+      "target": "smoke",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {}
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · smoke · Notes · 8 checks · 1 pass · 7 fail · fail · r.smoke\n  fail · index.html exists and has content · index.html is missing · r.check-index\n  fail · title matches the project name · no title tag · r.check-title\n  fail · styles.css has content · styles.css is missing · r.check-styles\n  fail · app.js defines a function or event listener · app.js is missing · r.check-entry\n  fail · scripts load before app.js · app.js is not referenced · r.check-order\n  fail · local links resolve to real files · index.html is missing · r.check-links\n  fail · README.md and ARCHITECTURE.md have content · missing or empty: README.md, ARCHITECTURE.md · r.check-docs\n  pass · files and bytes are within budget · r.check-budget\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 0/32 · bytes 0/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.smoke, r.check-index, r.check-title, r.check-styles, r.check-entry, r.check-order, r.check-links, r.check-docs, r.check-budget, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "smoke-missing-project",
+      "target": "smoke",
+      "input": {
+        "project": null,
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · smoke · no active project\nbuild something first, then ask again · r.project-exists\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "smoke-capped",
+      "target": "smoke",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Notes · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Notes</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 3,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · smoke · Notes · 3 checks · 3 pass · 0 fail · ok · r.smoke\n  pass · index.html exists and has content · r.check-index\n  pass · title matches the project name · r.check-title\n  pass · styles.css has content · r.check-styles\n… 5 more check(s) not run · r.checks-cap\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 5/32 · bytes 439/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.smoke, r.check-index, r.check-title, r.check-styles, r.checks-cap, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "report-pass",
+      "target": "report",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Notes · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Notes</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · report · Notes · 5/5 files · 8/8 checks · ok · r.report\nfiles: 5 expected · 5 actual · 0 missing · 0 extra · r.files\nverdict: ok · every expected file is present and every smoke check passed · r.verdict\nmissing (0): none · r.missing\nextra (0): none · r.extra\n  pass · index.html exists and has content · r.check-index\n  pass · title matches the project name · r.check-title\n  pass · styles.css has content · r.check-styles\n  pass · app.js defines a function or event listener · r.check-entry\n  pass · scripts load before app.js · r.check-order\n  pass · local links resolve to real files · r.check-links\n  pass · README.md and ARCHITECTURE.md have content · r.check-docs\n  pass · files and bytes are within budget · r.check-budget\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 5/32 · bytes 439/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.report, r.files, r.verdict, r.missing, r.extra, r.check-index, r.check-title, r.check-styles, r.check-entry, r.check-order, r.check-links, r.check-docs, r.check-budget, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "report-fail",
+      "target": "report",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {
+            "index.html": "<!doctype html>\n<html><head><title>Wrong name</title></head><body><a href=\"missing.html\">x</a>\n<script src=\"app.js\"></script>\n<script src=\"site.js\"></script>\n</body></html>\n",
+            "styles.css": "   \n",
+            "app.js": "var x = 1;\n",
+            "README.md": "\n",
+            "ARCHITECTURE.md": "ok\n",
+            "site.js": "/* site */\n",
+            "debug.log": "noise\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 64,
+          "projectFiles": 4
+        }
+      },
+      "want": "verify · report · Notes · 5/7 files · 1/8 checks · fail · r.report\nfiles: 5 expected · 7 actual · 0 missing · 2 extra · r.files\nverdict: fail · 0 missing · 2 extra · 7 failed checks · r.verdict\nmissing (0): none · r.missing\nextra (2): debug.log · site.js · r.extra\n  pass · index.html exists and has content · r.check-index\n  fail · title matches the project name · found \"Wrong name\" · r.check-title\n  fail · styles.css has content · styles.css is empty · r.check-styles\n  fail · app.js defines a function or event listener · no function or event listener · r.check-entry\n  fail · scripts load before app.js · 1 script(s) load after app.js: site.js · r.check-order\n  fail · local links resolve to real files · 1 missing: missing.html · r.check-links\n  fail · README.md and ARCHITECTURE.md have content · missing or empty: README.md · r.check-docs\n  fail · files and bytes are within budget · files 7/4 · bytes 209/64 · r.check-budget\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 7/4 · bytes 209/64 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.report, r.files, r.verdict, r.missing, r.extra, r.check-index, r.check-title, r.check-styles, r.check-entry, r.check-order, r.check-links, r.check-docs, r.check-budget, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "report-empty",
+      "target": "report",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "seed": 123456789
+          },
+          "files": {}
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · report · Notes · 5/0 files · 1/8 checks · fail · r.report\nfiles: 5 expected · 0 actual · 5 missing · 0 extra · r.files\nverdict: fail · 5 missing · 0 extra · 7 failed checks · r.verdict\nmissing (5): ARCHITECTURE.md · README.md · app.js · index.html · styles.css · r.missing\nextra (0): none · r.extra\n  fail · index.html exists and has content · index.html is missing · r.check-index\n  fail · title matches the project name · no title tag · r.check-title\n  fail · styles.css has content · styles.css is missing · r.check-styles\n  fail · app.js defines a function or event listener · app.js is missing · r.check-entry\n  fail · scripts load before app.js · app.js is not referenced · r.check-order\n  fail · local links resolve to real files · index.html is missing · r.check-links\n  fail · README.md and ARCHITECTURE.md have content · missing or empty: README.md, ARCHITECTURE.md · r.check-docs\n  pass · files and bytes are within budget · r.check-budget\nreads: project files only · nothing is executed · r.read-only\nbudgets: files 0/32 · bytes 0/524,288 · verify cap 4,000 chars · r.limits\nwrites: no file · r.no-write\nrules: r.report, r.files, r.verdict, r.missing, r.extra, r.check-index, r.check-title, r.check-styles, r.check-entry, r.check-order, r.check-links, r.check-docs, r.check-budget, r.read-only, r.limits, r.no-write"
+    },
+    {
+      "name": "report-missing-project",
+      "target": "report",
+      "input": {
+        "project": null,
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 4000,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · report · no active project\nbuild something first, then ask again · r.project-exists\nwrites: no file · r.no-write"
+    },
+    {
+      "name": "report-trimmed",
+      "target": "report",
+      "input": {
+        "project": {
+          "name": "Notes",
+          "slug": "notes",
+          "kind": "notes",
+          "spec": {
+            "genre": "notes",
+            "kind": "notes",
+            "dim": "2D",
+            "features": [],
+            "counts": {},
+            "levels": null,
+            "size": null,
+            "subtheme": "",
+            "modules": [
+              "mods/m00.js",
+              "mods/m01.js",
+              "mods/m02.js",
+              "mods/m03.js",
+              "mods/m04.js",
+              "mods/m05.js",
+              "mods/m06.js",
+              "mods/m07.js",
+              "mods/m08.js",
+              "mods/m09.js",
+              "mods/m10.js",
+              "mods/m11.js",
+              "mods/m12.js",
+              "mods/m13.js",
+              "mods/m14.js",
+              "mods/m15.js",
+              "mods/m16.js",
+              "mods/m17.js",
+              "mods/m18.js",
+              "mods/m19.js",
+              "mods/m20.js",
+              "mods/m21.js",
+              "mods/m22.js",
+              "mods/m23.js",
+              "mods/m24.js",
+              "mods/m25.js",
+              "mods/m26.js",
+              "mods/m27.js",
+              "mods/m28.js",
+              "mods/m29.js",
+              "mods/m30.js",
+              "mods/m31.js",
+              "mods/m32.js",
+              "mods/m33.js",
+              "mods/m34.js",
+              "mods/m35.js",
+              "mods/m36.js",
+              "mods/m37.js",
+              "mods/m38.js",
+              "mods/m39.js"
+            ],
+            "systems": [],
+            "seed": 123456789
+          },
+          "files": {
+            "ARCHITECTURE.md": "# Architecture · Notes\n\nState lives in one place.\n",
+            "README.md": "# Notes\n\nA small, self-contained project built by toolrx.\n",
+            "app.js": "function start(){\n  document.body.dataset.ready = \"1\";\n}\nstart();\n",
+            "index.html": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n<head>\n<title>Notes · toolrx</title>\n<link rel=\"stylesheet\" href=\"styles.css\">\n</head>\n<body>\n<h1>Notes</h1>\n<script src=\"app.js\"></script>\n</body>\n</html>\n",
+            "styles.css": "body{font-family:system-ui;background:#0b1020;color:#e6edf7}\n",
+            "mods/m00.js": "/* mods/m00.js */\n",
+            "mods/m01.js": "/* mods/m01.js */\n",
+            "mods/m02.js": "/* mods/m02.js */\n",
+            "mods/m03.js": "/* mods/m03.js */\n",
+            "mods/m04.js": "/* mods/m04.js */\n",
+            "mods/m05.js": "/* mods/m05.js */\n",
+            "mods/m06.js": "/* mods/m06.js */\n",
+            "mods/m07.js": "/* mods/m07.js */\n",
+            "mods/m08.js": "/* mods/m08.js */\n",
+            "mods/m09.js": "/* mods/m09.js */\n",
+            "mods/m10.js": "/* mods/m10.js */\n",
+            "mods/m11.js": "/* mods/m11.js */\n",
+            "mods/m12.js": "/* mods/m12.js */\n",
+            "mods/m13.js": "/* mods/m13.js */\n",
+            "mods/m14.js": "/* mods/m14.js */\n",
+            "mods/m15.js": "/* mods/m15.js */\n",
+            "mods/m16.js": "/* mods/m16.js */\n",
+            "mods/m17.js": "/* mods/m17.js */\n",
+            "mods/m18.js": "/* mods/m18.js */\n",
+            "mods/m19.js": "/* mods/m19.js */\n",
+            "mods/m20.js": "/* mods/m20.js */\n",
+            "mods/m21.js": "/* mods/m21.js */\n",
+            "mods/m22.js": "/* mods/m22.js */\n",
+            "mods/m23.js": "/* mods/m23.js */\n",
+            "mods/m24.js": "/* mods/m24.js */\n",
+            "mods/m25.js": "/* mods/m25.js */\n",
+            "mods/m26.js": "/* mods/m26.js */\n",
+            "mods/m27.js": "/* mods/m27.js */\n",
+            "mods/m28.js": "/* mods/m28.js */\n",
+            "mods/m29.js": "/* mods/m29.js */\n",
+            "mods/m30.js": "/* mods/m30.js */\n",
+            "mods/m31.js": "/* mods/m31.js */\n",
+            "mods/m32.js": "/* mods/m32.js */\n",
+            "mods/m33.js": "/* mods/m33.js */\n",
+            "mods/m34.js": "/* mods/m34.js */\n",
+            "mods/m35.js": "/* mods/m35.js */\n",
+            "mods/m36.js": "/* mods/m36.js */\n",
+            "mods/m37.js": "/* mods/m37.js */\n",
+            "mods/m38.js": "/* mods/m38.js */\n",
+            "mods/m39.js": "/* mods/m39.js */\n"
+          }
+        },
+        "limits": {
+          "verifyFiles": 32,
+          "verifyChecks": 8,
+          "verifyReportChars": 700,
+          "projectBytes": 524288,
+          "projectFiles": 32
+        }
+      },
+      "want": "verify · report · Notes · 45/45 files · 7/8 checks · fail · r.report\nfiles: 45 expected · 45 actual · 0 missing · 0 extra · r.files\nverdict: fail · 0 missing · 0 extra · 1 failed checks · r.verdict\nmissing (0): none · r.missing\nextra (0): none · r.extra\n  pass · index.html exists and has content · r.check-index\n  pass · title matches the project name · r.check-title\n  pass · styles.css has content · r.check-styles\n  pass · app.js defines a function or event listener · r.check-entry\n  pass · scripts load before app.js · r.check-order\n  pass · local links resolve to real files · r.check-links\n… trimmed to 700 chars (verifyReportChars) · r.trim"
+    }
+  ]
+}

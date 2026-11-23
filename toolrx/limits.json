@@ -52,5 +52,8 @@
   "eventEntries": 32,
   "eventBytes": 8192,
   "eventText": 240,
+  "verifyFiles": 32,
+  "verifyChecks": 8,
+  "verifyReportChars": 4000,
   "styleChars": 600
 }

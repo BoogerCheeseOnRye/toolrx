@@ -62,7 +62,7 @@ global.dispatchEvent = () => {};
 
 for (const name of [
   'blake2b.js', 'router.js', 'limits.js', 'budget.js', 'planrewrite.js',
-  'thinking.js', 'explain.js', 'repair.js', 'trace.js', 'journal.js',
+  'thinking.js', 'explain.js', 'verify.js', 'repair.js', 'trace.js', 'journal.js',
   'workspace.js', 'events.js', 'style.js', 'context.js', 'skills.js',
   'templates.js', 'context.js', 'patches.js', 'engine2d.js',
   'engine2d.embed.js', 'engine3d.js', 'engine3d.embed.js', 'worldgen.js',
@@ -289,7 +289,7 @@ class EventsTest(unittest.TestCase):
         self.assertEqual(data["eventEntries"], 32)
         self.assertEqual(data["eventBytes"], 8192)
         self.assertEqual(data["eventText"], 240)
-        self.assertEqual(len(envelope._RANGES), 53)
+        self.assertEqual(len(envelope._RANGES), 56)
 
     # ------------------------------------------------------------- pure ---
     def test_entry_cap_drops_oldest_and_reports_it(self):
@@ -406,8 +406,9 @@ class EventsTest(unittest.TestCase):
 
     def test_offline_shell_ships_the_event_module(self):
         sw = self.out["dashboard"]["sw"]
-        self.assertIn('const CACHE = "toolrx-shell-v18-r13";', sw)
+        self.assertIn('const CACHE = "toolrx-shell-v18-r14";', sw)
         self.assertIn('"./web/events.js"', sw)
+        self.assertIn('"./web/verify.js"', sw)
 
     def test_no_network_on_the_default_path(self):
         self.assertEqual(self.out["fetches"], 0)

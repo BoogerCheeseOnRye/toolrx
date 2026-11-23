@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "intents": {
+    "files": {
+      "op": "verify.files",
+      "target": "files",
+      "store": "",
+      "summary": "list expected versus actual project files and name missing or extra files",
+      "example": "verify the project files",
+      "bare": [
+        "verify the project files",
+        "verify project files",
+        "check the project files",
+        "check project files",
+        "list expected and actual files",
+        "list expected versus actual files",
+        "show expected and actual files",
+        "which files are extra",
+        "what files should this project have",
+        "did the build write every file",
+        "did the build produce every file",
+        "which files are missing",
+        "show missing files",
+        "list missing and extra files"
+      ]
+    },
+    "smoke": {
+      "op": "verify.smoke",
+      "target": "smoke",
+      "store": "",
+      "summary": "run the project-local smoke checks over title, entry point, links, docs, and budgets",
+      "example": "run the project smoke checks",
+      "bare": [
+        "run the project smoke checks",
+        "run the smoke checks",
+        "run smoke checks",
+        "smoke test this project",
+        "smoke test the project",
+        "check that this project works",
+        "check the project entry point",
+        "verify the project title",
+        "does this project have the expected title",
+        "check the project links",
+        "check the project scripts"
+      ]
+    },
+    "report": {
+      "op": "verify.report",
+      "target": "report",
+      "store": "",
+      "summary": "produce one bounded verification report from the file diff and smoke checks",
+      "example": "verify this project",
+      "bare": [
+        "verify this project",
+        "verify the project",
+        "verify the build",
+        "verify the last build",
+        "verify this build",
+        "check this project",
+        "run a project verification",
+        "verification report",
+        "show the verification report",
+        "produce a verification report",
+        "did the build produce what it said"
+      ]
+    },
+    "context": {
+      "op": "verify.report.context",
+      "target": "report",
+      "store": "context",
+      "summary": "store the verification report in the bounded context store",
+      "example": "verify this project in context",
+      "bare": [
+        "verify this project in context",
+        "verify the project in context",
+        "store the verification report in context",
+        "save the verification report in context",
+        "put the verification report in context",
+        "keep the verification report in context"
+      ]
+    },
+    "journal": {
+      "op": "verify.report.journal",
+      "target": "report",
+      "store": "journal",
+      "summary": "store the verification verdict in the project journal",
+      "example": "verify this project in the journal",
+      "bare": [
+        "verify this project in the journal",
+        "verify the project in the journal",
+        "store the verification report in the journal",
+        "save the verification report to the journal",
+        "put the verification report in the journal",
+        "keep the verification report in the journal"
+      ]
+    }
+  }
+}

@@ -57,6 +57,9 @@ Ranges (the human-facing contract):
   eventEntries     4–128  operator events kept per project
   eventBytes       512–65,536  serialized operator event log
   eventText        80–2,000  one operator event line
+  verifyFiles      1–256  expected and actual files listed per verification
+  verifyChecks     2–32  smoke checks run per verification
+  verifyReportChars 512–32,000  one verification report
   styleChars       80–8,000  response wrapper added to one exact result
 """
 
@@ -119,6 +122,9 @@ _RANGES = {
     "eventEntries": (4, 128),
     "eventBytes": (512, 65_536),
     "eventText": (80, 2_000),
+    "verifyFiles": (1, 256),
+    "verifyChecks": (2, 32),
+    "verifyReportChars": (512, 32_000),
     "styleChars": (80, 8_000),
 }
 

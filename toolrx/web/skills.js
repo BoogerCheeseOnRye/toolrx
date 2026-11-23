@@ -3238,6 +3238,15 @@
     "explain.project.journal": function (a, ctx) {
       return explainRun("project", "journal", ctx);
     },
+    "verify.files": function (a, ctx) { return verifyRun("files", "", ctx); },
+    "verify.smoke": function (a, ctx) { return verifyRun("smoke", "", ctx); },
+    "verify.report": function (a, ctx) { return verifyRun("report", "", ctx); },
+    "verify.report.context": function (a, ctx) {
+      return verifyRun("report", "context", ctx);
+    },
+    "verify.report.journal": function (a, ctx) {
+      return verifyRun("report", "journal", ctx);
+    },
     "repair.plan": function (a, ctx) { return repairPlan(a, ctx); },
     "repair.resume": function () {
       return "resume · only works as its own turn\n"
@@ -3583,6 +3592,9 @@
       ["eventEntries", "operator events kept per project"],
       ["eventBytes", "serialized operator event log"],
       ["eventText", "one operator event line"],
+      ["verifyFiles", "expected and actual files listed per verification"],
+      ["verifyChecks", "smoke checks run per verification"],
+      ["verifyReportChars", "one verification report"],
       ["styleChars", "response wrapper per result"],
     ];
     const rows = ["limits · source toolrx/limits.json → web/limits.js (version "
@@ -4167,6 +4179,23 @@
       return { text: text + "\nstoring needs the browser workspace" };
     }
     return { text: ctx.explainStore(store, target, text) };
+  }
+
+  /* Step 66: one pure verification over stored state. Expected files come from
+   * the stored build spec, actual files from the project, and every smoke
+   * check reads project text only. Only the two explicit store routes touch
+   * context or the bounded journal. */
+  function verifyRun(target, store, ctx) {
+    const V = root.toolrxVerify;
+    if (!V) throw new Error("verify module is not loaded");
+    const state = typeof ctx.verify === "function" ? ctx.verify() : null;
+    if (!state) throw new Error("verify needs the browser workspace");
+    const text = V.run(target, state);
+    if (!store) return { text: text };
+    if (typeof ctx.verifyStore !== "function") {
+      return { text: text + "\nstoring needs the browser workspace" };
+    }
+    return { text: ctx.verifyStore(store, target, text) };
   }
 
   /* -------------------------------------------------------------- repair ---- */
