@@ -29,6 +29,7 @@ import resume  # noqa: E402  (step 57: one table for resume routes)
 import style  # noqa: E402  (step 58: one table for response-style routes)
 import explain  # noqa: E402  (step 61: one table for explain routes)
 import verify  # noqa: E402  (step 66: one table for verification routes)
+import macros  # noqa: E402  (step 67: one table for named plan macros)
 OUT = pathlib.Path(os.environ.get("TOOLRX_COMMANDS_OUT")
                    or (ROOT / "web" / "commands.json"))
 
@@ -1603,6 +1604,15 @@ for _entry in verify.entries():
     add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
         _entry["d"], _entry["c"])
 
+# ----------------------------------------------------------------- macros ----
+# Step 67: named, reusable plan fragments. Expansion is literal and
+# non-recursive, and the existing planSteps/planChars caps bound it. The
+# browser gets the small macro table beside the command list so it never
+# fetches a second file.
+for _entry in macros.entries():
+    add(_entry["id"], _entry["op"], _entry["re"], _entry["args"],
+        _entry["d"], _entry["c"])
+
 
 def main():
     cats = {}
@@ -1613,6 +1623,7 @@ def main():
         "count": len(COMMANDS),
         "categories": cats,
         "library": LIBRARY,
+        "macros": macros.runtime(),
         "commands": COMMANDS,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)

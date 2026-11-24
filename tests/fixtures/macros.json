@@ -1,0 +1,558 @@
+{
+  "version": 1,
+  "count": 60,
+  "ops": {
+    "macro.list": 6,
+    "macro.run": 24,
+    "macro.preview": 24,
+    "macro.edit": 6
+  },
+  "table": {
+    "version": 1,
+    "macros": [
+      {
+        "name": "standard shooter growth",
+        "summary": "grow a shooter with three enemy types, a boss, and sound",
+        "steps": [
+          "add three enemy types",
+          "add a boss",
+          "add sound effects"
+        ]
+      },
+      {
+        "name": "add inventory + save + ui",
+        "summary": "add inventory, save, and ui systems in one plan",
+        "steps": [
+          "add inventory system",
+          "add save system",
+          "add ui system"
+        ]
+      },
+      {
+        "name": "rpg starter growth",
+        "summary": "add quests, dialogue, and combat to an RPG",
+        "steps": [
+          "add quests system",
+          "add dialogue system",
+          "add combat system"
+        ]
+      },
+      {
+        "name": "polish pass",
+        "summary": "add sound, particles, and a theme toggle",
+        "steps": [
+          "add sound effects",
+          "add particles system",
+          "add a theme toggle"
+        ]
+      },
+      {
+        "name": "safe growth",
+        "summary": "grow the project into modules, then add save and ui",
+        "steps": [
+          "grow the project",
+          "add save system",
+          "add ui system"
+        ]
+      }
+    ],
+    "list": [
+      "show macros",
+      "list macros",
+      "show the macro list",
+      "list the macro list",
+      "what macros are there",
+      "what macros do you have"
+    ],
+    "edit": [
+      "edit the macro plan to (.+)",
+      "edit macro plan to (.+)",
+      "edit the expanded plan to (.+)",
+      "edit the staged plan to (.+)",
+      "replace the macro plan with (.+)",
+      "change the macro plan to (.+)"
+    ]
+  },
+  "cases": [
+    {
+      "text": "show macros",
+      "op": "macro.list"
+    },
+    {
+      "text": "list macros",
+      "op": "macro.list"
+    },
+    {
+      "text": "show the macro list",
+      "op": "macro.list"
+    },
+    {
+      "text": "list the macro list",
+      "op": "macro.list"
+    },
+    {
+      "text": "what macros are there",
+      "op": "macro.list"
+    },
+    {
+      "text": "what macros do you have",
+      "op": "macro.list"
+    },
+    {
+      "text": "run macro standard shooter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "use macro standard shooter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "invoke macro standard shooter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "run the standard shooter growth macro",
+      "op": "macro.run"
+    },
+    {
+      "text": "preview macro standard shooter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "preview the standard shooter growth macro",
+      "op": "macro.preview"
+    },
+    {
+      "text": "show macro standard shooter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "expand macro standard shooter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "run macro add inventory + save + ui",
+      "op": "macro.run"
+    },
+    {
+      "text": "use macro add inventory + save + ui",
+      "op": "macro.run"
+    },
+    {
+      "text": "invoke macro add inventory + save + ui",
+      "op": "macro.run"
+    },
+    {
+      "text": "run the add inventory + save + ui macro",
+      "op": "macro.run"
+    },
+    {
+      "text": "preview macro add inventory + save + ui",
+      "op": "macro.preview"
+    },
+    {
+      "text": "preview the add inventory + save + ui macro",
+      "op": "macro.preview"
+    },
+    {
+      "text": "show macro add inventory + save + ui",
+      "op": "macro.preview"
+    },
+    {
+      "text": "expand macro add inventory + save + ui",
+      "op": "macro.preview"
+    },
+    {
+      "text": "run macro rpg starter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "use macro rpg starter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "invoke macro rpg starter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "run the rpg starter growth macro",
+      "op": "macro.run"
+    },
+    {
+      "text": "preview macro rpg starter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "preview the rpg starter growth macro",
+      "op": "macro.preview"
+    },
+    {
+      "text": "show macro rpg starter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "expand macro rpg starter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "run macro polish pass",
+      "op": "macro.run"
+    },
+    {
+      "text": "use macro polish pass",
+      "op": "macro.run"
+    },
+    {
+      "text": "invoke macro polish pass",
+      "op": "macro.run"
+    },
+    {
+      "text": "run the polish pass macro",
+      "op": "macro.run"
+    },
+    {
+      "text": "preview macro polish pass",
+      "op": "macro.preview"
+    },
+    {
+      "text": "preview the polish pass macro",
+      "op": "macro.preview"
+    },
+    {
+      "text": "show macro polish pass",
+      "op": "macro.preview"
+    },
+    {
+      "text": "expand macro polish pass",
+      "op": "macro.preview"
+    },
+    {
+      "text": "run macro safe growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "use macro safe growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "invoke macro safe growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "run the safe growth macro",
+      "op": "macro.run"
+    },
+    {
+      "text": "preview macro safe growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "preview the safe growth macro",
+      "op": "macro.preview"
+    },
+    {
+      "text": "show macro safe growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "expand macro safe growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "run macro standard shooter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "use macro standard shooter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "invoke macro standard shooter growth",
+      "op": "macro.run"
+    },
+    {
+      "text": "run the standard shooter growth macro",
+      "op": "macro.run"
+    },
+    {
+      "text": "preview macro standard shooter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "preview the standard shooter growth macro",
+      "op": "macro.preview"
+    },
+    {
+      "text": "show macro standard shooter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "expand macro standard shooter growth",
+      "op": "macro.preview"
+    },
+    {
+      "text": "edit the macro plan to add audio system | add weather system",
+      "op": "macro.edit"
+    },
+    {
+      "text": "edit macro plan to add audio system | add weather system",
+      "op": "macro.edit"
+    },
+    {
+      "text": "edit the expanded plan to add audio system | add weather system",
+      "op": "macro.edit"
+    },
+    {
+      "text": "edit the staged plan to add audio system | add weather system",
+      "op": "macro.edit"
+    },
+    {
+      "text": "replace the macro plan with add audio system | add weather system",
+      "op": "macro.edit"
+    },
+    {
+      "text": "change the macro plan to add audio system | add weather system",
+      "op": "macro.edit"
+    }
+  ],
+  "states": [
+    {
+      "name": "preview-standard-shooter-growth",
+      "kind": "preview",
+      "macro": "standard shooter growth",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · standard shooter growth · 3 steps · planSteps 40 · r.macro\nsummary: grow a shooter with three enemy types, a boss, and sound\n  1. add three enemy types\n  2. add a boss\n  3. add sound effects\nsay yes to run exactly these steps, no to cancel, or edit the macro plan to change the list · r.macro-preview"
+    },
+    {
+      "name": "preview-add-inventory-save-ui",
+      "kind": "preview",
+      "macro": "add inventory + save + ui",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · add inventory + save + ui · 3 steps · planSteps 40 · r.macro\nsummary: add inventory, save, and ui systems in one plan\n  1. add inventory system\n  2. add save system\n  3. add ui system\nsay yes to run exactly these steps, no to cancel, or edit the macro plan to change the list · r.macro-preview"
+    },
+    {
+      "name": "preview-rpg-starter-growth",
+      "kind": "preview",
+      "macro": "rpg starter growth",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · rpg starter growth · 3 steps · planSteps 40 · r.macro\nsummary: add quests, dialogue, and combat to an RPG\n  1. add quests system\n  2. add dialogue system\n  3. add combat system\nsay yes to run exactly these steps, no to cancel, or edit the macro plan to change the list · r.macro-preview"
+    },
+    {
+      "name": "preview-polish-pass",
+      "kind": "preview",
+      "macro": "polish pass",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · polish pass · 3 steps · planSteps 40 · r.macro\nsummary: add sound, particles, and a theme toggle\n  1. add sound effects\n  2. add particles system\n  3. add a theme toggle\nsay yes to run exactly these steps, no to cancel, or edit the macro plan to change the list · r.macro-preview"
+    },
+    {
+      "name": "preview-safe-growth",
+      "kind": "preview",
+      "macro": "safe growth",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · safe growth · 3 steps · planSteps 40 · r.macro\nsummary: grow the project into modules, then add save and ui\n  1. grow the project\n  2. add save system\n  3. add ui system\nsay yes to run exactly these steps, no to cancel, or edit the macro plan to change the list · r.macro-preview"
+    },
+    {
+      "name": "missing",
+      "kind": "preview",
+      "macro": "no such macro",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · no such macro · refused · r.macro-missing\nno macro named \"no such macro\" · r.macro-missing\nnothing was run · r.macro-none"
+    },
+    {
+      "name": "recursive",
+      "kind": "preview",
+      "macro": "recursive",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · recursive · refused · r.macro-recursive\nstep 2 invokes another macro: run macro recursive · r.macro-recursive\nnothing was run · r.macro-none",
+      "table": {
+        "version": 1,
+        "macros": [
+          {
+            "name": "recursive",
+            "summary": "synthetic test macro",
+            "steps": [
+              "add save system",
+              "run macro recursive"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "too-many-steps",
+      "kind": "preview",
+      "macro": "too many steps",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · too many steps · refused · r.macro-steps\n41 steps > planSteps 40 · r.macro-steps\nnothing was run · r.macro-none",
+      "table": {
+        "version": 1,
+        "macros": [
+          {
+            "name": "too many steps",
+            "summary": "synthetic test macro",
+            "steps": [
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system",
+              "add save system"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "too-many-chars",
+      "kind": "preview",
+      "macro": "too many chars",
+      "limits": {
+        "steps": 40,
+        "chars": 20,
+        "single": 2000
+      },
+      "want": "macro · too many chars · refused · r.macro-chars\n29 chars > planChars 20 · r.macro-chars\nnothing was run · r.macro-none",
+      "table": {
+        "version": 1,
+        "macros": [
+          {
+            "name": "too many chars",
+            "summary": "synthetic test macro",
+            "steps": [
+              "add save system",
+              "add ui system"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "long-step",
+      "kind": "preview",
+      "macro": "long step",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 5
+      },
+      "want": "macro · long step · refused · r.macro-step-chars\nstep 1 is 15 chars > singleChars 5 · r.macro-step-chars\nnothing was run · r.macro-none",
+      "table": {
+        "version": 1,
+        "macros": [
+          {
+            "name": "long step",
+            "summary": "synthetic test macro",
+            "steps": [
+              "add save system"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty",
+      "kind": "check",
+      "macro": "empty",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro · empty · refused · r.macro-empty\na macro needs at least one step · r.macro-empty\nnothing was run · r.macro-none",
+      "steps": []
+    },
+    {
+      "name": "edited",
+      "kind": "edit",
+      "macro": "add inventory + save + ui",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macro plan · add inventory + save + ui · edited · 2 steps · r.macro-edit\n  1. add audio system\n  2. add weather system\nthe macro \"add inventory + save + ui\" is unchanged · r.macro-immutable\nsay yes to run exactly these steps, no to cancel · r.macro-preview",
+      "steps": [
+        "add audio system",
+        "add weather system"
+      ]
+    },
+    {
+      "name": "list",
+      "kind": "list",
+      "macro": "",
+      "limits": {
+        "steps": 40,
+        "chars": 8000,
+        "single": 2000
+      },
+      "want": "macros · 5 named · literal, non-recursive expansion · r.macro-list\n  standard shooter growth · 3 steps · grow a shooter with three enemy types, a boss, and sound\n  add inventory + save + ui · 3 steps · add inventory, save, and ui systems in one plan\n  rpg starter growth · 3 steps · add quests, dialogue, and combat to an RPG\n  polish pass · 3 steps · add sound, particles, and a theme toggle\n  safe growth · 3 steps · grow the project into modules, then add save and ui\npreview macro <name> · run macro <name> · edit the macro plan to change a staged list"
+    }
+  ]
+}

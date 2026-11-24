@@ -23,6 +23,7 @@
       "lang": 45,
       "library": 43,
       "llm": 33,
+      "macro": 60,
       "math": 285,
       "memory": 116,
       "misc": 55,
@@ -38,12 +39,12 @@
       "web": 32,
       "workspace": 35
     },
-    "count": 13482,
+    "count": 13542,
     "dead_literals": 0,
     "duplicate_ids": 0,
     "duplicate_patterns": 0,
     "model_bytes": 494381,
-    "pure_literals": 7870
+    "pure_literals": 7908
   },
   "fixtures": {
     "builds": {

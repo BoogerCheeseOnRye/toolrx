@@ -142,6 +142,7 @@ class DashboardTest(unittest.TestCase):
         self.assertIn('src="web/thinking.js"', self.html)
         self.assertIn('src="web/explain.js"', self.html)
         self.assertIn('src="web/verify.js"', self.html)
+        self.assertIn('src="web/macros.js"', self.html)
         self.assertIn('src="web/repair.js"', self.html)
         self.assertIn('src="web/trace.js"', self.html)
         self.assertIn('src="web/journal.js"', self.html)
@@ -165,6 +166,8 @@ class DashboardTest(unittest.TestCase):
         self.assertLess(self.html.index('src="web/explain.js"'),
                         self.html.index('src="web/verify.js"'))
         self.assertLess(self.html.index('src="web/verify.js"'),
+                        self.html.index('src="web/macros.js"'))
+        self.assertLess(self.html.index('src="web/macros.js"'),
                         self.html.index('src="web/repair.js"'))
         self.assertLess(self.html.index('src="web/repair.js"'),
                         self.html.index('src="web/trace.js"'))

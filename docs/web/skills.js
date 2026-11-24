@@ -26,6 +26,7 @@
   let COMMANDS = [];
   let BY_OP = Object.create(null);
   let LIBRARY = null;
+  let MACROS = null;
   let meta = { count: 0, categories: {} };
 
   /* Reply-language preference. Packs localize the shell's own short messages
@@ -1928,7 +1929,8 @@
     // a later correction still revises what the user actually ran.
     const actions = list.filter(function (r) {
       const via = String(r.via || "");
-      return via && via !== "chat" && via.indexOf("conversation.") !== 0;
+      return via && via !== "chat" && via.indexOf("conversation.") !== 0
+        && !/^macro\.(?:preview|edit|list)$/.test(via);
     });
     if (actions.length) {
       const action = actions[actions.length - 1];
@@ -1947,7 +1949,10 @@
     }
     // A normal command means the user moved on. A staged correction is the
     // exception: its reply is recorded with keepPending so "yes" can find it.
-    if (!(opts && opts.keepPending)) state.pending = null;
+    if (!(opts && opts.keepPending)) {
+      if (state.pending && state.pending.kind === "macro") clearMacro(ctx);
+      state.pending = null;
+    }
     if (!(opts && opts.keepRepair)
         && String(last.via || "").indexOf("repair.") !== 0) {
       clearRepair(ctx);
@@ -1984,6 +1989,12 @@
         + (doc ? " · " + doc.steps.length + " steps · pass "
           + doc.passes + " of " + doc.maxPasses : " · no longer stored")
         + " · say yes to run it, no to cancel, or send an edited request");
+    } else if (state.pending.kind === "macro") {
+      const doc = readMacro(ctx);
+      lines.push("pending: macro plan " + state.pending.text
+        + (doc ? " · " + doc.steps.length + " steps"
+          + (doc.edited ? " · edited" : "") : " · no longer stored")
+        + " · say yes to run it, no to cancel, or edit the macro plan to change the list");
     } else {
       lines.push("pending: needs " + state.pending.need);
     }
@@ -2002,6 +2013,146 @@
                           pending: null, dropped: 0, turnsSeen: 0 });
     }
     return "conversation cleared · memory facts, notes, projects, and context are untouched";
+  }
+
+  /* -------------------------------------------------------------- macros ---- */
+  /* Step 67: a named macro expands literally into steps. The table travels in
+   * commands.json (built from toolrx/macros.json) and the pure expander is
+   * web/macros.js. A preview stages the exact list beside conversation memory
+   * so the user can edit it without changing the macro. */
+  const MACRO_KEY = "macroPlan";
+  const MACRO_VERSION = 1;
+
+  function macroModule() { return root.toolrxMacros || null; }
+
+  function macroLimits() {
+    return { steps: LIMITS.steps, chars: LIMITS.plan, single: LIMITS.single };
+  }
+
+  function macroExpand(name) {
+    const M = macroModule();
+    if (!M) throw new Error("the macro module is not loaded");
+    return M.expand(MACROS, name, macroLimits());
+  }
+
+  function macroHeader(result) {
+    const steps = (result.steps || []).map(function (step) {
+      return String(step);
+    });
+    const total = result.total == null ? steps.length : result.total;
+    const lines = [
+      "macro · " + result.name + " · " + total + " steps · r.macro-run",
+    ];
+    steps.forEach(function (step, i) {
+      lines.push("  " + (i + 1) + ". " + step);
+    });
+    return lines.join("\n");
+  }
+
+  function readMacro(ctx) {
+    const mem = memoryStore(ctx);
+    const raw = mem ? mem.get(MACRO_KEY) : null;
+    if (!raw || typeof raw !== "object" || raw.version !== MACRO_VERSION
+        || !Array.isArray(raw.steps)) return null;
+    return raw;
+  }
+
+  function stageMacro(ctx, result, steps, edited) {
+    const mem = memoryStore(ctx);
+    if (!mem) return null;
+    const clean = (steps || []).map(function (step) { return String(step); });
+    const record = {
+      version: MACRO_VERSION,
+      name: String(result.name),
+      summary: String(result.summary || ""),
+      steps: clean,
+      original: result.steps.map(function (step) { return String(step); }),
+      edited: !!edited,
+    };
+    if (byteLength(JSON.stringify(record)) > LIMITS_RAW.planVariantBytes) {
+      return null;
+    }
+    mem.set(MACRO_KEY, record);
+    return record;
+  }
+
+  function clearMacro(ctx) {
+    const mem = memoryStore(ctx);
+    if (mem) mem.set(MACRO_KEY, null);
+  }
+
+  function stagePendingMacro(ctx, name) {
+    const state = conversationState(ctx);
+    state.pending = {
+      kind: "macro",
+      text: String(name || "macro"),
+      n: (state.turnsSeen || 0) + 1,
+    };
+    conversationSave(ctx, state);
+  }
+
+  function macroPreviewRun(name, ctx) {
+    const M = macroModule();
+    const result = macroExpand(name);
+    if (!result.ok) {
+      return { step: "preview macro " + name,
+               text: M.previewText(result, macroLimits()),
+               via: "macro.preview", error: true, planLength: 1 };
+    }
+    const record = stageMacro(ctx, result, result.steps, false);
+    if (!record) {
+      return {
+        step: "preview macro " + name, via: "macro.preview", error: true,
+        planLength: 1,
+        text: "macro · " + result.name + " · refused · r.macro-store\n"
+          + "the expanded plan is larger than planVariantBytes ("
+          + LIMITS_RAW.planVariantBytes + " bytes); nothing was staged · r.macro-store",
+      };
+    }
+    stagePendingMacro(ctx, result.name);
+    return { step: "preview macro " + name,
+             text: M.previewText(result, macroLimits()),
+             via: "macro.preview", planLength: 1 };
+  }
+
+  function macroEditRun(stepsText, ctx) {
+    const M = macroModule();
+    const state = conversationState(ctx);
+    const doc = state.pending && state.pending.kind === "macro"
+      ? readMacro(ctx) : null;
+    if (!doc) {
+      return {
+        step: "edit the macro plan", via: "macro.edit", error: true,
+        planLength: 1,
+        text: "no macro plan is staged · preview a macro first · r.macro-pending\n"
+          + "nothing was changed · r.macro-none",
+      };
+    }
+    const steps = M.parseSteps(stepsText);
+    const result = M.check(doc.name, steps, macroLimits());
+    if (!result.ok) {
+      return { step: "edit the macro plan", via: "macro.edit", error: true,
+               planLength: 1, text: M.refusalText(result) };
+    }
+    const record = stageMacro(ctx, result, result.steps, true);
+    if (!record) {
+      return {
+        step: "edit the macro plan", via: "macro.edit", error: true,
+        planLength: 1,
+        text: "macro plan · " + doc.name + " · refused · r.macro-store\n"
+          + "the edited plan is larger than planVariantBytes ("
+          + LIMITS_RAW.planVariantBytes + " bytes); nothing was changed · r.macro-store",
+      };
+    }
+    stagePendingMacro(ctx, doc.name);
+    return { step: "edit the macro plan", via: "macro.edit",
+             text: M.editText(result, macroLimits()), planLength: 1 };
+  }
+
+  function macroListRun() {
+    const M = macroModule();
+    return { step: "show macros", via: "macro.list", planLength: 1,
+             text: M.listText(MACROS) };
   }
 
   function conversationNeed() {
@@ -2083,6 +2234,21 @@
                               return step.text;
                             }), variant: variant } };
       }
+      if (state.pending.kind === "macro") {
+        const doc = readMacro(ctx);
+        state.pending = null;
+        conversationSave(ctx, state);
+        clearMacro(ctx);
+        if (!doc) {
+          return { reply: {
+            text: "The macro plan is no longer stored. Preview the macro again and I will rebuild it.",
+            via: "conversation.confirm" } };
+        }
+        return { confirm: { kind: "macro", text: doc.name,
+                            steps: doc.steps.map(function (step) {
+                              return String(step);
+                            }), macro: doc } };
+      }
       if (state.pending.kind !== "action" || !state.pending.text) {
         return { reply: {
           text: "The pending action is not runnable. Tell me the action again.",
@@ -2106,6 +2272,7 @@
       conversationSave(ctx, state);
       clearVariant(ctx);
       clearRepair(ctx);
+      clearMacro(ctx);
       return { reply: {
         text: 'Cancelled "' + (pending.text || "the pending action")
           + '" — nothing was run.',
@@ -3651,6 +3818,7 @@
   function compile(data) {
     meta = { count: data.count || data.commands.length, categories: data.categories || {} };
     LIBRARY = data.library || null;
+    MACROS = data.macros || null;
     COMMANDS = data.commands.map(c => Object.assign({}, c, { rx: new RegExp(c.re, "i") }));
     BY_OP = Object.create(null);
     for (const c of COMMANDS) (BY_OP[c.op] = BY_OP[c.op] || []).push(c);
@@ -4304,6 +4472,30 @@
    * variant instead of only a refusal (step 52). */
   function planPreview(q, opts) {
     const text = String(q == null ? "" : q);
+    const macroHit = match(text);
+    if (macroHit && (macroHit.op === "macro.run"
+                     || macroHit.op === "macro.preview")) {
+      const expanded = macroExpand(macroHit.args.name);
+      const budget = previewBudget(text.length, expanded.total, opts);
+      if (!expanded.ok) {
+        return {
+          blocked: true,
+          reason: expanded.reason + " · " + expanded.detail,
+          steps: [], total: 0, truncated: false, overLimit: false,
+          plan: false, budget: budget, variant: null,
+          macro: expanded.name,
+        };
+      }
+      const steps = expanded.steps.map(function (step) {
+        const hit = match(step);
+        return { text: step, via: hit ? hit.op : "router", exact: !!hit };
+      });
+      return {
+        blocked: false, reason: null, steps: steps,
+        total: expanded.total, truncated: false, overLimit: false,
+        plan: true, budget: budget, variant: null, macro: expanded.name,
+      };
+    }
     const block = blockCapture(text);
     if (block) {
       const budget = previewBudget(text.length, 1, opts);
@@ -4410,9 +4602,11 @@
           // itself is the turn that gets recorded, so a second "yes" finds
           // nothing pending and cannot re-run the build.
           const staged = conv.confirm.kind === "variant"
-            || conv.confirm.kind === "repair" ? conv.confirm : null;
+            || conv.confirm.kind === "repair"
+            || conv.confirm.kind === "macro" ? conv.confirm : null;
           const variant = staged && staged.kind === "variant" ? staged : null;
           const repair = staged && staged.kind === "repair" ? staged : null;
+          const macro = staged && staged.kind === "macro" ? staged : null;
           const inner = await runPrompt(staged
             ? staged.steps.join("\n") : conv.confirm.text,
             Object.assign({}, base, {
@@ -4421,20 +4615,71 @@
               forcedSteps: staged ? staged.steps : null,
               forcedVariant: variant,
               forcedRepair: repair,
+              forcedMacro: macro,
             }));
           inner.forEach(function (r) { r.confirmed = conv.confirm.text; });
           if (repair && !inner.some(function (r) { return r && r.error; })) {
             clearRepair(base);
           }
+          if (macro && inner.length) {
+            if (inner[0].error && inner[0].errorText == null) {
+              inner[0].errorText = String(inner[0].text || "");
+            }
+            inner[0].text = macroHeader(macro.macro || macro) + "\n\n"
+              + String(inner[0].text || "");
+            inner.forEach(function (r) { r.macro = macro.text; });
+          }
           return finish(inner, false,
             staged ? (variant ? (variant.variant.original || variant.text)
-              : repair.text) : conv.confirm.text,
+              : repair ? repair.text : macro.text) : conv.confirm.text,
             { keepRepair: !!repair });
         }
         if (conv.rewrite) {
           query = conv.rewrite;
           revisedFrom = conv.revisedFrom || original;
         }
+      }
+    }
+    /* Step 67: macro preview, list, edit, and run. A preview stages the exact
+     * expanded list for a later yes, edit, or no. A run expands once and then
+     * reuses the forced-step path so nothing is split or re-planned. */
+    if (!base.conversationSkip) {
+      const hit = match(original);
+      if (hit && hit.op === "macro.preview") {
+        const result = macroPreviewRun(hit.args.name, base);
+        return finish([result], true);
+      }
+      if (hit && hit.op === "macro.list") {
+        return finish([macroListRun()], true);
+      }
+      if (hit && hit.op === "macro.edit") {
+        return finish([macroEditRun(hit.args.steps, base)], true);
+      }
+      if (hit && hit.op === "macro.run") {
+        const expanded = macroExpand(hit.args.name);
+        if (!expanded.ok) {
+          const M = macroModule();
+          return finish([{
+            step: original, via: "macro.run", error: true, planLength: 1,
+            text: M.previewText(expanded, macroLimits()),
+          }]);
+        }
+        const inner = await runPrompt(expanded.steps.join("\n"),
+          Object.assign({}, base, {
+            conversationSkip: true,
+            conversationRecord: false,
+            forcedSteps: expanded.steps,
+            forcedMacro: expanded,
+          }));
+        if (inner.length) {
+          if (inner[0].error && inner[0].errorText == null) {
+            inner[0].errorText = String(inner[0].text || "");
+          }
+          inner[0].text = macroHeader(expanded) + "\n\n"
+            + String(inner[0].text || "");
+          inner.forEach(function (r) { r.macro = expanded.name; });
+        }
+        return finish(inner, false, original);
       }
     }
     /* Step 57: one-command partial-result continuation. A standalone resume
@@ -4570,11 +4815,13 @@
                                         forcedBudget, limits);
       if (forcedRewrite && forcedRewrite.over.length) {
         const what = base.forcedResume ? "resume"
-          : base.forcedRepair ? "repair" : "compacted plan";
+          : base.forcedRepair ? "repair"
+            : base.forcedMacro ? "macro plan" : "compacted plan";
         return finish([{
           step: original, error: true,
           via: base.forcedResume ? "repair.resume"
-            : base.forcedRepair ? "plan.repair" : "plan.variant",
+            : base.forcedRepair ? "plan.repair"
+              : base.forcedMacro ? "macro.run" : "plan.variant",
           planLength: 1,
           text: "the " + what + " no longer fits ("
             + forcedRewrite.over.join(" and ") + "); send the request again "

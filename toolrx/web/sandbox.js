@@ -1797,7 +1797,7 @@
      * later repair or critique still inspect the failure. Step 55: the trace
      * of that inspection still belongs to the run it examined. */
     if (list.every(function (r) {
-      return /^(?:conversation|think|repair|explain|verify|events\.(?:show|export|import))\.?/
+      return /^(?:conversation|think|repair|explain|verify|macro\.(?:preview|edit|list)|events\.(?:show|export|import))\.?/
         .test(String(r && r.via || ""));
     })) {
       const TR = root.toolrxTrace;
@@ -2128,7 +2128,7 @@
   }
 
   function isContextMeta(via) {
-    return /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|events\.(?:show|export|import))/
+    return /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|macro\.(?:preview|edit|list)|events\.(?:show|export|import))/
       .test(String(via || ""));
   }
 
@@ -2142,7 +2142,7 @@
     // Meta commands describe or move the plan; storing their own output as
     // `result/last` would evict the plan they just edited. The session rows
     // below already skip the same set.
-    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|verify\.|events\.(?:show|export|import))/
+    const quiet = /^(?:context\.(?:show|clear|clear\.all|expand|continue|compact)|explain\.|verify\.|macro\.(?:preview|edit|list)|events\.(?:show|export|import))/
       .test(via);
 
     // Step 55: a thinking or repair result carries a trace. Stamp it with the

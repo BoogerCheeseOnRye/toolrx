@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "macros": [
+    {
+      "name": "standard shooter growth",
+      "summary": "grow a shooter with three enemy types, a boss, and sound",
+      "steps": [
+        "add three enemy types",
+        "add a boss",
+        "add sound effects"
+      ]
+    },
+    {
+      "name": "add inventory + save + ui",
+      "summary": "add inventory, save, and ui systems in one plan",
+      "steps": [
+        "add inventory system",
+        "add save system",
+        "add ui system"
+      ]
+    },
+    {
+      "name": "rpg starter growth",
+      "summary": "add quests, dialogue, and combat to an RPG",
+      "steps": [
+        "add quests system",
+        "add dialogue system",
+        "add combat system"
+      ]
+    },
+    {
+      "name": "polish pass",
+      "summary": "add sound, particles, and a theme toggle",
+      "steps": [
+        "add sound effects",
+        "add particles system",
+        "add a theme toggle"
+      ]
+    },
+    {
+      "name": "safe growth",
+      "summary": "grow the project into modules, then add save and ui",
+      "steps": [
+        "grow the project",
+        "add save system",
+        "add ui system"
+      ]
+    }
+  ],
+  "list": [
+    "show macros",
+    "list macros",
+    "show the macro list",
+    "list the macro list",
+    "what macros are there",
+    "what macros do you have"
+  ],
+  "edit": [
+    "edit the macro plan to (.+)",
+    "edit macro plan to (.+)",
+    "edit the expanded plan to (.+)",
+    "edit the staged plan to (.+)",
+    "replace the macro plan with (.+)",
+    "change the macro plan to (.+)"
+  ]
+}
