@@ -1903,7 +1903,7 @@ truncating. `tests/test_macros.py` pins the table, the fixture, Python and
 JavaScript byte parity, preview-without-writing, exact execution, list and edit
 behaviour, the named refusals, and the no-network rule.
 
-### 68. Accessibility and mobile polish
+### 68. Accessibility and mobile polish — done
 
 Tighten the installed-app and small-screen experience around the paths that
 already exist.
@@ -1922,6 +1922,32 @@ focus ring, the shell has no horizontal scroll at 360 px, reduced-motion
 disables non-essential animation, every status has a text alternative, the
 offline state is explained in the UI, and the HTML and smoke checks cover these
 paths.
+
+Landed as shell-only work: no route, cap, or allow-listed tool changed. The
+composer keeps `enterkeyhint`, `autocapitalize`, `autocomplete`, and
+`spellcheck`, adds safe-area padding on all three sides, a 16 px field on
+phones, and a 380 px layout that keeps the budget bar to two columns. The shell
+sets `max-width:100vw` and `overflow-x:hidden`, every pane and the hint row get
+`min-width:0`, and long tokens in results, events, and the file editor wrap with
+`overflow-wrap:anywhere`. The device drawer and the quality-curve drawer now
+move focus inside when opened, return it on close, expose `aria-expanded` on
+their toggles, and carry `aria-hidden` plus `inert` while closed; the quality
+drawer is a real labelled dialog with a keyboard-reachable close button and
+keyboard-reachable PNG actions. The device detail moves focus to its close
+button and restores it. Budget bars carry a `status` word from
+`toolrx/web/budget.js` — `within cap`, `near cap`, `over cap` — printed for
+warn/over and always included in `aria-valuetext`, and `budgetSay` still
+announces a crossed limit. The build status is a `role="status"` live region.
+Reduced-motion stops the mascot, equaliser, flow, pulse, and drawer transitions
+while progress values still update instantly. The empty state explains the
+offline path and airplane mode, an opt-in `install app` button appears only on
+`beforeinstallprompt` and disappears on `appinstalled`, and an `offline-ready`
+chip becomes `offline · still works` or `installed · offline-ready` from the
+real `online`/`offline` events. `tests/test_a11y.py` drives the real HTML and
+budget module in Node: it pins the mobile composer, the focus contracts, the
+status words, reduced motion, the offline/install story, and a structural
+parser check that catches a malformed drawer tag. The live smoke checks
+`scrollWidth <= innerWidth` at 360 px and 320 px.
 
 ### 69. Public evaluation suite and comparison kit
 
@@ -2126,7 +2152,7 @@ and the suite proves zero network calls.
    57 (recovery) → 58 (style) → 59 (scorecard) — done
 8. 60 (domain language) → 61 (explain) → 62 (starters) → 63 (pure compute) — done
 9. 64 (workspace journal) → 65 (dashboard events) → 66 (verify helpers) →
-   67 (plan macros) — done; 68 (accessibility) → 69 (evaluation kit) — planned
+   67 (plan macros) → 68 (accessibility) — done; 69 (evaluation kit) — planned
 10. 70 (world spec) → 71 (chunked worlds) → 72 (live remix) →
     73 (starter worlds) → 74 (scene bank) → 75 (world packages) →
     76 (deterministic agents) → 77 (speech-friendly phrases) →

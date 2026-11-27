@@ -18,7 +18,11 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html{height:100%}
   body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;
-    height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+    height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+    max-width:100vw;overflow-x:hidden}
+  /* Nothing in the shell may force a horizontal scrollbar, even at 360 px. */
+  main,.workspace,.panes,.pane,.composer,.hintrow{min-width:0;max-width:100%}
+  .entry pre,.lr-event,.fe-edit .name{overflow-wrap:anywhere;word-break:break-word}
   a{color:var(--accent)}
 
   /* quality-curve drawer */
@@ -28,7 +32,8 @@
   #qc.open{right:0}
   #qc h3{margin:0 0 2px;font-size:15px;display:flex;align-items:center}
   #qc .sub{color:var(--muted);font-size:11px;margin-bottom:10px}
-  #qc .x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 8px;border-radius:6px}
+  #qc .x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 8px;
+    border-radius:6px;background:transparent;border:1px solid transparent;font-family:inherit}
   #qc .x:hover{color:#f87171;background:#3a1d1d}
   #qc canvas{width:100%;background:#0d1322;border:1px solid var(--border);border-radius:8px;margin-bottom:12px}
   #qc .cap{font-size:11px;color:var(--muted);margin:0 0 4px;display:flex;justify-content:space-between;align-items:center}
@@ -306,7 +311,8 @@
   #previewPane.full{flex:1 0 100%}
 
   /* composer — compact footer */
-  .composer{flex:0 0 auto;padding:6px 16px;border-top:1px solid var(--border);background:#0a0f1c}
+  .composer{flex:0 0 auto;padding:6px max(16px,env(safe-area-inset-left)) 6px max(16px,env(safe-area-inset-right));
+    border-top:1px solid var(--border);background:#0a0f1c}
   .composer form{display:flex;gap:8px;align-items:flex-end}
   .composer textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--border);
     color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.3;
@@ -334,6 +340,15 @@
   .bg-item.warn .bg-fill{background:#fbbf24}
   .bg-item.over .bg-fill{background:#f87171}
   .bg-item.over .bg-head b{color:#ff8a8a}
+  /* the status in words, not colour alone */
+  .bg-status{font-size:8px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  .bg-item.warn .bg-status{color:#fbbf24}
+  .bg-item.over .bg-status{color:#ff8a8a}
+  .bg-item.ok .bg-status{display:none}
+  .netchip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);
+    border-radius:999px;padding:3px 9px;font-size:10px;color:var(--muted);white-space:nowrap}
+  .netchip.offline{border-color:#3a2d12;color:#fbbf24;background:#1a150a}
+  .netchip.installed{border-color:rgba(52,211,153,.45);color:var(--green)}
   .bg-say{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
     clip:rect(0 0 0 0);white-space:nowrap;border:0}
   #lastRunDetail .bg-budget{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
@@ -481,6 +496,17 @@
     .entry pre{font-size:11.5px}
     #qc{width:100%;max-width:100vw;right:-100%;border-left:none}
     #qcBtn{top:56px;right:10px}
+  }
+  @media(max-width:380px){
+    .composer{padding-left:max(8px,env(safe-area-inset-left));
+      padding-right:max(8px,env(safe-area-inset-right))}
+    .composer button{padding:11px 12px;min-width:56px}
+    .hintrow{gap:6px}
+    .hintrow .hint{display:none}
+    #log{padding:48px 8px 10px}
+    .entry pre{font-size:11px}
+    #budgetBar.on{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #staticNote{margin-left:48px;margin-right:8px}
   }
 
   /* command center modal */
@@ -654,9 +680,17 @@
   }
   .entry .lbl.chat{background:rgba(167,139,250,.14);color:var(--accent2)}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* fields that suppress the default outline still show a ring for the keyboard */
+  .devcard .devname:focus-visible,#traincard .tctl select:focus-visible,
+  #traincard .tctl input:focus-visible,.composer textarea:focus-visible,
+  .fe-edit textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
       transition-duration:.001ms !important;scroll-behavior:auto !important}
+    /* decorative motion stops entirely; progress bars still update, just instantly */
+    #eq .eq-track,#eq .eq-track span,.devcard .flow::before,.devcard .flow::after,
+    #traincard.running .hd .dot,.cm-bot .mark,#botmark,#botPose{animation:none !important}
+    .bg-fill,.ctxprog>div,.devcard,.pane{transition:none !important}
   }
   @media(max-width:900px){
     .pj-item .acts button{min-height:34px;padding:6px 11px}
@@ -665,9 +699,10 @@
 </style>
 </head>
 <body>
-<button id="qcBtn" title="quality curves">📈</button>
-<div id="qc">
-  <h3>Quality Curves <span class="x" id="qcX">✕</span></h3>
+<button id="qcBtn" type="button" title="quality curves" aria-label="open quality curves"
+  aria-controls="qc" aria-expanded="false">📈</button>
+<div id="qc" role="dialog" aria-label="quality curves" aria-hidden="true" inert tabindex="-1">
+  <h3>Quality Curves <button type="button" class="x" id="qcX" aria-label="close quality curves">✕</button></h3>
   <div class="sub" id="qcSub">training quality over time</div>
   <div class="cap"><span>gate score per run (% of 120, strict exact-match)</span><span class="png" data-c="qcGates">PNG</span></div>
   <canvas id="qcGates" width="740" height="300"></canvas>
@@ -682,13 +717,14 @@
   <div class="cap"><span>cycle economics — minutes: train + gate per run</span><span class="png" data-c="qcEcon">PNG</span></div>
   <canvas id="qcEcon" width="740" height="240"></canvas>
 </div>
-<button class="logo" id="logo" title="toggle drawer">◈</button>
+<button class="logo" id="logo" type="button" title="toggle drawer" aria-label="open devices drawer"
+  aria-controls="devices" aria-expanded="false">◈</button>
 <div id="staticNote"><b>loading router…</b></div>
 <div id="drawerBackdrop"></div>
 <main>
-  <aside id="devices" class="closed">
+  <aside id="devices" class="closed" tabindex="-1" aria-label="devices" aria-hidden="true" inert>
     <div id="drawerMenu">
-      <div id="botSlot" title="the mascot · click to open the command center">
+      <div id="botSlot" role="button" tabindex="0" aria-label="open the command center" title="the mascot · click to open the command center">
         <div class="mark">
           <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" id="botmark" role="img" aria-label="toolrx mascot">
             <ellipse class="shadow" cx="60" cy="99" rx="17" ry="4.5"/>
@@ -738,18 +774,19 @@
       <div id="clustersum" title="cluster summary" style="display:none"></div>
     </div>
   </aside>
-  <div id="devinfo"></div>
+  <div id="devinfo" role="dialog" aria-label="device details" aria-hidden="true"></div>
   <div class="workspace">
     <div id="eq" aria-hidden="true"><div class="eq-track" id="eqTrack"></div></div>
     <div class="panes">
       <div class="pane on" id="chatPane"><div id="log" role="log" aria-live="polite" aria-relevant="additions text" aria-label="conversation"></div></div>
-      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="lastRun" aria-live="polite"></div><div id="lastRunDetail" aria-live="polite"></div><div id="buildStatus" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
+      <div class="pane on" id="previewPane"><button id="pvToggle" title="expand/contract preview" type="button" aria-label="expand or contract preview">⤢</button><div id="lastRun" aria-live="polite"></div><div id="lastRunDetail" aria-live="polite"></div><div id="buildStatus" role="status" aria-live="polite"></div><iframe id="pv" title="preview"></iframe></div>
     </div>
     <div class="composer">
       <div id="budgetBar" role="group" aria-label="plan budgets"></div>
       <div id="budgetSay" class="bg-say" role="status" aria-live="assertive"></div>
       <form id="f">
-        <textarea id="q" rows="1" aria-label="ask toolrx" placeholder="ask toolrx… (enter to send, shift+enter for newline)"></textarea>
+        <textarea id="q" rows="1" aria-label="ask toolrx" placeholder="ask toolrx… (enter to send, shift+enter for newline)"
+          enterkeyhint="send" autocapitalize="sentences" autocomplete="off" spellcheck="true"></textarea>
         <button id="send" type="submit">Send</button>
       </form>
       <div class="hintrow">
@@ -758,9 +795,13 @@
         <button type="button" id="libBtn" title="browse the personal book archive" style="display:none">▥ <b>library</b></button>
         <button type="button" id="cmdBtn" title="browse the command catalog" style="display:none">▤ <b>commands</b></button>
         <button type="button" id="pvMobile" title="show the preview pane">▣ preview</button>
+        <button type="button" id="installBtn" style="display:none" title="install this app for offline use">⤓ <b>install app</b></button>
+        <span id="netChip" class="netchip" role="status" aria-live="polite" style="display:none">offline-ready</span>
         <div class="ctxbar" id="ctxbar">
           <span class="ctxlab">context</span>
-          <div class="ctxprog"><div id="ctxfill"></div></div>
+          <div class="ctxprog" id="ctxprog" role="progressbar" aria-label="context used"
+            aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0 used of 0">
+            <div id="ctxfill"></div></div>
           <span class="ctxnum" id="ctxnum">0 / 0 K</span>
         </div>
       </div>
@@ -960,6 +1001,42 @@ function registerOffline(){
   if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1') return;
   navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
 }
+/* Step 68: the offline story in words, plus an install affordance when the
+ * browser offers one. Nothing here fetches or installs by itself. */
+let installEvent=null, appInstalled=false;
+function updateNetChip(){
+  const chip=document.getElementById('netChip');
+  if(!chip) return;
+  if(!document.body.classList.contains('client-demo')) return;
+  const offline=navigator.onLine===false;
+  chip.style.display='inline-flex';
+  chip.classList.toggle('offline', offline);
+  chip.classList.toggle('installed', appInstalled && !offline);
+  chip.textContent=offline ? 'offline · still works'
+    : appInstalled ? 'installed · offline-ready' : 'offline-ready';
+}
+function setupInstall(){
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault(); installEvent=e;
+    const b=document.getElementById('installBtn');
+    if(b) b.style.display='inline-flex';
+  });
+  const btn=document.getElementById('installBtn');
+  if(btn) btn.addEventListener('click',async ()=>{
+    if(!installEvent) return;
+    installEvent.prompt();
+    try{ await installEvent.userChoice; }catch(e){}
+    installEvent=null; btn.style.display='none';
+  });
+  window.addEventListener('appinstalled',()=>{
+    appInstalled=true; installEvent=null;
+    const b=document.getElementById('installBtn'); if(b) b.style.display='none';
+    updateNetChip();
+  });
+  window.addEventListener('online',updateNetChip);
+  window.addEventListener('offline',updateNetChip);
+  updateNetChip();
+}
 async function loadConfig(){
   try{
     const r=await fetch('/config');
@@ -1033,6 +1110,7 @@ async function loadConfig(){
     refreshProjectChip();
     refreshLastRun();
     registerOffline();
+    setupInstall();
     const cmdBtn=document.getElementById('cmdBtn');
     if(cmdBtn) cmdBtn.style.display='inline-flex';
     const libBtn=document.getElementById('libBtn');
@@ -1050,7 +1128,10 @@ async function loadConfig(){
       +'      i feel overwhelmed\n\n'
       +'projects: press ◫ in the composer bar to create, open, or delete one\n'
       +'the workspace is virtual + persists in localStorage (toolrxWeb.reset() to reseed)\n'
-      +'preview renders locally — press ⤢ to go fullscreen','stat');
+      +'preview renders locally — press ⤢ to go fullscreen\n\n'
+      +'offline: after this first load the page needs no network at all\n'
+      +'install it from the browser menu (or ⤓ install app) and it still runs in airplane mode\n'
+      +'the offline-ready chip in the composer bar says whether the tab is online; it never blocks a command','stat');
   }
 }
 
@@ -1096,11 +1177,15 @@ const champVersion='v13'; // the live champion — never erasable
     energy:0.45,
   };
   const damp=(cur,tgt,k,dt)=>cur+(tgt-cur)*(1-Math.exp(-k*dt));
+  /* Reduced motion draws one still pose and never starts the loop; the
+   * cluster hook still updates it without animating. */
+  const reduce=!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   // cluster activity hook: a small excited bounce, never breaks the gaze lock
   window.botReact=function(){
     bot.attention=Math.min(1,bot.attention+0.35);
     bot.energy=Math.min(1,bot.energy+0.35);
+    if(reduce) frame(performance.now());
   };
 
   let hover=0, last=performance.now();
@@ -1136,15 +1221,18 @@ const champVersion='v13'; // the live champion — never erasable
     } else {
       lids.forEach(l=>{ if(l.style.transform!=='scaleY(0)') l.style.transform='scaleY(0)'; });
     }
-    requestAnimationFrame(frame);
+    if(!reduce) requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  frame(performance.now());
 
   slot.addEventListener('mouseenter',()=>{ hover=1; });
   slot.addEventListener('mouseleave',()=>{ hover=0; });
   slot.addEventListener('click',()=>{
     bot.attention=1; bot.energy=1;
     openCmdCenter();
+  });
+  slot.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); slot.click(); }
   });
 })();
 
@@ -1448,12 +1536,15 @@ function eventLine(e){
 function budgetBarHTML(bars){
   return (bars||[]).map(function(b){
     const pct=b.max?Math.min(100,Math.round(100*b.used/b.max)):0;
-    const label=b.label+' budget: '+b.readout+' · '+b.room+' left';
+    /* The status is always spoken; sighted users see the word for warn/over. */
+    const status=b.status||(b.over?'over cap':(b.level==='warn'?'near cap':'within cap'));
+    const label=b.label+' budget: '+b.readout+' · '+b.room+' left · '+status;
     return '<div class="bg-item '+b.level+'" role="group" aria-label="'+label+'">'
-      +'<div class="bg-head"><span>'+b.label+'</span><b>'+b.readout+'</b></div>'
+      +'<div class="bg-head"><span>'+b.label+'</span><b>'+b.readout+'</b>'
+      +'<span class="bg-status">'+status+'</span></div>'
       +'<div class="bg-track" role="progressbar" aria-label="'+b.label+' budget"'
       +' aria-valuemin="0" aria-valuemax="'+b.max+'" aria-valuenow="'+b.used+'"'
-      +' aria-valuetext="'+b.readout+' · '+b.room+' left">'
+      +' aria-valuetext="'+b.readout+' · '+b.room+' left · '+status+'">'
       +'<div class="bg-fill" style="width:'+pct+'%"></div></div></div>';
   }).join('');
 }
@@ -2285,6 +2376,12 @@ function renderDevices(devs){
     if(d.online) online++;
     const card=document.createElement('div');card.className='devcard'+(d.online?'':' off')+(selected===d.serial?' sel':'')+(d.active?' active':'');
     card.dataset.serial=d.serial;
+    /* The whole card selects the device, so it must work from the keyboard
+     * too; the rename input inside keeps its own focus and keys. */
+    card.tabIndex=0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-pressed', selected===d.serial?'true':'false');
+    card.setAttribute('aria-label', (d.online?'select ':'select offline ')+d.name+' device');
     // data flow direction: executor = data leaving (out, right); needle = data arriving (in, left)
     card.dataset.flow=(d.kind==='host')?'':((d.role||'').includes('executor')?'out':'in');
     const ramPct=d.ram_pct!=null?d.ram_pct:(d.ram?Math.round(Math.min(d.ram,3000)/3000*100):0);
@@ -2313,6 +2410,10 @@ function renderDevices(devs){
       clusterSel=false; trainSel=false; selected=(selected===d.serial)?null:d.serial;
       renderDevices(devs); renderDetail(d); renderClusterSummary(devs);
       if(selected && window.matchMedia('(max-width:900px)').matches) closeDrawer();
+    });
+    card.addEventListener('keydown',e=>{
+      if(e.target!==card) return;
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); card.click(); }
     });
     devices.querySelector('#devlist').appendChild(card);
   });
@@ -2409,6 +2510,12 @@ function renderTrainingCard(st){
   const pct=total?Math.round(100*done/total):(modelActive?10:0);
   const running=(st.status==='running')||modelActive;
   el.className=(trainSel?' sel':'')+(running?' running':'');
+  /* The training card opens the training detail, so it is a real keyboard
+   * control even though it stays a div for the card layout. */
+  el.tabIndex=0;
+  el.setAttribute('role','button');
+  el.setAttribute('aria-pressed', trainSel?'true':'false');
+  el.setAttribute('aria-label','training cycle');
   el.innerHTML=`
     <div class="hd"><span class="dot"></span><span>Training</span></div>
     <div class="meta"><span><b>${ver}</b> ${running?'RUNNING':(md?(md.status||'idle'):(st.status||'idle'))}</span>
@@ -2419,6 +2526,9 @@ function renderTrainingCard(st){
     trainSel=!trainSel; selected=null; clusterSel=false;
     renderDevices(); renderTrainingCard(st);
     renderTrainingDetail(st); renderClusterSummary();
+  };
+  el.onkeydown=e=>{
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.click(); }
   };
 }
 function renderTrainingDetail(st){
@@ -2542,12 +2652,46 @@ function refreshTrainingLive(){
   const qc=document.getElementById('qc'), qcBtn=document.getElementById('qcBtn');
   if(qc && !qc._wired){
     qc._wired=true;
-    qcBtn.onclick=()=>qc.classList.toggle('open');
-    document.getElementById('qcX').onclick=()=>qc.classList.remove('open');
-    document.querySelectorAll('#qc .png').forEach(b=>b.onclick=()=>{
-      const c=document.getElementById(b.dataset.c);
-      const a=document.createElement('a'); a.download=b.dataset.c+'.png';
-      a.href=c.toDataURL('image/png'); a.click();
+    let qcReturn=null;
+    window.openQualityCurves=function(){
+      const wasOpen=qc.classList.contains('open');
+      qc.classList.add('open');
+      qc.setAttribute('aria-hidden','false');
+      qc.removeAttribute('inert');
+      if(qcBtn) qcBtn.setAttribute('aria-expanded','true');
+      if(!wasOpen){
+        qcReturn=document.activeElement;
+        const close=document.getElementById('qcX');
+        if(close) setTimeout(()=>{ try{close.focus();}catch(e){} },0);
+      }
+    };
+    window.closeQualityCurves=function(){
+      const wasOpen=qc.classList.contains('open');
+      qc.classList.remove('open');
+      qc.setAttribute('aria-hidden','true');
+      qc.setAttribute('inert','');
+      if(qcBtn) qcBtn.setAttribute('aria-expanded','false');
+      if(wasOpen){
+        let back=qcReturn; qcReturn=null;
+        if(!back || back===document.body || typeof back.focus!=='function') back=qcBtn;
+        if(back && typeof back.focus==='function'){
+          setTimeout(()=>{ try{back.focus();}catch(e){} },0);
+        }
+      }
+    };
+    qcBtn.onclick=()=>{ if(qc.classList.contains('open')) window.closeQualityCurves(); else window.openQualityCurves(); };
+    document.getElementById('qcX').onclick=()=>window.closeQualityCurves();
+    document.querySelectorAll('#qc .png').forEach(b=>{
+      b.setAttribute('role','button');
+      b.setAttribute('tabindex','0');
+      b.setAttribute('aria-label','download '+b.dataset.c+' as PNG');
+      const save=()=>{
+        const c=document.getElementById(b.dataset.c);
+        const a=document.createElement('a'); a.download=b.dataset.c+'.png';
+        a.href=c.toDataURL('image/png'); a.click();
+      };
+      b.onclick=save;
+      b.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); save(); } };
     });
   }
   function drawGates(st){
@@ -2849,7 +2993,7 @@ function refreshTrainingLive(){
   const qcEl=document.getElementById('qc'), wasRunning=window._qcWasRun;
   if(qcEl){ const r=!!(trainState&&(trainState.status==='running'));
     document.getElementById('qcBtn').classList.toggle('show', true);
-    if(r&&!wasRunning) qcEl.classList.add('open');
+    if(r&&!wasRunning){ if(window.openQualityCurves) window.openQualityCurves(); else qcEl.classList.add('open'); }
     window._qcWasRun=r; }
 }
 
@@ -2866,13 +3010,39 @@ function renderContextBar(devs){
   }
   if(bar) bar.classList.add('on');
   if(fill) fill.style.width=(Math.min(100,100*used/total))+'%';
+  const prog=document.getElementById('ctxprog');
+  if(prog){
+    prog.setAttribute('aria-valuemax', String(Math.round(total)));
+    prog.setAttribute('aria-valuenow', String(Math.round(used)));
+    prog.setAttribute('aria-valuetext', Math.round(used)+' of '+Math.round(total)
+      +' context tokens used ('+Math.round(100*used/total)+'%)');
+  }
   if(num) num.textContent=Math.round(used/1024)+' / '+Math.round(total/1024)+' K ('+Math.round(100*used/total)+'%)';
 }
 
+let detailReturn=null;
 function renderDetail(d){
   const el=document.getElementById('devinfo');
-  if(!d||(!selected&&!clusterSel)){ el.classList.remove('open'); el.innerHTML=''; return; }
+  if(!el) return;
+  const wasOpen=el.classList.contains('open');
+  if(!d||(!selected&&!clusterSel)){
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden','true');
+    el.innerHTML='';
+    if(wasOpen){
+      let back=detailReturn; detailReturn=null;
+      if(!back || back===document.body || typeof back.focus!=='function'){
+        back=document.getElementById('logo');
+      }
+      if(back && typeof back.focus==='function'){
+        setTimeout(()=>{ try{back.focus();}catch(e){} },0);
+      }
+    }
+    return;
+  }
+  if(!wasOpen) detailReturn=document.activeElement;
   el.classList.add('open');
+  el.setAttribute('aria-hidden','false');
   const rows=[
     ['Status', d.online?'online':'offline'],
     ['Kind', d.kind||'—'],
@@ -2896,23 +3066,58 @@ function renderDetail(d){
   if(d.max_context && d.context_used!=null) rows.push(['Ctx used', d.context_used+' tok']);
   rows.push(['Active', d.active?'yes':'no']);
   const ramPct=d.ram_pct!=null?d.ram_pct:0;
-  el.innerHTML=`<button id="devClose" title="close">✕</button><h3>${d.name}</h3><div class="sub">${d.serial||''}</div>
+  el.innerHTML=`<button id="devClose" type="button" title="close" aria-label="close device details">✕</button><h3>${d.name}</h3><div class="sub">${d.serial||''}</div>
     ${d.ram_pct!=null?`<div class="prog"><div style="width:${Math.min(100,ramPct)}%"></div></div>`:''}
     <div class="dlist">${rows.map(r=>`<div class="dl"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>`;
   const dl=el.querySelector('.dlist');
   if(dl){ dl.style.overflowY='auto'; dl.style.minHeight='0'; dl.style.flex='1 1 auto'; }
+  if(!wasOpen){
+    const close=el.querySelector('#devClose');
+    if(close) setTimeout(()=>{ try{close.focus();}catch(e){} },0);
+  }
 }
 
+let drawerReturn=null;
 function syncDrawerBackdrop(){
-  document.body.classList.toggle('drawer-open', !devices.classList.contains('closed'));
+  const open=!devices.classList.contains('closed');
+  document.body.classList.toggle('drawer-open', open);
+  devices.setAttribute('aria-hidden', open?'false':'true');
+  if(open) devices.removeAttribute('inert'); else devices.setAttribute('inert','');
+  const logo=document.getElementById('logo');
+  if(logo){
+    logo.setAttribute('aria-expanded', open?'true':'false');
+    logo.setAttribute('aria-label', open?'close devices drawer':'open devices drawer');
+  }
+}
+function openDrawer(){
+  const wasOpen=!devices.classList.contains('closed');
+  devices.classList.remove('closed');
+  syncDrawerBackdrop();
+  if(wasOpen) return;
+  drawerReturn=document.activeElement;
+  const candidates=[].slice.call(devices.querySelectorAll(
+    '.devcard,button:not([disabled]),input:not([disabled]),select:not([disabled]),a[href]'));
+  const first=candidates.filter(el=>el.offsetParent!==null)[0]||null;
+  const target=first||devices;
+  setTimeout(()=>{
+    try{ target.focus(); }catch(e){}
+    if(document.activeElement!==target) devices.focus();
+  },0);
 }
 function closeDrawer(){
+  const wasOpen=!devices.classList.contains('closed');
   devices.classList.add('closed');
   syncDrawerBackdrop();
+  if(!wasOpen) return;
+  const logo=document.getElementById('logo');
+  let back=drawerReturn; drawerReturn=null;
+  if(!back || back===document.body || typeof back.focus!=='function') back=logo;
+  if(back && typeof back.focus==='function'){
+    setTimeout(()=>{ try{back.focus();}catch(e){} },0);
+  }
 }
 document.getElementById('logo').addEventListener('click',()=>{
-  devices.classList.toggle('closed');
-  syncDrawerBackdrop();
+  if(devices.classList.contains('closed')) openDrawer(); else closeDrawer();
 });
 document.getElementById('drawerBackdrop').addEventListener('click',closeDrawer);
 document.getElementById('devinfo').addEventListener('click',e=>{
@@ -2923,6 +3128,10 @@ document.getElementById('devinfo').addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
+  const qcEl=document.getElementById('qc');
+  if(qcEl && qcEl.classList.contains('open') && window.closeQualityCurves){
+    window.closeQualityCurves(); return;
+  }
   const pvPane=document.getElementById('previewPane');
   if(pvPane && pvPane.classList.contains('mobile-show')){
     pvPane.classList.remove('mobile-show');

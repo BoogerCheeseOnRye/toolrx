@@ -689,10 +689,25 @@ truncating silently. No new cap and no new allow-listed tool were added.
 preview-without-writing, exact execution, list and edit behaviour, the named
 refusals, and the no-network rule.
 
-Steps 68–69 remain `planned`: accessibility and mobile polish, and a public
-evaluation and comparison kit. No step may require a model, a network call, an
-external test runner, or a real shell. The acceptance criteria live in
-`toolrx/vision/HARNESS-ROADMAP.md`.
+Step 68 tightens the installed-app and small-screen shell without adding a new
+route or cap. The composer keeps `enterkeyhint`, safe-area padding, and a 16 px
+field on phones; the shell stays inside `360 px` (and `320 px`) with no
+horizontal scroll, and every long token wraps. Drawers now move focus inside
+when opened, restore it on close, expose `aria-expanded`, and go `inert` while
+closed, and the quality-curve drawer is a real labelled dialog with a keyboard
+reachable close button. Budget bars print their status in words — `within cap`,
+`near cap`, `over cap` — and put the same words in `aria-valuetext`, so colour
+is never the only signal. Reduced-motion stops the mascot, equaliser, flow, and
+pulse animations while progress still updates instantly. The empty state now
+explains the offline path, offers an install button when the browser supports
+one, and shows an `offline-ready` chip that becomes `offline · still works` and
+never blocks a command. `tests/test_a11y.py` pins the mobile composer, the
+focus contracts, the status words, reduced motion, and the offline/install
+story.
+
+Step 69 remains `planned`: a public evaluation and comparison kit. No step may
+require a model, a network call, an external test runner, or a real shell. The
+acceptance criteria live in `toolrx/vision/HARNESS-ROADMAP.md`.
 
 The active project is editable from chat: `change the page title to …`,
 `add a theme toggle`, `make this project light`, and
@@ -833,7 +848,7 @@ against another product. The pitch quotes the same table.
 | **Cost** | shipped | The deterministic path makes zero model or network calls. | `toolrx/web/llm.js`, `tests/test_llm_js.py::LlmAdapterTest.test_defaults_are_off_and_quiet`, `tests/test_llm_js.py::LlmAdapterTest.test_known_prompts_stay_deterministic` | The deterministic path costs nothing, but an enabled LLM adapter bills per call and has call and byte caps, not a money budget. |
 | **Reproducibility** | shipped | Seeded builds and checked-in fixtures reproduce byte for byte. | `toolrx/demo_report.json`, `tests/test_demo.py::DemoReportTest.test_every_step_is_deterministic_and_successful`, `tests/test_commands.py::CommandLibraryTest.test_catalog_regenerates_byte_identically` | Checked-in fixtures and seeds reproduce byte for byte, but wall-clock fields and host-dependent machine tools vary between runs. |
 
-_Scorecard metrics: 13,542 commands · 668 tests · 56 named caps · 930 everyday cases · 33 router cases · 989 fixture cases._
+_Scorecard metrics: 13,542 commands · 693 tests · 56 named caps · 930 everyday cases · 33 router cases · 989 fixture cases._
 <!-- scorecard:end -->
 
 ## Configuration

@@ -70,6 +70,8 @@
       remaining: Math.max(0, m - u),
       ratio: Math.round(ratio * 10000) / 10000,
       level: level,
+      /* The same status in words, so a bar never relies on colour alone. */
+      status: over ? "over cap" : (level === "warn" ? "near cap" : "within cap"),
       over: over,
       readout: format(u, unit) + " / " + format(m, unit),
       room: format(Math.max(0, m - u), unit)

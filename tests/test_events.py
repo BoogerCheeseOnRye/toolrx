@@ -406,7 +406,7 @@ class EventsTest(unittest.TestCase):
 
     def test_offline_shell_ships_the_event_module(self):
         sw = self.out["dashboard"]["sw"]
-        self.assertIn('const CACHE = "toolrx-shell-v18-r15";', sw)
+        self.assertIn('const CACHE = "toolrx-shell-v18-r16";', sw)
         self.assertIn('"./web/events.js"', sw)
         self.assertIn('"./web/verify.js"', sw)
         self.assertIn('"./web/macros.js"', sw)
