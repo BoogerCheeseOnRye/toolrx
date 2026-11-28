@@ -856,7 +856,7 @@ against another product. The pitch quotes the same table.
 | **Cost** | shipped | The deterministic path makes zero model or network calls. | `toolrx/web/llm.js`, `tests/test_llm_js.py::LlmAdapterTest.test_defaults_are_off_and_quiet`, `tests/test_llm_js.py::LlmAdapterTest.test_known_prompts_stay_deterministic` | The deterministic path costs nothing, but an enabled LLM adapter bills per call and has call and byte caps, not a money budget. |
 | **Reproducibility** | shipped | Seeded builds and checked-in fixtures reproduce byte for byte. | `toolrx/demo_report.json`, `tests/test_demo.py::DemoReportTest.test_every_step_is_deterministic_and_successful`, `tests/test_commands.py::CommandLibraryTest.test_catalog_regenerates_byte_identically` | Checked-in fixtures and seeds reproduce byte for byte, but wall-clock fields and host-dependent machine tools vary between runs. |
 
-_Scorecard metrics: 13,542 commands · 703 tests · 56 named caps · 930 everyday cases · 33 router cases · 989 fixture cases._
+_Scorecard metrics: 13,542 commands · 704 tests · 56 named caps · 930 everyday cases · 33 router cases · 989 fixture cases._
 <!-- scorecard:end -->
 
 ## Evaluation and comparison

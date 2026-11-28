@@ -97,13 +97,16 @@ def _lanes(entry, where):
 def build_report():
     """Read the checked-in reports, run the harness, and return the document."""
     coverage = _load(COVERAGE)
+    fixtures = coverage.get("fixtures")
+    if not isinstance(fixtures, dict) or not fixtures:
+        _fail("coverage.json has no fixtures")
+    for name in ("everyday", "routing"):
+        if not isinstance(fixtures.get(name), dict):
+            _fail("coverage.json is missing fixtures." + name)
     demo = _load(DEMO)
     harness = run_harness()
     metrics = scorecard.metrics()
 
-    fixtures = coverage.get("fixtures")
-    if not isinstance(fixtures, dict) or not fixtures:
-        _fail("coverage.json has no fixtures")
     lanes = {
         "everyday": _lanes(fixtures["everyday"], "fixtures.everyday"),
         "routing": _lanes(fixtures["routing"], "fixtures.routing"),

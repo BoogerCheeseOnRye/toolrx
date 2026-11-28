@@ -154,6 +154,18 @@ class EvaluationTest(unittest.TestCase):
         numbered = re.findall(r"^\d+\. \*\*", text, re.M)
         self.assertGreaterEqual(len(numbered), 3)
 
+    def test_missing_fixture_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / "coverage.json"
+            path.write_text(json.dumps({
+                "catalog": {"count": 1},
+                "fixtures": {"routing": {"cases": 1, "lanes": {}}},
+            }), encoding="utf-8")
+            with mock.patch.object(evaluation, "COVERAGE", path):
+                with self.assertRaises(ValueError) as caught:
+                    evaluation.build_report()
+        self.assertIn("missing fixtures.everyday", str(caught.exception))
+
     def test_stale_report_is_detected(self):
         with tempfile.TemporaryDirectory() as tmp:
             stale = pathlib.Path(tmp) / "evaluation.json"
