@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "metrics": {
+    "catalog": 13542,
+    "tests": 703,
+    "caps": 56,
+    "everyday": 930,
+    "routing": 33,
+    "fixtures": 989
+  },
+  "lanes": {
+    "everyday": {
+      "exact": 920,
+      "router": 10,
+      "fallback": 0,
+      "refusal": 0
+    },
+    "routing": {
+      "exact": 0,
+      "router": 33,
+      "fallback": 0,
+      "refusal": 0
+    },
+    "fixtures": {
+      "exact": 951,
+      "router": 84,
+      "fallback": 0,
+      "refusal": 4
+    }
+  },
+  "build": {
+    "requestChars": 3367,
+    "planSteps": 32,
+    "maxSteps": 40,
+    "executed": 32,
+    "failed": 0,
+    "files": 22,
+    "maxFiles": 32,
+    "bytes": 54823,
+    "contextUsed": 8074,
+    "contextMax": 8192,
+    "undo": 8,
+    "within": true,
+    "over": []
+  },
+  "determinism": {
+    "programs": 18,
+    "identical": 18
+  },
+  "harness": {
+    "version": 1,
+    "thinking": {
+      "states": 5,
+      "deterministic": 5,
+      "mismatches": 0,
+      "names": [],
+      "modes": 5
+    },
+    "repair": {
+      "states": 5,
+      "deterministic": 5,
+      "mismatches": 0,
+      "names": [],
+      "rules": 5
+    },
+    "compaction": {
+      "runs": 2,
+      "identical": true,
+      "changed": true,
+      "stored": 579,
+      "cap": 700,
+      "entries": 10,
+      "trimmed": 0,
+      "summarized": 1,
+      "dropped": 6,
+      "evicted": 0,
+      "planKept": true,
+      "specKept": true
+    },
+    "rewrite": {
+      "cases": 7,
+      "identical": true,
+      "needed": 6,
+      "variants": 5,
+      "refusals": 1,
+      "dropped": 12,
+      "overKinds": [
+        "chars",
+        "context",
+        "project",
+        "steps",
+        "time"
+      ]
+    },
+    "network": 0,
+    "fetches": 2
+  },
+  "network": 0
+}

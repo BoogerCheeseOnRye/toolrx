@@ -1949,7 +1949,7 @@ status words, reduced motion, the offline/install story, and a structural
 parser check that catches a malformed drawer tag. The live smoke checks
 `scrollWidth <= innerWidth` at 360 px and 320 px.
 
-### 69. Public evaluation suite and comparison kit
+### 69. Public evaluation suite and comparison kit — done
 
 Ship a checked-in, offline-evaluable suite and a short, honest comparison
 document so public claims stay tied to measurements.
@@ -1968,6 +1968,23 @@ fixtures, every quoted number in the report and comparison document matches the
 checked-in source, the drift check fails on a stale block or a missing fixture,
 the comparison document names at least three honest gaps, and the suite proves
 zero network calls.
+
+Landed as a checked-in report, a harness, and a comparison document; no route,
+cap, or allow-listed tool changed. `toolrx/evaluation_harness.js` loads the real
+browser modules in Node behind a fake fetch that only reads local files, runs
+five thinking modes, five repair rules, seven plan rewrites, and two context
+compactions twice each, and reports 18 of 18 byte-identical programs. It also
+counts fetches after module init, which must be zero. `toolrx/evaluation.py`
+reads `coverage.json` and `demo_report.json`, runs the harness, validates the
+report, writes `toolrx/evaluation.json`, and keeps one Markdown block in
+`README.md` and `COMPARISON.md` and one HTML block in `docs/pitch.html`
+byte-identical to it; `--check` fails on a stale report, a missing or duplicate
+block, a determinism mismatch, a failed build step, a budget overrun, or a
+non-zero network count. `COMPARISON.md` names six honest gaps — conversational
+breadth, general terminal work, generation quality, no learning, single-user and
+local, and that the numbers are not a benchmark. `tests/test_evaluation.py`
+pins every measured section to its source, the zero-network rule, the shared
+blocks, the stale-report path, and the three-gap minimum.
 
 ## Harness roadmap 5 — world building, remix, and shareable packages (steps 70–79)
 
@@ -2152,7 +2169,7 @@ and the suite proves zero network calls.
    57 (recovery) → 58 (style) → 59 (scorecard) — done
 8. 60 (domain language) → 61 (explain) → 62 (starters) → 63 (pure compute) — done
 9. 64 (workspace journal) → 65 (dashboard events) → 66 (verify helpers) →
-   67 (plan macros) → 68 (accessibility) — done; 69 (evaluation kit) — planned
+   67 (plan macros) → 68 (accessibility) → 69 (evaluation kit) — done
 10. 70 (world spec) → 71 (chunked worlds) → 72 (live remix) →
     73 (starter worlds) → 74 (scene bank) → 75 (world packages) →
     76 (deterministic agents) → 77 (speech-friendly phrases) →
@@ -2174,7 +2191,7 @@ verification, and may be reordered within the batch when a measurement
 justifies it. Steps 68–69 are last: accessibility needs the final UI, and the
 evaluation kit needs every earlier measurement.
 
-Steps 70–79 are a separate batch and do not start until 68–69 are done. Step 70
+Steps 70–79 are a separate batch; 68–69 are done, so it can start. Step 70
 defines the world document that every later step reads, so it cannot move.
 Steps 71–74 and 76 may be reordered within the batch when a measurement
 justifies it; step 75 depends on the package validator already used by the
